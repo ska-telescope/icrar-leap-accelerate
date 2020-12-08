@@ -30,7 +30,7 @@ build_debug:
   extends: .common
   stage: build
   before_script:
-    - apt update && apt install git doxygen casacore-dev rapidjson-dev libboost-all-dev
+    - apt update && apt -y install git doxygen casacore-dev rapidjson-dev libboost-all-dev
   script:
     - mkdir build
     - cd build
