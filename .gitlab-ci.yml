@@ -29,8 +29,8 @@ stages:
 build_debug:
   extends: .common
   stage: build
-  # instead of calling g++ directly you can also use some build toolkit like make
-  # install the necessary build tools when needed
+  before_script:
+    - apt update && apt install git doxygen casacore-dev rapidjson-dev libboost-all-dev
   script:
     - mkdir build
     - cd build
@@ -121,19 +121,6 @@ test_installation:
     - mkdir build
     - cd build
     - cmake .. -DCMAKE_PREFIX_PATH=/opt
-    - make all
-
-test_as_subproject:
-  extends: .common
-  stage: test
-  script:
-    - cp -r examples/helloworld-user ..
-    - cd ../helloworld-user
-    - sed -i 's/find_package(HelloWorld)/add_subdirectory(..\/cpp-template helloworld EXCLUDE_FROM_ALL)/' CMakeLists.txt
-    - if [ -d build ]; then rm -rf build; fi 
-    - mkdir build
-    - cd build
-    - cmake ..
     - make all
 
 # A job that runs the tests under valgrid
