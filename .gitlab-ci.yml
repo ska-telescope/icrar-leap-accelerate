@@ -74,7 +74,7 @@ lint_clang_tidy:
     - build_export_compile_commands
   script:
     - cd build
-    - run-clang-tidy -checks='cppcoreguidelines-*,performance-*,readibility-*,modernize-*,misc-*,clang-analyzer-*,google-*'
+    - run-clang-tidy -quiet
 
 lint_iwyu:
   extends: .common
@@ -92,7 +92,7 @@ lint_cppcheck:
     - build_export_compile_commands
   script:
     - cd build
-    - cppcheck --error-exitcode=1 --project=compile_commands.json -q --std=c++14 -i $PWD/../external -i $PWD/../src/ska/helloworld/test
+    - cppcheck --error-exitcode=1 --project=compile_commands.json -q --std=c++14 -i $PWD/../external -i $PWD/../../src/icrar/leap-accelerate/tests -i $PWD/../../src/icrar/leap-accelerate-cli/tests
 
 test:
   extends: .common
