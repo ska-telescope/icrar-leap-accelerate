@@ -35,7 +35,7 @@ build_debug:
     - mkdir build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"
-    - make
+    - make -j2
   artifacts:
     paths:
       - build
@@ -49,7 +49,7 @@ build_release:
     - mkdir build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release
-    - make
+    - make -j2
   artifacts:
     paths:
       - build
@@ -92,7 +92,14 @@ lint_cppcheck:
     - build_export_compile_commands
   script:
     - cd build
-    - cppcheck --error-exitcode=1 --project=compile_commands.json -q --std=c++14 -i $PWD/../external -i $PWD/../../src/icrar/leap-accelerate/tests -i $PWD/../../src/icrar/leap-accelerate-cli/tests
+    - 'cppcheck
+      --error-exitcode=1
+      --project=compile_commands.json
+      -DRAPIDJASON_ENDIAN=RAPIDJSON_LITTLEENDIAN
+      -q --std=c++14
+      -i $PWD/../external
+      -i $PWD/../../src/icrar/leap-accelerate/tests
+      -i $PWD/../../src/icrar/leap-accelerate-cli/tests'
 
 test:
   extends: .common
