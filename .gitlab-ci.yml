@@ -39,9 +39,9 @@ variables:
   tags: [engageska, docker]
 
 .common_dependencies:
-  tags: [engageska, docker]
+  extends: .common
   before_script:
-    - apt update && apt mkdir install -y git doxygen casacore-dev libboost-all-dev
+    - apt update && apt install -y git doxygen casacore-dev libboost-all-dev
 
 stages:
   - build
