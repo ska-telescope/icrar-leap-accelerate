@@ -30,5 +30,4 @@ download_and_extract() {
 }
 
 download_and_extract "https://cloudstor.aarnet.edu.au/plus/s/Eb65Nqy66hUE2tO/download" mwa/1197638568-split.tar.gz
-download_and_extract "https://cloudstor.aarnet.edu.au/plus/s/YoYdODmk9iVS5Sq/download" mwa/1197638568-32.tar.gz
 download_and_extract "https://cloudstor.aarnet.edu.au/plus/s/qtIV1HqXfKsQVAu/download" ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.tar.gz
