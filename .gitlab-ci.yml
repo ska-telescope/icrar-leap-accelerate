@@ -111,7 +111,7 @@ lint_iwyu:
   needs: ["build_export_compile_commands"]
   script:
     - cd build
-    - iwyu_tool -p .
+    - iwyu_tool -j 2 -p .
 
 lint_cppcheck:
   extends: .required_dependencies
