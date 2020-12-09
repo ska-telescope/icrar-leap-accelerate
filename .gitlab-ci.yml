@@ -41,7 +41,7 @@ variables:
 .required_dependencies:
   extends: .common
   before_script:
-    - apt update && apt install -y git jq doxygen graphviz casacore-dev libboost-all-dev
+    - apt update && apt install -y git jq wget doxygen graphviz casacore-dev libboost-all-dev
 
 .test_dependencies:
   extends: .required_dependencies
@@ -90,7 +90,7 @@ build_export_compile_commands:
     - rm -rf build && mkdir build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_COMPILER=clang++
-    - jq '. - map(select(.directory | contains("/googletest/"))) | .[]' compile_commands.json > compile_commands.json
+    - jq '[ . - map(select(.directory | contains("/googletest/"))) | .[] ]' compile_commands.json > compile_commands.json
   artifacts:
     paths:
       - build
