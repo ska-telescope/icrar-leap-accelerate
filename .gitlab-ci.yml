@@ -46,7 +46,7 @@ variables:
 .test_dependencies:
   extends: .common
   before_script:
-    - apt update && apt install -y wget
+    - apt update && apt install -y wget libboost-all-dev
     - cd testdata
     - bash install.sh
     - cd ..
