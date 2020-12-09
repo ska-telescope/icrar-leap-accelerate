@@ -44,8 +44,9 @@ variables:
     - apt update && apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev
 
 .test_dependencies:
-  extends: .required_dependencies
+  extends: .common
   before_script:
+    - apt update && apt install -y wget
     - cd testdata
     - bash install.sh
     - cd ..
@@ -128,7 +129,7 @@ lint_cppcheck:
       -i $PWD/../src/icrar/leap-accelerate-cli/tests'
 
 test:
-  extends: [".required_dependencies", ".test_dependencies"]
+  extends: .test_dependencies
   stage: test
   needs: ["build_debug"]
   variables:
