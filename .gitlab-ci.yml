@@ -56,7 +56,7 @@ stages:
   - test
   - pages
 
-build_debug_cuda:
+build_debug:
   extends: .common_dependencies
   stage: build
   script:
