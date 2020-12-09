@@ -62,7 +62,7 @@ build_export_compile_commands:
  script:
     - rm -rf build && mkdir build
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_COMPILER=g++
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_COMPILER=clang++
  artifacts:
     paths:
       - build
@@ -95,11 +95,11 @@ lint_cppcheck:
     - 'cppcheck
       --error-exitcode=1
       --project=compile_commands.json
-      -DRAPIDJASON_ENDIAN=RAPIDJSON_LITTLEENDIAN
+      --platform=unix64
       -q --std=c++14
       -i $PWD/../external
-      -i $PWD/../../src/icrar/leap-accelerate/tests
-      -i $PWD/../../src/icrar/leap-accelerate-cli/tests'
+      -i $PWD/../src/icrar/leap-accelerate/tests
+      -i $PWD/../src/icrar/leap-accelerate-cli/tests'
 
 test:
   extends: .common
