@@ -18,7 +18,37 @@ variables:
   # For details see https://docs.gitlab.com/ee/ci/yaml/README.html#git-submodule-strategy
   GIT_SUBMODULE_STRATEGY: normal
 
-.common: {tags: [engageska, docker]}
+.src_dir_ref_storage: &src_dir_ref_storage
+  - mkdir build || true
+  - pwd > build/original_source_directory
+
+.src_dir_ref_replacement: &src_dir_ref_replacement
+  - old_sdir=`cat build/original_source_directory`
+  - this_sdir=`pwd`
+  - find build
+    -type f -a
+    \! \(
+      -perm /111 -o
+      \(
+        -name '*.o' -o -name '*.a' -o -name '*.so'
+      \)
+    \)
+    -exec sed -i "s|$old_sdir|$this_sdir|g" {} +
+
+.common:
+  tags: [engageska, docker]
+
+.common_dependencies:
+  extends: .common
+  before_script:
+    - apt update && apt mkdir install -y git doxygen casacore-dev libboost-all-dev
+
+.cuda_dependencies:
+  extends: .common
+  variables:
+    - CUDA_ENABLED=ON
+  before_script:
+    - apt update && apt mkdir install -y git doxygen casacore-dev libboost-all-dev
 
 stages:
   - build
@@ -26,11 +56,9 @@ stages:
   - test
   - pages
 
-build_debug:
-  extends: .common
+build_debug_cuda:
+  extends: .common_dependencies
   stage: build
-  before_script:
-    - apt update && apt -y install git doxygen casacore-dev rapidjson-dev libboost-all-dev
   script:
     - mkdir build
     - cd build
@@ -41,10 +69,8 @@ build_debug:
       - build
 
 build_release:
-  extends: .common
+  extends: .common_dependencies
   stage: build
-  before_script:
-    - apt update && apt -y install git doxygen casacore-dev rapidjson-dev libboost-all-dev
   script:
     - mkdir build
     - cd build
@@ -55,41 +81,36 @@ build_release:
       - build
 
 build_export_compile_commands:
- extends: .common
- stage: build
- before_script:
-    - apt update && apt -y install git doxygen casacore-dev rapidjson-dev libboost-all-dev
- script:
+  extends: .common_dependencies
+  stage: build
+  script:
     - rm -rf build && mkdir build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_COMPILER=clang++
- artifacts:
+  artifacts:
     paths:
       - build
 
 lint_clang_tidy:
-  extends: .common
+  extends: .common_dependencies
   stage: linting
-  dependencies:
-    - build_export_compile_commands
+  needs: ["build_export_compile_commands"]
   script:
     - cd build
     - run-clang-tidy -quiet
 
 lint_iwyu:
-  extends: .common
+  extends: .common_dependencies
   stage: linting
-  dependencies:
-    - build_export_compile_commands
+  needs: ["build_export_compile_commands"]
   script:
     - cd build
     - iwyu_tool -p .
 
 lint_cppcheck:
-  extends: .common
+  extends: .common_dependencies
   stage: linting
-  dependencies:
-    - build_export_compile_commands
+  needs: ["build_export_compile_commands"]
   script:
     - cd build
     - 'cppcheck
@@ -102,10 +123,9 @@ lint_cppcheck:
       -i $PWD/../src/icrar/leap-accelerate-cli/tests'
 
 test:
-  extends: .common
+  extends: .common_dependencies
   stage: test
-  dependencies:
-    - build_debug
+  needs: ["build_debug"]
   script:
     - cd build
     - ctest -T test --no-compress-output
@@ -118,29 +138,12 @@ test:
     reports:
       junit: build/ctest.xml
 
-test_installation:
-  extends: .common
-  stage: test
-  dependencies:
-    - build_release
-  script:
-    - cd build
-    - cmake . -DCMAKE_INSTALL_PREFIX=/opt
-    - make install
-    - cd ../examples/helloworld-user
-    - if [ -d build ]; then rm -rf build; fi 
-    - mkdir build
-    - cd build
-    - cmake .. -DCMAKE_PREFIX_PATH=/opt
-    - make all
-
 # A job that runs the tests under valgrid
 # It might take a while, so not always run by default
 test_memcheck:
   extends: .common
   stage: test
-  dependencies:
-    - build_debug
+  needs: ["build_debug"]
   before_script:
     - apt update && apt install -y valgrind
   script:
@@ -153,8 +156,7 @@ test_memcheck:
 pages:
   extends: .common
   stage: pages
-  dependencies:
-    - test
+  needs: ["test"]
   before_script:
     - apt update && apt install -y curl
   script:
