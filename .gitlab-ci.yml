@@ -55,7 +55,7 @@ stages:
   - pages
 
 build_debug:
-  extends: [.common, .common_dependencies]
+  extends: [.common, .required_dependencies]
   stage: build
   script:
     - mkdir build
@@ -67,7 +67,7 @@ build_debug:
       - build
 
 build_release:
-  extends: .common_dependencies
+  extends: .required_dependencies
   stage: build
   script:
     - mkdir build
@@ -79,7 +79,7 @@ build_release:
       - build
 
 build_export_compile_commands:
-  extends: .common_dependencies
+  extends: .required_dependencies
   stage: build
   script:
     - rm -rf build && mkdir build
@@ -90,7 +90,7 @@ build_export_compile_commands:
       - build
 
 lint_clang_tidy:
-  extends: .common_dependencies
+  extends: .required_dependencies
   stage: linting
   needs: ["build_export_compile_commands"]
   script:
@@ -98,7 +98,7 @@ lint_clang_tidy:
     - run-clang-tidy -quiet
 
 lint_iwyu:
-  extends: .common_dependencies
+  extends: .required_dependencies
   stage: linting
   needs: ["build_export_compile_commands"]
   script:
@@ -106,7 +106,7 @@ lint_iwyu:
     - iwyu_tool -p .
 
 lint_cppcheck:
-  extends: .common_dependencies
+  extends: .required_dependencies
   stage: linting
   needs: ["build_export_compile_commands"]
   script:
@@ -121,9 +121,11 @@ lint_cppcheck:
       -i $PWD/../src/icrar/leap-accelerate-cli/tests'
 
 test:
-  extends: .common_dependencies
+  extends: .required_dependencies
   stage: test
   needs: ["build_debug"]
+  variables:
+    GTEST_FILTER: "-*Cuda*:*cuda*:*gpu*"
   script:
     - cd build
     - ctest -T test --no-compress-output
