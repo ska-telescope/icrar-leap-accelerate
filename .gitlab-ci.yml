@@ -38,10 +38,15 @@ variables:
 .common:
   tags: [engageska, docker]
 
-.common_dependencies:
+.required_dependencies:
   extends: .common
   before_script:
-    - apt update && apt install -y git doxygen casacore-dev libboost-all-dev
+    - apt update && apt install -y git doxygen graphviz casacore-dev libboost-all-dev
+
+.cuda_dependencies:
+  extends: .required_dependencies
+  before_script:
+    - bash ./gitlab-ci/before_install_debian.sh
 
 stages:
   - build
@@ -50,7 +55,7 @@ stages:
   - pages
 
 build_debug:
-  extends: .common_dependencies
+  extends: [.common, .common_dependencies]
   stage: build
   script:
     - mkdir build
