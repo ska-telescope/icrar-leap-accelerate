@@ -50,7 +50,6 @@ if(CMAKE_RUN_CLANG_TIDY)
 endif()
 configure_file(.clang-tidy .clang-tidy COPYONLY)
 
-
 # Project configuration, specifying version, languages,
 # and the C++ standard to use for the whole project
 project(${SOLUTION_NAME} LANGUAGES CXX VERSION ${SOLUTION_VERSION})
@@ -177,6 +176,8 @@ find_package(RapidJSON REQUIRED)
 
 # Local Targets
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+include_directories("/usr/include")
+
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-client)
 add_subdirectory(src/icrar/leap-accelerate-server)
