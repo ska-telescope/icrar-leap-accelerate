@@ -55,7 +55,7 @@ stages:
   - pages
 
 build_debug:
-  extends: [.common, .required_dependencies]
+  extends: .required_dependencies
   stage: build
   script:
     - mkdir build
@@ -128,7 +128,8 @@ test:
     GTEST_FILTER: "-*Cuda*:*cuda*:*gpu*"
   script:
     - cd build
-    - ctest -T test --no-compress-output
+    - echo "GTEST_FILTER=$GTEST_FILTER"
+    - ctest -T test --no-compress-output --verbose
   after_script:
     - cd build
     - ctest2junit > ctest.xml
