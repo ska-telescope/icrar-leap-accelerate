@@ -46,7 +46,7 @@ variables:
 .test_dependencies:
   extends: .common
   before_script:
-    - apt update && apt install -y wget libboost-all-dev
+    - apt update && apt install -y wget casacore-dev libboost-all-dev
     - cd testdata
     - bash install.sh
     - cd ..
