@@ -1,6 +1,7 @@
 # TODO(calgray):
 # -cppcoreguidelines-avoid-magic-numbers does not ignore test constants
 # -cppcoreguidelines-owning-memory is a GTEST limitation
+# -cppcoreguidelines-pro-type-vararg is a GTEST limitation
 # -google-build-using-namespace not ideal with modern namespaces like boost::literals
 # -performance-move-const-arg does not affect performance
 # -google-runtime-references references in interfaces are more concise than raw pointers
@@ -31,6 +32,7 @@ WarningsAsErrors:
     -cppcoreguidelines-avoid-magic-numbers,
     -cppcoreguidelines-narrowing-conversions,
     -cppcoreguidelines-owning-memory,
+    -cppcoreguidelines-pro-type-vararg,
     -google-build-using-namespace,
     -google-runtime-references,
     -modernize-use-trailing-return-type,
