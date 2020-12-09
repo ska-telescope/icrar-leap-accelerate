@@ -41,7 +41,7 @@ variables:
 .required_dependencies:
   extends: .common
   before_script:
-    - apt update && apt install -y git jq sponge wget doxygen graphviz casacore-dev libboost-all-dev
+    - apt update && apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev
 
 .test_dependencies:
   extends: .required_dependencies
