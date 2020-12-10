@@ -31,6 +31,7 @@
 #include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
 
 #include <icrar/leap-accelerate/cuda/device_vector.h>
+#include <icrar/leap-accelerate/cuda/device_matrix.h>
 
 //#define EIGEN_HAS_CXX11 1
 //#define EIGEN_VECTORIZE_GPU 1
@@ -90,6 +91,14 @@ namespace cuda
     __host__ void RotateVisibilities(
         DeviceIntegration& integration,
         DeviceMetaData& metadata);
+
+    __host__ void PhaseAngleCalibration(
+        const DeviceMetaData& deviceMetadata,
+        size_t I1Length,
+        size_t ILength,
+        size_t Ad1Rows,
+        size_t AvgDataCols,
+        device_vector<double>& calibrationResult);
 
     __host__ void RotateUVW(
         Eigen::Matrix3d dd,

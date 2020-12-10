@@ -22,24 +22,68 @@
 
 #pragma once
 
-#include <casacore/casa/Arrays/Array.h>
-#include <casacore/casa/Arrays/Matrix.h>
+#ifdef CUDA_ENABLED
 
-// C++ Style interface (templates not supported)
+#include <icrar/leap-accelerate/cuda/device_vector.h>
+#include <icrar/leap-accelerate/cuda/device_matrix.h>
+#include <icrar/leap-accelerate/exception/exception.h>
+
+// C++ Style interface (templates not supported when linking to nvcc compiled sources)
 namespace icrar
 {
 namespace cuda
 {
-    void multiply(const int m, const int n, double* mat, double* vec, double* out);
-    void multiply(const int m, const int n, float* mat, float* vec, float* out);
-    void multiply(const int m, const int n, int* mat, int* vec, int* out);
+    // Matrix Multiply Column Vector
+    //    --N--       1       1
+    // | [     ]   | [ ]   | [ ]
+    // M [     ] x N [ ] = M [ ]
+    // | [     ]   | [ ]   | [ ]
+    // | [     ]           | [ ]
+    //
 
-    casacore::Array<double> multiply(const casacore::Matrix<double>& a, const casacore::Array<double>& b);
-    casacore::Array<float> multiply(const casacore::Matrix<float>& a, const casacore::Array<float>& b);
-    casacore::Array<int> multiply(const casacore::Matrix<int>& a, const casacore::Array<int>& b);
+    __host__ void matrix_multiply_vector(const size_t m, const size_t n, const double* mat, const double* vec, double* out);
+    __host__ void matrix_multiply_vector(const size_t m, const size_t n, const float* mat, const float* vec, float* out);
+    __host__ void matrix_multiply_vector(const size_t m, const size_t n, const int* mat, const int* vec, int* out);
 
-    void multiply(const casacore::Matrix<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c);
-    void multiply(const casacore::Matrix<float>& a, const casacore::Array<float>& b, casacore::Array<float>& c);
-    void multiply(const casacore::Matrix<int>& a, const casacore::Array<int>& b, casacore::Array<int>& c);
-}
-}
+    template<typename T>
+    __host__ void multiply(const device_matrix<T>& left, const device_vector<T>& right, device_vector<T>& result)
+    {
+        if(left.GetCols() != right.GetSize())
+        {
+            throw invalid_argument_exception("left columns does not match right rows", "right", __FILE__, __LINE__);
+        }
+        if(left.GetRows() != result.GetSize())
+        {
+            throw invalid_argument_exception("result matrix has invalid dimensions", "result", __FILE__, __LINE__);
+        }
+        matrix_multiply_vector(left.GetRows(), left.GetCols(), left.Get(), right.Get(), result.Get());
+    }
+
+    // Matrix Multiply Matrix
+    //    --N--       -k-       -k-
+    // | [     ]   | [   ]   | [   ]
+    // M [     ] x N [   ] = M [   ]
+    // | [     ]   | [   ]   | [   ]
+    // | [     ]             | [   ]
+    //
+
+    __host__ void matrix_multiply_matrix(const size_t m, const size_t n, const size_t k, const double* left, const double* right, double* out);
+    __host__ void matrix_multiply_matrix(const size_t m, const size_t n, const size_t k, const float* left, const float* right, float* out);
+    __host__ void matrix_multiply_matrix(const size_t m, const size_t n, const size_t k, const int* left, const int* right, int* out);
+
+    template<typename T>
+    __host__ void multiply(const device_matrix<T>& left, const device_matrix<T>& right, device_matrix<T>& result)
+    {
+        if(left.GetCols() != right.GetRows())
+        {
+            throw invalid_argument_exception("left columns does not match right rows", "right", __FILE__, __LINE__);
+        }
+        if(left.GetRows() != result.GetRows() || right.GetCols() != result.GetCols())
+        {
+            throw invalid_argument_exception("result matrix has invalid dimensions", "result", __FILE__, __LINE__);
+        }
+        matrix_multiply_vector(left.GetRows(), left.GetCols(), right.GetCols(), left.Get(), right.Get(), result.Get());
+    }
+} // namespace cuda
+} // namespace icrar
+#endif

@@ -35,17 +35,14 @@
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
 #include <icrar/leap-accelerate/math/cpu/vector.h>
+
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
+#include <icrar/leap-accelerate/cuda/device_matrix.h>
+
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/timer.h>
 
 #include <icrar/leap-accelerate/common/eigen_extensions.h>
-
-#include <casacore/measures/Measures/MDirection.h>
-#include <casacore/casa/Quanta/MVDirection.h>
-#include <casacore/casa/Quanta/MVuvw.h>
-#include <casacore/casa/Arrays/Matrix.h>
-#include <casacore/casa/Arrays/Vector.h>
 
 #include <boost/math/constants/constants.hpp>
 
@@ -119,7 +116,7 @@ namespace cuda
             ms.GetNumPols());
 
         for(int i = 0; i < directions.size(); ++i)
-        {                
+        {
             output_integrations.emplace_back();
             output_calibrations.emplace_back();
         }
@@ -199,6 +196,8 @@ namespace cuda
     {
         auto oldUVWs = Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>>(pOldUVW, uvwLength, 3);
         auto UVWs = Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>>(pUVW, uvwLength, 3);
+
+        // Compute rows in parallel
         int row = blockDim.x * blockIdx.x + threadIdx.x;
         auto oldUvw = Eigen::RowVector3d(oldUVWs(row, 0), oldUVWs(row, 1), oldUVWs(row, 2));
         Eigen::RowVector3d uvw = oldUvw * dd;
@@ -223,18 +222,27 @@ namespace cuda
         std::vector<cpu::IntegrationResult>& output_integrations,
         std::vector<cpu::CalibrationResult>& output_calibrations)
     {
-        for(auto& integration : input)
+        for(DeviceIntegration& integration : input)
         {
             LOG(info) << "Rotating integration " << integration.GetIntegrationNumber();
             icrar::cuda::RotateVisibilities(integration, deviceMetadata);
 
             //TODO: currently unused
-            output_integrations.emplace_back(
-                integration.GetIntegrationNumber(),
-                direction,
-                boost::optional<std::vector<Eigen::VectorXd>>());
+            output_integrations.emplace_back(integration.GetIntegrationNumber(), direction, boost::optional<std::vector<Eigen::VectorXd>>());
         }
 
+        bool fullCuda = false;
+        if(fullCuda)
+        {
+            auto deviceCalibrationResult = device_vector<double>(metadata.GetConstants().stations, nullptr);
+            cuda::PhaseAngleCalibration(deviceMetadata, 0, 0, 0, 0, deviceCalibrationResult);
+
+            auto hostCalibrationResult = Eigen::VectorXd(metadata.GetConstants().stations);
+            deviceCalibrationResult.ToHost(hostCalibrationResult);
+            output_calibrations.emplace_back(direction, hostCalibrationResult);
+        }
+
+        //CPU Phase Angle Calibration
         LOG(info) << "Copying Metadata from Device";
         deviceMetadata.AvgDataToHost(metadata.GetAvgData());
 
@@ -263,6 +271,26 @@ namespace cuda
         deltaPhaseColumn.conservativeResize(deltaPhaseColumn.size() + 1);
         deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0;
         output_calibrations.emplace_back(direction, (metadata.GetAd() * deltaPhaseColumn) + cal1);
+    }
+
+    __global__ void g_PhaseAngleCalibration()
+    {
+
+    }
+
+    __host__ void PhaseAngleCalibration(
+        const DeviceMetaData& deviceMetadata,
+        size_t I1Length,
+        size_t ILength,
+        size_t Ad1Rows,
+        size_t AvgDataCols,
+        device_vector<double>& calibrationResult)
+    {
+        auto phaseAnglesI1 = device_vector<double>(I1Length);
+        auto cal1 = device_vector<double>(Ad1Rows);
+        icrar::cuda::multiply<double>(deviceMetadata.GetConstantBuffer().GetAd1(), phaseAnglesI1, cal1);
+        
+        auto dInt = device_matrix<double>(ILength + 1, AvgDataCols);
     }
 
     /**

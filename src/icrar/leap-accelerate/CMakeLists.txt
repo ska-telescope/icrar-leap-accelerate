@@ -78,6 +78,7 @@ set(sources
     cuda/cuda_info.cu
     math/cuda/vector.cu
     math/cuda/matrix.cu
+    math/cuda/matrix_multiply.cu
     
     model/cuda/DeviceMetaData.cu
     model/cuda/DeviceIntegration.cu
