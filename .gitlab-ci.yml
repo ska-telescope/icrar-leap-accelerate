@@ -43,22 +43,24 @@ variables:
   before_script:
     - apt update && apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev
 
-.test_dependencies:
+stages:
+  - build
+  - linting
+  - test
+  - pages
+
+download_tests:
   extends: .common
+  stage: build
+  needs: ["build_release"]
   before_script:
-    - apt update && apt install -y wget casacore-dev libboost-all-dev
+    - apt update && apt install -y wget
     - cd testdata
     - bash install.sh
     - cd ..
   artifacts:
     paths:
       testdata
-
-stages:
-  - build
-  - linting
-  - test
-  - pages
 
 build_debug:
   extends: .required_dependencies
@@ -129,9 +131,9 @@ lint_cppcheck:
       -i $PWD/../src/icrar/leap-accelerate-cli/tests'
 
 test:
-  extends: .test_dependencies
+  extends: .required_dependencies
   stage: test
-  needs: ["build_debug"]
+  needs: ["build_release", "download_tests"]
   variables:
     GTEST_FILTER: "-*Cuda*:*cuda*:*Gpu*:*gpu*:*SKA*"
   script:
