@@ -52,22 +52,22 @@ namespace cpu
         size_t uvw_size = (baselines - startBaseline) * 3;
         LOG(info) << "uvw: " << memory_amount(uvw_size);
         m_data = ms.GetVis(startBaseline, startChannel, channels, baselines, polarizations);
-        m_uvw = ToUVWVector(ms.GetCoords(startBaseline, baselines));
+        m_UVW = ToUVWVector(ms.GetCoords(startBaseline, baselines));
     }
 
     bool Integration::operator==(const Integration& rhs) const
     {
-        Eigen::Map<const Eigen::VectorXcd> datav(m_data.data(), m_data.size());
-        Eigen::Map<const Eigen::VectorXcd> rhsdatav(rhs.m_data.data(), rhs.m_data.size());
+        Eigen::Map<const Eigen::VectorXcd> datav(m_data.data(), m_data.size()); //TODO: check
+        Eigen::Map<const Eigen::VectorXcd> rhsdatav(rhs.m_data.data(), rhs.m_data.size()); //TODO: check
         
         return datav.isApprox(rhsdatav)
-        && m_uvw == rhs.m_uvw
+        && m_UVW == rhs.m_UVW
         && m_integrationNumber == rhs.m_integrationNumber;
     }
 
     const std::vector<icrar::MVuvw>& Integration::GetUVW() const
     {
-        return m_uvw;
+        return m_UVW;
     }
 } // namespace cpu
 } // namespace icrar

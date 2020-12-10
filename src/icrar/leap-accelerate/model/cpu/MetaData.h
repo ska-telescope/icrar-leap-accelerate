@@ -62,7 +62,7 @@ namespace icrar
     namespace cuda
     {
         class DeviceMetaData;
-        class ConstantMetaData;
+        class ConstantBuffer;
     } // namespace cuda
 } // namespace icrar
 
@@ -121,11 +121,11 @@ namespace cpu
 
         Eigen::Matrix3d m_dd; // direction matrix, late initialized
         
-        Eigen::MatrixXcd m_avg_data; // matrix of size (baselines, polarizations), late initialized
+        Eigen::MatrixXcd m_avgData; // matrix of size (baselines, polarizations), late initialized
     
     public:
         /**
-         * @brief Construct a new MetaData object. SetDD() must be called after construction
+         * @brief Construct a new MetaData object. SetDirection() must be called after construction
          * 
          * @param ms 
          * @param uvws 
@@ -159,7 +159,7 @@ namespace cpu
 
         const icrar::MVDirection& GetDirection() const { return m_direction; }
         const Eigen::Matrix3d& GetDD() const { return m_dd; }
-        void SetDD(const icrar::MVDirection& direction);
+        void SetDirection(const icrar::MVDirection& direction);
 
         void SetOldUVW(const std::vector<icrar::MVuvw>& uvws);
 
@@ -169,14 +169,14 @@ namespace cpu
          */
         void CalcUVW();
 
-        const Eigen::MatrixXcd& GetAvgData() const { return m_avg_data; }
-        Eigen::MatrixXcd& GetAvgData() { return m_avg_data; }
+        const Eigen::MatrixXcd& GetAvgData() const { return m_avgData; }
+        Eigen::MatrixXcd& GetAvgData() { return m_avgData; }
 
         bool operator==(const MetaData& rhs) const;
         bool operator!=(const MetaData& rhs) const { return !(*this == rhs); }
 
         friend class icrar::cuda::DeviceMetaData;
-        friend class icrar::cuda::ConstantMetaData;
+        friend class icrar::cuda::ConstantBuffer;
     };
 } // namespace cpu
 } // namespace icrar

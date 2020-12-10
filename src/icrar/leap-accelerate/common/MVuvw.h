@@ -20,9 +20,17 @@
  * MA 02111 - 1307  USA
  */
 
+#pragma once
+
 #include <Eigen/Core>
+
+#include <vector>
 
 namespace icrar
 {
     using MVuvw = Eigen::RowVector3d;
+
+    Eigen::Matrix<double, Eigen::Dynamic, 3> ToMatrix(const std::vector<MVuvw>& uvws);
+    
+    Eigen::MatrixXd ToDynamicMatrix(const std::vector<MVuvw>& uvws);
 } // namespace icrar
