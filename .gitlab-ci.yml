@@ -138,7 +138,7 @@ test:
     GTEST_FILTER: "-*Cuda*:*cuda*:*Gpu*:*gpu*:*SKA*"
   script:
     - cd build
-    - ctest -T test --no-compress-output --verbose
+    - ctest -T test --no-compress-output
   after_script:
     - cd build
     - ctest2junit > ctest.xml
@@ -172,8 +172,8 @@ pages:
   script:
     - mkdir -p .public/build/reports
     - cd .public
-    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o index.html
-    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml
+    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o index.html > gcovr-index.log
+    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml > gcovr-code-coverage.log
     - cp ../build/ctest.xml build/reports/unit-tests.xml
     # Create and upload GitLab badges
     - python ../.produce-ci-metrics.py build/reports > ci-metrics.json

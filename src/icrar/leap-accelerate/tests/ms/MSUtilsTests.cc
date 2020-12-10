@@ -63,11 +63,6 @@ public:
             vv.data(),
             ww.data());
 
-        std::cout << std::setprecision(15);
-        std::cout << "uu:" << uu << std::endl;
-        std::cout << "vv:" << vv << std::endl;
-        std::cout << "ww:" << ww << std::endl;
-
         auto expectedUu = GetExpectedUU();
         auto expectedVv = GetExpectedVV();
         auto expectedWw = GetExpectedWW();
