@@ -35,7 +35,7 @@ download_and_extract() {
     if [ ! -d $output ]; then
         echo "Downloading and extracting $2"
         wget -nv "$1" -O "$2" || fail "failed to download $2 from $1"
-        tar -C "$directory" -xf "$2" || fail "failed to extract $output"
+        tar -C "$directory" -xf "$2" || (fail "failed to extract $output" && rm -rf $output)
     else
         echo "$output already exists"
     fi
