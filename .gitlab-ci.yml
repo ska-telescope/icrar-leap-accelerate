@@ -49,6 +49,11 @@ stages:
   - test
   - pages
 
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - testdata
+
 download_lfs:
   extends: .common
   stage: build
@@ -58,9 +63,6 @@ download_lfs:
     - cd testdata
     - bash install.sh
     - cd ..
-  artifacts:
-    paths:
-      - testdata
 
 build_debug:
   extends: .required_dependencies

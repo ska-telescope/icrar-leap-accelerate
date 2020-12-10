@@ -29,9 +29,16 @@ fail() {
 download_and_extract() {
     directory=`dirname "$2"`
     [ -d "$directory" ] || mkdir "$directory"
-    echo "Downloading and extracting $2"
-    wget -nv "$1" -O "$2" || fail "failed to download $2 from $1"
-    tar -C "$directory" -xf "$2" || fail "failed to extract $2"
+
+    # if extracted folder exists then assume cache is correct
+    output="${2%.*.*}.ms"
+    if [ ! -d $output ]; then
+        echo "Downloading and extracting $2"
+        wget -nv "$1" -O "$2" || fail "failed to download $2 from $1"
+        tar -C "$directory" -xf "$2" || fail "failed to extract $output"
+    else
+        echo "$output already exists"
+    fi
 }
 
 download_and_extract "https://cloudstor.aarnet.edu.au/plus/s/Eb65Nqy66hUE2tO/download" mwa/1197638568-split.tar.gz
