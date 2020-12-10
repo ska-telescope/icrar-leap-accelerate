@@ -1,9 +1,13 @@
 #!/bin/bash
 #
+# Travis CI install script
+#
 # ICRAR - International Centre for Radio Astronomy Research
 # (c) UWA - The University of Western Australia, 2018
 # Copyright by UWA (in the framework of the ICRAR)
 # All rights reserved
+#
+# Contributed by Callan Gray, Rodrigo Tobar
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -22,24 +26,22 @@
 #
 
 fail() {
-	echo -e "$@" 1>&2
+	echo $1 1>&2
 	exit 1
 }
 
-download_and_extract() {
-    directory=`dirname "$2"`
-    [ -d "$directory" ] || mkdir "$directory"
+# Set and use system default compilers
+sudo update-alternatives --set gcc $CC
+sudo update-alternatives --set g++ $CXX
 
-    # if extracted folder exists then assume cache is correct
-    output="${2%.*.*}.ms"
-    if [ ! -d $output ]; then
-        echo "Downloading and extracting $2"
-        wget -nv "$1" -O "$2" || fail "failed to download $2 from $1"
-        tar -C "$directory" -xf "$2" || (fail "failed to extract $output" && rm -rf $output)
-    else
-        echo "$output already exists"
-    fi
-}
+cd ${TRAVIS_BUILD_DIR}
+mkdir build
+cd ${TRAVIS_BUILD_DIR}/build
 
-download_and_extract "https://cloudstor.aarnet.edu.au/plus/s/Eb65Nqy66hUE2tO/download" mwa/1197638568-split.tar.gz
-download_and_extract "https://cloudstor.aarnet.edu.au/plus/s/qtIV1HqXfKsQVAu/download" ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.tar.gz
+#Debug Build Configuration
+CMAKE_OPTIONS="$CMAKE_OPTIONS -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_HOME}"
+CMAKE_OPTIONS="$CMAKE_OPTIONS -DGSL_ROOT_DIR=${GSL_ROOT_DIR}"
+CMAKE_OPTIONS="$CMAKE_OPTIONS -DCMAKE_CXX_FLAGS_DEBUG=${CMAKE_CXX_FLAGS_DEBUG} -O1"
+CMAKE_OPTIONS="$CMAKE_OPTIONS -DCMAKE_BUILD_TYPE=RelWithDebInfo"
+cmake .. ${CMAKE_OPTIONS} || fail "cmake failed"
+cd ..

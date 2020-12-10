@@ -7,7 +7,7 @@
 # Copyright by UWA (in the framework of the ICRAR)
 # All rights reserved
 #
-# Contributed by Rodrigo Tobar
+# Contributed by Callan Gray, Rodrigo Tobar
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -30,10 +30,10 @@ fail() {
 	exit 1
 }
 
-cd ${TRAVIS_BUILD_DIR}/build
-
 # TravisCI is unable to run cuda
 export GTEST_FILTER="-*Cuda*:*cuda*:*gpu*"
 
-# Run unit tests first
-ctest --verbose || fail "unit tests failed"
+# Run unit tests
+cd ${TRAVIS_BUILD_DIR}/build
+ctest --output-on-failure || fail "unit tests failed"
+cd ..
