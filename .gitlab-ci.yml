@@ -140,7 +140,7 @@ test:
     GTEST_FILTER: "-*Cuda*:*cuda*:*Gpu*:*gpu*:*SKA*"
   script:
     - cd build
-    - ctest -T test --no-compress-output
+    - ctest -T test --no-compress-output --output-on-failure
   after_script:
     - cd build
     - ctest2junit > ctest.xml
