@@ -23,7 +23,7 @@ add_executable(
   ${private_headers}
   ${public_headers}
 )
-target_link_libraries (${TARGET_NAME} ${CMAKE_THREAD_LIBS_INIT} LeapAccelerate)
+target_link_libraries (${TARGET_NAME} ${CMAKE_THREAD_LIBS_INIT} LeapAccelerateLib)
 set_target_properties(${TARGET_NAME}
   PROPERTIES
   ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"

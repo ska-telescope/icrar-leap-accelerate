@@ -10,7 +10,7 @@ git_local_changes(GIT_HAS_LOCAL_CHANGES)
 set(git_revision_cc "${CMAKE_CURRENT_BINARY_DIR}/core/git_revision.cc")
 configure_file("core/git_revision.cc.in" "${git_revision_cc}" @ONLY)
 
-set(TARGET_NAME LeapAccelerate)
+set(TARGET_NAME LeapAccelerateLib)
 
 set(public_headers
     ${CMAKE_CURRENT_BINARY_DIR}/config.h

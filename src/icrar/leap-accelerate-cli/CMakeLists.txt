@@ -16,7 +16,7 @@ target_include_directories(${TARGET_NAME} SYSTEM PUBLIC ${CMAKE_SOURCE_DIR}/exte
 # Legacy TODO: build support for xenial
 include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 
-target_link_libraries(${TARGET_NAME} LeapAccelerate)
+target_link_libraries(${TARGET_NAME} LeapAccelerateLib)
 target_link_libraries(${TARGET_NAME} RapidJSON::RapidJSON)
 
 set_target_properties(${TARGET_NAME}

@@ -23,7 +23,7 @@ endif()
 
 configure_cuda_warnings(${TEST_TARGET_NAME})
 
-target_link_libraries(${TEST_TARGET_NAME} LeapAccelerate gtest)
+target_link_libraries(${TEST_TARGET_NAME} LeapAccelerateLib gtest)
 
 add_test(
   NAME ${TEST_TARGET_NAME}

@@ -1,5 +1,5 @@
 
-set(TEST_TARGET_NAME LeapAccelerate.Tests)
+set(TEST_TARGET_NAME LeapAccelerateLib.Tests)
 
 set(sources
   main.cc
@@ -48,7 +48,7 @@ endif()
 target_compile_options(${TEST_TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)
 configure_cuda_warnings(${TEST_TARGET_NAME})
 
-target_link_libraries(${TEST_TARGET_NAME} LeapAccelerate gtest)
+target_link_libraries(${TEST_TARGET_NAME} LeapAccelerateLib gtest)
 
 add_test(
   NAME ${TEST_TARGET_NAME}

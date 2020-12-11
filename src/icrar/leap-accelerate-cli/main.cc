@@ -143,8 +143,9 @@ int main(int argc, char** argv)
     try
     {
         ArgumentsValidated args = { Arguments(std::move(rawArgs)) };
-
-        LOG(info) << version_information(argv[0]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        LOG(info) << version_information(argv[0]);
         LOG(info) << arg_string(argc, argv);
 
         auto result = Calibrate(
