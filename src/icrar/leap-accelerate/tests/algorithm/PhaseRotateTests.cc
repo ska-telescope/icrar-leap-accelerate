@@ -30,7 +30,7 @@
 #include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
-#include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/cuda/CudaLeapCalibrator.h>
 
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
@@ -165,7 +165,8 @@ namespace icrar
                 auto deviceIntegration = icrar::cuda::DeviceIntegration(integration);
                 auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
                 auto deviceMetadata = icrar::cuda::DeviceMetaData(hostMetadata);
-                icrar::cuda::RotateVisibilities(deviceIntegration, deviceMetadata);
+
+                cuda::CudaLeapCalibrator().RotateVisibilities(deviceIntegration, deviceMetadata);
                 deviceMetadata.ToHost(hostMetadata);
                 metadataOptionalOutput = hostMetadata;
             }

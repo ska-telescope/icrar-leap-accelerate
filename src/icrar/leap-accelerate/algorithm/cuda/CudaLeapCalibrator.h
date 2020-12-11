@@ -21,16 +21,55 @@
  */
 
 #pragma once
+
 #ifdef CUDA_ENABLED
 
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
+
+#include <icrar/leap-accelerate/common/MVDirection.h>
+#include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
+
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
+
+//#define EIGEN_HAS_CXX11 1
+//#define EIGEN_VECTORIZE_GPU 1
+//#define EIGEN_CUDACC 1
+#include <Eigen/Core>
+
+#include <cublasLt.h>
+#include <icrar/leap-accelerate/cuda/device_vector.h>
+#include <icrar/leap-accelerate/cuda/device_matrix.h>
+
 #include <boost/noncopyable.hpp>
 #include <vector>
 
+
 namespace icrar
+{
+    class MeasurementSet;
+    namespace cpu
+    {
+        class Integration;
+        class IntegrationResult;
+        class CalibrationResult;
+        class MetaData;
+    }
+    namespace cuda
+    {
+        class DeviceMetaData;
+        class DeviceIntegration;
+    }
+}
+
+namespace icrar
+{
+namespace cuda
 {
     class CudaLeapCalibrator : public ILeapCalibrator
     {
+        cublasLtHandle_t m_cublasContext;
+
     public:
         CudaLeapCalibrator();
         ~CudaLeapCalibrator() override;
@@ -40,6 +79,35 @@ namespace icrar
             const std::vector<MVDirection>& directions,
             double minimumBaselineThreshold,
             bool isFileSystemCacheEnabled) override;
+
+        /**
+         * Performs only visibilities rotation on the GPU
+         */
+        void PhaseRotate(
+            cpu::MetaData& hostMetadata,
+            DeviceMetaData& deviceMetadata,
+            const MVDirection& direction,
+            std::vector<cuda::DeviceIntegration>& input,
+            std::vector<cpu::IntegrationResult>& output_integrations,
+            std::vector<cpu::CalibrationResult>& output_calibrations);
+
+        __host__ void RotateVisibilities(
+            DeviceIntegration& integration,
+            DeviceMetaData& metadata);
+
+        __host__ void PhaseAngleCalibration(
+            const DeviceMetaData& deviceMetadata,
+            size_t I1Length,
+            size_t ILength,
+            size_t Ad1Rows,
+            size_t AvgDataCols,
+            device_vector<double>& calibrationResult);
+
+        __host__ void RotateUVW(
+            Eigen::Matrix3d dd,
+            const device_vector<icrar::MVuvw>& oldUVW,
+            device_vector<icrar::MVuvw>& UVW);
     };
+} // namespace cuda
 } // namespace icrar
 #endif

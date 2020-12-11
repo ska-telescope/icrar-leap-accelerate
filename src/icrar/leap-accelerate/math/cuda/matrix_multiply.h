@@ -43,12 +43,12 @@ namespace cuda
     // | [     ]           | [ ]
     //
 
-    __host__ void matrix_multiply_vector(cublasHandle_t handle, const size_t m, const size_t n, const double* mat, const double* vec, double* out);
-    __host__ void matrix_multiply_vector(cublasHandle_t handle, const size_t m, const size_t n, const float* mat, const float* vec, float* out);
-    __host__ void matrix_multiply_vector(cublasHandle_t handle, const size_t m, const size_t n, const int* mat, const int* vec, int* out);
+    __host__ void matrix_multiply_vector(cublasLtHandle_t handle, const size_t m, const size_t n, const double* mat, const double* vec, double* out);
+    __host__ void matrix_multiply_vector(cublasLtHandle_t handle, const size_t m, const size_t n, const float* mat, const float* vec, float* out);
+    __host__ void matrix_multiply_vector(cublasLtHandle_t handle, const size_t m, const size_t n, const int* mat, const int* vec, int* out);
 
     template<typename T>
-    __host__ void multiply(cublasHandle_t handle, const device_matrix<T>& left, const device_vector<T>& right, device_vector<T>& result)
+    __host__ void multiply(cublasLtHandle_t handle, const device_matrix<T>& left, const device_vector<T>& right, device_vector<T>& result)
     {
         if(left.GetCols() != right.GetSize())
         {
@@ -58,7 +58,7 @@ namespace cuda
         {
             throw invalid_argument_exception("result matrix has invalid dimensions", "result", __FILE__, __LINE__);
         }
-        matrix_multiply_vector(left.GetRows(), left.GetCols(), left.Get(), right.Get(), result.Get());
+        matrix_multiply_vector(handle, left.GetRows(), left.GetCols(), left.Get(), right.Get(), result.Get());
     }
 
     // Matrix Multiply Matrix
@@ -69,12 +69,12 @@ namespace cuda
     // | [     ]             | [   ]
     //
 
-    __host__ void matrix_multiply_matrix(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const double* left, const double* right, double* out);
-    __host__ void matrix_multiply_matrix(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const float* left, const float* right, float* out);
-    __host__ void matrix_multiply_matrix(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const int* left, const int* right, int* out);
+    __host__ void matrix_multiply_matrix(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const double* left, const double* right, double* out);
+    __host__ void matrix_multiply_matrix(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const float* left, const float* right, float* out);
+    __host__ void matrix_multiply_matrix(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const int* left, const int* right, int* out);
 
     template<typename T>
-    __host__ void multiply(cublasHandle_t handle, const device_matrix<T>& left, const device_matrix<T>& right, device_matrix<T>& result)
+    __host__ void multiply(cublasLtHandle_t handle, const device_matrix<T>& left, const device_matrix<T>& right, device_matrix<T>& result)
     {
         if(left.GetCols() != right.GetRows())
         {
@@ -84,7 +84,7 @@ namespace cuda
         {
             throw invalid_argument_exception("result matrix has invalid dimensions", "result", __FILE__, __LINE__);
         }
-        matrix_multiply_vector(left.GetRows(), left.GetCols(), right.GetCols(), left.Get(), right.Get(), result.Get());
+        matrix_multiply_vector(handle, left.GetRows(), left.GetCols(), right.GetCols(), left.Get(), right.Get(), result.Get());
     }
 } // namespace cuda
 } // namespace icrar

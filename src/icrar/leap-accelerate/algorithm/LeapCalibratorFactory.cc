@@ -36,7 +36,7 @@ namespace icrar
         else if(impl == ComputeImplementation::cuda)
         {
 #ifdef CUDA_ENABLED
-            return std::make_unique<CudaLeapCalibrator>();
+            return std::make_unique<cuda::CudaLeapCalibrator>();
 #else
             throw invalid_argument_exception("cuda build option not enabled", "impl", __FILE__, __LINE__);
 #endif
