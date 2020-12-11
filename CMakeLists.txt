@@ -175,8 +175,6 @@ find_package(RapidJSON REQUIRED)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-cli)
-add_subdirectory(src/icrar/leap-accelerate-client)
-add_subdirectory(src/icrar/leap-accelerate-server)
 
 # Install cmake config + version + target files
 include(CMakePackageConfigHelpers)
