@@ -30,35 +30,35 @@ namespace icrar
 namespace cuda
 {
     template<typename T>
-    __global__ void g_matrix_multiply_vector(const size_t m, const size_t n, const T* mat, const T* vec, T* out)
+    __global__ void g_matrix_multiply_vector(cublasHandle_t handle, const size_t m, const size_t n, const T* mat, const T* vec, T* out)
     {
 
     }
 
     template<typename T>
-    __host__ void matrix_multiply_vector(const size_t m, const size_t n, const T* mat, const T* vec, T* out)
+    __host__ void matrix_multiply_vector(cublasHandle_t handle, const size_t m, const size_t n, const T* mat, const T* vec, T* out)
     {
-        g_matrix_multiply_vector<<<1,1>>>(m,n,mat,vec,out);
+        g_matrix_multiply_vector<<<1,1>>>(handle,m,n,mat,vec,out);
     }
 
-    __host__ void matrix_multiply_vector(const size_t m, const size_t n, const double* mat, const double* vec, double* out) { matrix_multiply_vector<double>(m,n,mat,vec,out); }
-    __host__ void matrix_multiply_vector(const size_t m, const size_t n, const float* mat, const float* vec, float* out) { matrix_multiply_vector<float>(m,n,mat,vec,out); }
-    __host__ void matrix_multiply_vector(const size_t m, const size_t n, const int* mat, const int* vec, int* out) { matrix_multiply_vector<int>(m,n,mat,vec,out); }
+    __host__ void matrix_multiply_vector(cublasHandle_t handle, const size_t m, const size_t n, const double* mat, const double* vec, double* out) { matrix_multiply_vector<double>(handle,m,n,mat,vec,out); }
+    __host__ void matrix_multiply_vector(cublasHandle_t handle, const size_t m, const size_t n, const float* mat, const float* vec, float* out) { matrix_multiply_vector<float>(handle,m,n,mat,vec,out); }
+    __host__ void matrix_multiply_vector(cublasHandle_t handle, const size_t m, const size_t n, const int* mat, const int* vec, int* out) { matrix_multiply_vector<int>(handle,m,n,mat,vec,out); }
 
     template<typename T>
-    __global__ void g_matrix_multiply_matrix(const size_t m, const size_t n, const size_t k, const T* left, const T* right, T* out)
+    __global__ void g_matrix_multiply_matrix(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const T* left, const T* right, T* out)
     {
         //TODO: cublasLtMatlmul();
     }
 
     template<typename T>
-    __host__ void matrix_multiply_matrix(const size_t m, const size_t n, const size_t k, const T* left, const T* right, T* out)
+    __host__ void matrix_multiply_matrix(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const T* left, const T* right, T* out)
     {
-        g_matrix_multiply_matrix<<<1,1>>>(m,n,k,left,right,out);
+        g_matrix_multiply_matrix<<<1,1>>>(handle,m,n,k,left,right,out);
     }
 
-    __host__ void matrix_multiply_matrix(const size_t m, const size_t n, const size_t k, const double* left, const double* right, double* out) {}
-    __host__ void matrix_multiply_matrix(const size_t m, const size_t n, const size_t k, const float* left, const float* right, float* out) {}
-    __host__ void matrix_multiply_matrix(const size_t m, const size_t n, const size_t k, const int* left, const int* right, int* out) {}
+    __host__ void matrix_multiply_matrix(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const double* left, const double* right, double* out) {}
+    __host__ void matrix_multiply_matrix(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const float* left, const float* right, float* out) {}
+    __host__ void matrix_multiply_matrix(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const int* left, const int* right, int* out) {}
 } // namespace cuda
 } // namespace icrar
