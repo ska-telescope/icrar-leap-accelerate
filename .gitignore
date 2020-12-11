@@ -1,6 +1,4 @@
 build/
-.vs/
-.vscode/
 .public/
 Testing/
 testdata/*
@@ -13,3 +11,8 @@ testdata/*
 .project
 .cproject
 /bin/
+
+#VSCode Files
+.vs/
+.vscode/
+clang-tidy-settings.json
