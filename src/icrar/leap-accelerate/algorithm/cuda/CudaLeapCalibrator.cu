@@ -40,13 +40,13 @@
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/timer.h>
 
-#include <cuda_runtime.h>
-#include <cuComplex.h>
-#include <cublasLt.h>
-#include <math_constants.h>
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+#include <cuda_runtime.h>
+#include <math_constants.h>
+#include <cuComplex.h>
+#include <cublasLt.h>
 
 #include <boost/math/constants/constants.hpp>
 
@@ -76,11 +76,15 @@ namespace cuda
             throw icrar::exception("CUDA error: no devices supporting CUDA.", __FILE__, __LINE__);
         }
 
-        checkCudaErrors(cublasLtCreate(&m_cublasContext));
+        checkCudaErrors(cublasCreate(&m_cublasContext));
+        checkCudaErrors(cublasLtCreate(&m_cublasLtContext));
     }
 
     CudaLeapCalibrator::~CudaLeapCalibrator()
     {
+        checkCudaErrors(cublasLtDestroy(m_cublasLtContext));
+        checkCudaErrors(cublasDestroy(m_cublasContext));
+
         // cuda calls may still occur outside of this instance
         //checkCudaErrors(cudaDeviceReset());
     }
@@ -126,14 +130,7 @@ namespace cuda
             throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
         }
 
-        auto integration = cpu::Integration(
-            0,
-            ms,
-            0,
-            ms.GetNumChannels(),
-            ms.GetNumRows(),
-            ms.GetNumPols());
-
+        auto integration = cpu::Integration(0, ms, 0, ms.GetNumChannels(), ms.GetNumRows(), ms.GetNumPols());
         for(int i = 0; i < directions.size(); ++i)
         {
             output_integrations.emplace_back();
@@ -169,7 +166,6 @@ namespace cuda
 
         // Emplace a single empty tensor
         input_queue.emplace_back(0, integration.GetVis().dimensions());
-        
         LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
         profiling::timer phase_rotate_timer;
@@ -260,7 +256,20 @@ namespace cuda
             Eigen::VectorXd deltaPhaseColumn = dInt(Eigen::all, 0); // 1st pol only
             deltaPhaseColumn.conservativeResize(deltaPhaseColumn.size() + 1);
             deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0;
-            output_calibrations.emplace_back(direction, (metadata.GetAd() * deltaPhaseColumn) + cal1);
+
+            //CUDA Test
+            auto deviceCal1 = device_vector<double>(cal1);
+            
+                auto deviceDeltaPhaseColumn = device_vector<double>(deltaPhaseColumn.size(), deltaPhaseColumn.data());
+                icrar::cuda::multiply_add<double>(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd(), deviceDeltaPhaseColumn, deviceCal1);
+                cudaDeviceSynchronize();
+                std::cout << "copy result" << std::endl;
+            
+            deviceCal1.ToHost(cal1);
+            std::cout << "done" << std::endl;
+            output_calibrations.emplace_back(direction, cal1);
+
+            //output_calibrations.emplace_back(direction, (metadata.GetAd() * deltaPhaseColumn) + cal1);
         }
     }
 
@@ -402,14 +411,14 @@ namespace cuda
     {
         auto phaseAnglesI1 = device_vector<double>(I1Length);
         auto cal1 = device_vector<double>(Ad1Rows);
-        icrar::cuda::multiply<double>(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd1(), phaseAnglesI1, cal1);
+        icrar::cuda::multiply(m_cublasLtContext, deviceMetadata.GetConstantBuffer().GetAd1(), phaseAnglesI1, cal1);
         auto dInt = device_matrix<double>(ILength + 1, AvgDataCols);
 
         auto deltaPhaseColumn = device_vector<double>(ILength + 1);
 
-        // ...
-        icrar::cuda::multiply<double>(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd(), deltaPhaseColumn, calibrationResult);
-        //icrar::cuda::add<double>(calibrationResult, cal1, calibrationResult);
+        //TODO(calgray) ...
+
+        //icrar::cuda::mat_mul_add_vector<double>(m_cublasLtContext, deviceMetadata.GetConstantBuffer().GetAd(), deltaPhaseColumn, cal1, calibrationResult);
     }
 
 } // namespace cuda

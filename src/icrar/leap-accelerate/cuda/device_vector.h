@@ -105,6 +105,7 @@ namespace cuda
             if(m_buffer != nullptr)
             {
                 checkCudaErrors(cudaFree(m_buffer));
+                m_buffer = nullptr;
             }
         }
 
@@ -119,6 +120,11 @@ namespace cuda
         }
 
         __host__ __device__ size_t GetCount() const
+        {
+            return m_count;
+        }
+
+        __host__ __device__ size_t GetRows() const
         {
             return m_count;
         }
