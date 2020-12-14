@@ -7,7 +7,7 @@
 # Copyright by UWA (in the framework of the ICRAR)
 # All rights reserved
 #
-# Contributed by Rodrigo Tobar
+# Contributed by Callan Gray, Rodrigo Tobar
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
