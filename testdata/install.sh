@@ -21,14 +21,25 @@
 # MA 02111-1307  USA
 #
 
+fail() {
+	echo -e "$@" 1>&2
+	exit 1
+}
+
 download_and_extract() {
     directory=`dirname "$2"`
     [ -d "$directory" ] || mkdir "$directory"
-    echo "Downloading and extracting $2"
-    wget -nv "$1" -O "$2"
-    tar -C "$directory" -xf "$2"
+
+    # if extracted folder exists then assume cache is correct
+    output="${2%.*.*}.ms"
+    if [ ! -d $output ]; then
+        echo "Downloading and extracting $2"
+        wget -nv "$1" -O "$2" || fail "failed to download $2 from $1"
+        tar -C "$directory" -xf "$2" || (fail "failed to extract $output" && rm -rf $output)
+    else
+        echo "$output already exists"
+    fi
 }
 
 download_and_extract "https://cloudstor.aarnet.edu.au/plus/s/Eb65Nqy66hUE2tO/download" mwa/1197638568-split.tar.gz
-download_and_extract "https://cloudstor.aarnet.edu.au/plus/s/YoYdODmk9iVS5Sq/download" mwa/1197638568-32.tar.gz
 download_and_extract "https://cloudstor.aarnet.edu.au/plus/s/qtIV1HqXfKsQVAu/download" ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.tar.gz

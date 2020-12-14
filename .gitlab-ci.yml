@@ -18,7 +18,30 @@ variables:
   # For details see https://docs.gitlab.com/ee/ci/yaml/README.html#git-submodule-strategy
   GIT_SUBMODULE_STRATEGY: normal
 
-.common: {tags: [engageska, docker]}
+.src_dir_ref_storage: &src_dir_ref_storage
+  - mkdir build || true
+  - pwd > build/original_source_directory
+
+.src_dir_ref_replacement: &src_dir_ref_replacement
+  - old_sdir=`cat build/original_source_directory`
+  - this_sdir=`pwd`
+  - find build
+    -type f -a
+    \! \(
+      -perm /111 -o
+      \(
+        -name '*.o' -o -name '*.a' -o -name '*.so'
+      \)
+    \)
+    -exec sed -i "s|$old_sdir|$this_sdir|g" {} +
+
+.common:
+  tags: [engageska, docker]
+
+.required_dependencies:
+  extends: .common
+  before_script:
+    - apt update && apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev
 
 stages:
   - build
@@ -26,75 +49,95 @@ stages:
   - test
   - pages
 
-build_debug:
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - testdata
+
+download_lfs:
   extends: .common
   stage: build
-  # instead of calling g++ directly you can also use some build toolkit like make
-  # install the necessary build tools when needed
+  before_script:
+    - apt update && apt install -y wget
+  script:
+    - cd testdata
+    - bash install.sh
+    - cd ..
+
+build_debug:
+  extends: .required_dependencies
+  stage: build
   script:
     - mkdir build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"
-    - make
+    - make -j2
   artifacts:
     paths:
       - build
 
 build_release:
-  extends: .common
+  extends: .required_dependencies
   stage: build
   script:
     - mkdir build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release
-    - make
+    - make -j2
   artifacts:
     paths:
       - build
 
 build_export_compile_commands:
- extends: .common
- stage: build
- script:
+  extends: .required_dependencies
+  stage: build
+  script:
     - rm -rf build && mkdir build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_COMPILER=clang++
- artifacts:
+    # This filters out external source file dependencies such as gtest
+    - jq '[ . - map(select(.file | contains("/external/"))) | .[] ]' compile_commands.json | sponge compile_commands.json
+  artifacts:
     paths:
       - build
 
 lint_clang_tidy:
-  extends: .common
+  extends: .required_dependencies
   stage: linting
-  dependencies:
-    - build_export_compile_commands
+  needs: ["build_export_compile_commands"]
   script:
     - cd build
-    - run-clang-tidy -checks='cppcoreguidelines-*,performance-*,readibility-*,modernize-*,misc-*,clang-analyzer-*,google-*'
+    - run-clang-tidy -quiet
 
 lint_iwyu:
-  extends: .common
+  extends: .required_dependencies
   stage: linting
-  dependencies:
-    - build_export_compile_commands
+  needs: ["build_export_compile_commands"]
   script:
     - cd build
-    - iwyu_tool -p .
+    - iwyu_tool -j 2 -p .
 
 lint_cppcheck:
-  extends: .common
+  extends: .required_dependencies
   stage: linting
-  dependencies:
-    - build_export_compile_commands
+  needs: ["build_export_compile_commands"]
   script:
     - cd build
-    - cppcheck --error-exitcode=1 --project=compile_commands.json -q --std=c++14 -i $PWD/../external -i $PWD/../src/ska/helloworld/test
+    - 'cppcheck
+      --error-exitcode=1
+      --project=compile_commands.json
+      --platform=unix64
+      -q --std=c++14
+      -i $PWD/../external
+      -i $PWD/../src/icrar/leap-accelerate/tests
+      -i $PWD/../src/icrar/leap-accelerate-cli/tests'
 
 test:
-  extends: .common
+  extends: .required_dependencies
   stage: test
-  dependencies:
-    - build_debug
+  needs: ["download_lfs", "build_debug"]
+  variables:
+    GTEST_FILTER: "-*Cuda*:*cuda*:*Gpu*:*gpu*:*SKA*"
   script:
     - cd build
     - ctest -T test --no-compress-output
@@ -107,42 +150,12 @@ test:
     reports:
       junit: build/ctest.xml
 
-test_installation:
-  extends: .common
-  stage: test
-  dependencies:
-    - build_release
-  script:
-    - cd build
-    - cmake . -DCMAKE_INSTALL_PREFIX=/opt
-    - make install
-    - cd ../examples/helloworld-user
-    - if [ -d build ]; then rm -rf build; fi 
-    - mkdir build
-    - cd build
-    - cmake .. -DCMAKE_PREFIX_PATH=/opt
-    - make all
-
-test_as_subproject:
-  extends: .common
-  stage: test
-  script:
-    - cp -r examples/helloworld-user ..
-    - cd ../helloworld-user
-    - sed -i 's/find_package(HelloWorld)/add_subdirectory(..\/cpp-template helloworld EXCLUDE_FROM_ALL)/' CMakeLists.txt
-    - if [ -d build ]; then rm -rf build; fi 
-    - mkdir build
-    - cd build
-    - cmake ..
-    - make all
-
 # A job that runs the tests under valgrid
 # It might take a while, so not always run by default
 test_memcheck:
   extends: .common
   stage: test
-  dependencies:
-    - build_debug
+  needs: ["download_lfs", "build_debug"]
   before_script:
     - apt update && apt install -y valgrind
   script:
@@ -155,15 +168,14 @@ test_memcheck:
 pages:
   extends: .common
   stage: pages
-  dependencies:
-    - test
+  needs: ["test"]
   before_script:
     - apt update && apt install -y curl
   script:
     - mkdir -p .public/build/reports
     - cd .public
-    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o index.html
-    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml
+    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o index.html &> gcovr-index.log
+    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml &> gcovr-code-coverage.log
     - cp ../build/ctest.xml build/reports/unit-tests.xml
     # Create and upload GitLab badges
     - python ../.produce-ci-metrics.py build/reports > ci-metrics.json
