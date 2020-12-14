@@ -37,24 +37,26 @@ namespace icrar
 namespace cuda
 {
     // Matrix Multiply Matrix
-    //    --N--       -k-       -k-
+    // A * B = C
+    //    --k--       -N-       -N-
     // | [     ]   | [   ]   | [   ]
-    // M [     ] x N [   ] = M [   ]
+    // M [     ] x k [   ] = M [   ]
     // | [     ]   | [   ]   | [   ]
     // | [     ]             | [   ]
 
-    __host__ void mat_mul(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const double* left, const double* right, double* out);
-    __host__ void mat_mul(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const float* left, const float* right, float* out);
-    __host__ void mat_mul(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const int* left, const int* right, int* out);
+    __host__ void mat_mul(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const double* a, const double* b, double* out);
+    __host__ void mat_mul(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const float* a, const float* b, float* out);
+    __host__ void mat_mul(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const int* a, const int* b, int* out);
 
-    __host__ void mat_mul(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const double* left, const double* right, double* out);
-    __host__ void mat_mul(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const float* left, const float* right, float* out);
-    __host__ void mat_mul(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const int* left, const int* right, int* out);
+    __host__ void mat_mul(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const double* a, const double* b, double* out);
+    __host__ void mat_mul(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const float* a, const float* b, float* out);
+    __host__ void mat_mul(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const int* a, const int* b, int* out);
 
     // Matrix Multiply Matrix Add
-    //    --N--       -k-       -k-       -k-
+    // A * B + C = C/D
+    //    --k--       -N-       -N-       -N-
     // | [     ]   | [   ]   | [   ]   | [   ]
-    // M [     ] x N [   ] + M [   ] = M [   ]
+    // M [     ] * k [   ] + M [   ] = M [   ]
     // | [     ]   | [   ]   | [   ]   | [   ]
     // | [     ]             | [   ]   | [   ]
     __host__ void mat_mul_add(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const double* a, const double* b, double* c);
@@ -66,17 +68,17 @@ namespace cuda
     __host__ void mat_mul_add(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const int* a, const int* b, const int* c, int* d);
 
     template<typename T>
-    __host__ void multiply(cublasLtHandle_t handle, const device_matrix<T>& left, const device_vector<T>& right, device_vector<T>& result)
+    __host__ void multiply(cublasLtHandle_t handle, const device_matrix<T>& a, const device_vector<T>& b, device_vector<T>& c)
     {
-        if(left.GetCols() != right.GetRows())
+        if(a.GetCols() != b.GetRows())
         {
-            throw invalid_argument_exception("left columns does not match right rows", "right", __FILE__, __LINE__);
+            throw invalid_argument_exception("a columns does not match b rows", "b", __FILE__, __LINE__);
         }
-        if(left.GetRows() != result.GetRows())
+        if(a.GetRows() != c.GetRows())
         {
             throw invalid_argument_exception("result matrix has invalid dimensions", "result", __FILE__, __LINE__);
         }
-        mat_mul(handle, left.GetRows(), left.GetCols(), 1, left.Get(), right.Get(), result.Get());
+        mat_mul(handle, a.GetRows(), 1, a.GetCols(), a.Get(), b.Get(), c.Get());
     }
 
     template<typename T>
@@ -84,7 +86,7 @@ namespace cuda
     {
         if(a.GetCols() != b.GetRows())
         {
-            throw invalid_argument_exception("left columns does not match right rows", "b", __FILE__, __LINE__);
+            throw invalid_argument_exception("a columns does not match b rows", "b", __FILE__, __LINE__);
         }
         if(a.GetRows() != c.GetRows())
         {
@@ -94,7 +96,7 @@ namespace cuda
         {
             throw invalid_argument_exception("c and d matrix not equal shape", "d", __FILE__, __LINE__);
         }
-        mat_mul_add(handle, a.GetRows(), a.GetCols(), 1, a.Get(), b.Get(), c.Get(), d.Get());
+        mat_mul_add(handle, a.GetRows(), 1, a.GetCols(), a.Get(), b.Get(), c.Get(), d.Get());
     }
 
     template<typename T>
@@ -102,13 +104,13 @@ namespace cuda
     {
         if(a.GetCols() != b.GetRows())
         {
-            throw invalid_argument_exception("left columns does not match right rows", "b", __FILE__, __LINE__);
+            throw invalid_argument_exception("a columns does not match b rows", "b", __FILE__, __LINE__);
         }
         if(a.GetRows() != c.GetRows() || b.GetCols() != c.GetCols())
         {
             throw invalid_argument_exception("c matrix has invalid dimensions", "c", __FILE__, __LINE__);
         }
-        mat_mul_add(handle, a.GetRows(), a.GetCols(), b.GetCols(), a.Get(), b.Get(), c.Get());
+        mat_mul_add(handle, a.GetRows(), b.GetCols(), a.GetCols(), a.Get(), b.Get(), c.Get());
     }
 
     template<typename T>
@@ -116,27 +118,27 @@ namespace cuda
     {
         if(a.GetCols() != b.GetRows())
         {
-            throw invalid_argument_exception("left columns does not match right rows", "b", __FILE__, __LINE__);
+            throw invalid_argument_exception("a columns does not match b rows", "b", __FILE__, __LINE__);
         }
         if(a.GetRows() != c.GetRows())
         {
             throw invalid_argument_exception("c matrix has invalid dimensions", "c", __FILE__, __LINE__);
         }
-        mat_mul_add(handle, a.GetRows(), a.GetCols(), 1, a.Get(), b.Get(), c.Get());
+        mat_mul_add(handle, a.GetRows(), 1, a.GetCols(), a.Get(), b.Get(), c.Get());
     }
 
     template<typename T>
-    __host__ void multiply(cublasHandle_t handle, const device_matrix<T>& left, const device_matrix<T>& right, device_matrix<T>& result)
+    __host__ void multiply(cublasHandle_t handle, const device_matrix<T>& a, const device_matrix<T>& b, device_matrix<T>& result)
     {
-        if(left.GetCols() != right.GetRows())
+        if(a.GetCols() != b.GetRows())
         {
-            throw invalid_argument_exception("left columns does not match right rows", "right", __FILE__, __LINE__);
+            throw invalid_argument_exception("a columns does not match b rows", "b", __FILE__, __LINE__);
         }
-        if(left.GetRows() != result.GetRows() || right.GetCols() != result.GetCols())
+        if(a.GetRows() != result.GetRows() || b.GetCols() != result.GetCols())
         {
             throw invalid_argument_exception("result matrix has invalid dimensions", "result", __FILE__, __LINE__);
         }
-        mat_mul(handle, left.GetRows(), left.GetCols(), right.GetCols(), left.Get(), right.Get(), result.Get());
+        mat_mul(handle, a.GetRows(), b.GetCols(), a.GetCols(), a.Get(), b.Get(), result.Get());
     }
 
     template<typename T>
@@ -144,7 +146,7 @@ namespace cuda
     {
         if(a.GetCols() != b.GetRows())
         {
-            throw invalid_argument_exception("left columns does not match right rows", "b", __FILE__, __LINE__);
+            throw invalid_argument_exception("a columns does not match b rows", "b", __FILE__, __LINE__);
         }
         if(a.GetRows() != c.GetRows() || b.GetCols() != c.GetCols())
         {
@@ -154,7 +156,7 @@ namespace cuda
         {
             throw invalid_argument_exception("c and d matrix not equal shape", "d", __FILE__, __LINE__);
         }
-        mat_mul_add(handle, a.GetRows(), a.GetCols(), b.GetCols(), a.Get(), b.Get(), c.Get(), d.Get());
+        mat_mul_add(handle, a.GetRows(), b.GetCols(), a.GetCols(), a.Get(), b.Get(), c.Get(), d.Get());
     }
 } // namespace cuda
 } // namespace icrar

@@ -259,14 +259,10 @@ namespace cuda
 
             //CUDA Test
             auto deviceCal1 = device_vector<double>(cal1);
-            
-                auto deviceDeltaPhaseColumn = device_vector<double>(deltaPhaseColumn.size(), deltaPhaseColumn.data());
-                icrar::cuda::multiply_add<double>(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd(), deviceDeltaPhaseColumn, deviceCal1);
-                cudaDeviceSynchronize();
-                std::cout << "copy result" << std::endl;
-            
+            auto deviceDeltaPhaseColumn = device_vector<double>(deltaPhaseColumn);
+            icrar::cuda::multiply_add<double>(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd(), deviceDeltaPhaseColumn, deviceCal1);
+            cudaDeviceSynchronize();
             deviceCal1.ToHost(cal1);
-            std::cout << "done" << std::endl;
             output_calibrations.emplace_back(direction, cal1);
 
             //output_calibrations.emplace_back(direction, (metadata.GetAd() * deltaPhaseColumn) + cal1);

@@ -47,7 +47,7 @@ namespace cuda
         cublasOperation_t transb = cublasOperation_t::CUBLAS_OP_N;
 
         size_t lda = m;
-        size_t ldb = n;
+        size_t ldb = k;
         size_t ldc = m;
 
         checkCudaErrors(cublasDgemm(
@@ -99,7 +99,7 @@ namespace cuda
         cublasOperation_t transb = cublasOperation_t::CUBLAS_OP_N;
 
         size_t lda = m;
-        size_t ldb = n;
+        size_t ldb = k;
         size_t ldc = m;
 
         checkCudaErrors(cublasDgemm(
@@ -121,7 +121,7 @@ namespace cuda
         cublasOperation_t transb = cublasOperation_t::CUBLAS_OP_N;
 
         size_t lda = m;
-        size_t ldb = n;
+        size_t ldb = k;
         size_t ldc = m;
 
         checkCudaErrors(cublasSgemm(
@@ -141,7 +141,7 @@ namespace cuda
         cublasOperation_t transb = cublasOperation_t::CUBLAS_OP_N;
 
         size_t lda = m;
-        size_t ldb = n;
+        size_t ldb = k;
         size_t ldc = m;
 
         const double alpha = 1.0;
@@ -253,7 +253,7 @@ namespace cuda
         cublasOperation_t transb = cublasOperation_t::CUBLAS_OP_N;
 
         size_t lda = m;
-        size_t ldb = n;
+        size_t ldb = k;
         size_t ldc = m;
 
         const double alpha = 1.0;
