@@ -202,6 +202,57 @@ namespace cuda
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
+    // __device__ Eigen::MatrixXd darg(const Eigen::Ref<const Eigen::MatrixXcd>& a)
+    // {
+    //     return a.unaryExpr([](std::complex<double> v){ return std::arg(v); });
+    // }
+
+    __device__ double cuCarg(cuDoubleComplex z)
+    {
+        return atan2(cuCreal(z), cuCimag(z));
+    }
+
+    __global__ void g_CalcDInt(
+        const double* pA, int ARows, int ACols,
+        const double* pCal1, int Cal1Rows,
+        const cuDoubleComplex* pAvgData, int avgDataRows, int avgDataCols,
+        double* pDInt, int dIntRows)
+    {
+        using MatrixXcd = Eigen::Matrix<cuDoubleComplex, -1, -1>;
+        auto A = Eigen::Map<const Eigen::MatrixXd>(pA, ARows, ACols);
+        auto cal1 = Eigen::Map<const Eigen::VectorXd>(pCal1, Cal1Rows);
+        auto avgData = Eigen::Map<const MatrixXcd>(pAvgData, avgDataRows, avgDataCols);
+        auto dInt = Eigen::Map<Eigen::VectorXd>(pDInt, dIntRows);
+
+        constexpr double two_pi = 2 * CUDART_PI;
+        for(int n = 0; n < ARows; ++n)
+        {
+            double sum = A.row(n) * cal1;
+            dInt.row(n) = avgData.row(n).unaryExpr([=](const cuDoubleComplex& v)
+            {
+                return cuCarg(cuCmul(cuCexp(make_cuDoubleComplex(0, -sum * two_pi)), v));
+            });
+        }
+    }
+
+    __host__ void CalcDInt(
+        const device_matrix<double>& A,
+        const device_vector<double>& cal1,
+        const device_matrix<std::complex<double>>& avgData,
+        device_matrix<double>& dInt)
+    {
+        if(A.GetCols() != cal1.GetRows())
+        {
+            throw invalid_argument_exception("A.cols must equal cal1.rows", "cal1", __FILE__, __LINE__);
+        }
+
+        g_CalcDInt<<<1,1>>>(
+            A.Get(), A.GetRows(), A.GetCols(),
+            cal1.Get(), cal1.GetRows(),
+            (cuDoubleComplex*)avgData.Get(), avgData.GetRows(), avgData.GetCols(),
+            dInt.Get(), dInt.GetRows());
+    }
+    
     void CudaLeapCalibrator::PhaseRotate(
         cpu::MetaData& metadata,
         DeviceMetaData& deviceMetadata,
@@ -225,10 +276,9 @@ namespace cuda
             // deviceCalibrationResult.ToHost(hostCalibrationResult);
 
             //CPU Phase Angle Calibration
+            LOG(info) << "Calibrating in cuda";
             LOG(info) << "Copying Metadata from Device";
             deviceMetadata.AvgDataToHost(metadata.GetAvgData());
-
-            LOG(info) << "Calibrating on cuda";
             auto phaseAngles = icrar::arg(metadata.GetAvgData());
 
             // PhaseAngles I1
@@ -239,24 +289,27 @@ namespace cuda
             auto devicePhaseAnglesI1 = device_vector<double>(phaseAnglesI1);
 
             // cal1
-            auto cal1 = Eigen::VectorXd(metadata.GetAd1().rows());
-            auto deviceCal1 = device_vector<double>(cal1);
+            auto deviceCal1 = device_vector<double>(metadata.GetAd1().rows());
             cuda::multiply(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd1(), devicePhaseAnglesI1, deviceCal1);
+            auto cal1 = Eigen::VectorXd(metadata.GetAd1().rows());
             deviceCal1.ToHost(cal1);
 
             // dInt
+            auto deviceDInt = device_matrix<double>(metadata.GetI().size(), metadata.GetAvgData().cols());
+            CalcDInt(deviceMetadata.GetConstantBuffer().GetA(), deviceCal1, deviceMetadata.GetAvgData(), deviceDInt);
+
             Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
             for(int n = 0; n < metadata.GetI().size(); ++n)
             {
-                double sum = metadata.GetA()(n, Eigen::all) * cal1;
-                dInt(n, Eigen::all) = icrar::arg(std::exp(std::complex<double>(0, -sum * two_pi<double>())) * metadata.GetAvgData()(n, Eigen::all));
+                double sum = metadata.GetA().row(n) * cal1;
+                dInt.row(n) = icrar::arg(std::exp(std::complex<double>(0, -sum * two_pi<double>())) * metadata.GetAvgData().row(n));
             }
+            //deviceDInt.ToHost(dInt); //TODO!!!!!!!!!!!!!!!!!!!!!
 
             // DeltaPhase
             Eigen::VectorXd deltaPhaseColumn = dInt(Eigen::all, 0); // 1st pol only
             deltaPhaseColumn.conservativeResize(deltaPhaseColumn.size() + 1);
             deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0;
-
             
             auto deviceDeltaPhaseColumn = device_vector<double>(deltaPhaseColumn);
             icrar::cuda::multiply_add<double>(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd(), deviceDeltaPhaseColumn, deviceCal1);
@@ -286,8 +339,8 @@ namespace cuda
             
             for(int n = 0; n < metadata.GetI().size(); ++n)
             {
-                double sum = metadata.GetA()(n, Eigen::all) * cal1;
-                dInt(n, Eigen::all) = icrar::arg(std::exp(std::complex<double>(0, -sum * two_pi<double>())) * metadata.GetAvgData()(n, Eigen::all));
+                double sum = metadata.GetA().row(n) * cal1;
+                dInt.row(n) = icrar::arg(std::exp(std::complex<double>(0, -sum * two_pi<double>())) * metadata.GetAvgData().row(n));
             }
 
             Eigen::VectorXd deltaPhaseColumn = dInt(Eigen::all, 0); // 1st pol only
@@ -309,8 +362,8 @@ namespace cuda
      */
     __global__ void g_RotateUVW(
         Eigen::Matrix3d dd,
-        const double* pOldUVW,
-        double* pUVW,
+        const double* pOldUVW, // TODO: use double3*
+        double* pUVW, // TODO: use double3*
         int uvwLength)
     {
         auto oldUVWs = Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>>(pOldUVW, uvwLength, 3);
@@ -334,8 +387,8 @@ namespace cuda
         icrar::cpu::Constants constants,
         Eigen::Matrix3d dd, //TODO(cgray) remove
         double2 direction, //TODO(cgray) remove
-        double3* uvw, int uvwLength,
-        double3* oldUVW, int oldUVWLegth,
+        const double3* uvw, int uvwLength,
+        const double3* oldUVW, int oldUVWLegth,
         cuDoubleComplex* pAvgData, int avgDataRows, int avgDataCols)
     {
         using Tensor2Xcucd = Eigen::Tensor<cuDoubleComplex, 2>;
