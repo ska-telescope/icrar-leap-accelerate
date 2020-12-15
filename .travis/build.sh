@@ -7,7 +7,7 @@
 # Copyright by UWA (in the framework of the ICRAR)
 # All rights reserved
 #
-# Contributed by Rodrigo Tobar
+# Contributed by Callan Gray, Rodrigo Tobar
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -30,19 +30,6 @@ fail() {
 	exit 1
 }
 
-# Set and use system default compilers
-sudo update-alternatives --set gcc $CC
-sudo update-alternatives --set g++ $CXX
-
-cd ${TRAVIS_BUILD_DIR}
-mkdir build
-cd build
-
-#Debug Build Configuration
-CMAKE_OPTIONS="$CMAKE_OPTIONS -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_HOME}"
-CMAKE_OPTIONS="$CMAKE_OPTIONS -DGSL_ROOT_DIR=${GSL_ROOT_DIR}"
-CMAKE_OPTIONS="$CMAKE_OPTIONS -DCMAKE_CXX_FLAGS_DEBUG=${CMAKE_CXX_FLAGS_DEBUG} -O1"
-CMAKE_OPTIONS="$CMAKE_OPTIONS -DCMAKE_BUILD_TYPE=RelWithDebInfo"
-cmake .. ${CMAKE_OPTIONS} || fail "cmake failed"
-make all -j VERBOSE=1 || fail "make failed"
+cd ${TRAVIS_BUILD_DIR}/build
+make all -j || fail "make failed"
 cd ..

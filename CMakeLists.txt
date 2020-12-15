@@ -50,7 +50,6 @@ if(CMAKE_RUN_CLANG_TIDY)
 endif()
 configure_file(.clang-tidy .clang-tidy COPYONLY)
 
-
 # Project configuration, specifying version, languages,
 # and the C++ standard to use for the whole project
 project(${SOLUTION_NAME} LANGUAGES CXX VERSION ${SOLUTION_VERSION})
@@ -95,9 +94,6 @@ else()
   message(WARNING "git not found!")
 endif()
 
-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/cmake-modules/dependencies.cmake")
-  message(FATAL_ERROR "Submodule cmake-modules was not downloaded! Please update submodules and try again.")
-endif()
 if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/CLI11/CMakeLists.txt")
   message(FATAL_ERROR "Submodule CLI11 was not downloaded! Please update submodules and try again.")
 endif()

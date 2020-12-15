@@ -101,7 +101,7 @@ NOTE: pulling exernal submodules via git is required to build. This may change i
 
 `mkdir -p build && cd build`
 
-`cmake ../../ -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release`
+`cmake .. -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release`
 
 ## Test
 
@@ -111,7 +111,7 @@ Testing provided via googletest. To test using CTest use the following command i
 
 for verbose output use:
 
-`ctest --verbose`
+`ctest --verbose` or `ctest --output-on-failure`
 
 To test using the google test runner, the test binaries can be executed directly using the following commands:
 
@@ -137,10 +137,4 @@ Example:
 `./bin/LeapAccelerateCLI --help`
 
 `./bin/LeapAccelerateCLI --config "./askap.json"`
-
-## Profiling
-
-* nvprof
-* gprof
-* google-perftools
 

@@ -43,7 +43,7 @@ class CallLeap(BarrierAppDROP):
 
     # TODO: this measurementSetFilename is not being read by dlg_string_param
     #       hard-coding it for the moment
-    measurementSetFilename = "/Users/james/working/leap-accelerate/testdata/1197638568-32.ms"
+    measurementSetFilename = "/Users/james/working/leap-accelerate/testdata/1197638568-split.ms"
 
     DEBUG = True
 

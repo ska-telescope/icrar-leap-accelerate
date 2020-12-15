@@ -1,6 +1,7 @@
 build/
 .vs/
 .vscode/
+.public/
 Testing/
 testdata/*
 !testdata/README.md

@@ -141,11 +141,11 @@ namespace icrar
 
         if(m_outputFilePath.is_initialized())
         {
-            m_outputFileStream = std::make_unique<std::ofstream>(m_outputFilePath.get() + ".json");
+            m_outputFileStream = std::make_unique<std::ofstream>(m_outputFilePath.get());
             if(!m_outputFileStream->is_open())
             {
                 std::stringstream ss;
-                ss << "failed to open file " << m_outputFilePath.get() << ".json" << std::endl;
+                ss << "failed to open file " << m_outputFilePath.get() << std::endl;
                 throw exception(ss.str(), __FILE__, __LINE__);
             }
 
