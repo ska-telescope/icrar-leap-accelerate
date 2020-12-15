@@ -133,24 +133,14 @@ namespace icrar
 
             auto c = MatrixXT(2,3);
 
-            //icrar::cuda::multiply(m_cublasLtContext, a, b, c);
+            auto ad = cuda::device_matrix<T>(a);
+            auto bd = cuda::device_matrix<T>(b);
+            auto cd = cuda::device_matrix<T>(c);
+            icrar::cuda::multiply(m_cublasContext, ad, bd, cd);
+            cd.ToHost(c);
 
             MatrixXT expected = a * b;
-
-            ASSERT_EQ(expected(0,0), 21);
-            ASSERT_EQ(expected(0,1), 24);
-            ASSERT_EQ(expected(0,2), 27);
-            ASSERT_EQ(expected(1,0), 47);
-            ASSERT_EQ(expected(1,1), 54);
-            ASSERT_EQ(expected(1,2), 61);
-
-            //TODO
-            ASSERT_EQ(c(0,0), 21);
-            ASSERT_EQ(c(0,1), 24);
-            ASSERT_EQ(c(0,2), 27);
-            ASSERT_EQ(c(1,0), 47);
-            ASSERT_EQ(c(1,1), 54);
-            ASSERT_EQ(c(1,2), 61);
+            ASSERT_MEQD(expected, c, TOLERANCE);
         }
 
         template<typename T>
@@ -164,9 +154,15 @@ namespace icrar
                 7, 8, 9;
 
             auto b = Eigen::Matrix<T, Eigen::Dynamic, 1>(3, 1);
+            b << 1, 2, 3;
+
             auto c = Eigen::Matrix<T, Eigen::Dynamic, 1>(3, 1); 
 
-            //icrar::cuda::multiply(m_cublasLtContext, a, b, c);
+            auto ad = cuda::device_matrix<T>(a);
+            auto bd = cuda::device_vector<T>(b);
+            auto cd = cuda::device_vector<T>(c);
+            icrar::cuda::multiply(m_cublasContext, ad, bd, cd);
+            cd.ToHost(c);
 
             MatrixXT expected = a * b;
             ASSERT_EQ(c, expected);
@@ -182,7 +178,7 @@ namespace icrar
     TEST_F(CudaMatrixTests, DISABLED_TestMatrixAdd) { TestMatrixAdd<double>(); }
     TEST_F(CudaMatrixTests, TestMatrixMatrixMultiply) { TestMatrixMatrixMultiply<double>(); }
     TEST_F(CudaMatrixTests, TestMatrixMatrixMultiplyAdd) { TestMatrixMatrixMultiplyAdd<double>(); }
-    TEST_F(CudaMatrixTests, DISABLED_TestMatrixMatrixMultiply32) { TestMatrixMatrixMultiply32<double>(); }
-    TEST_F(CudaMatrixTests, DISABLED_TestMatrixVectorMultiply33) { TestMatrixVectorMultiply33<double>(); }
+    TEST_F(CudaMatrixTests, TestMatrixMatrixMultiply32) { TestMatrixMatrixMultiply32<double>(); }
+    TEST_F(CudaMatrixTests, TestMatrixVectorMultiply33) { TestMatrixVectorMultiply33<double>(); }
     TEST_F(CudaMatrixTests, DISABLED_TestScalearMatrixMultiply) { TestScalearMatrixMultiply<double>(); }
 } // namespace icrar

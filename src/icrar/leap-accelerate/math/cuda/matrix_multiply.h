@@ -52,6 +52,62 @@ namespace cuda
     __host__ void mat_mul(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const float* a, const float* b, float* out);
     __host__ void mat_mul(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const int* a, const int* b, int* out);
 
+    template<typename T>
+    __host__ void multiply(cublasHandle_t handle, const device_matrix<T>& a, const device_vector<T>& b, device_vector<T>& c)
+    {
+        if(a.GetCols() != b.GetRows())
+        {
+            throw invalid_argument_exception("a columns does not match b rows", "b", __FILE__, __LINE__);
+        }
+        if(a.GetRows() != c.GetRows())
+        {
+            throw invalid_argument_exception("c matrix has invalid dimensions", "c", __FILE__, __LINE__);
+        }
+        mat_mul(handle, a.GetRows(), 1, a.GetCols(), a.Get(), b.Get(), c.Get());
+    }
+
+    template<typename T>
+    __host__ void multiply(cublasLtHandle_t handle, const device_matrix<T>& a, const device_vector<T>& b, device_vector<T>& c)
+    {
+        if(a.GetCols() != b.GetRows())
+        {
+            throw invalid_argument_exception("a columns does not match b rows", "b", __FILE__, __LINE__);
+        }
+        if(a.GetRows() != c.GetRows())
+        {
+            throw invalid_argument_exception("c matrix has invalid dimensions", "c", __FILE__, __LINE__);
+        }
+        mat_mul(handle, a.GetRows(), 1, a.GetCols(), a.Get(), b.Get(), c.Get());
+    }
+
+    template<typename T>
+    __host__ void multiply(cublasHandle_t handle, const device_matrix<T>& a, const device_matrix<T>& b, device_matrix<T>& c)
+    {
+        if(a.GetCols() != b.GetRows())
+        {
+            throw invalid_argument_exception("a columns does not match b rows", "b", __FILE__, __LINE__);
+        }
+        if(a.GetRows() != c.GetRows() || b.GetCols() != c.GetCols())
+        {
+            throw invalid_argument_exception("c matrix has invalid dimensions", "c", __FILE__, __LINE__);
+        }
+        mat_mul(handle, a.GetRows(), b.GetCols(), a.GetCols(), a.Get(), b.Get(), c.Get());
+    }
+
+    template<typename T>
+    __host__ void multiply(cublasLtHandle_t handle, const device_matrix<T>& a, const device_matrix<T>& b, device_matrix<T>& c)
+    {
+        if(a.GetCols() != b.GetRows())
+        {
+            throw invalid_argument_exception("a columns does not match b rows", "b", __FILE__, __LINE__);
+        }
+        if(a.GetRows() != c.GetRows() || b.GetCols() != c.GetCols())
+        {
+            throw invalid_argument_exception("c matrix has invalid dimensions", "c", __FILE__, __LINE__);
+        }
+        mat_mul(handle, a.GetRows(), b.GetCols(), a.GetCols(), a.Get(), b.Get(), c.Get());
+    }
+
     // Matrix Multiply Matrix Add
     // A * B + C = C/D
     //    --k--       -N-       -N-       -N-
@@ -66,20 +122,6 @@ namespace cuda
     __host__ void mat_mul_add(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const double* a, const double* b, const double* c, double* d);
     __host__ void mat_mul_add(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const float* a, const float* b, const float* c, float* d);
     __host__ void mat_mul_add(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const int* a, const int* b, const int* c, int* d);
-
-    template<typename T>
-    __host__ void multiply(cublasLtHandle_t handle, const device_matrix<T>& a, const device_vector<T>& b, device_vector<T>& c)
-    {
-        if(a.GetCols() != b.GetRows())
-        {
-            throw invalid_argument_exception("a columns does not match b rows", "b", __FILE__, __LINE__);
-        }
-        if(a.GetRows() != c.GetRows())
-        {
-            throw invalid_argument_exception("result matrix has invalid dimensions", "result", __FILE__, __LINE__);
-        }
-        mat_mul(handle, a.GetRows(), 1, a.GetCols(), a.Get(), b.Get(), c.Get());
-    }
 
     template<typename T>
     __host__ void multiply_add(cublasLtHandle_t handle, const device_matrix<T>& a, const device_vector<T>& b, const device_vector<T>& c, device_vector<T>& d)
@@ -127,19 +169,6 @@ namespace cuda
         mat_mul_add(handle, a.GetRows(), 1, a.GetCols(), a.Get(), b.Get(), c.Get());
     }
 
-    template<typename T>
-    __host__ void multiply(cublasHandle_t handle, const device_matrix<T>& a, const device_matrix<T>& b, device_matrix<T>& result)
-    {
-        if(a.GetCols() != b.GetRows())
-        {
-            throw invalid_argument_exception("a columns does not match b rows", "b", __FILE__, __LINE__);
-        }
-        if(a.GetRows() != result.GetRows() || b.GetCols() != result.GetCols())
-        {
-            throw invalid_argument_exception("result matrix has invalid dimensions", "result", __FILE__, __LINE__);
-        }
-        mat_mul(handle, a.GetRows(), b.GetCols(), a.GetCols(), a.Get(), b.Get(), result.Get());
-    }
 
     template<typename T>
     __host__ void multiply_add(cublasLtHandle_t handle, const device_matrix<T>& a, const device_matrix<T>& b, const device_matrix<T>& c, device_matrix<T>& d)
