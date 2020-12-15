@@ -236,11 +236,14 @@ namespace cuda
             Eigen::VectorXd phaseAnglesI1 = icrar::cpu::VectorRangeSelect(phaseAngles, metadata.GetI1(), 0); // 1st pol only
             phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
             phaseAnglesI1(phaseAnglesI1.rows() - 1) = 0;
-             
+            auto devicePhaseAnglesI1 = device_vector<double>(phaseAnglesI1);
 
             // cal1
-            Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAnglesI1;
-            
+            auto cal1 = Eigen::VectorXd(metadata.GetAd1().rows());
+            auto deviceCal1 = device_vector<double>(cal1);
+            cuda::multiply(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd1(), devicePhaseAnglesI1, deviceCal1);
+            deviceCal1.ToHost(cal1);
+
             // dInt
             Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
             for(int n = 0; n < metadata.GetI().size(); ++n)
@@ -255,7 +258,6 @@ namespace cuda
             deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0;
 
             
-            auto deviceCal1 = device_vector<double>(cal1);
             auto deviceDeltaPhaseColumn = device_vector<double>(deltaPhaseColumn);
             icrar::cuda::multiply_add<double>(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd(), deviceDeltaPhaseColumn, deviceCal1);
             deviceCal1.ToHost(cal1);

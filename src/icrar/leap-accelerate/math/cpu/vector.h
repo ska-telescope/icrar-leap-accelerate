@@ -92,11 +92,13 @@ namespace cpu
         unsigned int column)
     {
         Eigen::VectorXi correctedIndices = rowIndices;
-        for(int& v : correctedIndices)
+
+        // wrap around
+        for(int& i : correctedIndices)
         {
-            if(v < 0)
+            if(i < 0)
             {
-                v += matrix.rows();
+                i += matrix.rows();
             }
         }
 
