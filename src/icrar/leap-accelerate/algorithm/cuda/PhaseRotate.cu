@@ -246,7 +246,7 @@ namespace cuda
 
             // loop over baselines
             constexpr double two_pi = 2 * CUDART_PI;
-            double shiftFactor = two_pi * (uvw[baseline].z - oldUVW[baseline].z);
+            double shiftFactor = -two_pi * (uvw[baseline].z - oldUVW[baseline].z);
 
             // loop over channels
             double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
