@@ -20,10 +20,12 @@
  * MA 02111 - 1307  USA
  */
 
+#include <icrar/leap-accelerate/core/log/logging.h>
 #include <gtest/gtest.h>
 
 int main(int argc, char **argv)
 {
+    icrar::log::Initialize(icrar::log::Verbosity::warn);
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
