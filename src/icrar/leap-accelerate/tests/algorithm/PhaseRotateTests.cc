@@ -195,7 +195,6 @@ namespace icrar
              0.50913780874486769, -0.089966081772685239,  0.85597009050371897,
              -0.2520402307174327,   0.93533988977932658,  0.24822371499818516,
             -0.82295468514759529,  -0.34211897743046571,  0.45354182990718139;
-            expectedDD.transposeInPlace();
 
             //========
             // ASSERT
@@ -225,10 +224,10 @@ namespace icrar
 
             ASSERT_EQ(5253, metadataOutput.GetAvgData().rows());
             ASSERT_EQ(4, metadataOutput.GetAvgData().cols());
-            ASSERT_EQCD(-223.133522849256 + -77.5332000528807i, metadataOutput.GetAvgData()(1,0), THRESHOLD);
-            ASSERT_EQCD(187.50982206464 + 163.887463394502i, metadataOutput.GetAvgData()(1,1), THRESHOLD);
-            ASSERT_EQCD(-158.110634070684 + 261.632098183828i, metadataOutput.GetAvgData()(1,2), THRESHOLD);
-            ASSERT_EQCD(-4.1343440981176 + -151.477951169178i, metadataOutput.GetAvgData()(1,3), THRESHOLD);
+            ASSERT_EQCD(-527.143090304241 + -89.9946133549982i, metadataOutput.GetAvgData()(1,0), THRESHOLD);
+            ASSERT_EQCD(55.4651357651697 + 60.5911844734979i, metadataOutput.GetAvgData()(1,1), THRESHOLD);
+            ASSERT_EQCD(0.800572867605558 + -9.05853723508164i, metadataOutput.GetAvgData()(1,2), THRESHOLD);
+            ASSERT_EQCD(-251.31739125869 + 39.6303072927434i, metadataOutput.GetAvgData()(1,3), THRESHOLD);
         }
 
         void PhaseMatrixFunction0Test(ComputeImplementation impl)
