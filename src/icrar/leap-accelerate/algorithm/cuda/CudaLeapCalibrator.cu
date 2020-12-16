@@ -202,107 +202,6 @@ namespace cuda
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
-    __global__ void g_CalcDInt(
-        const double* pA, int ARows, int ACols,
-        const double* pCal1, int Cal1Rows,
-        const thrust::complex<double>* pAvgData, int avgDataRows, int avgDataCols,
-        double* pDInt, int dIntRows)
-    {
-        using MatrixXcd = Eigen::Matrix<thrust::complex<double>, -1, -1>;
-        auto A = Eigen::Map<const Eigen::MatrixXd>(pA, ARows, ACols);
-        auto cal1 = Eigen::Map<const Eigen::VectorXd>(pCal1, Cal1Rows);
-        auto avgData = Eigen::Map<const MatrixXcd>(pAvgData, avgDataRows, avgDataCols);
-        auto dInt = Eigen::Map<Eigen::VectorXd>(pDInt, dIntRows);
-
-        constexpr double two_pi = 2 * CUDART_PI;
-        int n = blockDim.x * blockIdx.x + threadIdx.x;
-
-        if(n < ARows)
-        {
-            double sum = A.row(n) * cal1; //TODO: use a sum ColumnVector from a matmul kernel
-            dInt.row(n) = (thrust::exp(thrust::complex<double>(0, -sum * two_pi)) * avgData.row(n))
-            .unaryExpr([](const thrust::complex<double>& v){ return thrust::arg(v); });
-        }
-    }
-
-    __host__ void CalcDInt(
-        const device_matrix<double>& A,
-        const device_vector<double>& cal1,
-        const device_matrix<std::complex<double>>& avgData,
-        device_matrix<double>& dInt)
-    {
-        if(A.GetCols() != cal1.GetRows())
-        {
-            throw invalid_argument_exception("A.cols must equal cal1.rows", "cal1", __FILE__, __LINE__);
-        }
-
-        dim3 blockSize = dim3(1024, 1, 1);
-        dim3 gridSize = dim3(
-            (int)ceil(static_cast<double>(A.GetRows()) / blockSize.x),
-            1,
-            1
-        );
-
-        g_CalcDInt<<<blockSize,gridSize>>>(
-            A.Get(), A.GetRows(), A.GetCols(),
-            cal1.Get(), cal1.GetRows(),
-            (thrust::complex<double>*)avgData.Get(), avgData.GetRows(), avgData.GetCols(),
-            dInt.Get(), dInt.GetRows());
-    }
-    
-    __global__ void g_GenDeltaPhaseColumn(
-        const double* pDInt, int dIntRows, int dIntCols,
-        double* pDeltaPhaseColumn, int deltaPhaseColumnRows)
-    {
-        auto dInt = Eigen::Map<const Eigen::MatrixXd>(pDInt, dIntRows, dIntCols);
-        auto deltaPhaseColumn = Eigen::Map<Eigen::VectorXd>(pDeltaPhaseColumn, deltaPhaseColumnRows);
-
-        deltaPhaseColumn = dInt.col(0); // 1st pol only
-        deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0; // deltaPhaseColumn is dIntRows+1 where last/extra row = 0
-    }
-
-    __host__ void GenDeltaPhaseColumn(const device_matrix<double>& dInt, device_vector<double>& deltaPhaseColumn)
-    {
-        g_GenDeltaPhaseColumn<<<1,1>>>(dInt.Get(), dInt.GetRows(), dInt.GetCols(), deltaPhaseColumn.Get(), deltaPhaseColumn.GetRows());
-    }
-
-    __global__ void g_AvgDataToPhaseAngles(
-        const int* pI1, int I1Rows,
-        const thrust::complex<double>* pavgData, int avgDataRows, int avgDataCols,
-        double* pPhaseAnglesI1, int phaseAnglesI1Rows)
-    {
-        using MatrixXcd = Eigen::Matrix<thrust::complex<double>, -1, -1>;
-        auto I1 = Eigen::Map<const Eigen::VectorXi>(pI1, I1Rows);
-        auto avgData = Eigen::Map<const MatrixXcd>(pavgData, avgDataRows, avgDataCols);
-        auto phaseAnglesI1 = Eigen::Map<Eigen::VectorXd>(pPhaseAnglesI1, phaseAnglesI1Rows);
-
-        int row = blockDim.x * blockIdx.x + threadIdx.x;
-        if(row < I1Rows)
-        {
-            phaseAnglesI1(row) = thrust::arg(avgData(I1(row), 0));
-        }
-    }
-
-    __host__ void AvgDataToPhaseAngles(const device_vector<int>& I1, const device_matrix<std::complex<double>>& avgData, device_vector<double>& phaseAnglesI1)
-    {
-        if(I1.GetRows()+1 != phaseAnglesI1.GetRows())
-        {
-            throw invalid_argument_exception("incorrect number of columns", "phaseAnglesI1", __FILE__, __LINE__);
-        }
-
-        dim3 blockSize = dim3(1024, 1, 1);
-        dim3 gridSize = dim3(
-            (int)ceil(static_cast<double>(I1.GetRows()) / blockSize.x),
-            1,
-            1
-        );
-
-        g_AvgDataToPhaseAngles<<<blockSize, gridSize>>>(
-            I1.Get(), I1.GetRows(),
-            (thrust::complex<double>*)avgData.Get(), avgData.GetRows(), avgData.GetCols(),
-            phaseAnglesI1.Get(), phaseAnglesI1.GetRows());
-    }
-
     void CudaLeapCalibrator::PhaseRotate(
         cpu::MetaData& metadata,
         DeviceMetaData& deviceMetadata,
@@ -317,7 +216,6 @@ namespace cuda
             RotateVisibilities(integration, deviceMetadata);
         }
 
-        //CPU Phase Angle Calibration
         LOG(info) << "Calibrating in cuda";
         auto devicePhaseAnglesI1 = device_vector<double>(metadata.GetI1().rows() + 1);
         auto deviceCal1 = device_vector<double>(metadata.GetAd1().rows());
@@ -361,6 +259,14 @@ namespace cuda
         UVWs(row, 2) = uvw(2);
     }
 
+    __host__ void CudaLeapCalibrator::RotateUVW(Eigen::Matrix3d dd, const device_vector<icrar::MVuvw>& oldUVW, device_vector<icrar::MVuvw>& UVW)
+    {
+        assert(oldUVW.GetCount() != UVW.GetCount());
+        dim3 blockSize = dim3(1024, 1, 1);
+        dim3 gridSize = dim3((int)ceil((float)oldUVW.GetCount() / blockSize.x), 1, 1);
+        g_RotateUVW<<<blockSize, gridSize>>>(dd, oldUVW.Get()->data(), UVW.Get()->data(), oldUVW.GetCount());
+    }
+
     /**
      * @brief Rotates visibilities in parallel for baselines and channels
      * @note Atomic operator required for writing to @p pAvgData
@@ -397,9 +303,7 @@ namespace cuda
 
             // loop over channels
             double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
-
             cuDoubleComplex exp = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
-
             for(int polarization = 0; polarization < polarizations; polarization++)
             {
                  integration_data(polarization, baseline, channel) = cuCmul(integration_data(polarization, baseline, channel), exp);
@@ -421,14 +325,6 @@ namespace cuda
                 }
             }
         }
-    }
-
-    __host__ void CudaLeapCalibrator::RotateUVW(Eigen::Matrix3d dd, const device_vector<icrar::MVuvw>& oldUVW, device_vector<icrar::MVuvw>& UVW)
-    {
-        assert(oldUVW.GetCount() != UVW.GetCount());
-        dim3 blockSize = dim3(1024, 1, 1);
-        dim3 gridSize = dim3((int)ceil((float)oldUVW.GetCount() / blockSize.x), 1, 1);
-        g_RotateUVW<<<blockSize, gridSize>>>(dd, oldUVW.Get()->data(), UVW.Get()->data(), oldUVW.GetCount());
     }
 
     __host__ void CudaLeapCalibrator::RotateVisibilities(
@@ -458,18 +354,95 @@ namespace cuda
             (cuDoubleComplex*)metadata.GetAvgData().Get(), metadata.GetAvgData().GetRows(), metadata.GetAvgData().GetCols());
     }
 
-    __host__ void CudaLeapCalibrator::PhaseAngleCalibration(
-        const DeviceMetaData& deviceMetadata,
-        size_t I1Length,
-        size_t ILength,
-        size_t Ad1Rows,
-        size_t AvgDataCols,
-        device_vector<double>& calibrationResult)
+    __global__ void g_AvgDataToPhaseAngles(
+        const Eigen::Map<const Eigen::VectorXi> I1,
+        const Eigen::Map<const Eigen::Matrix<thrust::complex<double>, -1, -1>> avgData,
+        Eigen::Map<Eigen::VectorXd> phaseAnglesI1)
     {
+        int row = blockDim.x * blockIdx.x + threadIdx.x;
+        if(row < I1.rows())
+        {
+            phaseAnglesI1(row) = thrust::arg(avgData(I1(row), 0));
+        }
+    }
 
-        //TODO(calgray) ...
+    __host__ void CudaLeapCalibrator::AvgDataToPhaseAngles(const device_vector<int>& I1, const device_matrix<std::complex<double>>& avgData, device_vector<double>& phaseAnglesI1)
+    {
+        if(I1.GetRows()+1 != phaseAnglesI1.GetRows())
+        {
+            throw invalid_argument_exception("incorrect number of columns", "phaseAnglesI1", __FILE__, __LINE__);
+        }
 
-        //icrar::cuda::mat_mul_add_vector<double>(m_cublasLtContext, deviceMetadata.GetConstantBuffer().GetAd(), deltaPhaseColumn, cal1, calibrationResult);
+        dim3 blockSize = dim3(1024, 1, 1);
+        dim3 gridSize = dim3(static_cast<int>(ceil(static_cast<double>(I1.GetRows()) / blockSize.x)), 1, 1);
+
+        using MatrixXcd = Eigen::Matrix<thrust::complex<double>, -1, -1>;
+        auto I1Map = Eigen::Map<const Eigen::VectorXi>(I1.Get(), I1.GetRows());
+        auto avgDataMap = Eigen::Map<const MatrixXcd>((thrust::complex<double>*)avgData.Get(), avgData.GetRows(), avgData.GetCols());
+        auto phaseAnglesI1Map = Eigen::Map<Eigen::VectorXd>(phaseAnglesI1.Get(), phaseAnglesI1.GetRows());
+        g_AvgDataToPhaseAngles<<<blockSize, gridSize>>>(I1Map, avgDataMap, phaseAnglesI1Map);
+    }
+
+    __global__ void g_CalcDInt(
+        const Eigen::Map<const Eigen::MatrixXd> A,
+        const Eigen::Map<const Eigen::VectorXd> cal1,
+        const Eigen::Map<const Eigen::Matrix<thrust::complex<double>, -1, -1>> avgData,
+        Eigen::Map<Eigen::VectorXd> dInt)
+    {
+        constexpr double two_pi = 2 * CUDART_PI;
+        int n = blockDim.x * blockIdx.x + threadIdx.x;
+
+        if(n < A.rows())
+        {
+            double sum = A.row(n) * cal1; //TODO: use a sum ColumnVector from a matmul kernel
+            dInt.row(n) = (thrust::exp(thrust::complex<double>(0, -sum * two_pi)) * avgData.row(n))
+            .unaryExpr([](const thrust::complex<double>& v){ return thrust::arg(v); });
+        }
+    }
+
+    __host__ void CudaLeapCalibrator::CalcDInt(
+        const device_matrix<double>& A,
+        const device_vector<double>& cal1,
+        const device_matrix<std::complex<double>>& avgData,
+        device_matrix<double>& dInt)
+    {
+        if(A.GetCols() != cal1.GetRows())
+        {
+            throw invalid_argument_exception("A.cols must equal cal1.rows", "cal1", __FILE__, __LINE__);
+        }
+
+        dim3 blockSize = dim3(1024, 1, 1);
+        dim3 gridSize = dim3((int)ceil(static_cast<double>(A.GetRows()) / blockSize.x), 1, 1);
+
+        auto AMap = Eigen::Map<const Eigen::MatrixXd>(A.Get(), A.GetRows(), A.GetCols());
+        auto cal1Map = Eigen::Map<const Eigen::VectorXd>(cal1.Get(), cal1.GetRows());
+        auto avgDataMap = Eigen::Map<const Eigen::Matrix<thrust::complex<double>, -1, -1>>(
+            (thrust::complex<double>*)avgData.Get(), avgData.GetRows(), avgData.GetCols());
+        auto dIntMap = Eigen::Map<Eigen::VectorXd>(dInt.Get(), dInt.GetRows());
+        g_CalcDInt<<<blockSize,gridSize>>>(AMap, cal1Map, avgDataMap, dIntMap);
+    }
+
+    __global__ void g_GenDeltaPhaseColumn(const Eigen::Map<const Eigen::MatrixXd> dInt, Eigen::Map<Eigen::VectorXd> deltaPhaseColumn)
+    {
+        int row = blockDim.x * blockIdx.x + threadIdx.x;
+        if(row < dInt.rows())
+        {
+            deltaPhaseColumn(row) = dInt(row, 0); // 1st pol only
+        }
+        else if (row < deltaPhaseColumn.rows())
+        {
+            deltaPhaseColumn(row) = 0; // deltaPhaseColumn is dIntRows+1 where last/extra row = 0
+        }
+    }
+
+    __host__ void CudaLeapCalibrator::GenDeltaPhaseColumn(const device_matrix<double>& dInt, device_vector<double>& deltaPhaseColumn)
+    {
+        dim3 blockSize = dim3(1024, 1, 1);
+        dim3 gridSize = dim3((int)ceil(static_cast<double>(deltaPhaseColumn.GetRows()) / blockSize.x), 1, 1);
+
+        auto dIntMap = Eigen::Map<const Eigen::MatrixXd>(dInt.Get(), dInt.GetRows(), dInt.GetCols());
+        auto deltaPhaseColumnMap = Eigen::Map<Eigen::VectorXd>(deltaPhaseColumn.Get(), deltaPhaseColumn.GetRows());
+        g_GenDeltaPhaseColumn<<<blockSize,gridSize>>>(dIntMap, deltaPhaseColumnMap);
     }
 
 } // namespace cuda

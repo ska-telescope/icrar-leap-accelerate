@@ -144,11 +144,10 @@ namespace cpu
         trace_matrix(metadata.GetAvgData(), "avg_data");
 
         LOG(info) << "Calculating Calibration";
-        
+
         // PhaseAngles I1
         // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
-        Eigen::VectorXcd phasesI1 = icrar::cpu::VectorRangeSelect(metadata.GetAvgData(), metadata.GetI1(), 0); // 1st pol only
-        Eigen::VectorXd phaseAnglesI1 = icrar::arg(phasesI1);
+        Eigen::VectorXd phaseAnglesI1 = icrar::arg(icrar::cpu::VectorRangeSelect(metadata.GetAvgData(), metadata.GetI1(), 0)); // 1st pol only
         phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
         phaseAnglesI1(phaseAnglesI1.rows() - 1) = 0;
 

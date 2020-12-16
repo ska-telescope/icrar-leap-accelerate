@@ -92,22 +92,68 @@ namespace cuda
             std::vector<cpu::IntegrationResult>& output_integrations,
             std::vector<cpu::CalibrationResult>& output_calibrations);
 
-        __host__ void RotateVisibilities(
-            DeviceIntegration& integration,
-            DeviceMetaData& metadata);
-
-        __host__ void PhaseAngleCalibration(
-            const DeviceMetaData& deviceMetadata,
-            size_t I1Length,
-            size_t ILength,
-            size_t Ad1Rows,
-            size_t AvgDataCols,
-            device_vector<double>& calibrationResult);
-
+        /**
+         * @brief Rotates oldUVW by dd into UVW
+         * 
+         * @param dd 
+         * @param oldUVW 
+         * @param UVW 
+         * @return __host__ 
+         */
         __host__ void RotateUVW(
             Eigen::Matrix3d dd,
             const device_vector<icrar::MVuvw>& oldUVW,
             device_vector<icrar::MVuvw>& UVW);
+
+        /**
+         * @brief Calculates metadata.avgData
+         * 
+         * @param integration 
+         * @param metadata 
+         * @return __host__ 
+         */
+        __host__ void RotateVisibilities(
+            DeviceIntegration& integration,
+            DeviceMetaData& metadata);
+
+        /**
+         * @brief Copies the arg of the 1st column of avgData into phaseAnglesI1
+         * 
+         * @param I1 
+         * @param avgData 
+         * @param phaseAnglesI1 
+         * @return __host__ 
+         */
+        __host__ void AvgDataToPhaseAngles(
+            const device_vector<int>& I1,
+            const device_matrix<std::complex<double>>& avgData,
+            device_vector<double>& phaseAnglesI1);
+
+        /**
+         * @brief Calculates dInt
+         * 
+         * @param A 
+         * @param cal1 
+         * @param avgData 
+         * @param dInt 
+         * @return __host__ 
+         */
+        __host__ void CalcDInt(
+            const device_matrix<double>& A,
+            const device_vector<double>& cal1,
+            const device_matrix<std::complex<double>>& avgData,
+            device_matrix<double>& dInt);
+
+        /**
+         * @brief Copies the first column of dInt into deltaPhaseColumn
+         * 
+         * @param dInt 
+         * @param deltaPhaseColumn 
+         * @return __host__ 
+         */
+        __host__ void GenDeltaPhaseColumn(
+            const device_matrix<double>& dInt,
+            device_vector<double>& deltaPhaseColumn);
     };
 } // namespace cuda
 } // namespace icrar

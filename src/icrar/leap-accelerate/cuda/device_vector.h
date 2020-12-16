@@ -56,15 +56,18 @@ namespace cuda
         T* m_buffer = nullptr; // Pointer to cuda owned memory
 
     public:
-        device_vector(device_vector&& other) noexcept
+        //device_vector(const device_vector&) = delete;
+        //device_vector& operator=(const device_vector&) = delete;
+
+        __host__ device_vector(device_vector&& other) noexcept
             : m_count(other.m_count)
             , m_buffer(other.m_buffer)
         {
-            other.m_buffer = nullptr;
             other.m_count = 0;
+            other.m_buffer = nullptr;
         }
 
-        device_vector& operator=(device_vector&& other) noexcept
+        __host__ device_vector& operator=(device_vector&& other) noexcept
         {
             m_count = other.m_count;
             m_buffer = other.m_buffer;
@@ -78,7 +81,7 @@ namespace cuda
          * @param size 
          * @param data 
          */
-        explicit device_vector(size_t count, const T* data = nullptr)
+        __host__ explicit device_vector(size_t count, const T* data = nullptr)
         : m_count(count)
         , m_buffer(nullptr)
         {
@@ -94,13 +97,13 @@ namespace cuda
             }
         }
 
-        explicit device_vector(const std::vector<T>& data) : device_vector(data.size(), data.data()) {}
+        __host__ explicit device_vector(const std::vector<T>& data) : device_vector(data.size(), data.data()) {}
 
-        explicit device_vector(const Eigen::Matrix<T, Eigen::Dynamic, 1>& data) : device_vector(data.size(), data.data()) {}
+        __host__ explicit device_vector(const Eigen::Matrix<T, Eigen::Dynamic, 1>& data) : device_vector(data.size(), data.data()) {}
 
-        explicit device_vector(const Eigen::Matrix<T, 1, Eigen::Dynamic>& data) : device_vector(data.size(), data.data()) {}
+        __host__ explicit device_vector(const Eigen::Matrix<T, 1, Eigen::Dynamic>& data) : device_vector(data.size(), data.data()) {}
 
-        ~device_vector()
+        __host__ ~device_vector()
         {
             if(m_buffer != nullptr)
             {
@@ -183,6 +186,30 @@ namespace cuda
             size_t bytes = m_count * sizeof(T);
             checkCudaErrors(cudaMemcpyAsync(out, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));
         }
+    };
+
+    /**
+     * @brief A copyable reference mapping to a device_vector that does not own the underlying buffer
+     * 
+     * @tparam T 
+     */
+    template<typename T>
+    class device_vector_ref
+    {
+        size_t m_count;
+        T* m_buffer;
+
+    public:
+        __host__ __device__ device_vector_ref(T* buffer, size_t count)
+        : m_count(count), m_buffer(buffer) {}
+
+        __host__ __device__ device_vector_ref(device_vector<double>& vector)
+        : m_count(vector.GetCount()), m_buffer(vector.Get()) {}
+
+        __host__ __device__ size_t GetRows() const { return m_count; }
+        __host__ __device__ size_t GetCount() const { return m_count; }
+        __host__ __device__ const T* Get() const { return m_buffer; }
+        __host__ __device__ T* Get() { return m_buffer; }
     };
 }
 }
