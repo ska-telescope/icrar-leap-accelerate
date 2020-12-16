@@ -39,7 +39,7 @@ namespace icrar
     }
 
     /**
-     * @brief Interface for Leap Calibration implementations
+     * @brief Interface for Leap calibration implementations.
      * 
      */
     class ILeapCalibrator : boost::noncopyable

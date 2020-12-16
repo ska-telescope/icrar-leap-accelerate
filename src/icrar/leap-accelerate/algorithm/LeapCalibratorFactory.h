@@ -31,12 +31,19 @@ namespace icrar
     class ILeapCalibrator;
 
     /**
-     * @brief Interface for Leap Calibration implementations
+     * @brief Factory method object for selecting a LEAP calibration implementation.
      * 
      */
     class LeapCalibratorFactory : boost::noncopyable
     {
     public:
+        /**
+         * @brief Creates a calibrator object that performs leap calibration
+         * with specified implementation.
+         * 
+         * @param impl 
+         * @return std::unique_ptr<ILeapCalibrator> 
+         */
         std::unique_ptr<ILeapCalibrator> Create(ComputeImplementation impl) const;
     };
 } // namespace icrar

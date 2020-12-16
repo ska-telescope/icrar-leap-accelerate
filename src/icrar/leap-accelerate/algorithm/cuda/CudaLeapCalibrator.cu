@@ -111,12 +111,6 @@ namespace cuda
         << "timesteps: " << ms.GetNumRows() / ms.GetNumBaselines();
 
         profiling::timer calibration_timer;
-
-        if(GetCudaDeviceCount() == 0)
-        {
-            throw std::runtime_error("Could not find CUDA device");
-        }
-
         profiling::timer integration_read_timer;
         auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();

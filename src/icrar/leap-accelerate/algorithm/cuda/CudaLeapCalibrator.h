@@ -66,6 +66,10 @@ namespace icrar
 {
 namespace cuda
 {
+    /**
+     * @brief LEAP calibration object implemented using CUDA
+     * 
+     */
     class CudaLeapCalibrator : public ILeapCalibrator
     {
         cublasHandle_t m_cublasContext;
@@ -116,6 +120,7 @@ namespace cuda
             DeviceIntegration& integration,
             DeviceMetaData& metadata);
 
+    private:
         /**
          * @brief Copies the arg of the 1st column of avgData into phaseAnglesI1
          * 
