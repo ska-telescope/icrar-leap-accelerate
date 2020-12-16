@@ -135,19 +135,21 @@ if(CUDA_ENABLED)
   target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)
   target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --display_error_number>)
   configure_cuda_warnings(${TARGET_NAME})
+
+  target_include_directories(${TARGET_NAME} SYSTEM PUBLIC "/usr/local/cuda/include")
+  target_include_directories(${TARGET_NAME} SYSTEM PUBLIC "/usr/local/cuda/include/crt")
+  #target_link_libraries(${TARGET_NAME} CUDA)
+  target_link_libraries(${TARGET_NAME} ${CUDA_LIBRARIES})
+  target_link_libraries(${TARGET_NAME} ${CUDA_cusolver_LIBRARY})
+  target_link_libraries(${TARGET_NAME} cublas)
+  target_link_libraries(${TARGET_NAME} cublasLt)
 endif()
-target_include_directories(${TARGET_NAME} SYSTEM PUBLIC "/usr/local/cuda/include")
-target_include_directories(${TARGET_NAME} SYSTEM PUBLIC "/usr/local/cuda/include/crt")
+
 # Legacy TODO(calgray): build support for xenial
 include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 
 target_link_libraries(${TARGET_NAME} Threads::Threads)
 
-#target_link_libraries(${TARGET_NAME} CUDA)
-target_link_libraries(${TARGET_NAME} ${CUDA_LIBRARIES})
-target_link_libraries(${TARGET_NAME} ${CUDA_cusolver_LIBRARY})
-target_link_libraries(${TARGET_NAME} cublas)
-target_link_libraries(${TARGET_NAME} cublasLt)
 target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
 target_link_libraries(${TARGET_NAME} RapidJSON::RapidJSON)
