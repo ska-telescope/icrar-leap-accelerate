@@ -243,20 +243,12 @@ namespace cuda
      */
     __global__ void g_RotateUVW(
         Eigen::Matrix3d dd,
-        const double* pOldUVW, // TODO: use double3*
-        double* pUVW, // TODO: use double3*
-        int uvwLength)
+        Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>> oldUVWs,
+        Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>> UVWs)
     {
-        auto oldUVWs = Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>>(pOldUVW, uvwLength, 3);
-        auto UVWs = Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>>(pUVW, uvwLength, 3);
-
         // Compute rows in parallel
         int row = blockDim.x * blockIdx.x + threadIdx.x;
-        auto oldUvw = Eigen::RowVector3d(oldUVWs(row, 0), oldUVWs(row, 1), oldUVWs(row, 2));
-        Eigen::RowVector3d uvw = oldUvw * dd;
-        UVWs(row, 0) = uvw(0);
-        UVWs(row, 1) = uvw(1);
-        UVWs(row, 2) = uvw(2);
+        UVWs.row(row) = oldUVWs.row(row) * dd;
     }
 
     __host__ void CudaLeapCalibrator::RotateUVW(Eigen::Matrix3d dd, const device_vector<icrar::MVuvw>& oldUVW, device_vector<icrar::MVuvw>& UVW)
@@ -264,7 +256,10 @@ namespace cuda
         assert(oldUVW.GetCount() != UVW.GetCount());
         dim3 blockSize = dim3(1024, 1, 1);
         dim3 gridSize = dim3((int)ceil((float)oldUVW.GetCount() / blockSize.x), 1, 1);
-        g_RotateUVW<<<blockSize, gridSize>>>(dd, oldUVW.Get()->data(), UVW.Get()->data(), oldUVW.GetCount());
+
+        auto oldUVWMap = Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>>(oldUVW.Get()->data(), oldUVW.GetCount(), 3);
+        auto UVWMap = Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>>(UVW.Get()->data(), UVW.GetCount(), 3);
+        g_RotateUVW<<<blockSize, gridSize>>>(dd, oldUVWMap, UVWMap);
     }
 
     /**
