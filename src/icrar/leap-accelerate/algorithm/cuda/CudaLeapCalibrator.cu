@@ -182,12 +182,13 @@ namespace cuda
 
             input_queue[0].SetData(integration);
 
-            LOG(info) << "PhaseRotate";
+            LOG(info) << "RotateUVW";
             RotateUVW(
                 deviceMetadata.GetDD(),
                 solutionIntervalBuffer->GetOldUVW(),
                 directionBuffer->GetUVW());
 
+            LOG(info) << "PhaseRotate";
             PhaseRotate(
                 metadata,
                 deviceMetadata,
@@ -313,7 +314,7 @@ namespace cuda
         for(DeviceIntegration& integration : input)
         {
             LOG(info) << "Rotating integration " << integration.GetIntegrationNumber();
-            this->RotateVisibilities(integration, deviceMetadata);
+            RotateVisibilities(integration, deviceMetadata);
         }
 
         //CPU Phase Angle Calibration
@@ -367,8 +368,6 @@ namespace cuda
     __global__ void g_RotateVisibilities(
         cuDoubleComplex* pIntegrationData, int integration_data_dim0, int integration_data_dim1, int integration_data_dim2,
         icrar::cpu::Constants constants,
-        Eigen::Matrix3d dd, //TODO(cgray) remove
-        double2 direction, //TODO(cgray) remove
         const double3* uvw, int uvwLength,
         const double3* oldUVW, int oldUVWLegth,
         cuDoubleComplex* pAvgData, int avgDataRows, int avgDataCols)
@@ -454,8 +453,6 @@ namespace cuda
         g_RotateVisibilities<<<gridSize, blockSize>>>(
             (cuDoubleComplex*)integration.GetVis().Get(), integration.GetVis().GetDimensionSize(0), integration.GetVis().GetDimensionSize(1), integration.GetVis().GetDimensionSize(2),
             constants,
-            metadata.GetDD(),
-            make_double2(polar_direction(0), polar_direction(1)),
             (double3*)metadata.GetUVW().Get(), metadata.GetUVW().GetCount(),
             (double3*)metadata.GetOldUVW().Get(), metadata.GetOldUVW().GetCount(),
             (cuDoubleComplex*)metadata.GetAvgData().Get(), metadata.GetAvgData().GetRows(), metadata.GetAvgData().GetCols());
