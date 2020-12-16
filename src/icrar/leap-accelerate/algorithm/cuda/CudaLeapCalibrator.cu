@@ -47,6 +47,7 @@
 #include <math_constants.h>
 #include <cuComplex.h>
 #include <cublasLt.h>
+#include <thrust/complex.h>
 
 #include <boost/math/constants/constants.hpp>
 
@@ -202,11 +203,6 @@ namespace cuda
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
-    // __device__ Eigen::MatrixXd darg(const Eigen::Ref<const Eigen::MatrixXcd>& a)
-    // {
-    //     return a.unaryExpr([](std::complex<double> v){ return std::arg(v); });
-    // }
-
     __device__ double cuCarg(cuDoubleComplex z)
     {
         return atan2(cuCreal(z), cuCimag(z));
@@ -215,23 +211,23 @@ namespace cuda
     __global__ void g_CalcDInt(
         const double* pA, int ARows, int ACols,
         const double* pCal1, int Cal1Rows,
-        const cuDoubleComplex* pAvgData, int avgDataRows, int avgDataCols,
+        const thrust::complex<double>* pAvgData, int avgDataRows, int avgDataCols,
         double* pDInt, int dIntRows)
     {
-        using MatrixXcd = Eigen::Matrix<cuDoubleComplex, -1, -1>;
+        using MatrixXcd = Eigen::Matrix<thrust::complex<double>, -1, -1>;
         auto A = Eigen::Map<const Eigen::MatrixXd>(pA, ARows, ACols);
         auto cal1 = Eigen::Map<const Eigen::VectorXd>(pCal1, Cal1Rows);
         auto avgData = Eigen::Map<const MatrixXcd>(pAvgData, avgDataRows, avgDataCols);
         auto dInt = Eigen::Map<Eigen::VectorXd>(pDInt, dIntRows);
 
         constexpr double two_pi = 2 * CUDART_PI;
-        for(int n = 0; n < ARows; ++n)
+        int n = blockDim.x * blockIdx.x + threadIdx.x;
+
+        if(n < ARows)
         {
-            double sum = A.row(n) * cal1;
-            dInt.row(n) = avgData.row(n).unaryExpr([=](const cuDoubleComplex& v)
-            {
-                return cuCarg(cuCmul(cuCexp(make_cuDoubleComplex(0, -sum * two_pi)), v));
-            });
+            double sum = A.row(n) * cal1; //TODO: use a sum ColumnVector from a matmul kernel
+            dInt.row(n) = (thrust::exp(thrust::complex<double>(0, -sum * two_pi)) * avgData.row(n))
+            .unaryExpr([](const thrust::complex<double>& v){ return thrust::arg(v); });
         }
     }
 
@@ -246,10 +242,17 @@ namespace cuda
             throw invalid_argument_exception("A.cols must equal cal1.rows", "cal1", __FILE__, __LINE__);
         }
 
-        g_CalcDInt<<<1,1>>>(
+        dim3 blockSize = dim3(1024, 1, 1);
+        dim3 gridSize = dim3(
+            (int)ceil(static_cast<double>(A.GetRows()) / blockSize.x),
+            1,
+            1
+        );
+
+        g_CalcDInt<<<blockSize,gridSize>>>(
             A.Get(), A.GetRows(), A.GetCols(),
             cal1.Get(), cal1.GetRows(),
-            (cuDoubleComplex*)avgData.Get(), avgData.GetRows(), avgData.GetCols(),
+            (thrust::complex<double>*)avgData.Get(), avgData.GetRows(), avgData.GetCols(),
             dInt.Get(), dInt.GetRows());
     }
     
@@ -291,28 +294,21 @@ namespace cuda
             // cal1
             auto deviceCal1 = device_vector<double>(metadata.GetAd1().rows());
             cuda::multiply(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd1(), devicePhaseAnglesI1, deviceCal1);
-            auto cal1 = Eigen::VectorXd(metadata.GetAd1().rows());
-            deviceCal1.ToHost(cal1);
 
             // dInt
+            Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
             auto deviceDInt = device_matrix<double>(metadata.GetI().size(), metadata.GetAvgData().cols());
             CalcDInt(deviceMetadata.GetConstantBuffer().GetA(), deviceCal1, deviceMetadata.GetAvgData(), deviceDInt);
-
-            Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
-            for(int n = 0; n < metadata.GetI().size(); ++n)
-            {
-                double sum = metadata.GetA().row(n) * cal1;
-                dInt.row(n) = icrar::arg(std::exp(std::complex<double>(0, -sum * two_pi<double>())) * metadata.GetAvgData().row(n));
-            }
-            //deviceDInt.ToHost(dInt); //TODO!!!!!!!!!!!!!!!!!!!!!
+            deviceDInt.ToHost(dInt);
 
             // DeltaPhase
             Eigen::VectorXd deltaPhaseColumn = dInt(Eigen::all, 0); // 1st pol only
             deltaPhaseColumn.conservativeResize(deltaPhaseColumn.size() + 1);
             deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0;
-            
             auto deviceDeltaPhaseColumn = device_vector<double>(deltaPhaseColumn);
+            
             icrar::cuda::multiply_add<double>(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd(), deviceDeltaPhaseColumn, deviceCal1);
+            auto cal1 = Eigen::VectorXd(metadata.GetAd1().rows());
             deviceCal1.ToHost(cal1);
             output_calibrations.emplace_back(direction, cal1);
         }
