@@ -26,7 +26,7 @@
 
 namespace icrar
 {
-    CpuLeapCalibrator::~CpuLeapCalibrator() {}
+    CpuLeapCalibrator::~CpuLeapCalibrator() = default;
 
     cpu::CalibrateResult CpuLeapCalibrator::Calibrate(
         const icrar::MeasurementSet& ms,
