@@ -147,15 +147,15 @@ namespace icrar
             meta.SetDirection(direction);
             
             EXPECT_DOUBLE_EQ(0.50913780874486769, meta.GetDD()(0,0));
-            EXPECT_DOUBLE_EQ(-0.089966081772685239, meta.GetDD()(0,1));
-            EXPECT_DOUBLE_EQ(0.85597009050371897, meta.GetDD()(0,2));
+            EXPECT_DOUBLE_EQ(-0.089966081772685239, meta.GetDD()(1,0));
+            EXPECT_DOUBLE_EQ(0.85597009050371897, meta.GetDD()(2,0));
 
-            EXPECT_DOUBLE_EQ(-0.2520402307174327, meta.GetDD()(1,0));
+            EXPECT_DOUBLE_EQ(-0.2520402307174327, meta.GetDD()(0,1));
             EXPECT_DOUBLE_EQ(0.93533988977932658, meta.GetDD()(1,1));
-            EXPECT_DOUBLE_EQ(0.24822371499818516, meta.GetDD()(1,2));
+            EXPECT_DOUBLE_EQ(0.24822371499818516, meta.GetDD()(2,1));
 
-            EXPECT_DOUBLE_EQ(-0.82295468514759529, meta.GetDD()(2,0));
-            EXPECT_DOUBLE_EQ(-0.34211897743046571, meta.GetDD()(2,1));
+            EXPECT_DOUBLE_EQ(-0.82295468514759529, meta.GetDD()(0,2));
+            EXPECT_DOUBLE_EQ(-0.34211897743046571, meta.GetDD()(1,2));
             EXPECT_DOUBLE_EQ(0.45354182990718139, meta.GetDD()(2,2));
 
             //TODO(calgray): add astropy changes

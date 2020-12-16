@@ -191,7 +191,7 @@ namespace cpu
         0, std::sin(ang3),  std::cos(ang3);
 
 
-        m_dd = dd3 * dd2 * dd1;
+        m_dd = (dd3 * dd2 * dd1).transpose();
         LOG(trace) << "dd3: " << pretty_matrix(dd3);
         LOG(trace) << "dd2: " << pretty_matrix(dd2);
         LOG(trace) << "dd1: " << pretty_matrix(dd1);
@@ -218,7 +218,7 @@ namespace cpu
         m_UVW.reserve(m_oldUVW.size());
         for(size_t n = 0; n < size; n++)
         {
-            m_UVW.emplace_back(m_oldUVW[n] * m_dd);
+            m_UVW.emplace_back(m_dd * m_oldUVW[n]);
         }
     }
 
