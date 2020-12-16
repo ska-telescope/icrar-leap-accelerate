@@ -214,7 +214,7 @@ namespace cuda
             ToHost(out.data());
         }
 
-        __host__ void ToHostASync(T* out) const
+        __host__ void ToHostAsync(T* out) const
         {
             size_t bytes = GetSize();
             checkCudaErrors(cudaMemcpyAsync(out, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));
