@@ -182,15 +182,13 @@ namespace cuda
 
             input_queue[0].SetData(integration);
 
-            LOG(info) << "Copying Metadata to Device";
             LOG(info) << "PhaseRotate";
-
-            this->RotateUVW(
+            RotateUVW(
                 deviceMetadata.GetDD(),
                 solutionIntervalBuffer->GetOldUVW(),
                 directionBuffer->GetUVW());
 
-            this->PhaseRotate(
+            PhaseRotate(
                 metadata,
                 deviceMetadata,
                 directions[i],
@@ -267,6 +265,43 @@ namespace cuda
         g_GenDeltaPhaseColumn<<<1,1>>>(dInt.Get(), dInt.GetRows(), dInt.GetCols(), deltaPhaseColumn.Get(), deltaPhaseColumn.GetRows());
     }
 
+    __global__ void g_AvgDataToPhaseAngles(
+        const int* pI1, int I1Rows,
+        const thrust::complex<double>* pavgData, int avgDataRows, int avgDataCols,
+        double* pPhaseAnglesI1, int phaseAnglesI1Rows)
+    {
+        using MatrixXcd = Eigen::Matrix<thrust::complex<double>, -1, -1>;
+        auto I1 = Eigen::Map<const Eigen::VectorXi>(pI1, I1Rows);
+        auto avgData = Eigen::Map<const MatrixXcd>(pavgData, avgDataRows, avgDataCols);
+        auto phaseAnglesI1 = Eigen::Map<Eigen::VectorXd>(pPhaseAnglesI1, phaseAnglesI1Rows);
+
+        int row = blockDim.x * blockIdx.x + threadIdx.x;
+        if(row < I1Rows)
+        {
+            phaseAnglesI1(row) = thrust::arg(avgData(I1(row), 0));
+        }
+    }
+
+    __host__ void AvgDataToPhaseAngles(const device_vector<int>& I1, const device_matrix<std::complex<double>>& avgData, device_vector<double>& phaseAnglesI1)
+    {
+        if(I1.GetRows()+1 != phaseAnglesI1.GetRows())
+        {
+            throw invalid_argument_exception("incorrect number of columns", "phaseAnglesI1", __FILE__, __LINE__);
+        }
+
+        dim3 blockSize = dim3(1024, 1, 1);
+        dim3 gridSize = dim3(
+            (int)ceil(static_cast<double>(I1.GetRows()) / blockSize.x),
+            1,
+            1
+        );
+
+        g_AvgDataToPhaseAngles<<<blockSize, gridSize>>>(
+            I1.Get(), I1.GetRows(),
+            (thrust::complex<double>*)avgData.Get(), avgData.GetRows(), avgData.GetCols(),
+            phaseAnglesI1.Get(), phaseAnglesI1.GetRows());
+    }
+
     void CudaLeapCalibrator::PhaseRotate(
         cpu::MetaData& metadata,
         DeviceMetaData& deviceMetadata,
@@ -283,32 +318,17 @@ namespace cuda
 
         //CPU Phase Angle Calibration
         LOG(info) << "Calibrating in cuda";
-        LOG(info) << "Copying Metadata from Device";
-        deviceMetadata.AvgDataToHost(metadata.GetAvgData());
-        auto phaseAngles = icrar::arg(metadata.GetAvgData());
-
-        // PhaseAngles I1
-        // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
-        Eigen::VectorXd phaseAnglesI1 = icrar::cpu::VectorRangeSelect(phaseAngles, metadata.GetI1(), 0); // 1st pol only
-        phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
-        phaseAnglesI1(phaseAnglesI1.rows() - 1) = 0;
-        auto devicePhaseAnglesI1 = device_vector<double>(phaseAnglesI1);
-
-        // cal1
+        auto devicePhaseAnglesI1 = device_vector<double>(metadata.GetI1().rows() + 1);
         auto deviceCal1 = device_vector<double>(metadata.GetAd1().rows());
-        cuda::multiply(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd1(), devicePhaseAnglesI1, deviceCal1);
-
-        // dInt
-        Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
         auto deviceDInt = device_matrix<double>(metadata.GetI().size(), metadata.GetAvgData().cols());
-        CalcDInt(deviceMetadata.GetConstantBuffer().GetA(), deviceCal1, deviceMetadata.GetAvgData(), deviceDInt);
-
-        // DeltaPhase
-        auto deviceDeltaPhaseColumn = device_vector<double>(dInt.rows() + 1);
-        GenDeltaPhaseColumn(deviceDInt, deviceDeltaPhaseColumn);
-
-        icrar::cuda::multiply_add<double>(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd(), deviceDeltaPhaseColumn, deviceCal1);
+        auto deviceDeltaPhaseColumn = device_vector<double>(metadata.GetI().size() + 1);
         auto cal1 = Eigen::VectorXd(metadata.GetAd1().rows());
+
+        AvgDataToPhaseAngles(deviceMetadata.GetConstantBuffer().GetI1(), deviceMetadata.GetAvgData(), devicePhaseAnglesI1);
+        cuda::multiply(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd1(), devicePhaseAnglesI1, deviceCal1);
+        CalcDInt(deviceMetadata.GetConstantBuffer().GetA(), deviceCal1, deviceMetadata.GetAvgData(), deviceDInt);
+        GenDeltaPhaseColumn(deviceDInt, deviceDeltaPhaseColumn);
+        icrar::cuda::multiply_add<double>(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd(), deviceDeltaPhaseColumn, deviceCal1);
         deviceCal1.ToHost(cal1);
         output_calibrations.emplace_back(direction, cal1);
     }
