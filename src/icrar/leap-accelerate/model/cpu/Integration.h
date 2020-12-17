@@ -69,7 +69,7 @@ namespace cpu
         size_t baselines; // baselines
 
         std::vector<MVuvw> m_UVW; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
-        Eigen::Tensor<std::complex<double>, 3> m_data; //[npol][nbl][nch]
+        Eigen::Tensor<std::complex<double>, 3> m_visibilities; //[npol][nbl][nch]
 
     public:
         Integration(
@@ -103,14 +103,14 @@ namespace cpu
          * 
          * @return Eigen::Tensor<std::complex<double>, 3>& 
          */
-        const Eigen::Tensor<std::complex<double>, 3>& GetVis() const { return m_data; }
+        const Eigen::Tensor<std::complex<double>, 3>& GetVis() const { return m_visibilities; }
 
         /**
          * @brief Get the Visibilities object of size (polarizations, baselines, channels)
          * 
          * @return Eigen::Tensor<std::complex<double>, 3>& 
          */
-        Eigen::Tensor<std::complex<double>, 3>& GetVis() { return m_data; }
+        Eigen::Tensor<std::complex<double>, 3>& GetVis() { return m_visibilities; }
 
         friend class icrar::cuda::DeviceIntegration;
     };

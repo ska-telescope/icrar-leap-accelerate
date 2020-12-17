@@ -55,21 +55,21 @@ namespace cpu
         LOG(info) << "vis: " << memory_amount(vis_size);
         size_t uvw_size = (baselines - startBaseline) * 3;
         LOG(info) << "uvw: " << memory_amount(uvw_size);
-        m_data = ms.GetVis(startBaseline, startChannel, channels, baselines, polarizations);
+        m_visibilities = ms.GetVis(startBaseline, startChannel, channels, baselines, polarizations);
         m_UVW = ToUVWVector(ms.GetCoords(startBaseline, baselines));
 #ifdef CUDA_ENABLED
-        cudaHostRegister(m_data.data(), m_data.size() * sizeof(std::complex<double>), cudaHostRegisterPortable);
+        cudaHostRegister(m_visibilities.data(), m_visibilities.size() * sizeof(std::complex<double>), cudaHostRegisterPortable);
         cudaHostRegister(m_UVW.data(), m_UVW.size() * sizeof(double), cudaHostRegisterPortable);
 #endif
     }
 
     bool Integration::operator==(const Integration& rhs) const
     {
-        Eigen::Map<const Eigen::VectorXcd> datav(m_data.data(), m_data.size());
-        Eigen::Map<const Eigen::VectorXcd> rhsdatav(rhs.m_data.data(), rhs.m_data.size());
+        Eigen::Map<const Eigen::VectorXcd> datav(m_visibilities.data(), m_visibilities.size());
+        Eigen::Map<const Eigen::VectorXcd> rhsdatav(rhs.m_visibilities.data(), rhs.m_visibilities.size());
         
         return 
-        m_data.dimensions() == rhs.m_data.dimensions()
+        m_visibilities.dimensions() == rhs.m_visibilities.dimensions()
         && datav.isApprox(rhsdatav)
         && m_UVW == rhs.m_UVW
         && m_integrationNumber == rhs.m_integrationNumber;
