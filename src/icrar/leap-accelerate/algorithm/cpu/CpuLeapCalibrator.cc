@@ -26,6 +26,8 @@
 
 namespace icrar
 {
+namespace cpu
+{
     CpuLeapCalibrator::~CpuLeapCalibrator() = default;
 
     cpu::CalibrateResult CpuLeapCalibrator::Calibrate(
@@ -36,4 +38,5 @@ namespace icrar
         {
             return cpu::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
         }
+} // namespace cpu
 } // namespace icrar

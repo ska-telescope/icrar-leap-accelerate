@@ -157,7 +157,7 @@ namespace cuda
             return GetCount() * sizeof(T);
         }
 
-        __host__ void SetZeroSync()
+        __host__ void SetZeroAsync()
         {
             size_t byteSize = GetSize();
             checkCudaErrors(cudaMemsetAsync(m_buffer, 0, byteSize));
@@ -173,7 +173,9 @@ namespace cuda
         {
             size_t bytes = GetSize();
             checkCudaErrors(cudaMemcpy(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
+#ifndef NDEBUG
             DebugCudaErrors();
+#endif
         }
 
         /**
@@ -186,7 +188,6 @@ namespace cuda
         {
             size_t bytes = GetSize();
             checkCudaErrors(cudaMemcpyAsync(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
-            DebugCudaErrors();
         }
 
         __host__ void ToHost(T* out) const

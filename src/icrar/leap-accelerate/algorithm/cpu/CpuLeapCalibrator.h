@@ -28,6 +28,8 @@
 
 namespace icrar
 {
+namespace cpu
+{
     class CpuLeapCalibrator : public ILeapCalibrator
     {
     public:
@@ -39,4 +41,5 @@ namespace icrar
             double minimumBaselineThreshold,
             bool isFileSystemCacheEnabled) override;
     };
+} // namespace cpu
 } // namespace icrar

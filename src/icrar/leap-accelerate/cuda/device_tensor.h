@@ -181,7 +181,9 @@ namespace cuda
         {
             size_t bytes = GetByteSize();
             checkCudaErrors(cudaMemcpy(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
+#ifndef NDEBUG
             DebugCudaErrors();
+#endif
         }
 
         /**
@@ -192,9 +194,10 @@ namespace cuda
          */
         __host__ void SetDataAsync(const T* data)
         {
+            // memcpy that involve host memory which is not page-locked?
             size_t bytes = GetByteSize();
+            //cudaMallocHost();
             checkCudaErrors(cudaMemcpyAsync(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
-            DebugCudaErrors();
         }
 
         __host__ void ToHost(T* out) const

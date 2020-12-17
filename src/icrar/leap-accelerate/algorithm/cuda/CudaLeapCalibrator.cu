@@ -172,8 +172,11 @@ namespace cuda
 
             directionBuffer->SetDirection(metadata.GetDirection());
             directionBuffer->SetDD(metadata.GetDD());
-            directionBuffer->GetAvgData().SetZeroSync();
 
+            LOG(info) << "Zeroing AvgData";
+            directionBuffer->GetAvgData().SetZeroAsync();
+
+            LOG(info) << "Sending integration to device";
             input_queue[0].SetData(integration);
 
             LOG(info) << "RotateUVW";

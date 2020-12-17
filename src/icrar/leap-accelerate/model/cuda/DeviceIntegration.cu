@@ -70,11 +70,11 @@ namespace cuda
 
     void DeviceIntegration::ToHost(cpu::Integration& host) const
     {
-        //m_visibilities.ToHost(host.m_data);
+        //m_visibilities.ToHost(host.m_data); //TODO(calgray): unsupported constant variant!
         host.index = index;
         host.x = x;
         host.channels = channels;
         host.baselines = baselines;
     }
-}
-}
+} // namespace cuda
+} // namespace icrar

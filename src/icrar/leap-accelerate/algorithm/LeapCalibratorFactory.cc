@@ -31,7 +31,7 @@ namespace icrar
     {
         if(impl == ComputeImplementation::cpu)
         {
-            return std::make_unique<CpuLeapCalibrator>();
+            return std::make_unique<cpu::CpuLeapCalibrator>();
         }
         else if(impl == ComputeImplementation::cuda)
         {
