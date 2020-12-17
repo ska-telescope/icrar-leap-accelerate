@@ -39,7 +39,6 @@ namespace icrar
     {
         const double TOLERANCE = 0.0001;
         cublasHandle_t m_cublasContext;
-        cublasLtHandle_t m_cublasLtContext;
 
     public:
         void SetUp() override
@@ -50,12 +49,11 @@ namespace icrar
             ASSERT_EQ(1, deviceCount);
 
             checkCudaErrors(cublasCreate(&m_cublasContext));
-            checkCudaErrors(cublasLtCreate(&m_cublasLtContext));
         }
 
         void TearDown() override
         {
-            checkCudaErrors(cublasLtDestroy(m_cublasLtContext));
+            checkCudaErrors(cublasCreate(&m_cublasContext));
             checkCudaErrors(cudaDeviceReset());
         }
 
