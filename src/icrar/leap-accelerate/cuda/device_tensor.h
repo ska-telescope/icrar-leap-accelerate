@@ -132,7 +132,7 @@ namespace cuda
             return 0; //TODO(calgray): not a great interface
         }
 
-        __host__ __device__ Eigen::DSizes<Eigen::DenseIndex, 3> GetDimensions()
+        __host__ __device__ Eigen::DSizes<Eigen::DenseIndex, 3> GetDimensions() const
         {
             auto res = Eigen::DSizes<Eigen::DenseIndex, 3>();
             res[0] = m_sizeDim0;
@@ -187,17 +187,21 @@ namespace cuda
         }
 
         /**
-         * @brief Set the Data asyncronously
+         * @brief Set the Data asyncronously from host memory
          * 
          * @param data 
          * @return __host__ 
          */
         __host__ void SetDataAsync(const T* data)
         {
-            // memcpy that involve host memory which is not page-locked?
             size_t bytes = GetByteSize();
-            //cudaMallocHost();
             checkCudaErrors(cudaMemcpyAsync(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
+        }
+
+        __host__ void SetDataAsync(const device_tensor3<T>& data)
+        {
+            size_t bytes = GetByteSize();
+            cudaMemcpyAsync(m_buffer, data.Get(), bytes, cudaMemcpyKind::cudaMemcpyDeviceToDevice);
         }
 
         __host__ void ToHost(T* out) const

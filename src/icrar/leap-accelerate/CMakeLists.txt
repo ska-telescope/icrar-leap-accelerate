@@ -134,7 +134,11 @@ if(CUDA_ENABLED)
   #set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
   target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)
   target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --display_error_number>)
+  
   configure_cuda_warnings(${TARGET_NAME})
+  #target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --display_error_number>)
+  #set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -lineinfo --default-stream per-thread)
+  #message("CUDA_NVCC_FLAGS = ${CUDA_NVCC_FLAGS}")
 
   target_include_directories(${TARGET_NAME} SYSTEM PUBLIC "/usr/local/cuda/include")
   target_include_directories(${TARGET_NAME} SYSTEM PUBLIC "/usr/local/cuda/include/crt")

@@ -158,6 +158,12 @@ namespace cuda
 #endif
         }
 
+        /**
+         * @brief Sets buffer data from host memory
+         * 
+         * @param data 
+         * @return __host__ 
+         */
         __host__ void SetDataAsync(const T* data)
         {
             size_t bytes = m_count * sizeof(T);
