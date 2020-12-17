@@ -29,6 +29,10 @@
 #include <icrar/leap-accelerate/core/ioutils.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 
+#ifdef CUDA_ENABLED
+#include <cuda_runtime.h>
+#endif
+
 namespace icrar
 {
 namespace cpu
@@ -53,6 +57,10 @@ namespace cpu
         LOG(info) << "uvw: " << memory_amount(uvw_size);
         m_data = ms.GetVis(startBaseline, startChannel, channels, baselines, polarizations);
         m_UVW = ToUVWVector(ms.GetCoords(startBaseline, baselines));
+#ifdef CUDA_ENABLED
+        cudaHostRegister(m_data.data(), m_data.size() * sizeof(std::complex<double>), cudaHostRegisterPortable);
+        cudaHostRegister(m_UVW.data(), m_UVW.size() * sizeof(double), cudaHostRegisterPortable);
+#endif
     }
 
     bool Integration::operator==(const Integration& rhs) const

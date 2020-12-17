@@ -157,11 +157,16 @@ namespace cuda
             metadata.GetAvgData().rows(),
             metadata.GetAvgData().cols());
 
-        auto deviceMetadata = icrar::cuda::DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
+        auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
 
         // Emplace a single empty tensor
-        input_queue.emplace_back(0, integration.GetVis().dimensions());
+#ifdef HIGH_MEMORY
+        const auto deviceIntegration = DeviceIntegration(integration);
+#endif
         LOG(info) << "Metadata loaded in " << metadata_read_timer;
+
+        // always use a single integration
+        input_queue.emplace_back(0, integration.GetVis().dimensions());
 
         profiling::timer phase_rotate_timer;
         for(int i = 0; i < directions.size(); ++i)
@@ -172,12 +177,14 @@ namespace cuda
 
             directionBuffer->SetDirection(metadata.GetDirection());
             directionBuffer->SetDD(metadata.GetDD());
-
-            LOG(info) << "Zeroing AvgData";
             directionBuffer->GetAvgData().SetZeroAsync();
 
             LOG(info) << "Sending integration to device";
-            input_queue[0].SetData(integration);
+#ifdef HIGH_MEMORY
+            input_queue[0].Set(deviceIntegration);
+#else
+            input_queue[0].Set(integration);
+#endif
 
             LOG(info) << "RotateUVW";
             RotateUVW(
