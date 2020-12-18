@@ -18,8 +18,7 @@ Checks:
     -cppcoreguidelines-owning-memory,
     -google-build-using-namespace,
     -google-runtime-references,
-    -modernize-use-trailing-return-type,
-    -performance-move-const-arg'
+    -modernize-use-trailing-return-type'
 WarningsAsErrors:
    'clang-diagnostic-*,
     clang-analyzer-*,
@@ -33,6 +32,7 @@ WarningsAsErrors:
     -cppcoreguidelines-owning-memory,
     -google-build-using-namespace,
     -google-runtime-references,
+    -modernize-use-equals-default,
     -modernize-use-trailing-return-type,
     -performance-move-const-arg'
 HeaderFilterRegex: "*.cuh"

@@ -63,13 +63,15 @@ namespace cpu
 #endif
     }
 
+#ifdef CUDA_ENABLED
     Integration::~Integration()
     {
-#ifdef CUDA_ENABLED
         cudaHostUnregister(m_visibilities.data());
         cudaHostUnregister(m_UVW.data());
-#endif
     }
+#else
+    Integration::~Integration() = default;
+#endif
 
     bool Integration::operator==(const Integration& rhs) const
     {
