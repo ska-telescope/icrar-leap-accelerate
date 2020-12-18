@@ -63,6 +63,14 @@ namespace cpu
 #endif
     }
 
+    Integration::~Integration()
+    {
+#ifdef CUDA_ENABLED
+        cudaHostUnregister(m_visibilities.data());
+        cudaHostUnregister(m_UVW.data());
+#endif
+    }
+
     bool Integration::operator==(const Integration& rhs) const
     {
         Eigen::Map<const Eigen::VectorXcd> datav(m_visibilities.data(), m_visibilities.size());

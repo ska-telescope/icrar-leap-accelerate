@@ -56,7 +56,7 @@ namespace cpu
     class MeasurementSet;
 
     /**
-     * @brief 
+     * @brief A container for storing a visibilities tensor for accumulation during phase rotating.
      * 
      */
     class Integration
@@ -79,6 +79,8 @@ namespace cpu
             unsigned int channels,
             unsigned int baselines,
             unsigned int polarizations);
+
+        ~Integration();
 
         bool operator==(const Integration& rhs) const;
 
