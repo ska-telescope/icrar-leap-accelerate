@@ -173,7 +173,7 @@ namespace cuda
             LOG(info) << "PhaseRotate";
 
             icrar::cuda::RotateUVW(
-                deviceMetadata.GetDD(),
+                directionBuffer->GetDD(),
                 solutionIntervalBuffer->GetOldUVW(),
                 directionBuffer->GetUVW());
 

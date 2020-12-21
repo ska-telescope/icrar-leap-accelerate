@@ -129,7 +129,7 @@ namespace cuda
 
     void DeviceMetaData::SetAvgData(int v)
     {
-        cudaMemset(m_directionBuffer->m_avgData.Get(), v, m_directionBuffer->m_avgData.GetSize());
+        cudaMemset(m_directionBuffer->GetAvgData().Get(), v, m_directionBuffer->GetAvgData().GetSize());
     }
 
     void DeviceMetaData::ToHost(cpu::MetaData& metadata) const
@@ -137,15 +137,15 @@ namespace cuda
         m_constantBuffer->ToHost(metadata);
 
         m_solutionIntervalBuffer->GetOldUVW().ToHost(metadata.m_oldUVW);
-        m_directionBuffer->m_UVW.ToHost(metadata.m_UVW);
-        metadata.m_direction = m_directionBuffer->m_direction;
-        metadata.m_dd = m_directionBuffer->m_dd;
-        m_directionBuffer->m_avgData.ToHost(metadata.m_avgData);
+        m_directionBuffer->GetUVW().ToHost(metadata.m_UVW);
+        metadata.m_direction = m_directionBuffer->GetDirection();
+        metadata.m_dd = m_directionBuffer->GetDD();
+        m_directionBuffer->GetAvgData().ToHost(metadata.m_avgData);
     }
 
     void DeviceMetaData::AvgDataToHost(Eigen::MatrixXcd& host) const
     {
-        m_directionBuffer->m_avgData.ToHost(host);
+        m_directionBuffer->GetAvgData().ToHost(host);
     }
 
     cpu::MetaData DeviceMetaData::ToHost() const
