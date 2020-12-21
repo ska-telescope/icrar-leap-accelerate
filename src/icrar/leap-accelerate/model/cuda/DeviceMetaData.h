@@ -99,11 +99,8 @@ namespace cuda
      */
     class SolutionIntervalBuffer
     {
-        SolutionIntervalBuffer();
-        //device_matrix<double> m_oldUVW;
         device_vector<icrar::MVuvw> m_oldUVW;
     public:
-        //SolutionIntervalBuffer(const Eigen::MatrixXd& oldUvw);
         SolutionIntervalBuffer(const std::vector<icrar::MVuvw>& oldUvw);
         
         const device_vector<icrar::MVuvw>& GetOldUVW() const { return m_oldUVW; }
@@ -167,8 +164,6 @@ namespace cuda
      */
     class DeviceMetaData
     {
-        DeviceMetaData();
-
         std::shared_ptr<ConstantBuffer> m_constantBuffer; // Constant buffer, never null
         std::shared_ptr<SolutionIntervalBuffer> m_solutionIntervalBuffer;
         std::shared_ptr<DirectionBuffer> m_directionBuffer;

@@ -23,13 +23,9 @@
 #pragma once
 
 #include <icrar/leap-accelerate/common/stream_extensions.h>
-#include <icrar/leap-accelerate/common/vector_extensions.h>
 #include <icrar/leap-accelerate/common/eigen_extensions.h>
+#include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
-
-#include <casacore/ms/MeasurementSets.h>
-#include <casacore/casa/Arrays/Matrix.h>
-#include <casacore/casa/Arrays/Array.h>
 
 #include <Eigen/Core>
 #include <Eigen/Dense>

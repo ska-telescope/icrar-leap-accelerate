@@ -58,10 +58,6 @@ namespace cuda
         m_Ad1.ToHost(host.m_Ad1);
     }
 
-    // SolutionIntervalBuffer::SolutionIntervalBuffer(const Eigen::MatrixXd& oldUvw)
-    // : m_oldUVW(oldUvw)
-    // {}
-
     SolutionIntervalBuffer::SolutionIntervalBuffer(const std::vector<icrar::MVuvw>& oldUvw)
     : m_oldUVW(oldUvw)
     {}
@@ -121,9 +117,9 @@ namespace cuda
         std::shared_ptr<ConstantBuffer> constantBuffer,
         std::shared_ptr<SolutionIntervalBuffer> SolutionIntervalBuffer,
         std::shared_ptr<DirectionBuffer> directionBuffer)
-    : m_constantBuffer(constantBuffer)
-    , m_solutionIntervalBuffer(SolutionIntervalBuffer)
-    , m_directionBuffer(directionBuffer)
+    : m_constantBuffer(std::move(constantBuffer))
+    , m_solutionIntervalBuffer(std::move(SolutionIntervalBuffer))
+    , m_directionBuffer(std::move(directionBuffer))
     {}
 
     const icrar::cpu::Constants& DeviceMetaData::GetConstants() const
@@ -154,10 +150,6 @@ namespace cuda
 
     cpu::MetaData DeviceMetaData::ToHost() const
     {
-        //TODO: tidy up using a constructor for now
-        //TODO: casacore::MVuvw and casacore::MVDirection not safe to copy to cuda
-        std::vector<icrar::MVuvw> uvwTemp;
-        m_directionBuffer->m_UVW.ToHost(uvwTemp);
         cpu::MetaData result = cpu::MetaData();
         ToHost(result);
         return result;
