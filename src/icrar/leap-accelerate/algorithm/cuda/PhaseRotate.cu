@@ -193,23 +193,22 @@ namespace cuda
 
     __global__ void g_RotateUVW(
         Eigen::Matrix3d dd,
-        const double* pOldUVW,
-        double* pUVW,
+        const double* pUVWs,
+        double* pRotatedUVWs,
         int uvwLength)
     { 
-        auto oldUVWs = Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>>(pOldUVW, uvwLength, 3);
-        auto UVWs = Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>>(pUVW, uvwLength, 3);
+        auto UVWs = Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>>(pUVWs, uvwLength, 3);
+        auto rotatedUVWs = Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>>(pRotatedUVWs, uvwLength, 3);
         int row = blockDim.x * blockIdx.x + threadIdx.x;
-        Eigen::RowVector3d uvw = oldUVWs.row(row) * dd;
-        UVWs.row(row) = uvw;
+        rotatedUVWs.row(row) = UVWs.row(row) * dd;
     }
 
-    __host__ void RotateUVW(Eigen::Matrix3d dd, const device_vector<icrar::MVuvw>& oldUVW, device_vector<icrar::MVuvw>& UVW)
+    __host__ void RotateUVW(Eigen::Matrix3d dd, const device_vector<icrar::MVuvw>& UVWs, device_vector<icrar::MVuvw>& rotatedUVWs)
     {
-        assert(oldUVW.GetCount() == UVW.GetCount());
+        assert(UVWs.GetCount() == rotatedUVWs.GetCount());
         dim3 blockSize = dim3(1024, 1, 1);
-        dim3 gridSize = dim3((int)ceil((float)oldUVW.GetCount() / blockSize.x), 1, 1);
-        g_RotateUVW<<<blockSize, gridSize>>>(dd, oldUVW.Get()->data(), UVW.Get()->data(), oldUVW.GetCount());
+        dim3 gridSize = dim3((int)ceil((float)UVWs.GetCount() / blockSize.x), 1, 1);
+        g_RotateUVW<<<blockSize, gridSize>>>(dd, UVWs.Get()->data(), rotatedUVWs.Get()->data(), UVWs.GetCount());
     }
 
     void PhaseRotate(
