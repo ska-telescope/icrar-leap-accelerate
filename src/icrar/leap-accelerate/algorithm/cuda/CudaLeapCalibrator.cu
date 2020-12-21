@@ -188,7 +188,7 @@ namespace cuda
 
             LOG(info) << "RotateUVW";
             RotateUVW(
-                deviceMetadata.GetDD(),
+                directionBuffer->GetDD(),
                 solutionIntervalBuffer->GetOldUVW(),
                 directionBuffer->GetUVW());
 
@@ -247,23 +247,23 @@ namespace cuda
      */
     __global__ void g_RotateUVW(
         const Eigen::Matrix3d dd,
-        const Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>> oldUVWs,
-        Eigen::Map<Eigen::Matrix<double, 3, Eigen::Dynamic>> UVWs)
+        const Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>> UVWs,
+        Eigen::Map<Eigen::Matrix<double, 3, Eigen::Dynamic>> RotatedUVWs)
     {
         // Compute rows in parallel
         int row = blockDim.x * blockIdx.x + threadIdx.x;
-        UVWs.col(row) = dd * oldUVWs.col(row);
+        RotatedUVWs.col(row) = dd * UVWs.col(row);
     }
 
-    __host__ void CudaLeapCalibrator::RotateUVW(Eigen::Matrix3d dd, const device_vector<icrar::MVuvw>& oldUVW, device_vector<icrar::MVuvw>& UVW)
+    __host__ void CudaLeapCalibrator::RotateUVW(Eigen::Matrix3d dd, const device_vector<icrar::MVuvw>& UVWs, device_vector<icrar::MVuvw>& rotatedUVWs)
     {
-        assert(oldUVW.GetCount() != UVW.GetCount());
+        assert(UVWs.GetCount() != rotatedUVWs.GetCount());
         dim3 blockSize = dim3(1024, 1, 1);
-        dim3 gridSize = dim3((int)ceil((float)oldUVW.GetCount() / blockSize.x), 1, 1);
+        dim3 gridSize = dim3((int)ceil((float)UVWs.GetCount() / blockSize.x), 1, 1);
 
-        auto oldUVWMap = Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>>(oldUVW.Get()->data(), 3, oldUVW.GetCount());
-        auto UVWMap = Eigen::Map<Eigen::Matrix<double, 3, Eigen::Dynamic>>(UVW.Get()->data(), 3, UVW.GetCount());
-        g_RotateUVW<<<blockSize, gridSize>>>(dd, oldUVWMap, UVWMap);
+        auto UVWsMap = Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>>(UVWs.Get()->data(), 3, UVWs.GetCount());
+        auto rotatedUVWsMap = Eigen::Map<Eigen::Matrix<double, 3, Eigen::Dynamic>>(rotatedUVWs.Get()->data(), 3, rotatedUVWs.GetCount());
+        g_RotateUVW<<<blockSize, gridSize>>>(dd, UVWsMap, rotatedUVWsMap);
     }
 
     /**

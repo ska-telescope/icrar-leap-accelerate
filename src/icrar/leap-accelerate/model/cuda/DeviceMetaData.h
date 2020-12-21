@@ -99,11 +99,8 @@ namespace cuda
      */
     class SolutionIntervalBuffer
     {
-        SolutionIntervalBuffer();
-        //device_matrix<double> m_oldUVW;
         device_vector<icrar::MVuvw> m_oldUVW;
     public:
-        //SolutionIntervalBuffer(const Eigen::MatrixXd& oldUvw);
         SolutionIntervalBuffer(const std::vector<icrar::MVuvw>& oldUvw);
         
         const device_vector<icrar::MVuvw>& GetOldUVW() const { return m_oldUVW; }
@@ -115,15 +112,15 @@ namespace cuda
      */
     class DirectionBuffer
     {
-    public:
         icrar::MVDirection m_direction;
         Eigen::Matrix3d m_dd;
 
         device_vector<icrar::MVuvw> m_UVW;
         device_matrix<std::complex<double>> m_avgData;
 
+    public:
         /**
-         * @brief Construct a new Direction Buffer object initializing all memory
+         * @brief Constructs a new Direction Buffer object initializing all memory
          * 
          * @param uvw 
          * @param direction 
@@ -137,7 +134,7 @@ namespace cuda
             const Eigen::MatrixXcd& avgData);
 
         /**
-         * @brief Construct a new Direction Buffer object for computation by zeroing uvw and avgData
+         * @brief Constructs a new Direction Buffer object for computation by zeroing uvw and avgData
          * 
          * @param direction 
          * @param dd 
@@ -152,13 +149,15 @@ namespace cuda
             int avgDataRows,
             int avgDataCols);
 
+        const icrar::MVDirection& GetDirection() const { return m_direction; }
         const device_vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
+        const Eigen::Matrix3d& GetDD() const { return m_dd; }
+
         device_vector<icrar::MVuvw>& GetUVW() { return m_UVW; }
+        device_matrix<std::complex<double>>& GetAvgData() { return m_avgData; }
 
         void SetDirection(const icrar::MVDirection& direction);
         void SetDD(const Eigen::Matrix3d& dd);
-
-        device_matrix<std::complex<double>>& GetAvgData() { return m_avgData; }
     };
 
     /**
@@ -167,8 +166,6 @@ namespace cuda
      */
     class DeviceMetaData
     {
-        DeviceMetaData();
-
         std::shared_ptr<ConstantBuffer> m_constantBuffer; // Constant buffer, never null
         std::shared_ptr<SolutionIntervalBuffer> m_solutionIntervalBuffer;
         std::shared_ptr<DirectionBuffer> m_directionBuffer;
@@ -202,12 +199,12 @@ namespace cuda
         const icrar::cpu::Constants& GetConstants() const;
 
         const device_vector<icrar::MVuvw>& GetOldUVW() const { return m_solutionIntervalBuffer->GetOldUVW(); }
-        const device_vector<icrar::MVuvw>& GetUVW() const { return m_directionBuffer->m_UVW; }
-        const icrar::MVDirection& GetDirection() const { return m_directionBuffer->m_direction; }
-        const Eigen::Matrix3d& GetDD() const { return m_directionBuffer->m_dd; }
+        const device_vector<icrar::MVuvw>& GetUVW() const { return m_directionBuffer->GetUVW(); }
+        const icrar::MVDirection& GetDirection() const { return m_directionBuffer->GetDirection(); }
+        const Eigen::Matrix3d& GetDD() const { return m_directionBuffer->GetDD(); }
         
         const ConstantBuffer& GetConstantBuffer() const { return *m_constantBuffer; }
-        const device_matrix<std::complex<double>>& GetAvgData() const { return m_directionBuffer->m_avgData; };
+        const device_matrix<std::complex<double>>& GetAvgData() { return m_directionBuffer->GetAvgData(); };
 
         void SetAvgData(int v);
 

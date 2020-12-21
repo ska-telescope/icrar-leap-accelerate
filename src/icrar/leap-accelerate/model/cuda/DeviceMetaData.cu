@@ -58,10 +58,6 @@ namespace cuda
         m_Ad1.ToHost(host.m_Ad1);
     }
 
-    // SolutionIntervalBuffer::SolutionIntervalBuffer(const Eigen::MatrixXd& oldUvw)
-    // : m_oldUVW(oldUvw)
-    // {}
-
     SolutionIntervalBuffer::SolutionIntervalBuffer(const std::vector<icrar::MVuvw>& oldUvw)
     : m_oldUVW(oldUvw)
     {}
@@ -121,9 +117,9 @@ namespace cuda
         std::shared_ptr<ConstantBuffer> constantBuffer,
         std::shared_ptr<SolutionIntervalBuffer> SolutionIntervalBuffer,
         std::shared_ptr<DirectionBuffer> directionBuffer)
-    : m_constantBuffer(constantBuffer)
-    , m_solutionIntervalBuffer(SolutionIntervalBuffer)
-    , m_directionBuffer(directionBuffer)
+    : m_constantBuffer(std::move(constantBuffer))
+    , m_solutionIntervalBuffer(std::move(SolutionIntervalBuffer))
+    , m_directionBuffer(std::move(directionBuffer))
     {}
 
     const icrar::cpu::Constants& DeviceMetaData::GetConstants() const
@@ -133,7 +129,7 @@ namespace cuda
 
     void DeviceMetaData::SetAvgData(int v)
     {
-        cudaMemset(m_directionBuffer->m_avgData.Get(), v, m_directionBuffer->m_avgData.GetSize());
+        cudaMemset(m_directionBuffer->GetAvgData().Get(), v, m_directionBuffer->GetAvgData().GetSize());
     }
 
     void DeviceMetaData::ToHost(cpu::MetaData& metadata) const
@@ -141,23 +137,19 @@ namespace cuda
         m_constantBuffer->ToHost(metadata);
 
         m_solutionIntervalBuffer->GetOldUVW().ToHost(metadata.m_oldUVW);
-        m_directionBuffer->m_UVW.ToHost(metadata.m_UVW);
-        metadata.m_direction = m_directionBuffer->m_direction;
-        metadata.m_dd = m_directionBuffer->m_dd;
-        m_directionBuffer->m_avgData.ToHost(metadata.m_avgData);
+        m_directionBuffer->GetUVW().ToHost(metadata.m_UVW);
+        metadata.m_direction = m_directionBuffer->GetDirection();
+        metadata.m_dd = m_directionBuffer->GetDD();
+        m_directionBuffer->GetAvgData().ToHost(metadata.m_avgData);
     }
 
     void DeviceMetaData::AvgDataToHost(Eigen::MatrixXcd& host) const
     {
-        m_directionBuffer->m_avgData.ToHost(host);
+        m_directionBuffer->GetAvgData().ToHost(host);
     }
 
     cpu::MetaData DeviceMetaData::ToHost() const
     {
-        //TODO: tidy up using a constructor for now
-        //TODO: casacore::MVuvw and casacore::MVDirection not safe to copy to cuda
-        std::vector<icrar::MVuvw> uvwTemp;
-        m_directionBuffer->m_UVW.ToHost(uvwTemp);
         cpu::MetaData result = cpu::MetaData();
         ToHost(result);
         return result;
