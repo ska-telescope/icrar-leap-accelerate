@@ -165,7 +165,7 @@ namespace cuda
 
             directionBuffer->SetDirection(metadata.GetDirection());
             directionBuffer->SetDD(metadata.GetDD());
-            directionBuffer->GetAvgData().SetZeroSync();
+            directionBuffer->GetAvgData().SetZeroAsync();
 
             input_queue[0].SetData(integration);
 
@@ -196,20 +196,17 @@ namespace cuda
         const double* pOldUVW,
         double* pUVW,
         int uvwLength)
-    {
+    { 
         auto oldUVWs = Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>>(pOldUVW, uvwLength, 3);
         auto UVWs = Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>>(pUVW, uvwLength, 3);
         int row = blockDim.x * blockIdx.x + threadIdx.x;
-        auto oldUvw = Eigen::RowVector3d(oldUVWs(row, 0), oldUVWs(row, 1), oldUVWs(row, 2));
-        Eigen::RowVector3d uvw = oldUvw * dd;
-        UVWs(row, 0) = uvw(0);
-        UVWs(row, 1) = uvw(1);
-        UVWs(row, 2) = uvw(2);
+        Eigen::RowVector3d uvw = oldUVWs.row(row) * dd;
+        UVWs.row(row) = uvw;
     }
 
     __host__ void RotateUVW(Eigen::Matrix3d dd, const device_vector<icrar::MVuvw>& oldUVW, device_vector<icrar::MVuvw>& UVW)
     {
-        assert(oldUVW.GetCount() != UVW.GetCount());
+        assert(oldUVW.GetCount() == UVW.GetCount());
         dim3 blockSize = dim3(1024, 1, 1);
         dim3 gridSize = dim3((int)ceil((float)oldUVW.GetCount() / blockSize.x), 1, 1);
         g_RotateUVW<<<blockSize, gridSize>>>(dd, oldUVW.Get()->data(), UVW.Get()->data(), oldUVW.GetCount());
