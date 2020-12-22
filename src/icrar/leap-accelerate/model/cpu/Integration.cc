@@ -57,9 +57,21 @@ namespace cpu
         LOG(info) << "uvw: " << memory_amount(uvw_size);
         m_visibilities = ms.GetVis(startBaseline, startChannel, channels, baselines, polarizations);
         m_UVW = ToUVWVector(ms.GetCoords(startBaseline, baselines));
+#ifdef CUDA_ENABLED
+        cudaHostRegister(m_visibilities.data(), m_visibilities.size() * sizeof(std::complex<double>), cudaHostRegisterPortable);
+        cudaHostRegister(m_UVW.data(), m_UVW.size() * sizeof(double), cudaHostRegisterPortable);
+#endif
     }
 
+#ifdef CUDA_ENABLED
+    Integration::~Integration()
+    {
+        cudaHostUnregister(m_visibilities.data());
+        cudaHostUnregister(m_UVW.data());
+    }
+#else
     Integration::~Integration() = default;
+#endif
 
     bool Integration::operator==(const Integration& rhs) const
     {
