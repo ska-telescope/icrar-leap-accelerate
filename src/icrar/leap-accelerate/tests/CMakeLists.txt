@@ -45,8 +45,10 @@ if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
 endif()
 
 # CUDA Options
-target_compile_options(${TEST_TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)
-configure_cuda_warnings(${TEST_TARGET_NAME})
+if(CUDA_ENABLED)
+  target_compile_options(${TEST_TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)
+  configure_cuda_warnings(${TEST_TARGET_NAME})
+endif()
 
 target_link_libraries(${TEST_TARGET_NAME} LeapAccelerate gtest)
 
