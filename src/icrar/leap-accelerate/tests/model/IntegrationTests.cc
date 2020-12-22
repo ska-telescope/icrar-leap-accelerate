@@ -88,8 +88,8 @@ namespace icrar
                 ASSERT_EQ(48, integration.GetVis().dimension(2));
                 ASSERT_EQCD(-0.703454494476318-24.7045249938965i, integration.GetVis()(0,1,0), THRESHOLD);
                 ASSERT_EQCD(5.16687202453613 + -1.57053351402283i, integration.GetVis()(1,1,0), THRESHOLD);
-                ASSERT_DOUBLE_EQ(0.0, integration.GetUVW()[0](0));
-                ASSERT_DOUBLE_EQ(-213.2345748340571, integration.GetUVW()[1](0));
+                ASSERT_DOUBLE_EQ(0.0, integration.GetRotatedUVW()[0](0));
+                ASSERT_DOUBLE_EQ(-213.2345748340571, integration.GetRotatedUVW()[1](0));
 
 
                 integration = cpu::Integration(1, *ms, ms->GetNumBaselines(), ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
@@ -98,8 +98,8 @@ namespace icrar
                 ASSERT_EQ(48, integration.GetVis().dimension(2));
                 ASSERT_EQCD(-9.90243244171143 + -39.7880058288574i, integration.GetVis()(0,1,0), THRESHOLD);
                 ASSERT_EQCD(18.1002998352051 + -15.6084890365601i, integration.GetVis()(1,1,0), THRESHOLD);
-                ASSERT_DOUBLE_EQ(0.0, integration.GetUVW()[0](0));
-                ASSERT_DOUBLE_EQ(-213.16346997196314, integration.GetUVW()[1](0));
+                ASSERT_DOUBLE_EQ(0.0, integration.GetRotatedUVW()[0](0));
+                ASSERT_DOUBLE_EQ(-213.16346997196314, integration.GetRotatedUVW()[1](0));
             }
 
         }

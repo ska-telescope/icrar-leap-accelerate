@@ -58,30 +58,30 @@ namespace cuda
         m_Ad1.ToHost(host.m_Ad1);
     }
 
-    SolutionIntervalBuffer::SolutionIntervalBuffer(const std::vector<icrar::MVuvw>& oldUvw)
-    : m_oldUVW(oldUvw)
+    SolutionIntervalBuffer::SolutionIntervalBuffer(const std::vector<icrar::MVuvw>& uvw)
+    : m_uvw(uvw)
     {}
 
     DirectionBuffer::DirectionBuffer(
         const icrar::MVDirection& direction,
         const Eigen::Matrix3d& dd,
-        const std::vector<icrar::MVuvw>& uvw,
+        const std::vector<icrar::MVuvw>& rotatedUVW,
         const Eigen::MatrixXcd& avgData)
     : m_direction(direction)
     , m_dd(dd)
-    , m_UVW(uvw)
+    , m_rotatedUVW(rotatedUVW)
     , m_avgData(avgData)
     {}
 
     DirectionBuffer::DirectionBuffer(
         const icrar::MVDirection& direction,
         const Eigen::Matrix3d& dd,
-        int uvwRows,
+        int uvwSize,
         int avgDataRows,
         int avgDataCols)
     : m_direction(direction)
     , m_dd(dd)
-    , m_UVW(uvwRows)
+    , m_rotatedUVW(uvwSize)
     , m_avgData(avgDataRows, avgDataCols)
     {}
 
@@ -105,11 +105,11 @@ namespace cuda
         metadata.GetI1(),
         metadata.GetAd1()))
     , m_solutionIntervalBuffer(std::make_shared<SolutionIntervalBuffer>(
-        metadata.GetOldUVW()))
+        metadata.GetUVW()))
     , m_directionBuffer(std::make_shared<DirectionBuffer>(
         metadata.GetDirection(),
         metadata.GetDD(),
-        metadata.GetUVW(),
+        metadata.GetRotatedUVW(),
         metadata.GetAvgData()))
     {}
 
@@ -136,16 +136,11 @@ namespace cuda
     {
         m_constantBuffer->ToHost(metadata);
 
-        m_solutionIntervalBuffer->GetOldUVW().ToHost(metadata.m_oldUVW);
-        m_directionBuffer->GetUVW().ToHost(metadata.m_UVW);
+        m_solutionIntervalBuffer->GetUVW().ToHost(metadata.m_UVW);
+        m_directionBuffer->GetRotatedUVW().ToHost(metadata.m_rotatedUVW);
         metadata.m_direction = m_directionBuffer->GetDirection();
         metadata.m_dd = m_directionBuffer->GetDD();
         m_directionBuffer->GetAvgData().ToHost(metadata.m_avgData);
-    }
-
-    void DeviceMetaData::AvgDataToHost(Eigen::MatrixXcd& host) const
-    {
-        m_directionBuffer->GetAvgData().ToHost(host);
     }
 
     cpu::MetaData DeviceMetaData::ToHost() const

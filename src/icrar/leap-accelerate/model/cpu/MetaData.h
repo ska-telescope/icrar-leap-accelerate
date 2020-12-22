@@ -114,8 +114,8 @@ namespace cpu
         Eigen::VectorXi m_I1;
         Eigen::MatrixXd m_Ad1;
 
-        std::vector<icrar::MVuvw> m_oldUVW;
-        std::vector<icrar::MVuvw> m_UVW; // late initialized
+        std::vector<icrar::MVuvw> m_UVW;
+        std::vector<icrar::MVuvw> m_rotatedUVW; // late initialized
     
         icrar::MVDirection m_direction; // calibration direction, late initialized
 
@@ -154,14 +154,14 @@ namespace cpu
         const Eigen::VectorXi& GetI1() const;
         const Eigen::MatrixXd& GetAd1() const;
 
-        const std::vector<icrar::MVuvw>& GetOldUVW() const { return m_oldUVW; }
         const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
+        const std::vector<icrar::MVuvw>& GetRotatedUVW() const { return m_rotatedUVW; }
 
         const icrar::MVDirection& GetDirection() const { return m_direction; }
         const Eigen::Matrix3d& GetDD() const { return m_dd; }
         void SetDirection(const icrar::MVDirection& direction);
 
-        void SetOldUVW(const std::vector<icrar::MVuvw>& uvws);
+        void SetUVW(const std::vector<icrar::MVuvw>& uvws);
 
         /**
          * @brief Updates the rotated UVW vector using the DD matrix

@@ -110,7 +110,7 @@ namespace cpu
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
-        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), minimumBaselineThreshold, isFileSystemCacheEnabled);
+        auto metadata = icrar::cpu::MetaData(ms, integration.GetRotatedUVW(), minimumBaselineThreshold, isFileSystemCacheEnabled);
         LOG(info) << "Read metadata in " << metadata_read_timer;
 
         profiling::timer phase_rotate_timer;
@@ -176,7 +176,7 @@ namespace cpu
         {
             int md_baseline = static_cast<int>(baseline % static_cast<size_t>(metadata.GetConstants().nbaselines)); // metadata baseline
 
-            double shiftFactor = -two_pi<double>() * (metadata.GetUVW()[baseline](2) - metadata.GetOldUVW()[baseline](2));
+            double shiftFactor = -two_pi<double>() * (metadata.GetRotatedUVW()[baseline](2) - metadata.GetUVW()[baseline](2));
 
             // Loop over channels
             for(uint32_t channel = 0; channel < metadata.GetConstants().channels; channel++)

@@ -85,7 +85,7 @@ namespace cpu
         && m_integrationNumber == rhs.m_integrationNumber;
     }
 
-    const std::vector<icrar::MVuvw>& Integration::GetUVW() const
+    const std::vector<icrar::MVuvw>& Integration::GetRotatedUVW() const
     {
         return m_UVW;
     }

@@ -136,7 +136,7 @@ namespace cuda
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
         
-        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), minimumBaselineThreshold, isFileSystemCacheEnabled);
+        auto metadata = icrar::cpu::MetaData(ms, integration.GetRotatedUVW(), minimumBaselineThreshold, isFileSystemCacheEnabled);
         
         auto constantBuffer = std::make_shared<ConstantBuffer>(
             metadata.GetConstants(),
@@ -148,12 +148,12 @@ namespace cuda
             metadata.GetAd1()
         );
 
-        auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetOldUVW());
+        auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetUVW());
         
         auto directionBuffer = std::make_shared<DirectionBuffer>(
             metadata.GetDirection(),
             metadata.GetDD(),
-            metadata.GetOldUVW().size(),
+            metadata.GetUVW().size(),
             metadata.GetAvgData().rows(),
             metadata.GetAvgData().cols());
 
@@ -189,8 +189,8 @@ namespace cuda
             LOG(info) << "RotateUVW";
             RotateUVW(
                 directionBuffer->GetDD(),
-                solutionIntervalBuffer->GetOldUVW(),
-                directionBuffer->GetUVW());
+                solutionIntervalBuffer->GetUVW(),
+                directionBuffer->GetRotatedUVW());
 
             LOG(info) << "PhaseRotate";
             PhaseRotate(
@@ -348,8 +348,8 @@ namespace cuda
         g_RotateVisibilities<<<gridSize, blockSize>>>(
             (cuDoubleComplex*)integration.GetVis().Get(), integration.GetVis().GetDimensionSize(0), integration.GetVis().GetDimensionSize(1), integration.GetVis().GetDimensionSize(2),
             constants,
+            (double3*)metadata.GetRotatedUVW().Get(), metadata.GetRotatedUVW().GetCount(),
             (double3*)metadata.GetUVW().Get(), metadata.GetUVW().GetCount(),
-            (double3*)metadata.GetOldUVW().Get(), metadata.GetOldUVW().GetCount(),
             (cuDoubleComplex*)metadata.GetAvgData().Get(), metadata.GetAvgData().GetRows(), metadata.GetAvgData().GetCols());
     }
 

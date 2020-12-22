@@ -99,11 +99,11 @@ namespace cuda
      */
     class SolutionIntervalBuffer
     {
-        device_vector<icrar::MVuvw> m_oldUVW;
+        device_vector<icrar::MVuvw> m_uvw;
     public:
-        SolutionIntervalBuffer(const std::vector<icrar::MVuvw>& oldUvw);
+        SolutionIntervalBuffer(const std::vector<icrar::MVuvw>& uvw);
         
-        const device_vector<icrar::MVuvw>& GetOldUVW() const { return m_oldUVW; }
+        const device_vector<icrar::MVuvw>& GetUVW() const { return m_uvw; }
     };
 
     /**
@@ -115,7 +115,7 @@ namespace cuda
         icrar::MVDirection m_direction;
         Eigen::Matrix3d m_dd;
 
-        device_vector<icrar::MVuvw> m_UVW;
+        device_vector<icrar::MVuvw> m_rotatedUVW;
         device_matrix<std::complex<double>> m_avgData;
 
     public:
@@ -130,7 +130,7 @@ namespace cuda
         DirectionBuffer(
             const icrar::MVDirection& direction,
             const Eigen::Matrix3d& dd,
-            const std::vector<icrar::MVuvw>& uvw,
+            const std::vector<icrar::MVuvw>& rotatedUVW,
             const Eigen::MatrixXcd& avgData);
 
         /**
@@ -138,22 +138,22 @@ namespace cuda
          * 
          * @param direction 
          * @param dd 
-         * @param uvwRows 
+         * @param uvwSize 
          * @param avgDataRows 
          * @param avgDataCols 
          */
         DirectionBuffer(
             const icrar::MVDirection& direction,
             const Eigen::Matrix3d& dd,
-            int uvwRows,
+            int uvwSize,
             int avgDataRows,
             int avgDataCols);
 
         const icrar::MVDirection& GetDirection() const { return m_direction; }
-        const device_vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
+        const device_vector<icrar::MVuvw>& GetRotatedUVW() const { return m_rotatedUVW; }
         const Eigen::Matrix3d& GetDD() const { return m_dd; }
 
-        device_vector<icrar::MVuvw>& GetUVW() { return m_UVW; }
+        device_vector<icrar::MVuvw>& GetRotatedUVW() { return m_rotatedUVW; }
         device_matrix<std::complex<double>>& GetAvgData() { return m_avgData; }
 
         void SetDirection(const icrar::MVDirection& direction);
@@ -198,8 +198,8 @@ namespace cuda
 
         const icrar::cpu::Constants& GetConstants() const;
 
-        const device_vector<icrar::MVuvw>& GetOldUVW() const { return m_solutionIntervalBuffer->GetOldUVW(); }
-        const device_vector<icrar::MVuvw>& GetUVW() const { return m_directionBuffer->GetUVW(); }
+        const device_vector<icrar::MVuvw>& GetUVW() const { return m_solutionIntervalBuffer->GetUVW(); }
+        const device_vector<icrar::MVuvw>& GetRotatedUVW() const { return m_directionBuffer->GetRotatedUVW(); }
         const icrar::MVDirection& GetDirection() const { return m_directionBuffer->GetDirection(); }
         const Eigen::Matrix3d& GetDD() const { return m_directionBuffer->GetDD(); }
         
@@ -211,13 +211,6 @@ namespace cuda
         void ToHost(icrar::cpu::MetaData& host) const;
         icrar::cpu::MetaData ToHost() const;
         void ToHostAsync(icrar::cpu::MetaData& host) const;
-
-        /**
-         * @brief Copies average data to host memory
-         * 
-         * @param host 
-         */
-        void AvgDataToHost(Eigen::MatrixXcd& host) const;
     };
 }
 }

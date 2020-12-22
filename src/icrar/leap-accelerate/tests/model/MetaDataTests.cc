@@ -201,12 +201,12 @@ namespace icrar
             );
 
             auto solutionIntervalBuffer = std::make_shared<icrar::cuda::SolutionIntervalBuffer>(
-                expectedhostMetadata.GetOldUVW()
+                expectedhostMetadata.GetUVW()
             );
             auto directionBuffer = std::make_shared<icrar::cuda::DirectionBuffer>(
                 expectedhostMetadata.GetDirection(),
                 expectedhostMetadata.GetDD(),
-                expectedhostMetadata.GetUVW(),
+                expectedhostMetadata.GetRotatedUVW(),
                 expectedhostMetadata.GetAvgData()
             );
 

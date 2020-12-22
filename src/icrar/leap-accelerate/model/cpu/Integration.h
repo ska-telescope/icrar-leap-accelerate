@@ -98,7 +98,7 @@ namespace cpu
          * 
          * @return const std::vector<icrar::MVuvw>& 
          */
-        const std::vector<icrar::MVuvw>& GetUVW() const;
+        const std::vector<icrar::MVuvw>& GetRotatedUVW() const;
 
         /**
          * @brief Get the Visibilities object of size (polarizations, baselines, channels)
