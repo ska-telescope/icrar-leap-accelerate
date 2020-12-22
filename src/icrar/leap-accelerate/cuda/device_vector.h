@@ -128,6 +128,12 @@ namespace cuda
             return m_count * sizeof(T);
         }
 
+        __host__ void SetZeroAsync()
+        {
+            size_t byteSize = m_count * sizeof(T);
+            checkCudaErrors(cudaMemsetAsync(m_buffer, 0, byteSize));
+        }
+
         /**
          * @brief Performs a synchronous copy of data into the device buffer
          * 
@@ -166,7 +172,7 @@ namespace cuda
             ToHost(out.data());
         }
 
-        __host__ void ToHostASync(T* out) const
+        __host__ void ToHostAsync(T* out) const
         {
             size_t bytes = m_count * sizeof(T);
             checkCudaErrors(cudaMemcpyAsync(out, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));

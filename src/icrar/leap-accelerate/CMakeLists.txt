@@ -50,6 +50,7 @@ set(sources
     core/version.cc
 
     common/MVDirection.cc
+    common/MVuvw.cc
     
     algorithm/Calibrate.cc
     algorithm/cpu/PhaseMatrixFunction.cc
