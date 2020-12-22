@@ -27,7 +27,7 @@
 
 namespace icrar
 {
-    std::unique_ptr<ILeapCalibrator> LeapCalibratorFactory::Create(ComputeImplementation impl) const
+    std::unique_ptr<ILeapCalibrator> LeapCalibratorFactory::Create(ComputeImplementation impl)
     {
         if(impl == ComputeImplementation::cpu)
         {

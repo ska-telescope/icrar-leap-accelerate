@@ -148,7 +148,7 @@ int main(int argc, char** argv)
         LOG(info) << version_information(argv[0]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         LOG(info) << arg_string(argc, argv);
 
-        auto calibrator = LeapCalibratorFactory().Create(args.GetComputeImplementation());
+        auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
         auto result = calibrator->Calibrate(args.GetMeasurementSet(), args.GetDirections(), args.GetMinimumBaselineThreshold(), args.IsFileSystemCacheEnabled());
         cpu::PrintResult(result, args.GetOutputStream());
     }

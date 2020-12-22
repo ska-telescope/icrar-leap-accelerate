@@ -36,6 +36,8 @@ namespace icrar
      */
     class LeapCalibratorFactory : boost::noncopyable
     {
+        LeapCalibratorFactory() = delete;
+
     public:
         /**
          * @brief Creates a calibrator object that performs leap calibration
@@ -44,6 +46,6 @@ namespace icrar
          * @param impl 
          * @return std::unique_ptr<ILeapCalibrator> 
          */
-        std::unique_ptr<ILeapCalibrator> Create(ComputeImplementation impl) const;
+        static std::unique_ptr<ILeapCalibrator> Create(ComputeImplementation impl);
     };
 } // namespace icrar

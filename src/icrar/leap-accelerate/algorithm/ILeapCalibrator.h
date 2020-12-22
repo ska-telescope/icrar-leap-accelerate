@@ -45,7 +45,7 @@ namespace icrar
     class ILeapCalibrator : boost::noncopyable
     {
     public:
-        virtual ~ILeapCalibrator() {};
+        virtual ~ILeapCalibrator() = default;
 
         /**
          * @brief Performs Leap calibration using a specialized implementation.
