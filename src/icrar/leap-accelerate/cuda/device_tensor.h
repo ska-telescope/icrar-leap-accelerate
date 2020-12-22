@@ -195,7 +195,9 @@ namespace cuda
         __host__ void SetDataAsync(const T* data)
         {
             size_t bytes = GetByteSize();
+            cudaHostRegister((void*)data, bytes, cudaHostRegisterPortable);
             checkCudaErrors(cudaMemcpyAsync(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
+            cudaHostUnregister((void*)data);
         }
 
         __host__ void SetDataAsync(const device_tensor3<T>& data)

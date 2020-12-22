@@ -76,7 +76,10 @@ namespace cuda
             throw icrar::invalid_argument_exception(os.str(), "integration", __FILE__, __LINE__);
         }
 
+        //cudaHostRegister(integration.GetVis().data(), integration.GetVis().size() * sizeof(std::complex<double>), cudaHostRegisterPortable);
         m_visibilities.SetDataAsync(integration.GetVis().data());
+        //cudaHostUnregister(integration.GetVis().data());
+
         index = integration.index;
         x = integration.x;
         channels = integration.channels;

@@ -82,6 +82,7 @@ namespace cuda
             other.m_rows = 0;
             other.m_cols = 0;
             other.m_buffer = nullptr;
+            return other;
         }
 
         /**
@@ -187,7 +188,9 @@ namespace cuda
         __host__ void SetDataAsync(const T* data)
         {
             size_t bytes = GetSize();
+            cudaHostRegister(data, bytes, cudaHostRegisterPortable);
             checkCudaErrors(cudaMemcpyAsync(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
+            cudaHostUnregister(data);
         }
 
         __host__ void ToHost(T* out) const
