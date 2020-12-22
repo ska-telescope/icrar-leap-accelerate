@@ -99,11 +99,11 @@ namespace cuda
      */
     class SolutionIntervalBuffer
     {
-        device_vector<icrar::MVuvw> m_uvw;
+        device_vector<icrar::MVuvw> m_UVW;
     public:
-        SolutionIntervalBuffer(const std::vector<icrar::MVuvw>& uvw);
+        SolutionIntervalBuffer(const std::vector<icrar::MVuvw>& UVW);
         
-        const device_vector<icrar::MVuvw>& GetUVW() const { return m_uvw; }
+        const device_vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
     };
 
     /**

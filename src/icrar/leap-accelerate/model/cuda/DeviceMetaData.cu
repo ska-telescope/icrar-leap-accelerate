@@ -59,7 +59,7 @@ namespace cuda
     }
 
     SolutionIntervalBuffer::SolutionIntervalBuffer(const std::vector<icrar::MVuvw>& uvw)
-    : m_uvw(uvw)
+    : m_UVW(uvw)
     {}
 
     DirectionBuffer::DirectionBuffer(
