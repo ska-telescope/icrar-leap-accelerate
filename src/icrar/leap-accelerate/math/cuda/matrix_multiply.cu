@@ -23,8 +23,20 @@
 
 #include <icrar/leap-accelerate/math/cuda/matrix_multiply.h>
 
-#include <cublasLt.h>
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+#include <cublas_v2.h>
+#include <cublasLt.h>
+
+#include <type_traits>
+
+template<typename T>
+struct is_cublas_supported : public std::false_type {};
+template<>
+struct is_cublas_supported<double> : public std::true_type {};
+template<>
+struct is_cublas_supported<float> : public std::true_type {};
+template<>
+struct is_cublas_supported<int32_t> : public std::true_type {};
 
 namespace icrar
 {
@@ -33,105 +45,103 @@ namespace cuda
     /**
      * @brief Performs matrix multiplcation with offset of the form C = A * B
      */
-    template<typename T>
+    template<typename T, typename=std::enable_if_t<is_cublas_supported<T>::value>>
     __host__ void mat_mul(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const T* A, const T* B, T* C)
-    {
-        throw invalid_argument_exception("invalid template", "T", __FILE__, __LINE__);
-    }
-    template<>
-    __host__ void mat_mul<double>(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const double* A, const double* B, double* C)
     {
         const double alpha = 1.0;
         const double beta = 0.0;
         cublasOperation_t transa = cublasOperation_t::CUBLAS_OP_N;
         cublasOperation_t transb = cublasOperation_t::CUBLAS_OP_N;
 
-        size_t lda = m;
-        size_t ldb = k;
-        size_t ldc = m;
+        int lda = m;
+        int ldb = k;
+        int ldc = m;
 
-        checkCudaErrors(cublasDgemm(
+        cublasComputeType_t computeType;
+        cudaDataType_t dataType;
+        if(std::is_same<T, double>::value)
+        {
+            computeType = CUBLAS_COMPUTE_64F;
+            dataType = CUDA_R_64F;
+        }
+        else if(std::is_same<T, float>::value)
+        {
+            computeType = CUBLAS_COMPUTE_32F;
+            dataType = CUDA_R_32F;
+        }
+        else if(std::is_same<T, std::int32_t>::value)
+        {
+            computeType = CUBLAS_COMPUTE_32I;
+            dataType = CUDA_R_32I;
+        }
+        else
+        {
+            throw invalid_argument_exception("invalid template", "T", __FILE__, __LINE__);
+        }
+
+        checkCudaErrors(cublasGemmEx(
             handle,
             transa, 
             transb,
             m, n, k,
-            &alpha, A, lda,
-            B, ldb,
-            &beta, C, ldc));
-    }
-
-    template<>
-    __host__ void mat_mul<float>(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const float* A, const float* B, float* C)
-    {
-        const float alpha = 1.0;
-        const float beta = 0.0;
-        cublasOperation_t transa = cublasOperation_t::CUBLAS_OP_N;
-        cublasOperation_t transb = cublasOperation_t::CUBLAS_OP_N;
-
-        size_t lda = m;
-        size_t ldb = n;
-        size_t ldc = m;
-
-        checkCudaErrors(cublasSgemm(
-            handle,
-            transa, 
-            transb,
-            m, n, k,
-            &alpha, A, lda,
-            B, ldb,
-            &beta, C, ldc));
+            &alpha,
+            A, dataType, lda,
+            B, dataType, ldb,
+            &beta,
+            C, dataType, ldc,
+            computeType,
+            cublasGemmAlgo_t::CUBLAS_GEMM_DEFAULT_TENSOR_OP));
     }
 
     /**
      * @brief Performs matrix multiplcation with offset of the form C = (A * B) + C
      */
-    template<typename T>
+    template<typename T, typename=std::enable_if_t<is_cublas_supported<T>::value>>
     __host__ void mat_mul_add(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const T* A, const T* B, T* C)
-    {
-        throw invalid_argument_exception("invalid template", "T", __FILE__, __LINE__);
-    }
-    template<>
-    __host__ void mat_mul_add<double>(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const double* A, const double* B, double* C)
     {
         const double alpha = 1.0;
         const double beta = 1.0;
         cublasOperation_t transa = cublasOperation_t::CUBLAS_OP_N;
         cublasOperation_t transb = cublasOperation_t::CUBLAS_OP_N;
 
-        size_t lda = m;
-        size_t ldb = k;
-        size_t ldc = m;
+        int lda = m;
+        int ldb = k;
+        int ldc = m;
 
-        checkCudaErrors(cublasDgemm(
+        cublasComputeType_t computeType;
+        cudaDataType_t dataType;
+        if(std::is_same<T, double>::value)
+        {
+            computeType = CUBLAS_COMPUTE_64F;
+            dataType = CUDA_R_64F;
+        }
+        else if(std::is_same<T, float>::value)
+        {
+            computeType = CUBLAS_COMPUTE_32F;
+            dataType = CUDA_R_32F;
+        }
+        else if(std::is_same<T, std::int32_t>::value)
+        {
+            computeType = CUBLAS_COMPUTE_32I;
+            dataType = CUDA_R_32I;
+        }
+        else
+        {
+            throw invalid_argument_exception("invalid template", "T", __FILE__, __LINE__);
+        }
+
+        checkCudaErrors(cublasGemmEx(
             handle,
             transa, 
             transb,
             m, n, k,
-            &alpha, A, lda,
-            B, ldb,
-            &beta, C, ldc));
-    }
-
-    template<>
-    __host__ void mat_mul_add<float>(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const float* A, const float* B, float* C)
-    {
-        const float alpha = 1.0;
-        const float beta = 1.0;
-        cublasOperation_t transa = cublasOperation_t::CUBLAS_OP_N;
-        cublasOperation_t transb = cublasOperation_t::CUBLAS_OP_N;
-
-        size_t lda = m;
-        size_t ldb = k;
-        size_t ldc = m;
-
-        checkCudaErrors(cublasSgemm(
-            handle,
-            transa, 
-            transb,
-            m, n, k,
-            &alpha, A, lda,
-            B, ldb,
-            &beta, C, ldc));
+            &alpha,
+            A, dataType, lda,
+            B, dataType, ldb,
+            &beta,
+            C, dataType, ldc,
+            computeType,
+            cublasGemmAlgo_t::CUBLAS_GEMM_DEFAULT_TENSOR_OP));
     }
 
     template<typename T>

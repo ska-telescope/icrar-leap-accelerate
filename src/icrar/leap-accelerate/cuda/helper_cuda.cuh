@@ -33,7 +33,7 @@
 
 #include "helper_string.cuh"
 
-#include <cusolverDn.h>
+#include <cublas_v2.h>
 #include <cublasLt.h>
 
 #include <cstdint>
