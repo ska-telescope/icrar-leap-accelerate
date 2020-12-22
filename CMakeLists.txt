@@ -109,7 +109,6 @@ endif()
 
 
 if (BUILD_TESTING)
-  #find_package(GTest)
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # required for Win32
   add_subdirectory(external/gtest-1.8.1 googletest EXCLUDE_FROM_ALL)
   enable_testing()
@@ -121,9 +120,9 @@ if (BUILD_TESTING)
       gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols
   )
   set_target_properties(gtest PROPERTIES FOLDER external)
-  #set_target_properties(gtest_main PROPERTIES FOLDER external)
+  set_target_properties(gtest_main PROPERTIES FOLDER external)
   set_target_properties(gmock PROPERTIES FOLDER external)
-  #set_target_properties(gmock_main PROPERTIES FOLDER external)
+  set_target_properties(gmock_main PROPERTIES FOLDER external)
 endif()
 
 # Global Libraries
@@ -157,11 +156,10 @@ add_definitions(-DBOOST_ALL_DYN_LINK)
 
 find_package(Boost REQUIRED COMPONENTS log log_setup)
 
+set(CASACORE_FIND_QUIETLY ON)
 find_package(Casacore REQUIRED)
 
 find_package(LAPACK)
-
-find_package(GSL)
 
 # Local Libraries
 #add_subdirectory(external/eigen-3.3.90) # builds eigen3 tests
