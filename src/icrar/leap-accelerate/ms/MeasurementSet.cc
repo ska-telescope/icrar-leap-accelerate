@@ -263,8 +263,6 @@ namespace icrar
     {
         casacore::Vector<casacore::Int> a1 = m_msmc->antenna1().getColumn();
         casacore::Vector<casacore::Int> a2 = m_msmc->antenna1().getColumn();
-        auto a1s = std::set<int32_t>(a1.cbegin(), a1.cend());
-        auto a2s = std::set<int32_t>(a2.cbegin(), a2.cend());
         std::set<std::int32_t> antennas;
         std::set_union(a1.cbegin(), a1.cend(), a2.cbegin(), a2.cend(), std::inserter(antennas, antennas.begin()));
         return antennas; 

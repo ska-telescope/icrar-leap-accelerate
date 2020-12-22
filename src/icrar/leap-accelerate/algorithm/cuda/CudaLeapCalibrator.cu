@@ -257,7 +257,7 @@ namespace cuda
 
     __host__ void CudaLeapCalibrator::RotateUVW(Eigen::Matrix3d dd, const device_vector<icrar::MVuvw>& UVWs, device_vector<icrar::MVuvw>& rotatedUVWs)
     {
-        assert(UVWs.GetCount() != rotatedUVWs.GetCount());
+        assert(UVWs.GetCount() == rotatedUVWs.GetCount());
         dim3 blockSize = dim3(1024, 1, 1);
         dim3 gridSize = dim3((int)ceil((float)UVWs.GetCount() / blockSize.x), 1, 1);
 

@@ -25,16 +25,6 @@
 
 namespace icrar
 {
-    ComputeImplementation ParseComputeImplementation(const std::string& value)
-    {
-        ComputeImplementation i;
-        if(!TryParseComputeImplementation(value, i))
-        {
-            throw std::invalid_argument("value");
-        }
-        return i;
-    }
-
     /**
      * @return true if value was converted succesfully, false otherwise
      */

@@ -128,6 +128,7 @@ lint_cppcheck:
       --project=compile_commands.json
       --platform=unix64
       -q --std=c++14
+      --enable=all
       -i $PWD/../external
       -i $PWD/../src/icrar/leap-accelerate/tests
       -i $PWD/../src/icrar/leap-accelerate-cli/tests'

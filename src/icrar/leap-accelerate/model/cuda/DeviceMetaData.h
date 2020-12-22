@@ -101,7 +101,7 @@ namespace cuda
     {
         device_vector<icrar::MVuvw> m_UVW;
     public:
-        SolutionIntervalBuffer(const std::vector<icrar::MVuvw>& UVW);
+        explicit SolutionIntervalBuffer(const std::vector<icrar::MVuvw>& UVW);
         
         const device_vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
     };
@@ -180,7 +180,7 @@ namespace cuda
          * 
          * @param metadata 
          */
-        DeviceMetaData(const icrar::cpu::MetaData& metadata);
+        explicit DeviceMetaData(const icrar::cpu::MetaData& metadata);
         
         /**
          * @brief Construct a new Device MetaData object from the equivalent object on CPU memory. This copies to
