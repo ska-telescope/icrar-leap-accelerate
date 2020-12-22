@@ -68,7 +68,7 @@ namespace cpu
         size_t channels; // channels
         size_t baselines; // baselines
 
-        std::vector<MVuvw> m_uvw; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
+        std::vector<MVuvw> m_UVW; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
         Eigen::Tensor<std::complex<double>, 3> m_data; //[npol][nbl][nch]
 
     public:

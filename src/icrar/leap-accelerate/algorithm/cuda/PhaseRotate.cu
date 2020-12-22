@@ -127,8 +127,10 @@ namespace cuda
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
+        
         auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), minimumBaselineThreshold, isFileSystemCacheEnabled);
-        auto constantMetadata = std::make_shared<ConstantMetaData>(
+        
+        auto constantBuffer = std::make_shared<ConstantBuffer>(
             metadata.GetConstants(),
             metadata.GetA(),
             metadata.GetI(),
@@ -138,7 +140,20 @@ namespace cuda
             metadata.GetAd1()
         );
 
+        auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetOldUVW());
+        
+        auto directionBuffer = std::make_shared<DirectionBuffer>(
+            metadata.GetDirection(),
+            metadata.GetDD(),
+            metadata.GetOldUVW().size(),
+            metadata.GetAvgData().rows(),
+            metadata.GetAvgData().cols());
+
+        auto deviceMetadata = icrar::cuda::DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
+
+        // Emplace a single empty tensor
         input_queue.emplace_back(0, integration.GetVis().dimensions());
+        
         LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
         profiling::timer phase_rotate_timer;
@@ -146,20 +161,54 @@ namespace cuda
         {
             LOG(info) << "Processing direction " << i;
             LOG(info) << "Setting Metadata";
-            metadata.GetAvgData().setConstant(std::complex<double>(0.0, 0.0));
-            metadata.SetDD(directions[i]);
-            metadata.CalcUVW(); //TODO: Can be performed in CUDA
+            metadata.SetDirection(directions[i]);
+
+            directionBuffer->SetDirection(metadata.GetDirection());
+            directionBuffer->SetDD(metadata.GetDD());
+            directionBuffer->GetAvgData().SetZeroAsync();
+
             input_queue[0].SetData(integration);
 
             LOG(info) << "Copying Metadata to Device";
-            icrar::cuda::DeviceMetaData deviceMetadata(constantMetadata, metadata);
             LOG(info) << "PhaseRotate";
-            icrar::cuda::PhaseRotate(metadata, deviceMetadata, directions[i], input_queue, output_integrations[i], output_calibrations[i]);
+
+            icrar::cuda::RotateUVW(
+                directionBuffer->GetDD(),
+                solutionIntervalBuffer->GetOldUVW(),
+                directionBuffer->GetUVW());
+
+            icrar::cuda::PhaseRotate(
+                metadata,
+                deviceMetadata,
+                directions[i],
+                input_queue,
+                output_integrations[i],
+                output_calibrations[i]);
         }
         LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
 
         LOG(info) << "Finished calibration in " << calibration_timer;
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
+    }
+
+    __global__ void g_RotateUVW(
+        Eigen::Matrix3d dd,
+        const double* pUVWs,
+        double* pRotatedUVWs,
+        int uvwLength)
+    { 
+        auto UVWs = Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>>(pUVWs, uvwLength, 3);
+        auto rotatedUVWs = Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>>(pRotatedUVWs, uvwLength, 3);
+        int row = blockDim.x * blockIdx.x + threadIdx.x;
+        rotatedUVWs.row(row) = UVWs.row(row) * dd;
+    }
+
+    __host__ void RotateUVW(Eigen::Matrix3d dd, const device_vector<icrar::MVuvw>& UVWs, device_vector<icrar::MVuvw>& rotatedUVWs)
+    {
+        assert(UVWs.GetCount() == rotatedUVWs.GetCount());
+        dim3 blockSize = dim3(1024, 1, 1);
+        dim3 gridSize = dim3((int)ceil((float)UVWs.GetCount() / blockSize.x), 1, 1);
+        g_RotateUVW<<<blockSize, gridSize>>>(dd, UVWs.Get()->data(), rotatedUVWs.Get()->data(), UVWs.GetCount());
     }
 
     void PhaseRotate(
@@ -214,23 +263,23 @@ namespace cuda
 
     /**
      * @brief Rotates visibilities in parallel for baselines and channels
-     * @note Atomic operator required for writing to @p pavg_data
+     * @note Atomic operator required for writing to @p pAvgData
      */
     __global__ void g_RotateVisibilities(
-        cuDoubleComplex* pintegration_data, int integration_data_dim0, int integration_data_dim1, int integration_data_dim2,
+        cuDoubleComplex* pIntegrationData, int integration_data_dim0, int integration_data_dim1, int integration_data_dim2,
         icrar::cpu::Constants constants,
-        Eigen::Matrix3d dd,
-        double2 direction,
+        Eigen::Matrix3d dd, //TODO(cgray) remove
+        double2 direction, //TODO(cgray) remove
         double3* uvw, int uvwLength,
         double3* oldUVW, int oldUVWLegth,
-        cuDoubleComplex* pavg_data, int avg_dataRows, int avg_dataCols)
+        cuDoubleComplex* pAvgData, int avgDataRows, int avgDataCols)
     {
         using Tensor2Xcucd = Eigen::Tensor<cuDoubleComplex, 2>;
         using Tensor3Xcucd = Eigen::Tensor<cuDoubleComplex, 3>;
         
         const int integration_baselines = integration_data_dim1;
         const int integration_channels = integration_data_dim2;
-        const int md_baselines = constants.nbaselines;
+        const int md_baselines = constants.nbaselines; //metadata baselines
         const int polarizations = constants.num_pols;
 
         //parallel execution per channel
@@ -239,8 +288,8 @@ namespace cuda
 
         if(baseline < integration_baselines && channel < integration_channels)
         {
-            auto integration_data = Eigen::TensorMap<Tensor3Xcucd>(pintegration_data, integration_data_dim0, integration_data_dim1, integration_data_dim2);
-            auto avg_data = Eigen::TensorMap<Tensor2Xcucd>(pavg_data, avg_dataRows, avg_dataCols);
+            auto integration_data = Eigen::TensorMap<Tensor3Xcucd>(pIntegrationData, integration_data_dim0, integration_data_dim1, integration_data_dim2);
+            auto avg_data = Eigen::TensorMap<Tensor2Xcucd>(pAvgData, avgDataRows, avgDataCols);
     
             int md_baseline = baseline % md_baselines;
 

@@ -77,8 +77,8 @@ namespace cpu
             }
         }
 
-        m_avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
-        LOG(info) << "avg_data: " << memory_amount(m_avg_data.size() * sizeof(std::complex<double>));
+        m_avgData = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
+        LOG(info) << "avg_data: " << memory_amount(m_avgData.size() * sizeof(std::complex<double>));
 
 
         auto flaggedBaselines = ms.GetFilteredBaselines(m_minimumBaselineThreshold);
@@ -142,7 +142,7 @@ namespace cpu
     MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold, bool useCache)
     : MetaData(ms, uvws, minimumBaselineThreshold, useCache)
     {
-        SetDD(direction);
+        SetDirection(direction);
         CalcUVW();
     }
 
@@ -159,7 +159,7 @@ namespace cpu
     const Eigen::VectorXi& MetaData::GetI1() const { return m_I1; }
     const Eigen::MatrixXd& MetaData::GetAd1() const { return m_Ad1; }
 
-    void MetaData::SetDD(const icrar::MVDirection& direction)
+    void MetaData::SetDirection(const icrar::MVDirection& direction)
     {
         m_direction = direction;
 
@@ -234,7 +234,7 @@ namespace cpu
         && m_I1 == rhs.m_I1
         && m_Ad1 == rhs.m_Ad1
         && m_dd == rhs.m_dd
-        && m_avg_data == rhs.m_avg_data;
+        && m_avgData == rhs.m_avgData;
     }
 
     bool Constants::operator==(const Constants& rhs) const
