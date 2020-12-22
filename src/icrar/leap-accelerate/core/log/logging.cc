@@ -69,7 +69,7 @@ namespace log
         );
 
         // low verbosity values mean higher severity levels
-        logging_level = boost::log::trivial::severity_level(5 - static_cast<int>(verbosity));
+        logging_level = boost::log::trivial::severity_level(5 - (int)verbosity);
         boost::log::core::get()->set_filter([](const boost::log::attribute_value_set &s)
         {
             return s["Severity"].extract<boost::log::trivial::severity_level>() >= logging_level;

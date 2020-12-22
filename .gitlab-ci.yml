@@ -150,7 +150,10 @@ build_export_compile_commands:
   stage: linting
   script:
     - cd build
-    - run-clang-tidy -quiet
+    - python -u run-clang-tidy-7.py -quiet &> clang-tidy.log
+  artifacts:
+    paths:
+      -build
 
 # Use lint_clang_tidy
 .lint_clang_tidy_minimal:
@@ -165,7 +168,10 @@ lint_clang_tidy:
   stage: linting
   script:
     - cd build
-    - iwyu_tool -j 2 -p .
+    - iwyu_tool -j 2 -p . &> iwyu.log
+  artifacts:
+    paths:
+      -build
 
 # Use lint_iwyu
 .lint_iwyu_minimal:
@@ -187,7 +193,10 @@ lint_iwyu:
       -q --std=c++14
       -i $PWD/../external
       -i $PWD/../src/icrar/leap-accelerate/tests
-      -i $PWD/../src/icrar/leap-accelerate-cli/tests'
+      -i $PWD/../src/icrar/leap-accelerate-cli/tests &> cppcheck.log'
+  artifacts:
+    paths:
+      -build
 
 # Use lint_cppcheck
 .lint_cppcheck_minimal:
@@ -253,6 +262,8 @@ pages:
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o index.html
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml
     - cp ../build/ctest.xml build/reports/unit-tests.xml
+    - cat build/reports/clang-tidy.log | python ../clang-tidy-to-junit.py $PWD > linting.xml
+
     # Create and upload GitLab badges
     - python ../.produce-ci-metrics.py build/reports > ci-metrics.json
     - curl -s https://gitlab.com/ska-telescope/ci-metrics-utilities/raw/master/scripts/ci-badges-func.sh | sh
