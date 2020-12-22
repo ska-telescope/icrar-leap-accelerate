@@ -105,11 +105,7 @@ namespace cuda
 
         __host__ ~device_vector()
         {
-            if(m_buffer != nullptr)
-            {
-                checkCudaErrors(cudaFree(m_buffer));
-                m_buffer = nullptr;
-            }
+            checkCudaErrors(cudaFree(m_buffer));
         }
 
         __host__ __device__ T* Get()
@@ -167,9 +163,7 @@ namespace cuda
         __host__ void SetDataAsync(const T* data)
         {
             size_t bytes = m_count * sizeof(T);
-            cudaHostRegister(data, bytes, cudaHostRegisterPortable);
             checkCudaErrors(cudaMemcpyAsync(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
-            cudaHostUnregister(data);
         }
 
         __host__ void ToHost(T* out) const
@@ -197,13 +191,25 @@ namespace cuda
         }
     };
 
+    template<typename T>
+    class device_buffer_ref
+    {
+        size_t m_count;
+        T* m_buffer;
+    public:
+        __host__ __device__ size_t GetRows() const { return m_count; }
+        __host__ __device__ size_t GetCount() const { return m_count; }
+        __host__ __device__ const T* Get() const { return m_buffer; }
+        __host__ __device__ T* Get() { return m_buffer; }
+    };
+
     /**
      * @brief A copyable reference mapping to a device_vector that does not own the underlying buffer
      * 
      * @tparam T 
      */
     template<typename T>
-    class device_vector_ref
+    class device_vector_ref : public device_buffer_ref<T>
     {
         size_t m_count;
         T* m_buffer;
@@ -214,11 +220,6 @@ namespace cuda
 
         __host__ __device__ device_vector_ref(device_vector<double>& vector)
         : m_count(vector.GetCount()), m_buffer(vector.Get()) {}
-
-        __host__ __device__ size_t GetRows() const { return m_count; }
-        __host__ __device__ size_t GetCount() const { return m_count; }
-        __host__ __device__ const T* Get() const { return m_buffer; }
-        __host__ __device__ T* Get() { return m_buffer; }
     };
 }
 }

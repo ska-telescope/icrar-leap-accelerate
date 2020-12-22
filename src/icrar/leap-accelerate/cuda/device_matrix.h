@@ -100,16 +100,13 @@ namespace cuda
         {
             size_t byteSize = rows * cols * sizeof(T);
             checkCudaErrors(cudaMalloc((void**)&m_buffer, byteSize));
-            //cudaMallocPitch();
             if (data != nullptr)
             {
                 checkCudaErrors(cudaMemcpyAsync(m_buffer, data, byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice));
-                //cudaMemcpy2DAsync();
             }
             else
             {
                 checkCudaErrors(cudaMemsetAsync(m_buffer, 0, byteSize));
-                //cudaMemset2DAsync();  
             }
         }
 
@@ -122,10 +119,7 @@ namespace cuda
 
         ~device_matrix()
         {
-            if(m_buffer != nullptr)
-            {
-                checkCudaErrors(cudaFree(m_buffer));
-            }
+            checkCudaErrors(cudaFree(m_buffer));
         }
 
         __host__ __device__ T* Get()
@@ -188,9 +182,7 @@ namespace cuda
         __host__ void SetDataAsync(const T* data)
         {
             size_t bytes = GetSize();
-            cudaHostRegister(data, bytes, cudaHostRegisterPortable);
             checkCudaErrors(cudaMemcpyAsync(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
-            cudaHostUnregister(data);
         }
 
         __host__ void ToHost(T* out) const

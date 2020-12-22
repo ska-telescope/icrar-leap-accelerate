@@ -60,16 +60,13 @@ namespace cuda
         {
             size_t byteSize = GetByteSize();
             checkCudaErrors(cudaMalloc((void**)&m_buffer, byteSize));
-            //cudaMalloc3D();
             if (data != nullptr)
             {
                 checkCudaErrors(cudaMemcpyAsync(m_buffer, data, byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice));
-                //cudaMemcpy3DAsync();
             }
             else
             {
                 checkCudaErrors(cudaMemsetAsync(m_buffer, 0, byteSize));
-                //cudaMemcpy3DAsync();
             }
         }
 
@@ -108,10 +105,7 @@ namespace cuda
 
         ~device_tensor3()
         {
-            if(m_buffer != nullptr)
-            {
-                checkCudaErrors(cudaFree(m_buffer));
-            }
+            checkCudaErrors(cudaFree(m_buffer));
         }
 
         __host__ __device__ T* Get()
@@ -195,9 +189,7 @@ namespace cuda
         __host__ void SetDataAsync(const T* data)
         {
             size_t bytes = GetByteSize();
-            cudaHostRegister((void*)data, bytes, cudaHostRegisterPortable);
             checkCudaErrors(cudaMemcpyAsync(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
-            cudaHostUnregister((void*)data);
         }
 
         __host__ void SetDataAsync(const device_tensor3<T>& data)

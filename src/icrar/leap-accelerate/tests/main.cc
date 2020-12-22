@@ -25,7 +25,7 @@
 
 int main(int argc, char **argv)
 {
-    icrar::log::Initialize(icrar::log::Verbosity::info);
+    icrar::log::Initialize(icrar::log::Verbosity::warn);
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
