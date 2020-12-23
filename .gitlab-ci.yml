@@ -153,7 +153,7 @@ build_export_compile_commands:
     - python -u run-clang-tidy-7.py -quiet &> clang-tidy.log
   artifacts:
     paths:
-      -build
+      - build
 
 # Use lint_clang_tidy
 .lint_clang_tidy_minimal:
@@ -171,7 +171,7 @@ lint_clang_tidy:
     - iwyu_tool -j 2 -p . &> iwyu.log
   artifacts:
     paths:
-      -build
+      - build
 
 # Use lint_iwyu
 .lint_iwyu_minimal:
@@ -205,7 +205,7 @@ lint_iwyu:
     - cppcheck_junit cppcheck.xml cppcheck-junit.xml
   artifacts:
     paths:
-      -build
+      - build
 
 # Use lint_cppcheck
 .lint_cppcheck_minimal:
