@@ -185,15 +185,24 @@ lint_iwyu:
 .lint_cppcheck:
   stage: linting
   script:
+    - pip install cppcheck-junit
     - cd build
     - 'cppcheck
-      --error-exitcode=1
       --project=compile_commands.json
       --platform=unix64
       -q --std=c++14
       -i $PWD/../external
       -i $PWD/../src/icrar/leap-accelerate/tests
-      -i $PWD/../src/icrar/leap-accelerate-cli/tests &> cppcheck.log'
+      -i $PWD/../src/icrar/leap-accelerate-cli/tests 2>&1 | tee cppcheck.log'
+    - 'cppcheck
+      --xml-version=2
+      --project=compile_commands.json
+      --platform=unix64
+      -q --std=c++14
+      -i $PWD/../external
+      -i $PWD/../src/icrar/leap-accelerate/tests
+      -i $PWD/../src/icrar/leap-accelerate-cli/tests &> cppcheck.xml'
+    - cppcheck_junit cppcheck.xml cppcheck-junit.xml
   artifacts:
     paths:
       -build
