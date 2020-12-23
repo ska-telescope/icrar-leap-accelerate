@@ -61,6 +61,7 @@ namespace cpu
      */
     class Integration
     {
+    protected:
         int m_integrationNumber;
 
         size_t index; // row index
@@ -80,8 +81,6 @@ namespace cpu
             unsigned int baselines,
             unsigned int polarizations);
 
-        ~Integration();
-
         bool operator==(const Integration& rhs) const;
 
         int GetIntegrationNumber() const { return m_integrationNumber; }
@@ -98,7 +97,8 @@ namespace cpu
          * 
          * @return const std::vector<icrar::MVuvw>& 
          */
-        const std::vector<icrar::MVuvw>& GetRotatedUVW() const;
+        const std::vector<icrar::MVuvw>& GetRotatedUVW() const { return m_UVW; } //TODO: rename GetUVW
+        std::vector<icrar::MVuvw>& GetRotatedUVW() { return m_UVW; }
 
         /**
          * @brief Get the Visibilities object of size (polarizations, baselines, channels)

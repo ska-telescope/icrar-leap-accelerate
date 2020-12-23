@@ -29,10 +29,6 @@
 #include <icrar/leap-accelerate/core/ioutils.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 
-#ifdef CUDA_ENABLED
-#include <cuda_runtime.h>
-#endif
-
 namespace icrar
 {
 namespace cpu
@@ -57,21 +53,7 @@ namespace cpu
         LOG(info) << "uvw: " << memory_amount(uvw_size);
         m_visibilities = ms.GetVis(startBaseline, startChannel, channels, baselines, polarizations);
         m_UVW = ToUVWVector(ms.GetCoords(startBaseline, baselines));
-#ifdef CUDA_ENABLED
-        cudaHostRegister(m_visibilities.data(), m_visibilities.size() * sizeof(std::complex<double>), cudaHostRegisterPortable);
-        cudaHostRegister(m_UVW.data(), m_UVW.size() * sizeof(double), cudaHostRegisterPortable);
-#endif
     }
-
-#ifdef CUDA_ENABLED
-    Integration::~Integration()
-    {
-        cudaHostUnregister(m_visibilities.data());
-        cudaHostUnregister(m_UVW.data());
-    }
-#else
-    Integration::~Integration() = default;
-#endif
 
     bool Integration::operator==(const Integration& rhs) const
     {
@@ -79,15 +61,10 @@ namespace cpu
         Eigen::Map<const Eigen::VectorXcd> rhsdatav(rhs.m_visibilities.data(), rhs.m_visibilities.size());
         
         return 
-        m_visibilities.dimensions() == rhs.m_visibilities.dimensions()
-        && datav.isApprox(rhsdatav)
-        && m_UVW == rhs.m_UVW
-        && m_integrationNumber == rhs.m_integrationNumber;
-    }
-
-    const std::vector<icrar::MVuvw>& Integration::GetRotatedUVW() const
-    {
-        return m_UVW;
+            m_visibilities.dimensions() == rhs.m_visibilities.dimensions()
+            && datav.isApprox(rhsdatav)
+            && m_UVW == rhs.m_UVW
+            && m_integrationNumber == rhs.m_integrationNumber;
     }
 } // namespace cpu
 } // namespace icrar

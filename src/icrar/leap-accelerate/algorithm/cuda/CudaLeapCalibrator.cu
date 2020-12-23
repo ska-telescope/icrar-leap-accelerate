@@ -25,7 +25,7 @@
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 
-#include <icrar/leap-accelerate/model/cpu/Integration.h>
+#include <icrar/leap-accelerate/model/cuda/HostIntegration.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
 
@@ -43,6 +43,7 @@
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+#include <icrar/leap-accelerate/cuda/cuda_mapped_matrix.h>
 #include <cuda_runtime.h>
 #include <math_constants.h>
 #include <cuComplex.h>
@@ -126,84 +127,88 @@ namespace cuda
             throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
         }
 
-        auto integration = cpu::Integration(0, ms, 0, ms.GetNumChannels(), ms.GetNumRows(), ms.GetNumPols());
-        for(int i = 0; i < directions.size(); ++i)
+        auto integration = cuda::HostIntegration(0, ms, 0, ms.GetNumChannels(), ms.GetNumRows(), ms.GetNumPols());
         {
-            output_integrations.emplace_back();
-            output_calibrations.emplace_back();
+            for(int i = 0; i < directions.size(); ++i)
+            {
+                output_integrations.emplace_back();
+                output_calibrations.emplace_back();
+            }
+            LOG(info) << "Read integration data in " << integration_read_timer;
+
+            profiling::timer metadata_read_timer;
+            LOG(info) << "Loading MetaData";
+            
+            auto metadata = icrar::cpu::MetaData(ms, integration.GetRotatedUVW(), minimumBaselineThreshold, isFileSystemCacheEnabled);
+            
+            auto constantBuffer = std::make_shared<ConstantBuffer>(
+                metadata.GetConstants(),
+                metadata.GetA(),
+                metadata.GetI(),
+                metadata.GetAd(),
+                metadata.GetA1(),
+                metadata.GetI1(),
+                metadata.GetAd1()
+            );
+
+            auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetUVW());
+            
+            auto directionBuffer = std::make_shared<DirectionBuffer>(
+                metadata.GetDirection(),
+                metadata.GetDD(),
+                metadata.GetUVW().size(),
+                metadata.GetAvgData().rows(),
+                metadata.GetAvgData().cols());
+
+            auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
+
+            // Emplace a single empty tensor
+    #ifdef HIGH_MEMORY
+            const auto deviceIntegration = DeviceIntegration(integration);
+    #endif
+            LOG(info) << "Metadata loaded in " << metadata_read_timer;
+
+            // always use a single integration
+            input_queue.emplace_back(0, integration.GetVis().dimensions());
+
+            profiling::timer phase_rotate_timer;
+            for(int i = 0; i < directions.size(); ++i)
+            {
+                LOG(info) << "Processing direction " << i;
+                LOG(info) << "Setting Metadata";
+                metadata.SetDirection(directions[i]);
+
+                directionBuffer->SetDirection(metadata.GetDirection());
+                directionBuffer->SetDD(metadata.GetDD());
+                directionBuffer->GetAvgData().SetZeroAsync();
+
+                LOG(info) << "Sending integration to device";
+    #ifdef HIGH_MEMORY
+                input_queue[0].Set(deviceIntegration);
+    #else
+                input_queue[0].Set(integration);
+    #endif
+
+                LOG(info) << "RotateUVW";
+                RotateUVW(
+                    directionBuffer->GetDD(),
+                    solutionIntervalBuffer->GetUVW(),
+                    directionBuffer->GetRotatedUVW());
+
+                LOG(info) << "PhaseRotate";
+                PhaseRotate(
+                    metadata,
+                    deviceMetadata,
+                    directions[i],
+                    input_queue,
+                    output_integrations[i],
+                    output_calibrations[i]);
+            }
+            LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
+            LOG(info) << "Finished calibration in " << calibration_timer;
         }
-        LOG(info) << "Read integration data in " << integration_read_timer;
+        cudaHostUnregister(integration.GetVis().data());
 
-        profiling::timer metadata_read_timer;
-        LOG(info) << "Loading MetaData";
-        
-        auto metadata = icrar::cpu::MetaData(ms, integration.GetRotatedUVW(), minimumBaselineThreshold, isFileSystemCacheEnabled);
-        
-        auto constantBuffer = std::make_shared<ConstantBuffer>(
-            metadata.GetConstants(),
-            metadata.GetA(),
-            metadata.GetI(),
-            metadata.GetAd(),
-            metadata.GetA1(),
-            metadata.GetI1(),
-            metadata.GetAd1()
-        );
-
-        auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetUVW());
-        
-        auto directionBuffer = std::make_shared<DirectionBuffer>(
-            metadata.GetDirection(),
-            metadata.GetDD(),
-            metadata.GetUVW().size(),
-            metadata.GetAvgData().rows(),
-            metadata.GetAvgData().cols());
-
-        auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
-
-        // Emplace a single empty tensor
-#ifdef HIGH_MEMORY
-        const auto deviceIntegration = DeviceIntegration(integration);
-#endif
-        LOG(info) << "Metadata loaded in " << metadata_read_timer;
-
-        // always use a single integration
-        input_queue.emplace_back(0, integration.GetVis().dimensions());
-
-        profiling::timer phase_rotate_timer;
-        for(int i = 0; i < directions.size(); ++i)
-        {
-            LOG(info) << "Processing direction " << i;
-            LOG(info) << "Setting Metadata";
-            metadata.SetDirection(directions[i]);
-
-            directionBuffer->SetDirection(metadata.GetDirection());
-            directionBuffer->SetDD(metadata.GetDD());
-            directionBuffer->GetAvgData().SetZeroAsync();
-
-            LOG(info) << "Sending integration to device";
-#ifdef HIGH_MEMORY
-            input_queue[0].Set(deviceIntegration);
-#else
-            input_queue[0].Set(integration);
-#endif
-
-            LOG(info) << "RotateUVW";
-            RotateUVW(
-                directionBuffer->GetDD(),
-                solutionIntervalBuffer->GetUVW(),
-                directionBuffer->GetRotatedUVW());
-
-            LOG(info) << "PhaseRotate";
-            PhaseRotate(
-                metadata,
-                deviceMetadata,
-                directions[i],
-                input_queue,
-                output_integrations[i],
-                output_calibrations[i]);
-        }
-        LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
-        LOG(info) << "Finished calibration in " << calibration_timer;
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
