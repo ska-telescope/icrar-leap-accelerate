@@ -124,10 +124,10 @@ lint_cppcheck:
   script:
     - cd build
     - 'cppcheck
-      --error-exitcode=1
       --project=compile_commands.json
       --platform=unix64
       -q --std=c++14
+      -j 2
       --enable=all
       -i $PWD/../external
       -i $PWD/../src/icrar/leap-accelerate/tests
