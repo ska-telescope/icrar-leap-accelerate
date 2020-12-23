@@ -150,7 +150,7 @@ build_export_compile_commands:
   stage: linting
   script:
     - cd build
-    - python -u run-clang-tidy-7.py -quiet 2>&1 | tee clang-tidy.log
+    - python -u /usr/bin/run-clang-tidy-7.py -quiet 2>&1 | tee clang-tidy.log
   artifacts:
     paths:
       - build
