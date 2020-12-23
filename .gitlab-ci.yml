@@ -151,7 +151,7 @@ build_export_compile_commands:
   script:
     - cd build
     - ls /usr/bin/
-    - python -u /usr/bin/run-clang-tidy-7.py -quiet 2>&1 | tee clang-tidy.log
+    - python -u /usr/bin/run-clang-tidy-6.py -quiet 2>&1 | tee clang-tidy.log
   artifacts:
     paths:
       - build
@@ -169,8 +169,7 @@ lint_clang_tidy:
   stage: linting
   script:
     - cd build
-    - ls /usr/lib/llvm-7/lib/clang/
-    - ls /usr/lib/llvm-7/lib/clang/7.0.1/include/
+    - ls /usr/lib/llvm-6/lib/clang/
     - iwyu_tool -j 2 -p . 2>&1 | tee iwyu.log
   artifacts:
     paths:
