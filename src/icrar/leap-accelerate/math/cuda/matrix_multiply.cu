@@ -32,11 +32,23 @@
 template<typename T>
 struct is_cublas_supported : public std::false_type {};
 template<>
-struct is_cublas_supported<double> : public std::true_type {};
+struct is_cublas_supported<double> : public std::true_type
+{
+    static constexpr cublasComputeType_t GetComputeType() { return CUBLAS_COMPUTE_64F; }
+    static constexpr cudaDataType_t GetDataType() { return CUDA_R_64F; }
+};
 template<>
-struct is_cublas_supported<float> : public std::true_type {};
+struct is_cublas_supported<float> : public std::true_type
+{
+    static constexpr cublasComputeType_t GetComputeType() { return CUBLAS_COMPUTE_32F; }
+    static constexpr cudaDataType_t GetDataType() { return CUDA_R_32F; }
+};
 template<>
-struct is_cublas_supported<int32_t> : public std::true_type {};
+struct is_cublas_supported<int32_t> : public std::true_type
+{
+    static constexpr cublasComputeType_t GetComputeType() { return CUBLAS_COMPUTE_32I; }
+    static constexpr cudaDataType_t GetDataType() { return CUDA_R_32I; }
+};
 
 namespace icrar
 {
@@ -57,27 +69,8 @@ namespace cuda
         int ldb = k;
         int ldc = m;
 
-        cublasComputeType_t computeType;
-        cudaDataType_t dataType;
-        if(std::is_same<T, double>::value)
-        {
-            computeType = CUBLAS_COMPUTE_64F;
-            dataType = CUDA_R_64F;
-        }
-        else if(std::is_same<T, float>::value)
-        {
-            computeType = CUBLAS_COMPUTE_32F;
-            dataType = CUDA_R_32F;
-        }
-        else if(std::is_same<T, std::int32_t>::value)
-        {
-            computeType = CUBLAS_COMPUTE_32I;
-            dataType = CUDA_R_32I;
-        }
-        else
-        {
-            throw invalid_argument_exception("invalid template", "T", __FILE__, __LINE__);
-        }
+        cublasComputeType_t computeType = is_cublas_supported<T>::GetComputeType();
+        cudaDataType_t dataType = is_cublas_supported<T>::GetDataType();
 
         checkCudaErrors(cublasGemmEx(
             handle,
@@ -108,27 +101,8 @@ namespace cuda
         int ldb = k;
         int ldc = m;
 
-        cublasComputeType_t computeType;
-        cudaDataType_t dataType;
-        if(std::is_same<T, double>::value)
-        {
-            computeType = CUBLAS_COMPUTE_64F;
-            dataType = CUDA_R_64F;
-        }
-        else if(std::is_same<T, float>::value)
-        {
-            computeType = CUBLAS_COMPUTE_32F;
-            dataType = CUDA_R_32F;
-        }
-        else if(std::is_same<T, std::int32_t>::value)
-        {
-            computeType = CUBLAS_COMPUTE_32I;
-            dataType = CUDA_R_32I;
-        }
-        else
-        {
-            throw invalid_argument_exception("invalid template", "T", __FILE__, __LINE__);
-        }
+        cublasComputeType_t computeType = is_cublas_supported<T>::GetComputeType();
+        cudaDataType_t dataType = is_cublas_supported<T>::GetDataType();
 
         checkCudaErrors(cublasGemmEx(
             handle,
@@ -144,7 +118,7 @@ namespace cuda
             cublasGemmAlgo_t::CUBLAS_GEMM_DEFAULT_TENSOR_OP));
     }
 
-    template<typename T>
+    template<typename T, typename=std::enable_if_t<is_cublas_supported<T>::value>>
     __host__ void mat_mul(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const T* A, const T* B, T* C)
     {
         cublasOperation_t transa = cublasOperation_t::CUBLAS_OP_N;
@@ -168,32 +142,12 @@ namespace cuda
 
         // create operation desciriptor; see cublasLtMatmulDescAttributes_t for details about defaults; here we just need to
         // set the transforms for A and B
-
-        cublasComputeType_t computeType;
-        cudaDataType_t dataType;
-        if(std::is_same<T, double>::value)
-        {
-            computeType = CUBLAS_COMPUTE_64F;
-            dataType = CUDA_R_64F;
-        }
-        else if(std::is_same<T, float>::value)
-        {
-            computeType = CUBLAS_COMPUTE_32F;
-            dataType = CUDA_R_32F;
-        }
-        else if(std::is_same<T, std::int32_t>::value)
-        {
-            computeType = CUBLAS_COMPUTE_32I;
-            dataType = CUDA_R_32I;
-        }
-        else
-        {
-            throw invalid_argument_exception("invalid template", "T", __FILE__, __LINE__);
-        }
+        cublasComputeType_t computeType = is_cublas_supported<T>::GetComputeType();
+        cudaDataType_t dataType = is_cublas_supported<T>::GetDataType();
 
         checkCudaErrors(cublasLtMatmulDescInit(&operationDesc, computeType, dataType));
         checkCudaErrors(cublasLtMatmulDescSetAttribute(&operationDesc, CUBLASLT_MATMUL_DESC_TRANSA, &transa, sizeof(transa)));
-        checkCudaErrors(cublasLtMatmulDescSetAttribute(&operationDesc, CUBLASLT_MATMUL_DESC_TRANSB, &transb, sizeof(transa)));
+        checkCudaErrors(cublasLtMatmulDescSetAttribute(&operationDesc, CUBLASLT_MATMUL_DESC_TRANSB, &transb, sizeof(transb)));
 
         // create matrix descriptors, we are good with the details here so no need to set any extra attributes
         checkCudaErrors(cublasLtMatrixLayoutInit(&Adesc, dataType, transa == CUBLAS_OP_N ? m : k, transa == CUBLAS_OP_N ? k : m, lda));
@@ -256,7 +210,7 @@ namespace cuda
      * @param D 
      * @return __host__ 
      */
-    template<typename T>
+    template<typename T, typename=std::enable_if_t<is_cublas_supported<T>::value>>
     __host__ void mat_mul_add(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const T* A, const T* B, const T* C, T* D)
     {
         cublasOperation_t transa = cublasOperation_t::CUBLAS_OP_N;
@@ -281,33 +235,14 @@ namespace cuda
         // create operation desciriptor; see cublasLtMatmulDescAttributes_t for details about defaults; here we just need to
         // set the transforms for A and B
 
-        cublasComputeType_t computeType;
-        cudaDataType_t dataType;
-        if(std::is_same<T, double>::value)
-        {
-            computeType = CUBLAS_COMPUTE_64F;
-            dataType = CUDA_R_64F;
-        }
-        else if(std::is_same<T, float>::value)
-        {
-            computeType = CUBLAS_COMPUTE_32F;
-            dataType = CUDA_R_32F;
-        }
-        else if(std::is_same<T, std::int32_t>::value)
-        {
-            computeType = CUBLAS_COMPUTE_32I;
-            dataType = CUDA_R_32I;
-        }
-        else
-        {
-            throw invalid_argument_exception("invalid template", "T", __FILE__, __LINE__);
-        }
+        cublasComputeType_t computeType = is_cublas_supported<T>::GetComputeType();
+        cudaDataType_t dataType = is_cublas_supported<T>::GetDataType();
 
         //LtSgemm
 
         checkCudaErrors(cublasLtMatmulDescInit(&operationDesc, computeType, dataType));
         checkCudaErrors(cublasLtMatmulDescSetAttribute(&operationDesc, CUBLASLT_MATMUL_DESC_TRANSA, &transa, sizeof(transa)));
-        checkCudaErrors(cublasLtMatmulDescSetAttribute(&operationDesc, CUBLASLT_MATMUL_DESC_TRANSB, &transb, sizeof(transa)));
+        checkCudaErrors(cublasLtMatmulDescSetAttribute(&operationDesc, CUBLASLT_MATMUL_DESC_TRANSB, &transb, sizeof(transb)));
 
         // create matrix descriptors, we are good with the details here so no need to set any extra attributes
         checkCudaErrors(cublasLtMatrixLayoutInit(&Adesc, dataType, transa == CUBLAS_OP_N ? m : k, transa == CUBLAS_OP_N ? k : m, lda));
