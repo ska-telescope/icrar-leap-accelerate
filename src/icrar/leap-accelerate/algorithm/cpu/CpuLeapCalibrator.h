@@ -33,8 +33,6 @@ namespace cpu
     class CpuLeapCalibrator : public ILeapCalibrator
     {
     public:
-        ~CpuLeapCalibrator() override = default;
-
         virtual cpu::CalibrateResult Calibrate(
             const icrar::MeasurementSet& ms,
             const std::vector<MVDirection>& directions,

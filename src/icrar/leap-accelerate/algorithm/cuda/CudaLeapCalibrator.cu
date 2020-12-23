@@ -139,7 +139,7 @@ namespace cuda
             profiling::timer metadata_read_timer;
             LOG(info) << "Loading MetaData";
             
-            auto metadata = icrar::cpu::MetaData(ms, integration.GetRotatedUVW(), minimumBaselineThreshold, isFileSystemCacheEnabled);
+            auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), minimumBaselineThreshold, isFileSystemCacheEnabled);
             
             auto constantBuffer = std::make_shared<ConstantBuffer>(
                 metadata.GetConstants(),
@@ -177,7 +177,6 @@ namespace cuda
                 LOG(info) << "Processing direction " << i;
                 LOG(info) << "Setting Metadata";
                 metadata.SetDirection(directions[i]);
-
                 directionBuffer->SetDirection(metadata.GetDirection());
                 directionBuffer->SetDD(metadata.GetDD());
                 directionBuffer->GetAvgData().SetZeroAsync();

@@ -23,7 +23,6 @@
 #pragma once
 
 #include <icrar/leap-accelerate/core/compute_implementation.h>
-#include <boost/noncopyable.hpp>
 #include <memory>
 
 namespace icrar
@@ -34,7 +33,7 @@ namespace icrar
      * @brief Factory method object for selecting a LEAP calibration implementation.
      * 
      */
-    class LeapCalibratorFactory : boost::noncopyable
+    class LeapCalibratorFactory
     {
         LeapCalibratorFactory() = delete;
 

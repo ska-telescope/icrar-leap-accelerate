@@ -147,7 +147,7 @@ namespace icrar
                     ms->GetNumBaselines(),
                     ms->GetNumPols());
 
-                auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetRotatedUVW());
+                auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
                 icrar::cpu::RotateVisibilities(integration, hostMetadata);
 
                 metadataOptionalOutput = hostMetadata;
@@ -163,7 +163,7 @@ namespace icrar
                     ms->GetNumBaselines(),
                     ms->GetNumPols());
                 auto deviceIntegration = icrar::cuda::DeviceIntegration(integration);
-                auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetRotatedUVW());
+                auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
                 auto deviceMetadata = icrar::cuda::DeviceMetaData(hostMetadata);
 
                 cuda::CudaLeapCalibrator().RotateVisibilities(deviceIntegration, deviceMetadata);
