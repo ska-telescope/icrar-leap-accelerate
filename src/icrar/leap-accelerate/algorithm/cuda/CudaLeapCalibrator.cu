@@ -441,6 +441,11 @@ namespace cuda
 
     __host__ void CudaLeapCalibrator::GenDeltaPhaseColumn(const device_matrix<double>& dInt, device_vector<double>& deltaPhaseColumn)
     {
+        if(dInt.GetRows()+1 != deltaPhaseColumn.GetRows())
+        {
+            throw invalid_argument_exception("incorrect number of columns", "deltaPhaseColumn", __FILE__, __LINE__);
+        }
+
         dim3 blockSize = dim3(1024, 1, 1);
         dim3 gridSize = dim3((int)ceil(static_cast<double>(deltaPhaseColumn.GetRows()) / blockSize.x), 1, 1);
 

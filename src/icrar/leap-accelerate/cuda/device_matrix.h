@@ -218,28 +218,6 @@ namespace cuda
             checkCudaErrors(cudaMemcpyAsync(out, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));
         }
     };
-
-    /**
-     * @brief A copyable reference mapping to a device_matrix that does not own the underlying buffer
-     * 
-     * @tparam T 
-     */
-    template<typename T>
-    class device_matrix_ref
-    {
-        size_t m_rows;
-        size_t m_cols;
-        T* m_buffer;
-
-    public:
-        __host__ __device__ device_matrix_ref(device_matrix<double>& matrix)
-        : m_rows(matrix.GetRows()), m_cols(matrix.GetCols()), m_buffer(matrix.Get()) {}
-
-        __host__ __device__ size_t GetRows() const { return m_rows; }
-        __host__ __device__ size_t GetCols() const { return m_cols; }
-        __host__ __device__ const T* Get() const { return m_buffer; }
-        __host__ __device__ T* Get() { return m_buffer; }
-    };
 }
 }
 

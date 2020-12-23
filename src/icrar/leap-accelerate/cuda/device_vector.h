@@ -192,37 +192,6 @@ namespace cuda
             checkCudaErrors(cudaMemcpyAsync(out, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));
         }
     };
-
-    template<typename T>
-    class device_buffer_ref
-    {
-        size_t m_count;
-        T* m_buffer;
-    public:
-        __host__ __device__ size_t GetRows() const { return m_count; }
-        __host__ __device__ size_t GetCount() const { return m_count; }
-        __host__ __device__ const T* Get() const { return m_buffer; }
-        __host__ __device__ T* Get() { return m_buffer; }
-    };
-
-    /**
-     * @brief A copyable reference mapping to a device_vector that does not own the underlying buffer
-     * 
-     * @tparam T 
-     */
-    template<typename T>
-    class device_vector_ref : public device_buffer_ref<T>
-    {
-        size_t m_count;
-        T* m_buffer;
-
-    public:
-        __host__ __device__ device_vector_ref(T* buffer, size_t count)
-        : m_count(count), m_buffer(buffer) {}
-
-        __host__ __device__ device_vector_ref(device_vector<double>& vector)
-        : m_count(vector.GetCount()), m_buffer(vector.Get()) {}
-    };
 }
 }
 
