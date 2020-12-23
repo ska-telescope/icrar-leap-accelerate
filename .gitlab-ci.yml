@@ -45,7 +45,7 @@ variables:
     DEBIAN_FRONTEND: "noninteractive"
   before_script:
     - apt update 
-    - apt install -y cmake clang clang-tidy python-yaml iwyu cppcheck
+    - apt install -y cmake clang clang-tidy clang-tools python-yaml iwyu cppcheck
     - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev
 
 .cuda_dependencies:
@@ -150,6 +150,7 @@ build_export_compile_commands:
   stage: linting
   script:
     - cd build
+    - ls /usr/bin/
     - python -u /usr/bin/run-clang-tidy-7.py -quiet 2>&1 | tee clang-tidy.log
   artifacts:
     paths:
@@ -168,6 +169,8 @@ lint_clang_tidy:
   stage: linting
   script:
     - cd build
+    - ls /usr/lib/llvm-7/lib/clang/
+    - ls /usr/lib/llvm-7/lib/clang/7.0.1/include/
     - iwyu_tool -j 2 -p . 2>&1 | tee iwyu.log
   artifacts:
     paths:
