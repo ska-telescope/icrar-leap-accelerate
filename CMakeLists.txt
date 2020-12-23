@@ -13,6 +13,7 @@ option(CUDA_ENABLED "Build with cuda support" OFF)
 option(WERROR "Warnings as Errors" OFF)
 option(TRACE "Trace Data Values" OFF)
 option(CMAKE_RUN_CLANG_TIDY "Run clang-tidy with the compiler." OFF)
+option(HIGH_MEMORY "If large amounts of device memory is present" OFF)
 
 # Override config via environment variables
 if(DEFINED ENV{CUDA_ENABLED})
