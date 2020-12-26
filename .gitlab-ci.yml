@@ -58,7 +58,7 @@ variables:
     DEBIAN_FRONTEND: "noninteractive"
   before_script:
     - apt update 
-    - apt install -y cmake clang clang-tidy clang-tools python-yaml iwyu cppcheck
+    - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck
     - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev
 
 .cuda_dependencies:
@@ -69,7 +69,7 @@ variables:
     CUDA_ENABLED: "ON"
   before_script:
     - apt update 
-    - apt install -y cmake clang clang-tidy python-yaml iwyu cppcheck
+    - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck
     - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev
     - apt install -y gnupg2 software-properties-common
     - source ./.gitlab-ci/cuda_install_debian.sh
@@ -163,8 +163,9 @@ build_export_compile_commands:
   stage: linting
   script:
     - cd build
-    - ls /usr/bin/
+    - pip install python-yaml
     - python -u /usr/bin/run-clang-tidy-6.0.py -quiet 2>&1 | tee clang-tidy.log
+    - cat build/reports/clang-tidy.log | python ../clang-tidy-to-junit.py $PWD > linting.xml
   artifacts:
     paths:
       - build
@@ -202,6 +203,7 @@ lint_iwyu:
   stage: linting
   script:
     - pip install cppcheck-junit
+    - cp $PWD../../.gitlab-ci/googletest.cfg /usr/lib/x86_64-linux-gnu/cppcheck/cfg
     - cd build
     - 'cppcheck
       --project=compile_commands.json
@@ -283,7 +285,6 @@ pages:
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o index.html
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml
     - cp ../build/ctest.xml build/reports/unit-tests.xml
-    - cat build/reports/clang-tidy.log | python ../clang-tidy-to-junit.py $PWD > linting.xml
 
     # Create and upload GitLab badges
     - python ../.produce-ci-metrics.py build/reports > ci-metrics.json
