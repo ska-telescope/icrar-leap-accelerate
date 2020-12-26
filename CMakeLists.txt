@@ -62,7 +62,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GN
   endif()
 
   if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang") # required by linters
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/lib/llvm-7/lib/clang/7.0.1/include/")
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/lib/llvm-7/lib/clang/7.0.1/include/")
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/lib/llvm-6/lib/clang/6.0.1/include/")
   endif()
 
 endif()

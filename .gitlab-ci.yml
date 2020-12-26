@@ -183,8 +183,7 @@ lint_clang_tidy:
   script:
     - cd build
     - ls /usr/lib/
-    - ls /usr/lib/llvm-3.8/lib/clang/
-    - ls /usr/lib/llvm-3.8/lib/clang/3.8.1/
+    - ls /usr/lib/llvm-6.0/lib/clang/
     - iwyu_tool -j 2 -p . 2>&1 | tee iwyu.log
   artifacts:
     paths:
@@ -208,17 +207,13 @@ lint_iwyu:
       --project=compile_commands.json
       --platform=unix64
       -q --std=c++14
-      -i $PWD/../external
-      -i $PWD/../src/icrar/leap-accelerate/tests
-      -i $PWD/../src/icrar/leap-accelerate-cli/tests 2>&1 | tee cppcheck.log'
+      --library=googletest 2>&1 | tee cppcheck.log'
     - 'cppcheck
       --xml-version=2
       --project=compile_commands.json
       --platform=unix64
       -q --std=c++14
-      -i $PWD/../external
-      -i $PWD/../src/icrar/leap-accelerate/tests
-      -i $PWD/../src/icrar/leap-accelerate-cli/tests &> cppcheck.xml'
+      --library=googletest &> cppcheck.xml'
     - cppcheck_junit cppcheck.xml cppcheck-junit.xml
   artifacts:
     paths:
