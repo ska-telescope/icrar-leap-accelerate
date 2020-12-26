@@ -221,10 +221,9 @@ lint_iwyu:
       - build
 
 # Use lint_cppcheck
-.lint_cppcheck_minimal:
+.lint_cppcheck_no_libs:
   extends: [.required_dependencies]
   needs: ["build_export_compile_commands_minimal"]
-    # CppCheck (Xenial Supported)
     - pip install cppcheck-junit
     - cd build
     - 'cppcheck
@@ -233,8 +232,7 @@ lint_iwyu:
       -q --std=c++14
       -i $PWD/../external
       -i $PWD/../src/icrar/leap-accelerate/tests
-      -i $PWD/../src/icrar/leap-accelerate-cli/tests
-       2>&1 | tee cppcheck.log'
+      -i $PWD/../src/icrar/leap-accelerate-cli/tests 2>&1 | tee cppcheck.log'
     - 'cppcheck
       --xml-version=2
       --project=compile_commands.json
@@ -246,8 +244,12 @@ lint_iwyu:
       &> cppcheck.xml'
     - cppcheck_junit cppcheck.xml cppcheck-junit.xml
 
+.lint_cppcheck_minimal:
+  extends: [.all_dependencies, .lint_cppcheck]
+  needs: ["build_export_compile_commands_minimal"]
+
 lint_cppcheck:
-  extends: [.all_dependencies, .lint_cppcheck_minimal]
+  extends: [.all_dependencies, .lint_cppcheck_no_libs]
   needs: ["build_export_compile_commands"]
 
 # Test
