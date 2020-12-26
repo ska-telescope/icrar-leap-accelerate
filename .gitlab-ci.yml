@@ -163,7 +163,7 @@ build_export_compile_commands:
   stage: linting
   script:
     - cd build
-    - pip install yaml
+    - pip install pyyaml
     - python -u /usr/bin/run-clang-tidy-6.0.py -quiet 2>&1 | tee clang-tidy.log
     - cat build/reports/clang-tidy.log | python ../clang-tidy-to-junit.py $PWD > linting.xml
   artifacts:
