@@ -229,7 +229,7 @@ lint_iwyu:
     - 'cppcheck
       --project=compile_commands.json
       --platform=unix64
-      -q --std=c++14
+      --std=c++14
       -i $PWD/../external
       -i $PWD/../src/icrar/leap-accelerate/tests
       -i $PWD/../src/icrar/leap-accelerate-cli/tests 2>&1 | tee cppcheck.log'
@@ -237,7 +237,7 @@ lint_iwyu:
       --xml-version=2
       --project=compile_commands.json
       --platform=unix64
-      -q --std=c++14
+      --std=c++14
       -i $PWD/../external
       -i $PWD/../src/icrar/leap-accelerate/tests
       -i $PWD/../src/icrar/leap-accelerate-cli/tests
