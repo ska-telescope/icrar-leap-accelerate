@@ -203,7 +203,7 @@ lint_iwyu:
   stage: linting
   script:
     - pip install cppcheck-junit
-    - cp $PWD/.gitlab-ci/googletest.cfg /usr/lib/x86_64-linux-gnu/cppcheck/cfg
+    - cp $PWD/.gitlab-ci/googletest.cfg /usr/share/cppcheck/cfg
     - cd build
     - 'cppcheck
       --project=compile_commands.json
