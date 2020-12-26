@@ -163,7 +163,7 @@ build_export_compile_commands:
   stage: linting
   script:
     - cd build
-    - pip install python-yaml
+    - pip install yaml
     - python -u /usr/bin/run-clang-tidy-6.0.py -quiet 2>&1 | tee clang-tidy.log
     - cat build/reports/clang-tidy.log | python ../clang-tidy-to-junit.py $PWD > linting.xml
   artifacts:
@@ -203,7 +203,6 @@ lint_iwyu:
   stage: linting
   script:
     - pip install cppcheck-junit
-    - cp $PWD/.gitlab-ci/googletest.cfg /usr/share/cppcheck/cfg
     - cd build
     - 'cppcheck
       --project=compile_commands.json
@@ -223,11 +222,32 @@ lint_iwyu:
 
 # Use lint_cppcheck
 .lint_cppcheck_minimal:
-  extends: [.required_dependencies, .lint_cppcheck]
+  extends: [.required_dependencies]
   needs: ["build_export_compile_commands_minimal"]
+    # CppCheck (Xenial Supported)
+    - pip install cppcheck-junit
+    - cd build
+    - 'cppcheck
+      --project=compile_commands.json
+      --platform=unix64
+      -q --std=c++14
+      -i $PWD/../external
+      -i $PWD/../src/icrar/leap-accelerate/tests
+      -i $PWD/../src/icrar/leap-accelerate-cli/tests
+       2>&1 | tee cppcheck.log'
+    - 'cppcheck
+      --xml-version=2
+      --project=compile_commands.json
+      --platform=unix64
+      -q --std=c++14
+      -i $PWD/../external
+      -i $PWD/../src/icrar/leap-accelerate/tests
+      -i $PWD/../src/icrar/leap-accelerate-cli/tests
+      &> cppcheck.xml'
+    - cppcheck_junit cppcheck.xml cppcheck-junit.xml
 
 lint_cppcheck:
-  extends: [.all_dependencies, .lint_cppcheck]
+  extends: [.all_dependencies, .lint_cppcheck_minimal]
   needs: ["build_export_compile_commands"]
 
 # Test
