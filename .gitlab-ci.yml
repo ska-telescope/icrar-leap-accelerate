@@ -222,8 +222,8 @@ lint_iwyu:
 
 # Use lint_cppcheck
 .lint_cppcheck_no_libs:
-  extends: [.required_dependencies]
-  needs: ["build_export_compile_commands_minimal"]
+  stage: linting
+  script:
     - pip install cppcheck-junit
     - cd build
     - 'cppcheck
