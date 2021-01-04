@@ -34,7 +34,10 @@
 #include "helper_string.cuh"
 
 #include <cublas_v2.h>
+
+#if CUBLAS_VER_MAJOR > 9
 #include <cublasLt.h>
+#endif
 
 #include <cstdint>
 #include <cstdio>

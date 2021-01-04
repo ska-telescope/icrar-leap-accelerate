@@ -29,7 +29,12 @@
 #include <icrar/leap-accelerate/exception/exception.h>
 
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+
+#if CUBLAS_VER_MAJOR > 9
 #include <cublasLt.h>
+#else
+#define cublasLtHandle_t int
+#endif
 
 // C++ Style interface (templates not supported when linking to nvcc compiled sources)
 namespace icrar

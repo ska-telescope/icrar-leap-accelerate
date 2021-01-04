@@ -26,11 +26,10 @@
 
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <cublas_v2.h>
-#include <cublasLt.h>
 #include <library_types.h>
 #include <type_traits>
 
-#if CUBLAS_VER_MAJOR == 10
+#if CUBLAS_VER_MAJOR < 11
 using cublasComputeType_t = cudaDataType;
 using cudaDataType_t = cudaDataType;
 #define CUBLAS_COMPUTE_64F CUDA_R_64F
@@ -163,7 +162,7 @@ namespace cuda
     template<typename T, typename=std::enable_if_t<is_cublas_supported<T>::value>>
     __host__ void mat_mul(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const T* A, const T* B, T* C)
     {
-#if CUBLAS_VER_MAJOR >= 11
+#if CUBLAS_VER_MAJOR > 10
         cublasOperation_t transa = cublasOperation_t::CUBLAS_OP_N;
         cublasOperation_t transb = cublasOperation_t::CUBLAS_OP_N;
 
@@ -259,7 +258,7 @@ namespace cuda
     template<typename T, typename=std::enable_if_t<is_cublas_supported<T>::value>>
     __host__ void mat_mul_add(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const T* A, const T* B, const T* C, T* D)
     {
-#if CUBLAS_VER_MAJOR >= 11
+#if CUBLAS_VER_MAJOR > 10
         cublasOperation_t transa = cublasOperation_t::CUBLAS_OP_N;
         cublasOperation_t transb = cublasOperation_t::CUBLAS_OP_N;
 

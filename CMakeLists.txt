@@ -153,7 +153,7 @@ else (DOXYGEN_FOUND)
 endif (DOXYGEN_FOUND)
 
 if(CUDA_ENABLED)
-  find_package(CUDA 10.1)
+  find_package(CUDA 9.0)
   enable_language(CUDA)
 endif()
 

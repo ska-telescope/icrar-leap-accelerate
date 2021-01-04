@@ -148,7 +148,9 @@ if(CUDA_ENABLED)
   target_link_libraries(${TARGET_NAME} ${CUDA_LIBRARIES})
   target_link_libraries(${TARGET_NAME} ${CUDA_cusolver_LIBRARY})
   target_link_libraries(${TARGET_NAME} cublas)
-  target_link_libraries(${TARGET_NAME} cublasLt)
+  if(CUDA_VERSION_MAJOR VERSION_GREATER 9)
+    target_link_libraries(${TARGET_NAME} cublasLt)
+  endif()
 endif()
 
 # Legacy TODO(calgray): build support for xenial
