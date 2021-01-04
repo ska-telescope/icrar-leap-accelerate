@@ -165,7 +165,6 @@ build_export_compile_commands:
     - cd build
     - pip install pyyaml
     - python -u /usr/bin/run-clang-tidy-6.0.py -quiet 2>&1 | tee clang-tidy.log
-    - cat build/reports/clang-tidy.log | python ../clang-tidy-to-junit.py $PWD > linting.xml
   artifacts:
     paths:
       - build
@@ -298,7 +297,7 @@ test_memcheck:
 pages:
   extends: .required_dependencies
   stage: pages
-  needs: ["test_debug_minimal"]
+  needs: ["test_debug_minimal", "lint_clang_tidy"]
   before_script:
     - apt update && apt install -y curl gcovr
   script:
@@ -307,6 +306,7 @@ pages:
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o index.html
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml
     - cp ../build/ctest.xml build/reports/unit-tests.xml
+    - cat build/reports/clang-tidy.log | python ../clang-tidy-to-junit.py $PWD > linting.xml
 
     # Create and upload GitLab badges
     - python ../.produce-ci-metrics.py build/reports > ci-metrics.json
