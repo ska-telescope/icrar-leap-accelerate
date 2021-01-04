@@ -27,12 +27,15 @@
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <cublas_v2.h>
 #include <cublasLt.h>
-
+#include <library_types.h>
 #include <type_traits>
 
 #if CUBLAS_VER_MAJOR == 10
 using cublasComputeType_t = cudaDataType;
 using cudaDataType_t = cudaDataType;
+#define CUBLAS_COMPUTE_64F CUDA_R_64F
+#define CUBLAS_COMPUTE_32F CUDA_R_32F
+#define CUBLAS_COMPUTE_32I CUDA_R_32I
 #endif
 
 template<typename T>
@@ -40,20 +43,20 @@ struct is_cublas_supported : public std::false_type {};
 template<>
 struct is_cublas_supported<double> : public std::true_type
 {
-    static constexpr cublasComputeType_t GetComputeType() { return CUBLAS_COMPUTE_64F; }
-    static constexpr cudaDataType_t GetDataType() { return CUDA_R_64F; }
+    static constexpr cublasComputeType_t GetComputeType() { return cublasComputeType_t::CUBLAS_COMPUTE_64F; }
+    static constexpr cudaDataType_t GetDataType() { return cudaDataType_t::CUDA_R_64F; }
 };
 template<>
 struct is_cublas_supported<float> : public std::true_type
 {
-    static constexpr cublasComputeType_t GetComputeType() { return CUBLAS_COMPUTE_32F; }
-    static constexpr cudaDataType_t GetDataType() { return CUDA_R_32F; }
+    static constexpr cublasComputeType_t GetComputeType() { return cublasComputeType_t::CUBLAS_COMPUTE_32F; }
+    static constexpr cudaDataType_t GetDataType() { return cudaDataType_t::CUDA_R_32F; }
 };
 template<>
 struct is_cublas_supported<int32_t> : public std::true_type
 {
-    static constexpr cublasComputeType_t GetComputeType() { return CUBLAS_COMPUTE_32I; }
-    static constexpr cudaDataType_t GetDataType() { return CUDA_R_32I; }
+    static constexpr cublasComputeType_t GetComputeType() { return cublasComputeType_t::CUBLAS_COMPUTE_32I; }
+    static constexpr cudaDataType_t GetDataType() { return cudaDataType_t::CUDA_R_32I; }
 };
 
 namespace icrar
