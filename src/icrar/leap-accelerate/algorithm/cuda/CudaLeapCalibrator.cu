@@ -163,7 +163,7 @@ namespace cuda
             auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
 
             // Emplace a single empty tensor
-    #ifdef HIGH_MEMORY
+    #ifdef HIGH_GPU_MEMORY
             const auto deviceIntegration = DeviceIntegration(integration);
     #endif
             LOG(info) << "Metadata loaded in " << metadata_read_timer;
@@ -182,7 +182,7 @@ namespace cuda
                 directionBuffer->GetAvgData().SetZeroAsync();
 
                 LOG(info) << "Sending integration to device";
-    #ifdef HIGH_MEMORY
+    #ifdef HIGH_GPU_MEMORY
                 input_queue[0].Set(deviceIntegration);
     #else
                 input_queue[0].Set(integration);

@@ -73,6 +73,7 @@ namespace cuda
             m_buffer = other.m_buffer;
             other.m_count = 0;
             other.m_buffer = nullptr;
+            return *this;
         }
 
         /**

@@ -19,7 +19,6 @@ set(public_headers
     model/band_data.h
 )
 set(private_headers
-
     math/casacore_helper.h
     math/math_conversion.h
     math/vector_extensions.h
@@ -123,7 +122,11 @@ if(CUDA_ENABLED)
   # will also build with -std=c++14
   target_compile_features(${TARGET_NAME} PUBLIC cxx_std_14)
   target_compile_definitions(${TARGET_NAME} PUBLIC CUDA_ENABLED)
-
+  
+  if(HIGH_GPU_MEMORY)
+    target_compile_definitions(${TARGET_NAME} PUBLIC HIGH_GPU_MEMORY)
+  endif()
+  
   # We need to explicitly state that we need all CUDA files in the target
   # library to be built with -dc as the member functions could be called by
   # other libraries and executables

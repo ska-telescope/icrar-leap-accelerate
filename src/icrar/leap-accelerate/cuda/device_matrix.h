@@ -82,7 +82,7 @@ namespace cuda
             other.m_rows = 0;
             other.m_cols = 0;
             other.m_buffer = nullptr;
-            return other;
+            return *this;
         }
 
         /**

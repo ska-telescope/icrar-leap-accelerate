@@ -13,7 +13,7 @@ option(CUDA_ENABLED "Build with cuda support" OFF)
 option(WERROR "Warnings as Errors" OFF)
 option(TRACE "Trace Data Values" OFF)
 option(CMAKE_RUN_CLANG_TIDY "Run clang-tidy with the compiler." OFF)
-option(HIGH_MEMORY "If large amounts of device memory is present" OFF)
+option(HIGH_GPU_MEMORY "Improves device performance at the cost of extra device memory" OFF)
 
 # Override config via environment variables
 if(DEFINED ENV{CUDA_ENABLED})
@@ -31,6 +31,14 @@ endif()
 if(DEFINED ENV{CMAKE_RUN_CLANG_TIDY})
   set(CMAKE_RUN_CLANG_TIDY $ENV{CMAKE_RUN_CLANG_TIDY})
   message("-- Environment variable override: CMAKE_RUN_CLANG_TIDY=${CMAKE_RUN_CLANG_TIDY}")
+endif()
+if(DEFINED ENV{HIGH_GPU_MEMORY})
+  set(HIGH_GPU_MEMORY $ENV{HIGH_GPU_MEMORY})
+  message("-- Environment variable override: HIGH_GPU_MEMORY=${HIGH_GPU_MEMORY}")
+endif()
+
+if(TRACE)
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DTRACE")
 endif()
 
 # Enable Linting with build
@@ -61,10 +69,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "G
   if(WERROR)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
   endif()
-endif()
-
-if(TRACE)
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DTRACE")
 endif()
 
 # Load Modules

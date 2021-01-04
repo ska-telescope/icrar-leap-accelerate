@@ -100,6 +100,7 @@ namespace cuda
             other.m_sizeDim1 = 0;
             other.m_sizeDim2 = 0;
             other.m_buffer = nullptr;
+            return *this;
         }
 
 
