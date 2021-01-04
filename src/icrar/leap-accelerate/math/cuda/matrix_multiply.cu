@@ -29,6 +29,11 @@
 
 #include <type_traits>
 
+#if CUBLAS_VER_MAJOR == 10
+using cublasComputeType_t = cudaDataType;
+using cudaDataType_t = cudaDataType;
+#endif
+
 template<typename T>
 struct is_cublas_supported : public std::false_type {};
 template<>
@@ -154,6 +159,7 @@ namespace cuda
     template<typename T, typename=std::enable_if_t<is_cublas_supported<T>::value>>
     __host__ void mat_mul(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const T* A, const T* B, T* C)
     {
+#if CUBLAS_VER_MAJOR >= 11
         cublasOperation_t transa = cublasOperation_t::CUBLAS_OP_N;
         cublasOperation_t transb = cublasOperation_t::CUBLAS_OP_N;
 
@@ -227,6 +233,9 @@ namespace cuda
             stream));
 
         checkCudaErrors(cudaFree(workspace));
+#else
+        throw not_implemented_exception();
+#endif
     }
 
     /**
@@ -246,6 +255,7 @@ namespace cuda
     template<typename T, typename=std::enable_if_t<is_cublas_supported<T>::value>>
     __host__ void mat_mul_add(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const T* A, const T* B, const T* C, T* D)
     {
+#if CUBLAS_VER_MAJOR >= 11
         cublasOperation_t transa = cublasOperation_t::CUBLAS_OP_N;
         cublasOperation_t transb = cublasOperation_t::CUBLAS_OP_N;
 
@@ -322,6 +332,9 @@ namespace cuda
             stream));
 
         checkCudaErrors(cudaFree(workspace));
+#else
+        throw not_implemented_exception();
+#endif
     }
 
     __host__ void mat_mul(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const double* A, const double* B, double* C)
