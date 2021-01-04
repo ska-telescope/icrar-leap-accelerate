@@ -26,7 +26,6 @@
 #include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 
 #include <cuda_runtime.h>
-#include <cublasLt.h>
 
 #include <gtest/gtest.h>
 

@@ -32,14 +32,13 @@
 
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
 
+#include <icrar/leap-accelerate/cuda/device_vector.h>
+#include <icrar/leap-accelerate/cuda/device_matrix.h>
+
 //#define EIGEN_HAS_CXX11 1
 //#define EIGEN_VECTORIZE_GPU 1
 //#define EIGEN_CUDACC 1
 #include <Eigen/Core>
-
-#include <cublasLt.h>
-#include <icrar/leap-accelerate/cuda/device_vector.h>
-#include <icrar/leap-accelerate/cuda/device_matrix.h>
 
 #include <boost/noncopyable.hpp>
 #include <vector>
@@ -73,7 +72,6 @@ namespace cuda
     class CudaLeapCalibrator : public ILeapCalibrator
     {
         cublasHandle_t m_cublasContext;
-        cublasLtHandle_t m_cublasLtContext;
 
     public:
         CudaLeapCalibrator();

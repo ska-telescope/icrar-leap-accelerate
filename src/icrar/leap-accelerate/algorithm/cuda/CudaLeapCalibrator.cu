@@ -48,7 +48,6 @@
 #include <math_constants.h>
 #include <cuComplex.h>
 #include <cublas_v2.h>
-#include <cublasLt.h>
 #include <thrust/complex.h>
 
 #include <boost/math/constants/constants.hpp>
@@ -80,12 +79,10 @@ namespace cuda
         }
 
         checkCudaErrors(cublasCreate(&m_cublasContext));
-        checkCudaErrors(cublasLtCreate(&m_cublasLtContext));
     }
 
     CudaLeapCalibrator::~CudaLeapCalibrator()
     {
-        checkCudaErrors(cublasLtDestroy(m_cublasLtContext));
         checkCudaErrors(cublasDestroy(m_cublasContext));
 
         // cuda calls may still occur outside of this instance
