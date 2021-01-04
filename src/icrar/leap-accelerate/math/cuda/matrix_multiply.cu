@@ -56,6 +56,16 @@ namespace cuda
 {
     /**
      * @brief Performs matrix multiplcation with offset of the form C = A * B
+     * 
+     * @tparam T numeric type
+     * @param handle cublas context handle
+     * @param m columns of A
+     * @param n rows of B/C
+     * @param k rows of A/C, columns of B
+     * @param A left matrix
+     * @param B right matrix
+     * @param C out matrix
+     * @return __host__ 
      */
     template<typename T, typename=std::enable_if_t<is_cublas_supported<T>::value>>
     __host__ void mat_mul(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const T* A, const T* B, T* C)
@@ -88,6 +98,16 @@ namespace cuda
 
     /**
      * @brief Performs matrix multiplcation with offset of the form C = (A * B) + C
+     * 
+     * @tparam T numeric type
+     * @param handle cublas context handle
+     * @param m columns of A
+     * @param n rows of B/C
+     * @param k rows of A/C, columns of B
+     * @param A left matrix
+     * @param B right matrix
+     * @param C offset + out matrix
+     * @return __host__ 
      */
     template<typename T, typename=std::enable_if_t<is_cublas_supported<T>::value>>
     __host__ void mat_mul_add(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const T* A, const T* B, T* C)
@@ -118,6 +138,19 @@ namespace cuda
             cublasGemmAlgo_t::CUBLAS_GEMM_DEFAULT_TENSOR_OP));
     }
 
+    /**
+     * @brief Performs matrix multiplcation with offset of the form C = (A * B) + C 
+     * 
+     * @tparam T numeric type
+     * @param handle cublaslt context handle
+     * @param m columns of A
+     * @param n rows of B/C
+     * @param k rows of A/C, columns of B
+     * @param A left matrix
+     * @param B right matrix
+     * @param C offset + out matrix
+     * @return __host__ 
+     */
     template<typename T, typename=std::enable_if_t<is_cublas_supported<T>::value>>
     __host__ void mat_mul(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const T* A, const T* B, T* C)
     {
@@ -199,15 +232,15 @@ namespace cuda
     /**
      * @brief Performs matrix multiplcation with offset of the form D = (A * B) + C 
      * 
-     * @tparam T 
-     * @param handle 
-     * @param m 
-     * @param n 
-     * @param k 
-     * @param A 
-     * @param B 
-     * @param C 
-     * @param D 
+     * @tparam T numeric type
+     * @param handle cublaslt context handle
+     * @param m columns of A
+     * @param n rows of B/C
+     * @param k rows of A/C, columns of B
+     * @param A left matrix
+     * @param B right matrix
+     * @param C offset matrix
+     * @param D out matrix
      * @return __host__ 
      */
     template<typename T, typename=std::enable_if_t<is_cublas_supported<T>::value>>
