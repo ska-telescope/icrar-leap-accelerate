@@ -22,6 +22,7 @@
 */
 
 #include <icrar/leap-accelerate/math/cuda/matrix_multiply.h>
+#include <icrar/leap-accelerate/exception/exception.h>
 
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <cublas_v2.h>
@@ -234,7 +235,7 @@ namespace cuda
 
         checkCudaErrors(cudaFree(workspace));
 #else
-        throw not_implemented_exception();
+        throw not_implemented_exception(__FILE__, __LINE__);
 #endif
     }
 
@@ -333,7 +334,7 @@ namespace cuda
 
         checkCudaErrors(cudaFree(workspace));
 #else
-        throw not_implemented_exception();
+        throw not_implemented_exception(__FILE__, __LINE__);
 #endif
     }
 
