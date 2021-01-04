@@ -63,7 +63,7 @@ variables:
 
 .cuda_dependencies:
   extends: .common
-  image: nexus.engageska-portugal.pt/ska-docker/dspsr-build:latest
+  image: nallack/leap-build:latest
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
