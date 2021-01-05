@@ -46,7 +46,7 @@ namespace icrar
         }
         else if(m_antennas.size() != m_measurementSet->antenna().nrow())
         {
-            LOG(warning) << "ms antennas = " << m_measurementSet->antenna().nrow();
+            LOG(warning) << "total antennas = " << m_measurementSet->antenna().nrow();
             LOG(warning) << "unique antennas = " << m_antennas.size();
             LOG(warning) << "using unique antennas";
             m_stations = m_antennas.size();

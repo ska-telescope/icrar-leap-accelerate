@@ -33,7 +33,7 @@
 #include <icrar/leap-accelerate/core/profiling/UsageReporter.h>
 #include <icrar/leap-accelerate/core/version.h>
 
-#include <CLI/CLI.hpp>
+#include <boost/program_options.hpp>
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 #include <boost/lexical_cast.hpp>
@@ -44,6 +44,7 @@
 #include <exception>
 
 using namespace icrar;
+namespace po = boost::program_options;
 
 /**
  * @brief Combines command line arguments into a formatted string
@@ -77,80 +78,53 @@ std::string version_information(const char *name)
 int main(int argc, char** argv)
 {
     auto appName = "LeapAccelerateCLI";
-    CLI::App app { appName };
-    app.set_version_flag("--version", [&]() { return version_information(appName); });
 
-    //Parse Arguments
+    po::options_description desc(appName);
+     
     CLIArguments rawArgs;
-
-    app.add_option("-c,--config", rawArgs.configFilePath, "Configuration file relative path");
-    //TODO(calgray): app.add_option("-i,--input-type", rawArgs.source, "Input source type");
-    app.add_option("-f,--filepath", rawArgs.filePath, "Measurement set file path");
-    app.add_option("-o,--output", rawArgs.outputFilePath, "Calibration output file path");
-    app.add_option("-d,--directions", rawArgs.directions, "Direction calibrations");
-    app.add_option("-s,--stations", rawArgs.stations, "Override number of stations to use in the specified measurement set");
-    //TODO(calgray): app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
-    //TODO(calgray): app.add_option("v,--solutionInterval");
-    app.add_option("-i,--implementation", rawArgs.computeImplementation, "Compute implementation type (cpu, cuda)");
-
-#if __has_include(<optional>)
-    app.add_option("-a,--autoCorrelations", rawArgs.readAutocorrelations, "Set to true if measurement set rows store autocorrelations");
-    app.add_option("-m,--minimumBaselineThreshold", rawArgs.minimumBaselineThreshold, "Minimum baseline length in meters");
-    app.add_option("-u, --useFileSystemCache", rawArgs.useFileSystemCache, "Use filesystem caching between calls");
-    app.add_option("-v,--verbosity", rawArgs.verbosity, "Verbosity (0=fatal, 1=error, 2=warn, 3=info, 4=debug, 5=trace), defaults to info");
-#else
-    boost::optional<std::string> readAutocorrelations;
-    app.add_option("-a,--autoCorrelations", readAutocorrelations, "Set to true if measurement set rows store autocorrelations");
-
-    boost::optional<std::string> minimumBaselineThreshold;
-    app.add_option("-m,--minimumBaselineThreshold", minimumBaselineThreshold, "Minimum baseline length in meters");
-
-    boost::optional<std::string> useFileSystemCache;
-    app.add_option("-u, --useFileSystemCache", useFileSystemCache, "Use filesystem caching between calls");
-
-    boost::optional<std::string> verbosity;
-    app.add_option("-v,--verbosity", verbosity, "Verbosity (0=fatal, 1=error, 2=warn, 3=info, 4=debug, 5=trace), defaults to info");
-#endif
+    desc.add_options()
+        ("help", "display help message")
+        ("version,v", "display version information")
+        ("config,c", po::value<boost::optional<std::string>>(&rawArgs.configFilePath), "Configuration file relative path")
+        // TODO(calgray): app.add_option("-i,--input-type", rawArgs.source, "Input source type");
+        ("filepath,f", po::value<boost::optional<std::string>>(&rawArgs.filePath), "Measurement set file path")
+        ("output,o", po::value<boost::optional<std::string>>(&rawArgs.outputFilePath), "Calibration output file path")
+        ("directions,d", po::value<boost::optional<std::string>>(&rawArgs.directions), "Directions to calibrations")
+        ("stations,s", po::value<boost::optional<int>>(&rawArgs.stations), "Overrides number of stations in measurement set")
+        // TODO(calgray): app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
+        // TODO(calgray): app.add_option("v,--solutionInterval");
+        ("implementation,i", po::value<boost::optional<std::string>>(&rawArgs.computeImplementation), "Compute implementation type (cpu, cuda)")
+        ("autoCorrelations,a", po::value<boost::optional<bool>>(&rawArgs.readAutocorrelations), "Set to true if measurement set rows store autocorrelations")
+        ("minimumBaselineThreshold,m", po::value<boost::optional<double>>(&rawArgs.minimumBaselineThreshold), "Minimum baseline length in meters")
+        ("useFileSystemCache,u", po::value<boost::optional<bool>>(&rawArgs.useFileSystemCache), "Use filesystem caching between calls")
+        ("verbosity", po::value<boost::optional<int>>(&rawArgs.verbosity), "Verbosity (0=fatal, 1=error, 2=warn, 3=info, 4=debug, 5=trace), defaults to info");
 
     try
     {
-        app.parse(argc, argv);
+        po::variables_map variablesMap;
+        po::store(po::parse_command_line(argc, argv, desc), variablesMap);
+        po::notify(variablesMap);
 
-#if !__has_include(<optional>)
-        if(readAutocorrelations.is_initialized())
+        if(variablesMap.count("help"))
         {
-            rawArgs.readAutocorrelations = boost::lexical_cast<int>(readAutocorrelations.get());
+            std::cout << desc << std::endl;
         }
-        if(minimumBaselineThreshold.is_initialized())
+        else if (variablesMap.count("version"))
         {
-            rawArgs.minimumBaselineThreshold = boost::lexical_cast<double>(minimumBaselineThreshold.get());
-        } 
-        if(useFileSystemCache.is_initialized())
-        {
-            rawArgs.useFileSystemCache = boost::lexical_cast<bool>(useFileSystemCache.get());
-        } 
-        if(verbosity.is_initialized())
-        {
-            rawArgs.verbosity = boost::lexical_cast<int>(verbosity.get());
+            std::cout << version_information(appName) << std::endl;
         }
-#endif
-    }
-    catch (const CLI::ParseError& e)
-    {
-        return app.exit(e);
-    }
+        else
+        {
+            icrar::profiling::UsageReporter _;
+            ArgumentsValidated args = { Arguments(std::move(rawArgs)) };
 
-    icrar::profiling::UsageReporter _;
-    try
-    {
-        ArgumentsValidated args = { Arguments(std::move(rawArgs)) };
+            LOG(info) << version_information(argv[0]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            LOG(info) << arg_string(argc, argv);
 
-        LOG(info) << version_information(argv[0]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        LOG(info) << arg_string(argc, argv);
-
-        auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
-        auto result = calibrator->Calibrate(args.GetMeasurementSet(), args.GetDirections(), args.GetMinimumBaselineThreshold(), args.IsFileSystemCacheEnabled());
-        cpu::PrintResult(result, args.GetOutputStream());
+            auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
+            auto result = calibrator->Calibrate(args.GetMeasurementSet(), args.GetDirections(), args.GetMinimumBaselineThreshold(), args.IsFileSystemCacheEnabled());
+            cpu::PrintResult(result, args.GetOutputStream());
+        }
     }
     catch(const std::exception& e)
     {

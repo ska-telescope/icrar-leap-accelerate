@@ -195,7 +195,7 @@ namespace icrar
         unsigned int GetNumBaselines(bool useAutocorrelations) const;
 
         /**
-         * @brief Calculates the set of unique antenna indices.
+         * @brief Calculates the set of unique antenna indices used in baseline pairs
          * 
          * @return unsigned int 
          */
