@@ -20,11 +20,12 @@
  * MA 02111 - 1307  USA
  */
 
-#include <cuda_runtime.h>
-
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
-#include <icrar/leap-accelerate/math/cuda/matrix.cuh>
+#include <icrar/leap-accelerate/math/cuda/matrix.h>
 #include <icrar/leap-accelerate/math/cuda/vector.cuh>
+#include <icrar/leap-accelerate/tests/math/eigen_helper.h>
+
+#include <cuda_runtime.h>
 
 #include <gtest/gtest.h>
 
@@ -35,6 +36,9 @@ namespace icrar
 {
     class CudaMatrixTests : public testing::Test
     {
+        const double TOLERANCE = 0.0001;
+        cublasHandle_t m_cublasContext;
+
     public:
         void SetUp() override
         {
@@ -42,10 +46,13 @@ namespace icrar
             int deviceCount = 0;
             checkCudaErrors(cudaGetDeviceCount(&deviceCount));
             ASSERT_EQ(1, deviceCount);
+
+            checkCudaErrors(cublasCreate(&m_cublasContext));
         }
 
         void TearDown() override
         {
+            checkCudaErrors(cublasCreate(&m_cublasContext));
             checkCudaErrors(cudaDeviceReset());
         }
 
@@ -73,32 +80,39 @@ namespace icrar
         {
             using MatrixXT = Eigen::Matrix<T, -1, -1>;
 
-            auto a = MatrixXT(3,3);
-            a << 1, 0, 0,
-                0, 1, 0,
-                0, 0, 1;
+            MatrixXT a = 2 * MatrixXT::Ones(16,16);
+            MatrixXT b = 3 * MatrixXT::Ones(16,16);
+            MatrixXT c = MatrixXT::Zero(16,16);
 
-            auto b = MatrixXT(3,3);
-            b << 1, 0, 0,
-                0, 1, 0,
-                0, 0, 1;
+            auto ad = cuda::device_matrix<T>(a);
+            auto bd = cuda::device_matrix<T>(b);
+            auto cd = cuda::device_matrix<T>(c);
 
-            auto c = MatrixXT(3,3); 
+            cuda::multiply<T>(m_cublasContext, ad, bd, cd);
+            cd.ToHost(c);
 
-            icrar::cuda::h_multiply(a, b, c);
+            MatrixXT expected = (a * b);
+            ASSERT_MEQD(expected, c, TOLERANCE);
+        }
 
-            MatrixXT expected = a * b;
+        template<typename T>
+        void TestMatrixMatrixMultiplyAdd()
+        {
+            using MatrixXT = Eigen::Matrix<T, -1, -1>;
 
-            //ASSERT_EQ(c, expected);
-            ASSERT_EQ(c(0,0), 1);
-            ASSERT_EQ(c(0,1), 0);
-            ASSERT_EQ(c(0,2), 0);
-            ASSERT_EQ(c(1,0), 0);
-            ASSERT_EQ(c(1,1), 1);
-            ASSERT_EQ(c(1,2), 0);
-            ASSERT_EQ(c(2,0), 0);
-            ASSERT_EQ(c(2,1), 0);
-            ASSERT_EQ(c(2,2), 1);
+            MatrixXT a = 2 * MatrixXT::Identity(16,16);
+            MatrixXT b = 3 * MatrixXT::Identity(16,16);
+            MatrixXT c = MatrixXT::Identity(16,16);
+            MatrixXT d = MatrixXT::Zero(16,16);
+
+            auto ad = cuda::device_matrix<T>(a);
+            auto bd = cuda::device_matrix<T>(b);
+            auto cd = cuda::device_matrix<T>(c);
+            cuda::multiply_add<T>(m_cublasContext, ad, bd, cd);
+            cd.ToHost(d);
+
+            MatrixXT expected = (a * b) + c;
+            ASSERT_MEQD(expected, d, TOLERANCE);
         }
 
         template<typename T>
@@ -116,24 +130,14 @@ namespace icrar
 
             auto c = MatrixXT(2,3);
 
-            icrar::cuda::h_multiply(a, b, c);
+            auto ad = cuda::device_matrix<T>(a);
+            auto bd = cuda::device_matrix<T>(b);
+            auto cd = cuda::device_matrix<T>(c);
+            icrar::cuda::multiply(m_cublasContext, ad, bd, cd);
+            cd.ToHost(c);
 
             MatrixXT expected = a * b;
-
-            ASSERT_EQ(expected(0,0), 21);
-            ASSERT_EQ(expected(0,1), 24);
-            ASSERT_EQ(expected(0,2), 27);
-            ASSERT_EQ(expected(1,0), 47);
-            ASSERT_EQ(expected(1,1), 54);
-            ASSERT_EQ(expected(1,2), 61);
-
-            //TODO
-            ASSERT_EQ(c(0,0), 21);
-            ASSERT_EQ(c(0,1), 24);
-            ASSERT_EQ(c(0,2), 27);
-            ASSERT_EQ(c(1,0), 47);
-            ASSERT_EQ(c(1,1), 54);
-            ASSERT_EQ(c(1,2), 61);
+            ASSERT_MEQD(expected, c, TOLERANCE);
         }
 
         template<typename T>
@@ -147,9 +151,15 @@ namespace icrar
                 7, 8, 9;
 
             auto b = Eigen::Matrix<T, Eigen::Dynamic, 1>(3, 1);
+            b << 1, 2, 3;
+
             auto c = Eigen::Matrix<T, Eigen::Dynamic, 1>(3, 1); 
 
-            icrar::cuda::h_multiply(a, b, c);
+            auto ad = cuda::device_matrix<T>(a);
+            auto bd = cuda::device_vector<T>(b);
+            auto cd = cuda::device_vector<T>(c);
+            icrar::cuda::multiply(m_cublasContext, ad, bd, cd);
+            cd.ToHost(c);
 
             MatrixXT expected = a * b;
             ASSERT_EQ(c, expected);
@@ -162,8 +172,9 @@ namespace icrar
         }
     };
 
-    TEST_F(CudaMatrixTests, TestMatrixAdd) { TestMatrixAdd<double>(); }
+    TEST_F(CudaMatrixTests, DISABLED_TestMatrixAdd) { TestMatrixAdd<double>(); }
     TEST_F(CudaMatrixTests, TestMatrixMatrixMultiply) { TestMatrixMatrixMultiply<double>(); }
+    TEST_F(CudaMatrixTests, TestMatrixMatrixMultiplyAdd) { TestMatrixMatrixMultiplyAdd<double>(); }
     TEST_F(CudaMatrixTests, TestMatrixMatrixMultiply32) { TestMatrixMatrixMultiply32<double>(); }
     TEST_F(CudaMatrixTests, TestMatrixVectorMultiply33) { TestMatrixVectorMultiply33<double>(); }
     TEST_F(CudaMatrixTests, DISABLED_TestScalearMatrixMultiply) { TestScalearMatrixMultiply<double>(); }

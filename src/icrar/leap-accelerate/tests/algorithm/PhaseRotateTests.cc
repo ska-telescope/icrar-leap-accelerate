@@ -27,9 +27,10 @@
 
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
 
-#include <icrar/leap-accelerate/algorithm/Calibrate.h>
+#include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
+#include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
-#include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/cuda/CudaLeapCalibrator.h>
 
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
@@ -102,7 +103,7 @@ namespace icrar
 
             std::vector<std::vector<cpu::IntegrationResult>> integrations;
             std::vector<std::vector<cpu::CalibrationResult>> calibrations;
-            std::tie(integrations, calibrations) = Calibrate(impl, *ms, ToDirectionVector(directions), 0.0, false);
+            std::tie(integrations, calibrations) = LeapCalibratorFactory::Create(impl)->Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
 
             auto expected = GetExpectedCalibration();
 
@@ -164,7 +165,8 @@ namespace icrar
                 auto deviceIntegration = icrar::cuda::DeviceIntegration(integration);
                 auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
                 auto deviceMetadata = icrar::cuda::DeviceMetaData(hostMetadata);
-                icrar::cuda::RotateVisibilities(deviceIntegration, deviceMetadata);
+
+                cuda::CudaLeapCalibrator().RotateVisibilities(deviceIntegration, deviceMetadata);
                 deviceMetadata.ToHost(hostMetadata);
                 metadataOptionalOutput = hostMetadata;
             }
@@ -190,9 +192,9 @@ namespace icrar
             expectedConstants.dlm_dec = -0.40191209304358488;
             auto expectedDD = Eigen::Matrix3d();
             expectedDD <<
-            0.50913780874486769, -0.2520402307174327, -0.82295468514759529,
-            -0.089966081772685239,   0.93533988977932658,  -0.34211897743046571,
-            0.85597009050371897,  0.24822371499818516,  0.45354182990718139;
+             0.50913780874486769, -0.089966081772685239,  0.85597009050371897,
+             -0.2520402307174327,   0.93533988977932658,  0.24822371499818516,
+            -0.82295468514759529,  -0.34211897743046571,  0.45354182990718139;
 
             //========
             // ASSERT

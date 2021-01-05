@@ -82,6 +82,7 @@ namespace cuda
             other.m_rows = 0;
             other.m_cols = 0;
             other.m_buffer = nullptr;
+            return *this;
         }
 
         /**
@@ -118,10 +119,7 @@ namespace cuda
 
         ~device_matrix()
         {
-            if(m_buffer != nullptr)
-            {
-                checkCudaErrors(cudaFree(m_buffer));
-            }
+            checkCudaErrors(cudaFree(m_buffer));
         }
 
         __host__ __device__ T* Get()
@@ -170,7 +168,9 @@ namespace cuda
         {
             size_t bytes = GetSize();
             checkCudaErrors(cudaMemcpy(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
+#ifndef NDEBUG
             DebugCudaErrors();
+#endif
         }
 
         /**
@@ -182,8 +182,9 @@ namespace cuda
         __host__ void SetDataAsync(const T* data)
         {
             size_t bytes = GetSize();
+            //cudaHostRegister(data, bytes, cudaHostRegisterPortable);
             checkCudaErrors(cudaMemcpyAsync(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
-            DebugCudaErrors();
+            //cudaHostUnregister(data);
         }
 
         __host__ void ToHost(T* out) const

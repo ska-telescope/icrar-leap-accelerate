@@ -20,38 +20,24 @@
  * MA 02111 - 1307  USA
  */
 
-#include <icrar/leap-accelerate/core/compute_implementation.h>
-#include <icrar/leap-accelerate/core/log/logging.h>
+#pragma once
+
+#include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
+#include <boost/noncopyable.hpp>
+#include <vector>
 
 namespace icrar
 {
-    /**
-     * @return true if value was converted succesfully, false otherwise
-     */
-    bool TryParseComputeImplementation(const std::string& value, ComputeImplementation& out)
+namespace cpu
+{
+    class CpuLeapCalibrator : public ILeapCalibrator
     {
-        if(value == "casa")
-        {
-            LOG(warning) << "argument 'casa' deprecated, use 'cpu' instead";
-            out = ComputeImplementation::cpu;
-            return true;
-        }
-        else if(value == "eigen")
-        {
-            LOG(warning) << "argument 'eigen' deprecated, use 'cpu' instead";
-            out = ComputeImplementation::cpu;
-            return true;
-        }
-        else if(value == "cpu")
-        {
-            out = ComputeImplementation::cpu;
-            return true;
-        }
-        else if(value == "cuda")
-        {
-            out = ComputeImplementation::cuda;
-            return true;
-        }
-        return false;
-    }
+    public:
+        virtual cpu::CalibrateResult Calibrate(
+            const icrar::MeasurementSet& ms,
+            const std::vector<MVDirection>& directions,
+            double minimumBaselineThreshold,
+            bool isFileSystemCacheEnabled) override;
+    };
+} // namespace cpu
 } // namespace icrar

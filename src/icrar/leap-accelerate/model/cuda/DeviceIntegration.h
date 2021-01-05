@@ -92,6 +92,20 @@ namespace cuda
          */
         DeviceIntegration(const icrar::cpu::Integration& integration);
 
+        /**
+         * @brief Set the Data object
+         * 
+         * @param integration 
+         */
+        __host__ void Set(const icrar::cpu::Integration& integration);
+
+        /**
+         * @brief Set the Data object
+         * 
+         * @param integration 
+         */
+        __host__ void Set(const icrar::cuda::DeviceIntegration& integration);
+
         int GetIntegrationNumber() const { return m_integrationNumber; }
         size_t GetIndex() const { return index; }
         //size_t GetX() const { return x; }
@@ -102,20 +116,13 @@ namespace cuda
         device_tensor3<std::complex<double>>& GetVis() { return m_visibilities; }
 
         /**
-         * @brief Set the Data object
-         * 
-         * @param integration 
-         */
-        void SetData(const icrar::cpu::Integration& integration);
-
-        /**
          * @brief Copies device data to a host object
          * 
          * @param host object with data on cpu memory
          */
-        void ToHost(cpu::Integration& host) const;
+        __host__ void ToHost(cpu::Integration& host) const;
     };
-}
-}
+} // namespace cuda
+} // namepace icrar
 
 #endif // CUDA_ENABLED

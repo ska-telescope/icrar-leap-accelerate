@@ -76,8 +76,8 @@ namespace cpu
     }
 
     /**
-     * @brief Provides selecting a range of elements via the index in the matrix. Negative indexes
-     * select from the back of the vector with -1 as the last element.
+     * @brief Provides selecting a range of elements via matrix row indices. Negative indexes
+     * select from the bottom of the matrix with -1 representing the bottom row.
      * 
      * @tparam T 
      * @param matrix the referenced matrix to select from
@@ -92,11 +92,13 @@ namespace cpu
         unsigned int column)
     {
         Eigen::VectorXi correctedIndices = rowIndices;
-        for(int& v : correctedIndices)
+
+        // wrap around
+        for(int& i : correctedIndices)
         {
-            if(v < 0)
+            if(i < 0)
             {
-                v += matrix.rows();
+                i += matrix.rows();
             }
         }
 

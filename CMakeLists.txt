@@ -13,6 +13,7 @@ option(CUDA_ENABLED "Build with cuda support" OFF)
 option(WERROR "Warnings as Errors" OFF)
 option(TRACE "Trace Data Values" OFF)
 option(CMAKE_RUN_CLANG_TIDY "Run clang-tidy with the compiler." OFF)
+option(HIGH_GPU_MEMORY "Improves device performance at the cost of extra device memory" OFF)
 
 # Override config via environment variables
 if(DEFINED ENV{CUDA_ENABLED})
@@ -30,6 +31,14 @@ endif()
 if(DEFINED ENV{CMAKE_RUN_CLANG_TIDY})
   set(CMAKE_RUN_CLANG_TIDY $ENV{CMAKE_RUN_CLANG_TIDY})
   message("-- Environment variable override: CMAKE_RUN_CLANG_TIDY=${CMAKE_RUN_CLANG_TIDY}")
+endif()
+if(DEFINED ENV{HIGH_GPU_MEMORY})
+  set(HIGH_GPU_MEMORY $ENV{HIGH_GPU_MEMORY})
+  message("-- Environment variable override: HIGH_GPU_MEMORY=${HIGH_GPU_MEMORY}")
+endif()
+
+if(TRACE)
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DTRACE")
 endif()
 
 # Enable Linting with build
@@ -60,10 +69,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "G
   if(WERROR)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
   endif()
-endif()
-
-if(TRACE)
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DTRACE")
 endif()
 
 # Load Modules
@@ -109,7 +114,6 @@ endif()
 
 
 if (BUILD_TESTING)
-  #find_package(GTest)
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # required for Win32
   add_subdirectory(external/gtest-1.8.1 googletest EXCLUDE_FROM_ALL)
   enable_testing()
@@ -121,9 +125,9 @@ if (BUILD_TESTING)
       gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols
   )
   set_target_properties(gtest PROPERTIES FOLDER external)
-  #set_target_properties(gtest_main PROPERTIES FOLDER external)
+  set_target_properties(gtest_main PROPERTIES FOLDER external)
   set_target_properties(gmock PROPERTIES FOLDER external)
-  #set_target_properties(gmock_main PROPERTIES FOLDER external)
+  set_target_properties(gmock_main PROPERTIES FOLDER external)
 endif()
 
 # Global Libraries
@@ -149,7 +153,7 @@ else (DOXYGEN_FOUND)
 endif (DOXYGEN_FOUND)
 
 if(CUDA_ENABLED)
-  find_package(CUDA)
+  find_package(CUDA 9.0)
   enable_language(CUDA)
 endif()
 
@@ -157,11 +161,10 @@ add_definitions(-DBOOST_ALL_DYN_LINK)
 
 find_package(Boost REQUIRED COMPONENTS log log_setup)
 
+set(CASACORE_FIND_QUIETLY ON)
 find_package(Casacore REQUIRED)
 
 find_package(LAPACK)
-
-find_package(GSL)
 
 # Local Libraries
 #add_subdirectory(external/eigen-3.3.90) # builds eigen3 tests

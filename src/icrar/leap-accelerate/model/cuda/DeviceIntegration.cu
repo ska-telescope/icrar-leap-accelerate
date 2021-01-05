@@ -37,7 +37,6 @@ namespace cuda
     , channels(0)
     , baselines(0)
     {
-
     }
 
     DeviceIntegration::DeviceIntegration(const icrar::cpu::Integration& integration)
@@ -48,10 +47,26 @@ namespace cuda
     , channels(integration.channels)
     , baselines(integration.baselines)
     {
-
     }
 
-    void DeviceIntegration::SetData(const icrar::cpu::Integration& integration)
+    __host__ void DeviceIntegration::Set(const DeviceIntegration& integration)
+    {
+        if(m_visibilities.GetSize() != integration.m_visibilities.GetSize())
+        {
+            std::ostringstream os;
+            os << "tensor size mismatch: this " << m_visibilities.GetDimensions() << "(" << m_visibilities.GetSize() << ")" << "\n";
+            os << "other " << integration.m_visibilities.GetDimensions() << "(" << integration.m_visibilities.GetSize() << ")";
+            throw icrar::invalid_argument_exception(os.str(), "integration", __FILE__, __LINE__);
+        }
+
+        m_visibilities.SetDataAsync(integration.m_visibilities);
+        index = integration.index;
+        x = integration.x;
+        channels = integration.channels;
+        baselines = integration.baselines;
+    }
+
+    __host__ void DeviceIntegration::Set(const icrar::cpu::Integration& integration)
     {
         if(m_visibilities.GetSize() != integration.GetVis().size())
         {
@@ -68,13 +83,13 @@ namespace cuda
         baselines = integration.baselines;
     }
 
-    void DeviceIntegration::ToHost(cpu::Integration& host) const
+    __host__ void DeviceIntegration::ToHost(cpu::Integration& host) const
     {
-        //m_visibilities.ToHost(host.m_data);
+        //m_visibilities.ToHost(host.m_data); //TODO(calgray): unsupported constant variant!
         host.index = index;
         host.x = x;
         host.channels = channels;
         host.baselines = baselines;
     }
-}
-}
+} // namespace cuda
+} // namespace icrar

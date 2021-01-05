@@ -10,7 +10,7 @@ set(sources
 add_executable(
   ${TARGET_NAME}
   ${sources}
-  )
+)
 
 target_include_directories(${TARGET_NAME} SYSTEM PUBLIC ${CMAKE_SOURCE_DIR}/external/CLI11/include)
 # Legacy TODO: build support for xenial
