@@ -59,7 +59,7 @@ namespace icrar
         boost::optional<std::string> configFilePath;
         boost::optional<std::string> outputFilePath;
 
-        boost::optional<std::string> stations;
+        boost::optional<int> stations;
         boost::optional<std::string> directions;
         boost::optional<std::string> computeImplementation;
         boost::optional<double> minimumBaselineThreshold;
@@ -75,7 +75,7 @@ namespace icrar
      */
     struct Arguments
     {
-        Arguments() {}
+        Arguments() = default;
         Arguments(CLIArguments&& args);
 
         boost::optional<InputType> source; // MeasurementSet source type

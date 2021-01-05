@@ -99,9 +99,6 @@ else()
   message(WARNING "git not found!")
 endif()
 
-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/CLI11/CMakeLists.txt")
-  message(FATAL_ERROR "Submodule CLI11 was not downloaded! Please update submodules and try again.")
-endif()
 if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/eigen-3.3.90/CMakeLists.txt")
   message(FATAL_ERROR "Submodule eigen-3.3.90 was not downloaded! Please update submodules and try again.")
 endif()
@@ -159,7 +156,7 @@ endif()
 
 add_definitions(-DBOOST_ALL_DYN_LINK)
 
-find_package(Boost REQUIRED COMPONENTS log log_setup)
+find_package(Boost REQUIRED COMPONENTS log log_setup program_options)
 
 set(CASACORE_FIND_QUIETLY ON)
 find_package(Casacore REQUIRED)

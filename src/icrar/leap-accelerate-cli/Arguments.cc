@@ -58,16 +58,12 @@ namespace icrar
         , filePath(std::move(args.filePath))
         , configFilePath(std::move(args.configFilePath))
         , outputFilePath(std::move(args.outputFilePath))
+        , stations(std::move(args.stations))
         , minimumBaselineThreshold(args.minimumBaselineThreshold)
         , readAutocorrelations(args.readAutocorrelations)
         , mwaSupport(args.mwaSupport)
         , useFileSystemCache(args.useFileSystemCache)
     {
-        if(args.stations.is_initialized())
-        {
-            stations = std::stoi(args.stations.get());
-        }
-        
         if(args.computeImplementation.is_initialized())
         {
             computeImplementation.reset(ComputeImplementation()); //Defualt value ignored
