@@ -145,11 +145,9 @@ namespace cpu
 
         LOG(info) << "Calculating Calibration";
 
-        auto phaseAngles = icrar::arg(metadata.GetAvgData());
-
         // PhaseAngles I1
         // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
-        Eigen::VectorXd phaseAnglesI1 = icrar::cpu::VectorRangeSelect(phaseAngles, metadata.GetI1(), 0); // 1st pol only
+        Eigen::VectorXd phaseAnglesI1 = icrar::arg(icrar::cpu::VectorRangeSelect(metadata.GetAvgData(), metadata.GetI1(), 0)); // 1st pol only
         phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
         phaseAnglesI1(phaseAnglesI1.rows() - 1) = 0;
 
@@ -178,28 +176,28 @@ namespace cpu
         {
             auto md_baseline = static_cast<int>(baseline % static_cast<size_t>(metadata.GetConstants().nbaselines)); // metadata baseline
 
-            double shiftFactor = -two_pi<double>() * (metadata.GetUVW()[baseline](2) - metadata.GetOldUVW()[baseline](2));
+            double shiftFactor = -two_pi<double>() * (metadata.GetRotatedUVW()[baseline](2) - metadata.GetUVW()[baseline](2));
 
             // Loop over channels
-            for(int channel = 0; channel < metadata.GetConstants().channels; channel++)
+            for(uint32_t channel = 0; channel < metadata.GetConstants().channels; channel++)
             {
                 double shiftRad = shiftFactor / metadata.GetConstants().GetChannelWavelength(channel);
                 
-                for(int polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
+                for(uint32_t polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
                 {
                     integration_data(polarization, baseline, channel) *= std::exp(std::complex<double>(0.0, shiftRad));
                 }
 
                 bool hasNaN = false;
                 const Eigen::Tensor<std::complex<double>, 1> polarizations = integration_data.chip(channel, 2).chip(baseline, 1);
-                for(int polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
+                for(uint32_t polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
                 {
                     hasNaN |= std::isnan(polarizations(polarization).real()) || std::isnan(polarizations(polarization).imag());
                 }
 
                 if(!hasNaN)
                 {
-                    for(int polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
+                    for(uint32_t polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
                     {
                         metadata.GetAvgData()(md_baseline, polarization) += integration_data(polarization, baseline, channel);
                     }

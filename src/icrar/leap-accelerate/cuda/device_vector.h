@@ -56,20 +56,24 @@ namespace cuda
         T* m_buffer = nullptr; // Pointer to cuda owned memory
 
     public:
-        device_vector(device_vector&& other) noexcept
+        //device_vector(const device_vector&) = delete;
+        //device_vector& operator=(const device_vector&) = delete;
+
+        __host__ device_vector(device_vector&& other) noexcept
             : m_count(other.m_count)
             , m_buffer(other.m_buffer)
         {
-            other.m_buffer = nullptr;
             other.m_count = 0;
+            other.m_buffer = nullptr;
         }
 
-        device_vector& operator=(device_vector&& other) noexcept
+        __host__ device_vector& operator=(device_vector&& other) noexcept
         {
             m_count = other.m_count;
             m_buffer = other.m_buffer;
             other.m_count = 0;
             other.m_buffer = nullptr;
+            return *this;
         }
 
         /**
@@ -78,7 +82,7 @@ namespace cuda
          * @param size 
          * @param data 
          */
-        explicit device_vector(size_t count, const T* data = nullptr)
+        __host__ explicit device_vector(size_t count, const T* data = nullptr)
         : m_count(count)
         , m_buffer(nullptr)
         {
@@ -94,18 +98,15 @@ namespace cuda
             }
         }
 
-        explicit device_vector(const std::vector<T>& data) : device_vector(data.size(), data.data()) {}
+        __host__ explicit device_vector(const std::vector<T>& data) : device_vector(data.size(), data.data()) {}
 
-        explicit device_vector(const Eigen::Matrix<T, Eigen::Dynamic, 1>& data) : device_vector(data.size(), data.data()) {}
+        __host__ explicit device_vector(const Eigen::Matrix<T, Eigen::Dynamic, 1>& data) : device_vector(data.size(), data.data()) {}
 
-        explicit device_vector(const Eigen::Matrix<T, 1, Eigen::Dynamic>& data) : device_vector(data.size(), data.data()) {}
+        __host__ explicit device_vector(const Eigen::Matrix<T, 1, Eigen::Dynamic>& data) : device_vector(data.size(), data.data()) {}
 
-        ~device_vector()
+        __host__ ~device_vector()
         {
-            if(m_buffer != nullptr)
-            {
-                checkCudaErrors(cudaFree(m_buffer));
-            }
+            checkCudaErrors(cudaFree(m_buffer));
         }
 
         __host__ __device__ T* Get()
@@ -119,6 +120,11 @@ namespace cuda
         }
 
         __host__ __device__ size_t GetCount() const
+        {
+            return m_count;
+        }
+
+        __host__ __device__ size_t GetRows() const
         {
             return m_count;
         }
@@ -144,14 +150,23 @@ namespace cuda
         {
             size_t bytes = m_count * sizeof(T);
             checkCudaErrors(cudaMemcpy(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
+#ifndef NDEBUG
             DebugCudaErrors();
+#endif
         }
 
+        /**
+         * @brief Sets buffer data from host memory
+         * 
+         * @param data 
+         * @return __host__ 
+         */
         __host__ void SetDataAsync(const T* data)
         {
             size_t bytes = m_count * sizeof(T);
+            //cudaHostRegister(data, bytes, cudaHostRegisterPortable);
             checkCudaErrors(cudaMemcpyAsync(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
-            DebugCudaErrors();
+            //cudaHostUnregister(data);
         }
 
         __host__ void ToHost(T* out) const

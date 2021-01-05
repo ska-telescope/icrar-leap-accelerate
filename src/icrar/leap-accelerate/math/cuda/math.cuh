@@ -44,3 +44,8 @@ __device__ __forceinline__ cuDoubleComplex cuCexp(cuDoubleComplex z)
     resy *= t;
     return make_cuDoubleComplex(resx, resy);
 }
+
+__device__ __forceinline__ double cuCarg(cuDoubleComplex z)
+{
+    return atan2(cuCreal(z), cuCimag(z));
+}

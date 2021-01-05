@@ -20,27 +20,23 @@
  * MA 02111 - 1307  USA
  */
 
-#include "Calibrate.h"
-
-#include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
+#include "LeapCalibratorFactory.h"
+#include <icrar/leap-accelerate/algorithm/cpu/CpuLeapCalibrator.h>
+#include <icrar/leap-accelerate/algorithm/cuda/CudaLeapCalibrator.h>
+#include <icrar/leap-accelerate/exception/exception.h>
 
 namespace icrar
 {
-    cpu::CalibrateResult Calibrate(
-        ComputeImplementation impl,
-        const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions,
-        double minimumBaselineThreshold,
-        bool isFileSystemCacheEnabled)
+    std::unique_ptr<ILeapCalibrator> LeapCalibratorFactory::Create(ComputeImplementation impl)
     {
         if(impl == ComputeImplementation::cpu)
         {
-            return cpu::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
+            return std::make_unique<cpu::CpuLeapCalibrator>();
         }
         else if(impl == ComputeImplementation::cuda)
         {
 #ifdef CUDA_ENABLED
-            return cuda::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
+            return std::make_unique<cuda::CudaLeapCalibrator>();
 #else
             throw invalid_argument_exception("cuda build option not enabled", "impl", __FILE__, __LINE__);
 #endif

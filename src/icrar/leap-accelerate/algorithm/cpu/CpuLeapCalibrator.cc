@@ -20,17 +20,21 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
 
-#include <Eigen/Core>
-
-#include <vector>
+#include "CpuLeapCalibrator.h"
+#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 
 namespace icrar
 {
-    using MVuvw = Eigen::Vector3d;
-
-    Eigen::Matrix<double, Eigen::Dynamic, 3> ToMatrix(const std::vector<MVuvw>& uvws);
-    
-    Eigen::MatrixXd ToDynamicMatrix(const std::vector<MVuvw>& uvws);
+namespace cpu
+{
+    cpu::CalibrateResult CpuLeapCalibrator::Calibrate(
+        const icrar::MeasurementSet& ms,
+        const std::vector<MVDirection>& directions,
+        double minimumBaselineThreshold,
+        bool isFileSystemCacheEnabled)
+        {
+            return cpu::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
+        }
+} // namespace cpu
 } // namespace icrar

@@ -100,15 +100,13 @@ namespace cuda
             other.m_sizeDim1 = 0;
             other.m_sizeDim2 = 0;
             other.m_buffer = nullptr;
+            return *this;
         }
 
 
         ~device_tensor3()
         {
-            if(m_buffer != nullptr)
-            {
-                checkCudaErrors(cudaFree(m_buffer));
-            }
+            checkCudaErrors(cudaFree(m_buffer));
         }
 
         __host__ __device__ T* Get()
@@ -129,7 +127,7 @@ namespace cuda
             return 0; //TODO(calgray): not a great interface
         }
 
-        __host__ __device__ Eigen::DSizes<Eigen::DenseIndex, 3> GetDimensions()
+        __host__ __device__ Eigen::DSizes<Eigen::DenseIndex, 3> GetDimensions() const
         {
             auto res = Eigen::DSizes<Eigen::DenseIndex, 3>();
             res[0] = m_sizeDim0;
@@ -138,16 +136,31 @@ namespace cuda
             return res;
         }
 
+        /**
+         * @brief Gets the total number of elements in the tensor
+         * 
+         * @return __host__ 
+         */
         __host__ __device__ size_t GetCount() const
         {
             return m_sizeDim0 * m_sizeDim1 * m_sizeDim2;
         }
 
+        /**
+         * @brief Gets the total number of elements in the tensor
+         * 
+         * @return __host__ 
+         */
         __host__ __device__ size_t GetSize() const
         {
             return GetCount();
         }
 
+        /**
+         * @brief Gets the total number of bytes in the memory buffer 
+         * 
+         * @return __host__ 
+         */
         __host__ __device__ size_t GetByteSize() const
         {
             return GetCount() * sizeof(T);
@@ -163,11 +176,13 @@ namespace cuda
         {
             size_t bytes = GetByteSize();
             checkCudaErrors(cudaMemcpy(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
+#ifndef NDEBUG
             DebugCudaErrors();
+#endif
         }
 
         /**
-         * @brief Set the Data asyncronously
+         * @brief Set the Data asyncronously from host memory
          * 
          * @param data 
          * @return __host__ 
@@ -176,7 +191,12 @@ namespace cuda
         {
             size_t bytes = GetByteSize();
             checkCudaErrors(cudaMemcpyAsync(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
-            DebugCudaErrors();
+        }
+
+        __host__ void SetDataAsync(const device_tensor3<T>& data)
+        {
+            size_t bytes = GetByteSize();
+            cudaMemcpyAsync(m_buffer, data.Get(), bytes, cudaMemcpyKind::cudaMemcpyDeviceToDevice);
         }
 
         __host__ void ToHost(T* out) const

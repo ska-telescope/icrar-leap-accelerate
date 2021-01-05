@@ -22,15 +22,26 @@
 
 #pragma once
 
-#include <Eigen/Core>
+#ifdef CUDA_ENABLED
 
+#include <Eigen/Core>
+#include <unsupported/Eigen/CXX11/Tensor>
+#include <cuda_runtime.h>
 #include <vector>
 
-namespace icrar
+template<typename Tensor>
+class cuda_mapped_tensor : public Tensor
 {
-    using MVuvw = Eigen::Vector3d;
+public:
+    cuda_mapped_tensor(const Tensor& ref) : Tensor(ref)
+    {
+        cudaHostRegister(this->data(), this->size() * sizeof(decltype(*(this->data()))), cudaHostRegisterPortable);
+    }
 
-    Eigen::Matrix<double, Eigen::Dynamic, 3> ToMatrix(const std::vector<MVuvw>& uvws);
-    
-    Eigen::MatrixXd ToDynamicMatrix(const std::vector<MVuvw>& uvws);
-} // namespace icrar
+    virtual ~cuda_mapped_tensor()
+    {
+        cudaHostUnregister(this->data());
+    }
+};
+
+#endif // CUDA_ENABLED

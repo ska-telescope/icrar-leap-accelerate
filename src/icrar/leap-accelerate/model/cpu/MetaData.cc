@@ -136,7 +136,7 @@ namespace cpu
             LOG(warning) << "Ad1 is degenerate";
         }
 
-        SetOldUVW(uvws);
+        SetUVW(uvws);
     }
 
     MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold, bool useCache)
@@ -191,7 +191,7 @@ namespace cpu
         0, std::sin(ang3),  std::cos(ang3);
 
 
-        m_dd = (dd3 * dd2 * dd1).transpose();
+        m_dd = dd3 * dd2 * dd1;
         LOG(trace) << "dd3: " << pretty_matrix(dd3);
         LOG(trace) << "dd2: " << pretty_matrix(dd2);
         LOG(trace) << "dd1: " << pretty_matrix(dd1);
@@ -206,27 +206,27 @@ namespace cpu
         // m_lmn(2) = m_lmn(2) - 1;
     }
 
-    void MetaData::SetOldUVW(const std::vector<icrar::MVuvw>& uvw)
+    void MetaData::SetUVW(const std::vector<icrar::MVuvw>& uvw)
     {
-        m_oldUVW = uvw;
+        m_UVW = uvw;
     }
 
     void MetaData::CalcUVW()
     {
-        auto size = m_oldUVW.size();
-        m_UVW.clear();
-        m_UVW.reserve(m_oldUVW.size());
+        auto size = m_UVW.size();
+        m_rotatedUVW.clear();
+        m_rotatedUVW.reserve(m_UVW.size());
         for(size_t n = 0; n < size; n++)
         {
-            m_UVW.emplace_back(m_oldUVW[n] * m_dd);
+            m_rotatedUVW.emplace_back(m_dd * m_UVW[n]);
         }
     }
 
     bool MetaData::operator==(const MetaData& rhs) const
     {
         return m_constants == rhs.m_constants
-        && m_oldUVW == rhs.m_oldUVW
         && m_UVW == rhs.m_UVW
+        && m_rotatedUVW == rhs.m_rotatedUVW
         && m_A == rhs.m_A
         && m_I == rhs.m_I
         && m_Ad == rhs.m_Ad

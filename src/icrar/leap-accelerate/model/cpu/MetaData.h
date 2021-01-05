@@ -72,12 +72,12 @@ namespace cpu
 {
     struct Constants
     {
-        int nbaselines; //the total number station pairs (excluding self cycles) 
+        uint32_t nbaselines; //the total number station pairs (excluding self cycles) 
 
-        int channels; // The number of channels of the current observation
-        int num_pols; // The number of polarizations used by the current observation
-        int stations; // The number of stations used by the current observation
-        int rows;
+        uint32_t channels; // The number of channels of the current observation
+        uint32_t num_pols; // The number of polarizations used by the current observation
+        uint32_t stations; // The number of stations used by the current observation
+        uint32_t rows;
 
         double freq_start_hz; // The frequency of the first channel, in Hz
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
@@ -114,8 +114,8 @@ namespace cpu
         Eigen::VectorXi m_I1;
         Eigen::MatrixXd m_Ad1;
 
-        std::vector<icrar::MVuvw> m_oldUVW;
-        std::vector<icrar::MVuvw> m_UVW; // late initialized
+        std::vector<icrar::MVuvw> m_UVW;
+        std::vector<icrar::MVuvw> m_rotatedUVW; // late initialized
     
         icrar::MVDirection m_direction; // calibration direction, late initialized
 
@@ -154,14 +154,14 @@ namespace cpu
         const Eigen::VectorXi& GetI1() const;
         const Eigen::MatrixXd& GetAd1() const;
 
-        const std::vector<icrar::MVuvw>& GetOldUVW() const { return m_oldUVW; }
         const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
+        const std::vector<icrar::MVuvw>& GetRotatedUVW() const { return m_rotatedUVW; }
 
         const icrar::MVDirection& GetDirection() const { return m_direction; }
         const Eigen::Matrix3d& GetDD() const { return m_dd; }
         void SetDirection(const icrar::MVDirection& direction);
 
-        void SetOldUVW(const std::vector<icrar::MVuvw>& uvws);
+        void SetUVW(const std::vector<icrar::MVuvw>& uvws);
 
         /**
          * @brief Updates the rotated UVW vector using the DD matrix
