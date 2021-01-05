@@ -25,6 +25,7 @@
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/common/eigen_extensions.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
+#include <boost/numeric/conversion/cast.hpp>
 #include <cstddef>
 
 namespace icrar
@@ -49,7 +50,8 @@ namespace icrar
             LOG(warning) << "ms antennas = " << m_measurementSet->antenna().nrow();
             LOG(warning) << "unique antennas = " << m_antennas.size();
             LOG(warning) << "using unique antennas";
-            m_stations = m_antennas.size();
+
+            m_stations = boost::numeric_cast<int>(m_antennas.size());
         }
         else
         {
@@ -174,7 +176,7 @@ namespace icrar
     unsigned int MeasurementSet::GetNumFlaggedBaselines() const
     {
         auto flaggedBaselines = GetFlaggedBaselines();
-        return std::count(flaggedBaselines.cbegin(), flaggedBaselines.cend(), true);
+        return boost::numeric_cast<uint32_t>(std::count(flaggedBaselines.cbegin(), flaggedBaselines.cend(), true));
     }
 	
 	Eigen::Matrix<bool, -1, 1> MeasurementSet::GetShortBaselines(double minimumBaselineThreshold) const
@@ -205,7 +207,7 @@ namespace icrar
     unsigned int MeasurementSet::GetNumShortBaselines(double minimumBaselineThreshold) const
     {
         auto shortBaselines = GetShortBaselines(minimumBaselineThreshold);
-        return std::count(shortBaselines.cbegin(), shortBaselines.cend(), true);
+        return boost::numeric_cast<uint32_t>(std::count(shortBaselines.cbegin(), shortBaselines.cend(), true));
     }
 
     Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFilteredBaselines(double minimumBaselineThreshold) const
@@ -217,7 +219,7 @@ namespace icrar
     unsigned int MeasurementSet::GetNumFilteredBaselines(double minimumBaselineThreshold) const
     {
         auto filteredBaselines = GetFilteredBaselines(minimumBaselineThreshold);
-        return std::count(filteredBaselines.cbegin(), filteredBaselines.cend(), true);
+        return boost::numeric_cast<uint32_t>(std::count(filteredBaselines.cbegin(), filteredBaselines.cend(), true));
 	}
 
     Eigen::MatrixX3d MeasurementSet::GetCoords() const

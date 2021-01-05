@@ -11,6 +11,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(CUDA_ENABLED "Build with cuda support" OFF)
 option(WERROR "Warnings as Errors" OFF)
+option(WCONVERSION "Conversion warnings" OFF)
 option(TRACE "Trace Data Values" OFF)
 option(CMAKE_RUN_CLANG_TIDY "Run clang-tidy with the compiler." OFF)
 option(HIGH_GPU_MEMORY "Improves device performance at the cost of extra device memory" OFF)
@@ -64,11 +65,19 @@ configure_file(.clang-tidy .clang-tidy COPYONLY)
 project(${SOLUTION_NAME} LANGUAGES CXX VERSION ${SOLUTION_VERSION})
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-if (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra") # TODO(calgray) -Wconversion
+
+if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
   if(WERROR)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
   endif()
+  if(WCONVERSION)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wconversion -Wunused-function")
+  endif()
+endif()
+
+if(TRACE)
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DTRACE")
 endif()
 
 # Load Modules

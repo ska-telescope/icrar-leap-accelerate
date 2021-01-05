@@ -212,7 +212,7 @@ namespace icrar
 
         if(row.cols() < 7)
         {
-            for(int c = 0; c < row.cols(); ++c)
+            for(long int c = 0; c < row.cols(); ++c)
             {
                 ss << std::setw(pretty_width) << row(c);
                 if(c != row.cols() - 1) { ss << " "; }
@@ -225,7 +225,7 @@ namespace icrar
                 ss << std::setw(pretty_width) << row(c) << " ";
             }
             ss << std::setw(pretty_width) << "..." << " ";
-            for(int c = row.cols() - 3; c < row.cols(); ++c)
+            for(long int c = row.cols() - 3; c < row.cols(); ++c)
             {
                 ss << std::setw(pretty_width) << row(c);
                 if(c != row.cols() - 1) { ss << " "; }
@@ -250,7 +250,7 @@ namespace icrar
 
         if(value.rows() < 7)
         {
-            for(int r = 0; r < value.rows(); ++r)
+            for(int64_t r = 0; r < value.rows(); ++r)
             {
                 pretty_row(value(r, Eigen::all), ss);
                 if(r != value.rows() - 1) { ss << "\n"; }
@@ -265,15 +265,15 @@ namespace icrar
             }
             
             ss << "\n[";
-            int print_cols = std::min(value.cols(), 7l);
-            for(int c = 0; c < print_cols; ++c)
+            int64_t print_cols = std::min(value.cols(), 7l);
+            for(int64_t c = 0; c < print_cols; ++c)
             {
                 ss << std::setw(pretty_width) << "...";
                 if(c != print_cols-1) { ss << " "; }
             }
             ss << "]\n";
             
-            for(int r = value.rows() - 3; r < value.rows(); ++r)
+            for(int64_t r = value.rows() - 3; r < value.rows(); ++r)
             {
                 pretty_row(value(r, Eigen::all), ss);
                 if(r != value.rows() - 1) { ss << "\n"; }

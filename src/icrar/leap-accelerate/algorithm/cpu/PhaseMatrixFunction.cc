@@ -23,6 +23,7 @@
 
 #include "PhaseMatrixFunction.h"
 
+#include <boost/numeric/conversion/cast.hpp>
 #include <set>
 
 namespace icrar
@@ -42,7 +43,8 @@ namespace cpu
 
         auto unique = std::set<std::int32_t>(a1.begin(), a1.end());
         unique.insert(a2.begin(), a2.end());
-        int nAnt = unique.size();
+
+        int nAnt = boost::numeric_cast<int>(unique.size());
 
         if(refAnt >= nAnt - 1)
         {
