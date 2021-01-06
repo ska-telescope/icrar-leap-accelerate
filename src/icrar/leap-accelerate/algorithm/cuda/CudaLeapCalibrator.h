@@ -27,7 +27,7 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
-#include <icrar/leap-accelerate/common/MVDirection.h>
+#include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
 
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
@@ -79,7 +79,7 @@ namespace cuda
 
         virtual cpu::CalibrateResult Calibrate(
             const icrar::MeasurementSet& ms,
-            const std::vector<MVDirection>& directions,
+            const std::vector<SphericalDirection>& directions,
             double minimumBaselineThreshold,
             bool isFileSystemCacheEnabled) override;
 
@@ -89,7 +89,7 @@ namespace cuda
         void PhaseRotate(
             cpu::MetaData& hostMetadata,
             DeviceMetaData& deviceMetadata,
-            const MVDirection& direction,
+            const SphericalDirection& direction,
             std::vector<cuda::DeviceIntegration>& input,
             std::vector<cpu::IntegrationResult>& output_integrations,
             std::vector<cpu::CalibrationResult>& output_calibrations);

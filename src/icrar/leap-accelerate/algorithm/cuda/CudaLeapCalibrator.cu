@@ -48,6 +48,7 @@
 #include <math_constants.h>
 #include <cuComplex.h>
 #include <cublas_v2.h>
+#include <cublasLt.h>
 #include <thrust/complex.h>
 
 #include <boost/math/constants/constants.hpp>
@@ -91,7 +92,7 @@ namespace cuda
 
     cpu::CalibrateResult CudaLeapCalibrator::Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions,
+        const std::vector<SphericalDirection>& directions,
         double minimumBaselineThreshold,
         bool isFileSystemCacheEnabled)
     {
@@ -211,7 +212,7 @@ namespace cuda
     void CudaLeapCalibrator::PhaseRotate(
         cpu::MetaData& metadata,
         DeviceMetaData& deviceMetadata,
-        const icrar::MVDirection& direction,
+        const SphericalDirection& direction,
         std::vector<cuda::DeviceIntegration>& input,
         std::vector<cpu::IntegrationResult>& output_integrations,
         std::vector<cpu::CalibrationResult>& output_calibrations)
@@ -345,8 +346,6 @@ namespace cuda
             1
         );
 
-        //TODO: store polar form in advance
-        const auto polar_direction = icrar::ToPolar(metadata.GetDirection());
         g_RotateVisibilities<<<gridSize, blockSize>>>(
             (cuDoubleComplex*)integration.GetVis().Get(), integration.GetVis().GetDimensionSize(0), integration.GetVis().GetDimensionSize(1), integration.GetVis().GetDimensionSize(2),
             constants,

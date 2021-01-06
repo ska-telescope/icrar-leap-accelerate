@@ -71,22 +71,23 @@ namespace icrar
         return res;
     }
 
-    icrar::MVDirection ToDirection(const casacore::MVDirection& value)
+    SphericalDirection ToDirection(const casacore::MVDirection& value)
     {
-        return { value(0), value(1), value(2) };
+        auto spherical = value.get();
+        return { spherical(0), spherical(1) };
     }
 
-    std::vector<icrar::MVDirection> ToDirectionVector(const std::vector<casacore::MVDirection>& value)
+    std::vector<SphericalDirection> ToDirectionVector(const std::vector<casacore::MVDirection>& value)
     {
         return vector_map(value, ToDirection);
     }
 
-    casacore::MVDirection ToCasaDirection(const icrar::MVDirection& value)
+    casacore::MVDirection ToCasaDirection(const SphericalDirection& value)
     {
-        return { value(0), value(1), value(2) };
+        return casacore::MVDirection(value(0), value(1));
     }
 
-    std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<icrar::MVDirection>& value)
+    std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<SphericalDirection>& value)
     {
         return vector_map(value, ToCasaDirection);
     }

@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/common/MVDirection.h>
+#include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <vector>
 #include <iostream>
 #include <vector>
@@ -151,12 +151,4 @@ namespace icrar
         std::transform(vector.cbegin(), vector.cend(), std::back_inserter(result), lambda);
         return result;
     }
-
-    /**
-     * @brief Converts a unit catersian direction to polar coordinates
-     * 
-     * @param cartesian 
-     * @return Eigen::Vector2d 
-     */
-    Eigen::Vector2d ToPolar(const MVDirection& xyz);
 } // namespace icrar

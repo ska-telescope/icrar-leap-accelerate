@@ -48,7 +48,7 @@ set(sources
     core/profiling/UsageReporter.cc
     core/version.cc
 
-    common/MVDirection.cc
+    common/SphericalDirection.cc
     common/MVuvw.cc
     
     algorithm/LeapCalibratorFactory.cc

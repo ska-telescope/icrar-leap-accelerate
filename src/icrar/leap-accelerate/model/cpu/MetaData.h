@@ -34,7 +34,7 @@
 #endif // CUDA_ENABLED
 
 #include <icrar/leap-accelerate/common/MVuvw.h>
-#include <icrar/leap-accelerate/common/MVDirection.h>
+#include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/common/constants.h>
 
 #include <icrar/leap-accelerate/cuda/device_vector.h>
@@ -117,7 +117,7 @@ namespace cpu
         std::vector<icrar::MVuvw> m_UVW;
         std::vector<icrar::MVuvw> m_rotatedUVW; // late initialized
     
-        icrar::MVDirection m_direction; // calibration direction, late initialized
+        SphericalDirection m_direction; // calibration direction, late initialized
 
         Eigen::Matrix3d m_dd; // direction matrix, late initialized
         
@@ -142,7 +142,7 @@ namespace cpu
          * @param minimumBaselineThreshold
          * @param useCache
          */
-        MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold = 0.0, bool useCache = true);
+        MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold = 0.0, bool useCache = true);
 
         const Constants& GetConstants() const;
 
@@ -157,9 +157,9 @@ namespace cpu
         const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
         const std::vector<icrar::MVuvw>& GetRotatedUVW() const { return m_rotatedUVW; }
 
-        const icrar::MVDirection& GetDirection() const { return m_direction; }
+        const SphericalDirection& GetDirection() const { return m_direction; }
         const Eigen::Matrix3d& GetDD() const { return m_dd; }
-        void SetDirection(const icrar::MVDirection& direction);
+        void SetDirection(const SphericalDirection& direction);
 
         void SetUVW(const std::vector<icrar::MVuvw>& uvws);
 

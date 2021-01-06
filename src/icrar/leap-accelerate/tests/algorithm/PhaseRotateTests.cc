@@ -110,7 +110,7 @@ namespace icrar
             ASSERT_EQ(directions.size(), calibrations.size());
             for(size_t i = 0; i < expected.size(); i++)
             {
-                casacore::MVDirection expectedDirection;
+                SphericalDirection expectedDirection;
                 std::vector<double> expectedCalibration;
                 std::tie(expectedDirection, expectedCalibration) = expected[i];
 

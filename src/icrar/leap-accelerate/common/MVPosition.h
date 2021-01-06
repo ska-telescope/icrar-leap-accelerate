@@ -24,5 +24,5 @@
 
 namespace icrar
 {
-    using MVDirection = Eigen::Vector3d;
+    using MVDirection = Eigen::Vector2d;
 } // namespace icrar
