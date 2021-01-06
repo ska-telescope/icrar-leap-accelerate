@@ -71,6 +71,7 @@ namespace icrar
 namespace cuda
 {
     CudaLeapCalibrator::CudaLeapCalibrator()
+    : m_cublasContext(nullptr)
     {
         int deviceCount = 0;
         checkCudaErrors(cudaGetDeviceCount(&deviceCount));
@@ -120,7 +121,7 @@ namespace cuda
         int integrations = ms.GetNumRows() / ms.GetNumBaselines();
         if(integrations == 0)
         {
-            std::stringstream ss;
+            std::stringstream ss();
             ss << "invalid number of rows, expected >" << ms.GetNumBaselines() << ", got " << ms.GetNumRows();
             throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
         }
@@ -394,7 +395,7 @@ namespace cuda
 
         if(n < A.rows())
         {
-            double sum = A.row(n) * cal1; //TODO: use a sum ColumnVector from a matmul kernel
+            double sum = A.row(n) * cal1; //TODO(calgray): use a sum ColumnVector from a matmul kernel
             dInt.row(n) = (thrust::exp(thrust::complex<double>(0, -sum * two_pi)) * avgData.row(n))
             .unaryExpr([](const thrust::complex<double>& v){ return thrust::arg(v); });
         }
