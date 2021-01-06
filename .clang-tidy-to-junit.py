@@ -27,7 +27,6 @@ import collections
 import re
 import logging
 import itertools
-from typing import List
 from xml.sax.saxutils import escape
 
 def main():
@@ -149,7 +148,7 @@ class ClangTidyConverter:
         output_file.write("    </testsuite>\n")
         output_file.write("</testsuites>\n")
 
-    def process_error(self, error_array: List[str]):
+    def process_error(self, error_array):
         """
         Processes raw error text into this object's error collection
         """
