@@ -24,6 +24,7 @@
 #include <icrar/leap-accelerate/model/cpu/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
+#include <icrar/leap-accelerate/math/vector_extensions.h>
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
@@ -143,9 +144,12 @@ namespace icrar
         void TestDD()
         {
             auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())));
-            auto direction = ToDirection(casacore::MVDirection(-0.4606549305661674,-0.29719233792392513));
-            meta.SetDirection(direction);
+            auto direction = SphericalDirection(-0.4606549305661674,-0.29719233792392513);
             
+            EXPECT_EQ(-0.4606549305661674, direction(0));
+            EXPECT_EQ(-0.29719233792392513, direction(1));
+            meta.SetDirection(direction);
+
             EXPECT_DOUBLE_EQ(0.50913780874486769,  meta.GetDD()(0,0));
             EXPECT_DOUBLE_EQ(-0.089966081772685239, meta.GetDD()(0,1));
             EXPECT_DOUBLE_EQ(0.85597009050371897,   meta.GetDD()(0,2));
@@ -174,7 +178,7 @@ namespace icrar
 
         void TestChannelWavelengths()
         {
-            auto meta = icrar::cpu::MetaData(*ms, icrar::MVDirection(), std::vector<icrar::MVuvw>());
+            auto meta = icrar::cpu::MetaData(*ms, SphericalDirection(), std::vector<icrar::MVuvw>());
 
             ASSERT_EQ(48, meta.GetConstants().channels);
             EXPECT_DOUBLE_EQ(2.1537588131757608, meta.GetConstants().GetChannelWavelength(0));
@@ -184,7 +188,7 @@ namespace icrar
         void TestCudaBufferCopy()
         {
             auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())));
-            auto direction = icrar::MVDirection(); direction << 0.0, 0.0;
+            auto direction = SphericalDirection(); direction << 0.0, 0.0;
             auto uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
             meta.SetDirection(direction);
 

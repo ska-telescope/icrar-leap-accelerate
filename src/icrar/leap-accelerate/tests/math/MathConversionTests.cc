@@ -111,7 +111,7 @@ namespace icrar
 
         void TestConvertMVDirection()
         {
-            auto expected = icrar::MVDirection(1.0, 2.0, 3.0).normalized();
+            auto expected = SphericalDirection(2.0, 3.0).normalized();
 
             ASSERT_EQ(
                 expected,
@@ -120,10 +120,10 @@ namespace icrar
 
         void TestConvertMVDirectionVector()
         {
-            auto expected = std::vector<icrar::MVDirection>
+            auto expected = std::vector<SphericalDirection>
             {
-                icrar::MVDirection(1.0, 2.0, 3.0).normalized(),
-                icrar::MVDirection(1.0, 0.0, 0.0).normalized(),
+                SphericalDirection(2.0, 3.0).normalized(),
+                SphericalDirection(1.0, 0.0).normalized(),
             };
 
             ASSERT_EQ(

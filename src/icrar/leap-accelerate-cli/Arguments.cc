@@ -246,7 +246,7 @@ namespace icrar
         return *m_measurementSet;
     }
 
-    const std::vector<icrar::MVDirection>& ArgumentsValidated::GetDirections() const
+    const std::vector<SphericalDirection>& ArgumentsValidated::GetDirections() const
     {
         return m_directions;
     }

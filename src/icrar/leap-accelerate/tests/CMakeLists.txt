@@ -7,7 +7,6 @@ set(sources
   test_helper.cc
 
   math/eigen_helper.cc
-  math/CasacoreMatrixTests.cc
   math/MatrixTests.cc
   math/VectorTests.cc
   math/MatrixTests.cc

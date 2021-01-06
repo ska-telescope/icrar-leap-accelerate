@@ -25,13 +25,10 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 #include <icrar/leap-accelerate/common/MVuvw.h>
-#include <icrar/leap-accelerate/common/MVDirection.h>
+#include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
-
-#include <casacore/casa/Quanta/MVuvw.h>
-#include <casacore/casa/Quanta/MVDirection.h>
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -59,14 +56,14 @@ namespace cpu
     class IntegrationResult
     {
         int m_integrationNumber;
-        MVDirection m_direction;
+        SphericalDirection m_direction;
 
         boost::optional<std::vector<Eigen::VectorXd>> m_data;
 
     public:
         IntegrationResult(
             int integrationNumber,
-            icrar::MVDirection direction,
+            SphericalDirection direction,
             boost::optional<std::vector<Eigen::VectorXd>> data)
             : m_integrationNumber(integrationNumber)
             , m_direction(std::move(direction))
@@ -84,7 +81,7 @@ namespace cpu
      */
     class CalibrationResult
     {
-        MVDirection m_direction;
+        SphericalDirection m_direction;
         Eigen::MatrixXd m_calibration;
 
     public:
@@ -95,7 +92,7 @@ namespace cpu
          * @param calibration calibration of each antenna for the given direction 
          */
         CalibrationResult(
-            MVDirection direction,
+            SphericalDirection direction,
             Eigen::MatrixXd calibration)
             : m_direction(std::move(direction))
             , m_calibration(std::move(calibration))
@@ -105,9 +102,9 @@ namespace cpu
         /**
          * @brief Gets the calibration direction
          * 
-         * @return const MVDirection 
+         * @return const SphericalDirection 
          */
-        const MVDirection GetDirection() const { return m_direction; }
+        const SphericalDirection GetDirection() const { return m_direction; }
 
         /**
          * @brief Get the calibration Vector for the antenna array in the specified direction
@@ -127,7 +124,7 @@ namespace cpu
             writer.StartObject();
             writer.String("direction");
             writer.StartArray();
-            for(auto& v : icrar::ToPolar(m_direction))
+            for(auto& v : m_direction)
             {
                 writer.Double(v);
             }

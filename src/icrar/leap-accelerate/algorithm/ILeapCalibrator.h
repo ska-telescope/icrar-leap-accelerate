@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/common/MVDirection.h>
+#include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
 #include <boost/noncopyable.hpp>
 #include <vector>
@@ -58,7 +58,7 @@ namespace icrar
          */
         virtual cpu::CalibrateResult Calibrate(
             const icrar::MeasurementSet& ms,
-            const std::vector<MVDirection>& directions,
+            const std::vector<SphericalDirection>& directions,
             double minimumBaselineThreshold,
             bool isFileSystemCacheEnabled) = 0;
     };

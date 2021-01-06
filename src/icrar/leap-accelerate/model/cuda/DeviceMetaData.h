@@ -25,7 +25,7 @@
 #ifdef CUDA_ENABLED
 
 #include <icrar/leap-accelerate/common/MVuvw.h>
-#include <icrar/leap-accelerate/common/MVDirection.h>
+#include <icrar/leap-accelerate/common/SphericalDirection.h>
 
 #include <icrar/leap-accelerate/common/constants.h>
 #include <icrar/leap-accelerate/model/cpu/MetaData.h>
@@ -112,7 +112,7 @@ namespace cuda
      */
     class DirectionBuffer
     {
-        icrar::MVDirection m_direction;
+        SphericalDirection m_direction;
         Eigen::Matrix3d m_dd;
 
         device_vector<icrar::MVuvw> m_rotatedUVW;
@@ -128,7 +128,7 @@ namespace cuda
          * @param avgData 
          */
         DirectionBuffer(
-            const icrar::MVDirection& direction,
+            const SphericalDirection& direction,
             const Eigen::Matrix3d& dd,
             const std::vector<icrar::MVuvw>& rotatedUVW,
             const Eigen::MatrixXcd& avgData);
@@ -143,20 +143,20 @@ namespace cuda
          * @param avgDataCols 
          */
         DirectionBuffer(
-            const icrar::MVDirection& direction,
+            const SphericalDirection& direction,
             const Eigen::Matrix3d& dd,
             int uvwSize,
             int avgDataRows,
             int avgDataCols);
 
-        const icrar::MVDirection& GetDirection() const { return m_direction; }
+        const SphericalDirection& GetDirection() const { return m_direction; }
         const device_vector<icrar::MVuvw>& GetRotatedUVW() const { return m_rotatedUVW; }
         const Eigen::Matrix3d& GetDD() const { return m_dd; }
 
         device_vector<icrar::MVuvw>& GetRotatedUVW() { return m_rotatedUVW; }
         device_matrix<std::complex<double>>& GetAvgData() { return m_avgData; }
 
-        void SetDirection(const icrar::MVDirection& direction);
+        void SetDirection(const SphericalDirection& direction);
         void SetDD(const Eigen::Matrix3d& dd);
     };
 
@@ -200,7 +200,7 @@ namespace cuda
 
         const device_vector<icrar::MVuvw>& GetUVW() const { return m_solutionIntervalBuffer->GetUVW(); }
         const device_vector<icrar::MVuvw>& GetRotatedUVW() const { return m_directionBuffer->GetRotatedUVW(); }
-        const icrar::MVDirection& GetDirection() const { return m_directionBuffer->GetDirection(); }
+        const SphericalDirection& GetDirection() const { return m_directionBuffer->GetDirection(); }
         const Eigen::Matrix3d& GetDD() const { return m_directionBuffer->GetDD(); }
         
         const ConstantBuffer& GetConstantBuffer() const { return *m_constantBuffer; }

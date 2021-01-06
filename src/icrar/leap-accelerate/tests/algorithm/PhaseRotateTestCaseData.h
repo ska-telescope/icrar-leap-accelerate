@@ -22,8 +22,7 @@
 
 #pragma once
 
-#include <casacore/casa/Arrays.h>
-#include <casacore/casa/Quanta/MVDirection.h>
+#include <icrar/leap-accelerate/common/SphericalDirection.h>
 
 #include <vector>
 #include <utility>
@@ -35,10 +34,10 @@ namespace icrar
      * 
      * @return a vector of direction and antenna calibration pairs
      */
-    std::vector<std::pair<casacore::MVDirection, std::vector<double>>> GetExpectedCalibration()
+    std::vector<std::pair<SphericalDirection, std::vector<double>>> GetExpectedCalibration()
     {
-        std::vector<std::pair<casacore::MVDirection, std::vector<double>>> output;
-        output.push_back(std::make_pair(casacore::MVDirection(-0.4606549305661674,-0.29719233792392513), std::vector<double>
+        std::vector<std::pair<SphericalDirection, std::vector<double>>> output;
+        output.push_back(std::make_pair(SphericalDirection(-0.4606549305661674,-0.29719233792392513), std::vector<double>
         {
            2.89283703997894e-14,
                1.29172837617279,
@@ -170,7 +169,7 @@ namespace icrar
               -2.53451552736576,
         }));
 
-        output.push_back(std::make_pair(casacore::MVDirection(-0.753231018062671,-0.44387635324622354), std::vector<double>
+        output.push_back(std::make_pair(SphericalDirection(-0.753231018062671,-0.44387635324622354), std::vector<double>
         {
            3.83351589782366e-14,
                1.16256032787742,

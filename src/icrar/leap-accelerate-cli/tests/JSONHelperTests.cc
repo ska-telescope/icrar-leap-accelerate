@@ -29,7 +29,7 @@
 #include <icrar/leap-accelerate/math/cuda/vector.h>
 
 #include <icrar/leap-accelerate/exception/exception.h>
-#include <icrar/leap-accelerate/common/MVDirection.h>
+#include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 
 #include <casacore/casa/Quanta/MVDirection.h>
@@ -45,17 +45,7 @@ namespace icrar
     class JSONHelperTests : public ::testing::Test
     {
     protected:
-        void SetUp() override
-        {
-
-        }
-
-        void TearDown() override
-        {
-            
-        }
-
-        void TestParseDirections(const std::string& input, const std::vector<icrar::MVDirection>& expected)
+        void TestParseDirections(const std::string& input, const std::vector<SphericalDirection>& expected)
         {
             auto actual = icrar::ParseDirections(input);
             ASSERT_EQ(actual, expected);
@@ -65,12 +55,11 @@ namespace icrar
         {
             ASSERT_THROW(icrar::ParseDirections(input), icrar::exception); // NOLINT(cppcoreguidelines-avoid-goto)
         }
-
     };
 
     TEST_F(JSONHelperTests, TestParseDirectionsEmpty)
     {
-        TestParseDirections("[]", std::vector<icrar::MVDirection>());
+        TestParseDirections("[]", std::vector<SphericalDirection>());
         TestParseDirectionsException("{}");
         TestParseDirectionsException("[[]]");
     }
@@ -81,7 +70,7 @@ namespace icrar
         TestParseDirectionsException("[[1.0,1.0,1.0]]");
         TestParseDirections(
             "[[-0.4606549305661674,-0.29719233792392513]]",
-            std::vector<icrar::MVDirection>
+            std::vector<SphericalDirection>
             {
                 ToDirection(casacore::MVDirection(-0.4606549305661674,-0.29719233792392513))
             });
@@ -91,13 +80,13 @@ namespace icrar
     {
         TestParseDirections(
             "[[0.0,0.0],[1.0,1.0],[2.0,2.0],[3.0,3.0],[4.0,4.0]]",
-            std::vector<icrar::MVDirection>
+            std::vector<SphericalDirection>
             {
-                ToDirection(casacore::MVDirection(0.0,0.0)),
-                ToDirection(casacore::MVDirection(1.0,1.0)),
-                ToDirection(casacore::MVDirection(2.0,2.0)),
-                ToDirection(casacore::MVDirection(3.0,3.0)),
-                ToDirection(casacore::MVDirection(4.0,4.0)),
+                SphericalDirection(0.0,0.0),
+                SphericalDirection(1.0,1.0),
+                SphericalDirection(2.0,2.0),
+                SphericalDirection(3.0,3.0),
+                SphericalDirection(4.0,4.0),
             });
     }
 } // namespace icrar
