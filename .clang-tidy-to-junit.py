@@ -27,6 +27,7 @@ import collections
 import re
 import logging
 import itertools
+from typing import List
 from xml.sax.saxutils import escape
 
 def main():
@@ -42,9 +43,13 @@ def main():
 ErrorDescription = collections.namedtuple(
     'ErrorDescription', 'file line column severity error error_identifier description')
 
+FailureDescription = collections.namedtuple(
+    'FailureDescription', 'file line column severity error error_identifier description')
+
 class ClangTidyConverter:
     # All the errors encountered.
-    errors = []
+    errors: List[ErrorDescription] = []
+    failures: List[ErrorDescription] = []
 
     # Parses the error.
     # Group 1: file path
@@ -54,91 +59,155 @@ class ClangTidyConverter:
     # Group 5: error message
     # Group 6: error identifier
     error_regex = re.compile(
-        r"^([\w\/\.\-\ ]+):(\d+):(\d+): ([a-z]+): (.+) (\[[\w\-,\.]+\])$")
+        r"^([\w\/\.\-\ ]+):(\d+):(\d+): ([a-z]+): (.+) (\[[\w\-,\.]+\])$"
+    )
+
+    # Group 1: failure
+    failure_regex = re.compile(
+        r"[\w\/\.\-]+"
+    )
 
     # This identifies the main error line (it has a [the-warning-type] at the end)
-    # We only create a new error when we encounter one of those.
+    # We only create a new error when we encounter one of these.
     main_error_identifier = re.compile(r'\[[\w\-,\.]+\]$')
+
+    main_note_identifier = re.compile(r'\[[\w\-,\.]+\]$')
+
+    main_failure_identifier = re.compile(r'^Error while processing ')
 
     def __init__(self, basename):
         self.basename = basename
 
-    def print_junit_file(self, output_file):
-        # Write the header.
-        output_file.write("""<?xml version="1.0" encoding="UTF-8" ?>
-<testsuites id="1" name="Clang-Tidy" tests="{error_count}" errors="{error_count}" failures="0" time="0">""".format(error_count=len(self.errors)))
-
-        sorted_errors = sorted(self.errors, key=lambda x: x.file)
-
+    def print_junit_errors(self, sorted_errors, output_file):
+        """
+        Prints errors into test suites
+        """
         # Iterate through the errors, grouped by file.
         for file, errorIterator in itertools.groupby(sorted_errors, key=lambda x: x.file):
             errors = list(errorIterator)
             error_count = len(errors)
 
             # Each file gets a test-suite
-            output_file.write("""\n    <testsuite errors="{error_count}" name="{file}" tests="{error_count}" failures="0" time="0">\n"""
+            output_file.write("""    <testsuite errors="{error_count}" name="{file}" tests="{error_count}" failures="0" time="0">\n"""
                               .format(error_count=error_count, file=file))
             for error in errors:
                 # Write each error as a test case.
-                output_file.write("""
-        <testcase type="{severity}" line="{line}" column="{column}" name="{name}" time="0">
-            <failure message="{message}">
-{htmldata}
-            </failure>
-        </testcase>""".format(type=escape(""),
+                output_file.write("""\
+        <testcase name="{name}" time="0">
+            <error type="{severity}" line="{line}" column="{column}" message="{message}">\n{htmldata}\n            </error>
+        </testcase>\n""".format(type=escape(""),
                               line=error.line,
                               column=error.column,
                               severity=error.severity,
                               name=escape(error.error_identifier),
                               message=escape(error.error, entities={"\"": "&quot;"}),
                               htmldata=escape(error.description)))
-            output_file.write("\n    </testsuite>\n")
+            output_file.write("    </testsuite>\n")
+
+    def print_junit_failures(self, sorted_failures, output_file):
+        """
+        Prints failures into test suites
+        """
+        # Iterate through the errors, grouped by file.
+        for file, errorIterator in itertools.groupby(sorted_failures, key=lambda x: x.file):
+            failures = list(errorIterator)
+            failure_count = len(failures)
+
+            # Each file gets a test-suite
+            output_file.write("""    <testsuite errors="0" name="{file}" tests="{failure_count}" failures="{failure_count}" time="0">\n"""
+                              .format(failure_count=failure_count, file=file))
+            for failure in failures:
+                # Write each error as a test case.
+                output_file.write("""\
+        <testcase name="{name}" time="0">
+            <failure type="{severity}">\n{htmldata}\n            </failure>
+        </testcase>\n""".format(type=escape(""),
+                              severity=failure.severity,
+                              name=escape(failure.error_identifier),
+                              htmldata=escape(failure.description)))
+            output_file.write("    </testsuite>\n")
+
+    def print_junit_file(self, output_file):
+        # Write the header.
+        output_file.write("""<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites id="1" name="Clang-Tidy" tests="{test_count}" errors="{error_count}" failures="{failure_count}" time="0">\n"""
+            .format(
+                test_count=len(self.errors)+len(self.failures),
+                error_count=len(self.errors),
+                failure_count=len(self.failures)))
+
+        sorted_errors = sorted(self.errors, key=lambda x: x.file)
+        self.print_junit_failures(self.failures, output_file)
+        self.print_junit_errors(sorted_errors, output_file)
         output_file.write("</testsuites>\n")
 
-    def process_error(self, error_array):
+    def process_error(self, error_array: List[str]):
+        """
+        Processes raw error text into this object's error collection
+        """
         if len(error_array) == 0:
             return
 
-        result = self.error_regex.match(error_array[0])
-        if result is None:
-            logging.warning(
-                'Could not match error_array to regex: %s', error_array)
-            return
+        if self.main_error_identifier.search(error_array[0], re.M):
+            # Processing an error
+            result = self.error_regex.match(error_array[0])
+            if result is None:
+                logging.warning(
+                    'Could not match error_array to regex: %s', error_array)
+                return
 
-        # We remove the `basename` from the `file_path` to make prettier filenames in the JUnit file.
-        file_path = result.group(1).replace(self.basename, "")
-        error = ErrorDescription(
-            file_path,
-            int(result.group(2)),
-            int(result.group(3)),
-            result.group(4),
-            result.group(5),
-            result.group(6),
-            "".join(error_array[1:]))
-        self.errors.append(error)
+            # We remove the `basename` from the `file_path` to make prettier filenames in the JUnit file.
+            file_path = result.group(1).replace(self.basename, "")
+            error = ErrorDescription(
+                file_path,
+                int(result.group(2)),
+                int(result.group(3)),
+                result.group(4),
+                result.group(5),
+                result.group(6),
+                "".join(error_array[1:]).rstrip())
+            self.errors.append(error)
+
+        elif self.main_failure_identifier.search(error_array[0]):
+            #Processing a failure
+            result = self.failure_regex.match(error_array[0])
+            if result is None:
+                logging.warning(
+                    'Could not match error_array to regex: %s', error_array)
+                return
+            error = ErrorDescription(
+                result.group(0),
+                0,
+                0,
+                "failure",
+                "identifier",
+                "message",
+                "".join(error_array).rstrip())
+            self.failures.append(error)
 
     def convert(self, input_file, output_file):
         # Collect all lines related to one error.
         current_error = []
         error_ended = True
         for line in input_file:
-            # If the line starts with a `/`, it is a line about a file.
-            if line[0] == '/':
-                # Look if it is the start of a error
-                if self.main_error_identifier.search(line, re.M):
-                    error_ended = False
-                    # If so, process any `current_error` we might have
-                    self.process_error(current_error)
-                    # Initialize `current_error` with the first line of the error.
-                    current_error = [line]
-                else:
-                    # Otherwise, append the line to the error.
-                    current_error.append(line)
+            # If the line starts with a `/`, it is the start line of an error about a file.
+            # If the line starts with "Error while processing ", a linting failure about a file has occured.
+            if line[0] == '/' and self.main_error_identifier.search(line, re.M):
+                # Start of an error. Process any existing `current_error` we might have
+                self.process_error(current_error)
+                # Initialize `current_error` with the first line of the error.
+                current_error = [line]
+                error_ended = False
+            elif "Error while processing " in line:
+               # Start of a failure
+               self.process_error(current_error)
+               # Initialize `current_error` with the first line of the error.
+               current_error = [line]
+               error_ended = False
+
             elif len(current_error) > 0:
-                # Ignore output if error has ended
-                if "in non-user code" in line:
-                    error_ended = True
-                if " warnings generated." in line:
+                if "in non-user code" in line or " warnings generated." in line or "clang-tidy" in line:
+                    # Ignore output if error has ended
                     error_ended = True
 
                 # If the line didn't start with a `/` and we have a `current_error`, we simply append

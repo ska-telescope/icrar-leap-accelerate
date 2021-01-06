@@ -130,13 +130,19 @@ if(CUDA_ENABLED)
   # We need to explicitly state that we need all CUDA files in the target
   # library to be built with -dc as the member functions could be called by
   # other libraries and executables
-  set_target_properties(${TARGET_NAME} PROPERTIES CUDA_STANDARD 14)
   
   #set(CUDA_PROPAGATE_HOST_FLAGS ON)
   #set_target_properties(${TARGET_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
   #set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
-  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)
-  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --display_error_number>)
+  
+  if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+    message("generating clang-tidy cuda compatible configuration")
+    target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--cuda-gpu-arch=sm_60>)
+  else()
+    set_target_properties(${TARGET_NAME} PROPERTIES CUDA_STANDARD 14)
+    target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)
+    target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --display_error_number>)
+  endif()
   
   configure_cuda_warnings(${TARGET_NAME})
   #set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -lineinfo --default-stream per-thread)
