@@ -45,8 +45,8 @@ ErrorDescription = collections.namedtuple(
 
 class ClangTidyConverter:
     # All the errors encountered.
-    errors: List[ErrorDescription] = []
-    failures: List[ErrorDescription] = []
+    errors = []
+    failures = []
 
     # Parses the error.
     # Group 1: file path
@@ -85,22 +85,22 @@ class ClangTidyConverter:
             error_count = len(errors)
 
             # Each file gets a test-suite
-            output_file.write("""    <testsuite errors="{error_count}" name="{file}" tests="{error_count}" failures="0" time="0">\n"""
-                              .format(error_count=error_count, file=file))
+            # output_file.write("""    <testsuite errors="{error_count}" name="{file}" tests="{error_count}" failures="0" time="0">\n"""
+            #                   .format(error_count=error_count, file=file))
             for error in errors:
                 # Write each error as a test case.
                 output_file.write("""\
-        <testcase name="{name}" time="0">
-            <error type="{severity}" file="{file}" line="{line}" column="{column}" message="{message}">\n{htmldata}\n            </error>
+        <testcase name="{file}" time="0">
+            <error type="{severity}" name="{name}" file="{file}" line="{line}" column="{column}" message="{message}">\n{htmldata}\n            </error>
         </testcase>\n""".format(type=escape(""),
-                                file=file,
+                              file=file,
                               line=error.line,
                               column=error.column,
                               severity=error.severity,
                               name=escape(error.error_identifier),
                               message=escape(error.error, entities={"\"": "&quot;"}),
                               htmldata=escape(error.description)))
-            output_file.write("    </testsuite>\n")
+            #utput_file.write("    </testsuite>\n")
 
     def print_junit_failures(self, sorted_failures, output_file):
         """
@@ -112,32 +112,41 @@ class ClangTidyConverter:
             failure_count = len(failures)
 
             # Each file gets a test-suite
-            output_file.write("""    <testsuite errors="0" name="{file}" tests="{failure_count}" failures="{failure_count}" time="0">\n"""
-                              .format(failure_count=failure_count, file=file))
+            #output_file.write("""    <testsuite errors="0" name="{file}" tests="{failure_count}" failures="{failure_count}" time="0">\n"""
+            #                  .format(failure_count=failure_count, file=file))
             for failure in failures:
                 # Write each error as a test case.
                 output_file.write("""\
-        <testcase name="{name}" time="0">
+        <testcase name="{file}" time="0">
             <failure type="{severity}" file="{file}">\n{htmldata}\n            </failure>
         </testcase>\n""".format(type=escape(""),
                               severity=failure.severity,
                               file=file,
-                              name=escape(failure.error_identifier),
                               htmldata=escape(failure.description)))
-            output_file.write("    </testsuite>\n")
+            #output_file.write("    </testsuite>\n")
 
     def print_junit_file(self, output_file):
         # Write the header.
         output_file.write("""<?xml version="1.0" encoding="UTF-8" ?>
-<testsuites id="1" name="Clang-Tidy" tests="{test_count}" errors="{error_count}" failures="{failure_count}" time="0">\n"""
+<testsuites tests="{test_count}" errors="{error_count}" failures="{failure_count}" time="0">\n"""
             .format(
                 test_count=len(self.errors)+len(self.failures),
                 error_count=len(self.errors),
-                failure_count=len(self.failures)))
+                failure_count=len(self.failures
+            )))
+
+        output_file.write("""    <testsuite name="Clang-Tidy" tests="{test_count}" errors="{error_count}" failures="{failure_count}">\n"""
+            .format(
+                test_count=len(self.errors)+len(self.failures),
+                error_count=len(self.errors),
+                failure_count=len(self.failures
+            )))
 
         sorted_errors = sorted(self.errors, key=lambda x: x.file)
         self.print_junit_failures(self.failures, output_file)
         self.print_junit_errors(sorted_errors, output_file)
+
+        output_file.write("    </testsuite>\n")
         output_file.write("</testsuites>\n")
 
     def process_error(self, error_array: List[str]):

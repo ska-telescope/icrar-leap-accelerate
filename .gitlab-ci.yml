@@ -298,7 +298,10 @@ pages:
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o index.html &> gcovr-index.log
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml &> gcovr-code-coverage.log
     - cp ../build/ctest.xml build/reports/unit-tests.xml
-    - cp ../build/clang-tidy-junit.xml build/reports/linting.xml
+    - cp ../build/cppcheck-junit.xml build/reports/cppcheck-junit.xml    
+    - cp ../build/clang-tidy-junit.xml build/reports/clang-tidy-junit.xml
+    - cp clang-tidy-junit.xml linting.xml
+    #- xmlmerge clang-tidy-junit.xml cppcheck-junit.xml -o linting.xml //TODO: xmlmerge can't handle totals
 
     # Create and upload GitLab badges
     - python ../.produce-ci-metrics.py build/reports > ci-metrics.json
