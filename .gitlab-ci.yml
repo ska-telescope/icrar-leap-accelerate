@@ -13,6 +13,19 @@
 # To run locally use docker command:
 # sudo docker run -it nexus.engageska-portugal.pt/ska-docker/cpp_build_base
 
+
+# CUDA Image Alternative
+# This base image is based on debian:stretch-slim and contains:
+#  * gcc 7.5.0
+#  * clang 6.0.0
+#  * cuda 10.1
+#  * and more
+#
+# For details see https://github.com/ska-telescope/dspr
+#
+# To run locally use docker command:
+# sudo docker run -it nexus.engageska-portugal.pt/ska-docker/dspsr-build
+
 variables:
   # Needed if you want automatic submodule checkout
   # For details see https://docs.gitlab.com/ee/ci/yaml/README.html#git-submodule-strategy
@@ -45,7 +58,7 @@ variables:
     DEBIAN_FRONTEND: "noninteractive"
   before_script:
     - apt update 
-    - apt install -y cmake clang clang-tidy python-yaml iwyu cppcheck
+    - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck
     - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev
 
 .cuda_dependencies:
@@ -56,7 +69,7 @@ variables:
     CUDA_ENABLED: "ON"
   before_script:
     - apt update 
-    - apt install -y cmake clang clang-tidy python-yaml iwyu cppcheck
+    - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck
     - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev
     - apt install -y gnupg2 software-properties-common
     - source ./.gitlab-ci/cuda_install_debian.sh
@@ -150,7 +163,12 @@ build_export_compile_commands:
   stage: linting
   script:
     - cd build
-    - run-clang-tidy -quiet
+    - pip install pyyaml
+    - python -u /usr/bin/run-clang-tidy-6.0.py -quiet 2>&1 | tee clang-tidy.log
+    - cat clang-tidy.log | python ../.clang-tidy-to-junit.py $PWD > clang-tidy-junit.xml
+  artifacts:
+    paths:
+      - build
 
 # Use lint_clang_tidy
 .lint_clang_tidy_minimal:
@@ -165,7 +183,12 @@ lint_clang_tidy:
   stage: linting
   script:
     - cd build
-    - iwyu_tool -j 2 -p .
+    - ls /usr/lib/
+    - ls /usr/lib/llvm-6.0/lib/clang/
+    - iwyu_tool -j 2 -p . 2>&1 | tee iwyu.log
+  artifacts:
+    paths:
+      - build
 
 # Use lint_iwyu
 .lint_iwyu_minimal:
@@ -179,24 +202,45 @@ lint_iwyu:
 .lint_cppcheck:
   stage: linting
   script:
+    - pip install cppcheck-junit
     - cd build
     - 'cppcheck
+      --xml-version=2
       --project=compile_commands.json
       --platform=unix64
       -q --std=c++14
       -j 2
-      --enable=all
+      --library=googletest 2>&1 | tee cppcheck.xml'
+    - cppcheck_junit cppcheck.xml cppcheck-junit.xml
+  artifacts:
+    paths:
+      - build
+
+.lint_cppcheck_no_tests:
+  stage: linting
+  script:
+    - pip install cppcheck-junit
+    - cd build
+    - 'cppcheck
+      --xml-version=2
+      --project=compile_commands.json
+      --platform=unix64
+      --std=c++14
       -i $PWD/../external
       -i $PWD/../src/icrar/leap-accelerate/tests
-      -i $PWD/../src/icrar/leap-accelerate-cli/tests'
+      -i $PWD/../src/icrar/leap-accelerate-cli/tests 2>&1 | tee cppcheck.xml'
+    - cppcheck_junit cppcheck.xml cppcheck-junit.xml
+  artifacts:
+    paths:
+      - build
 
 # Use lint_cppcheck
 .lint_cppcheck_minimal:
-  extends: [.required_dependencies, .lint_cppcheck]
+  extends: [.all_dependencies, .lint_cppcheck]
   needs: ["build_export_compile_commands_minimal"]
 
 lint_cppcheck:
-  extends: [.all_dependencies, .lint_cppcheck]
+  extends: [.all_dependencies, .lint_cppcheck_no_tests]
   needs: ["build_export_compile_commands"]
 
 # Test
@@ -245,15 +289,17 @@ test_memcheck:
 pages:
   extends: .required_dependencies
   stage: pages
-  needs: ["test_debug_minimal"]
+  needs: ["test_debug_minimal", "lint_clang_tidy"]
   before_script:
-    - apt update && apt install -y curl gcovr
+    - apt update && apt install -y curl gcovr gwenhywfar-tools
   script:
     - mkdir -p .public/build/reports
     - cd .public
-    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o index.html
-    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml
+    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o index.html &> gcovr-index.log
+    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml &> gcovr-code-coverage.log
     - cp ../build/ctest.xml build/reports/unit-tests.xml
+    - cp ../build/clang-tidy-junit.xml build/reports/linting.xml
+
     # Create and upload GitLab badges
     - python ../.produce-ci-metrics.py build/reports > ci-metrics.json
     - curl -s https://gitlab.com/ska-telescope/ci-metrics-utilities/raw/master/scripts/ci-badges-func.sh | sh
