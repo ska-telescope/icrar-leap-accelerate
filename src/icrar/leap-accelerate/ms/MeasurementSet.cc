@@ -204,7 +204,6 @@ namespace icrar
 
     unsigned int MeasurementSet::GetNumShortBaselines(double minimumBaselineThreshold) const
     {
-        void* ss = malloc(10);
         auto shortBaselines = GetShortBaselines(minimumBaselineThreshold);
         return std::count(shortBaselines.cbegin(), shortBaselines.cend(), true);
     }

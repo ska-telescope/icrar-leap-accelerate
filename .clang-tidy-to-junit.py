@@ -43,9 +43,6 @@ def main():
 ErrorDescription = collections.namedtuple(
     'ErrorDescription', 'file line column severity error error_identifier description')
 
-FailureDescription = collections.namedtuple(
-    'FailureDescription', 'file line column severity error error_identifier description')
-
 class ClangTidyConverter:
     # All the errors encountered.
     errors: List[ErrorDescription] = []
@@ -62,9 +59,9 @@ class ClangTidyConverter:
         r"^([\w\/\.\-\ ]+):(\d+):(\d+): ([a-z]+): (.+) (\[[\w\-,\.]+\])$"
     )
 
-    # Group 1: failure
+    # Group 2: file path
     failure_regex = re.compile(
-        r"[\w\/\.\-]+"
+        r"^(Error while processing) ([\w\/\.\-]+).\n$"
     )
 
     # This identifies the main error line (it has a [the-warning-type] at the end)
@@ -94,8 +91,9 @@ class ClangTidyConverter:
                 # Write each error as a test case.
                 output_file.write("""\
         <testcase name="{name}" time="0">
-            <error type="{severity}" line="{line}" column="{column}" message="{message}">\n{htmldata}\n            </error>
+            <error type="{severity}" file="{file}" line="{line}" column="{column}" message="{message}">\n{htmldata}\n            </error>
         </testcase>\n""".format(type=escape(""),
+                                file=file,
                               line=error.line,
                               column=error.column,
                               severity=error.severity,
@@ -120,9 +118,10 @@ class ClangTidyConverter:
                 # Write each error as a test case.
                 output_file.write("""\
         <testcase name="{name}" time="0">
-            <failure type="{severity}">\n{htmldata}\n            </failure>
+            <failure type="{severity}" file="{file}">\n{htmldata}\n            </failure>
         </testcase>\n""".format(type=escape(""),
                               severity=failure.severity,
+                              file=file,
                               name=escape(failure.error_identifier),
                               htmldata=escape(failure.description)))
             output_file.write("    </testsuite>\n")
@@ -176,7 +175,7 @@ class ClangTidyConverter:
                     'Could not match error_array to regex: %s', error_array)
                 return
             error = ErrorDescription(
-                result.group(0),
+                result.group(2).rstrip('.'),
                 0,
                 0,
                 "failure",
