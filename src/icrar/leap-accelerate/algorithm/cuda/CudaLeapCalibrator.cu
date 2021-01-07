@@ -430,8 +430,8 @@ namespace cuda
 
         if(n < A.rows())
         {
-            double sum = A.row(n) * cal1; //TODO(calgray): use a sum ColumnVector from a matmul kernel
-            dInt.row(n) = (thrust::exp(thrust::complex<double>(0, -sum * two_pi)) * avgData.row(n))
+            double sum = A.row(n) * cal1;
+            dInt.row(n) = (thrust::exp(thrust::complex<double>(0, -two_pi * sum)) * avgData.row(n))
             .unaryExpr([](const thrust::complex<double>& v){ return thrust::arg(v); });
         }
     }
