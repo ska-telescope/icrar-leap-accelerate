@@ -234,7 +234,7 @@ namespace cuda
         AvgDataToPhaseAngles(deviceMetadata.GetConstantBuffer().GetI1(), deviceMetadata.GetAvgData(), devicePhaseAnglesI1);
         cuda::multiply(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd1(), devicePhaseAnglesI1, deviceCal1);
         CalcDInt(deviceMetadata.GetConstantBuffer().GetA(), deviceCal1, deviceMetadata.GetAvgData(), deviceDInt);
-        GenDeltaPhaseColumn(deviceDInt, deviceDeltaPhaseColumn);
+        GenerateDeltaPhaseColumn(deviceDInt, deviceDeltaPhaseColumn);
         icrar::cuda::multiply_add<double>(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd(), deviceDeltaPhaseColumn, deviceCal1);
         deviceCal1.ToHost(cal1);
         output_calibrations.emplace_back(direction, cal1);
@@ -244,10 +244,8 @@ namespace cuda
      * @brief Kernel for rotating UVWs
      * 
      * @param dd rotation matrix
-     * @param pOldUVW unrotated UVW buffer
-     * @param pUVW output UVW buffer
-     * @param uvwLength UVW buffer number of elements
-     * @return __global__ 
+     * @param UVWs unrotated UVW buffer
+     * @param RotatedUVWs output rotated UVW buffer
      */
     __global__ void g_RotateUVW(
         const Eigen::Matrix3d dd,
@@ -273,16 +271,23 @@ namespace cuda
     /**
      * @brief Rotates visibilities in parallel for baselines and channels
      * @note Atomic operator required for writing to @p pAvgData
+     * 
+     * @param constants measurement set constants
+     * @param rotatedUVW rotated uvws
+     * @param UVW unrotated uvws
+     * @param integrationData inout integration data 
+     * @param avgData output avgData to increment
+     * @return __global__ 
      */
     __global__ void g_RotateVisibilities(
-        Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>> integration_data,
         const icrar::cpu::Constants constants,
-        const Eigen::Map<Eigen::Matrix<double3, -1, 1>> rotatedUVW,
-        const Eigen::Map<Eigen::Matrix<double3, -1, 1>> UVW,
-        Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> avg_data)
+        const Eigen::Map<Eigen::Matrix<double3, Eigen::Dynamic, 1>> rotatedUVW,
+        const Eigen::Map<Eigen::Matrix<double3, Eigen::Dynamic, 1>> UVW,
+        Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>> integrationData,
+        Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> avgData)
     {
-        const int integration_baselines = integration_data.dimension(1);
-        const int integration_channels = integration_data.dimension(2);
+        const int integration_baselines = integrationData.dimension(1);
+        const int integration_channels = integrationData.dimension(2);
         const int md_baselines = constants.nbaselines; //metadata baselines
         const int polarizations = constants.num_pols;
 
@@ -303,13 +308,13 @@ namespace cuda
             cuDoubleComplex exp = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
             for(int polarization = 0; polarization < polarizations; polarization++)
             {
-                 integration_data(polarization, baseline, channel) = cuCmul(integration_data(polarization, baseline, channel), exp);
+                 integrationData(polarization, baseline, channel) = cuCmul(integrationData(polarization, baseline, channel), exp);
             }
 
             bool hasNaN = false;
             for(int polarization = 0; polarization < polarizations; polarization++)
             {
-                auto n = integration_data(polarization, baseline, channel);
+                auto n = integrationData(polarization, baseline, channel);
                 hasNaN |= isnan(n.x) || isnan(n.y);
             }
 
@@ -317,8 +322,8 @@ namespace cuda
             {
                 for(int polarization = 0; polarization < polarizations; ++polarization)
                 {
-                    atomicAdd(&avg_data(md_baseline, polarization).x, integration_data(polarization, baseline, channel).x);
-                    atomicAdd(&avg_data(md_baseline, polarization).y, integration_data(polarization, baseline, channel).y);
+                    atomicAdd(&avgData(md_baseline, polarization).x, integrationData(polarization, baseline, channel).x);
+                    atomicAdd(&avgData(md_baseline, polarization).y, integrationData(polarization, baseline, channel).y);
                 }
             }
         }
@@ -333,8 +338,7 @@ namespace cuda
         assert(constants.nbaselines == metadata.GetAvgData().GetRows() && integration.GetBaselines() == integration.GetVis().GetDimensionSize(1));
         assert(constants.num_pols == integration.GetVis().GetDimensionSize(0));
 
-        // block size can any value where the product is 1024
-        dim3 blockSize = dim3(128, 8, 1);
+        dim3 blockSize = dim3(128, 8, 1); // block size can be any value where the product is 1024
         dim3 gridSize = dim3(
             (int)ceil((float)integration.GetBaselines() / blockSize.x),
             (int)ceil((float)integration.GetChannels() / blockSize.y),
@@ -365,13 +369,21 @@ namespace cuda
         );
 
         g_RotateVisibilities<<<gridSize, blockSize>>>(
-            integrationDataMap,
             constants,
             rotatedUVWMap,
             UVWMap,
+            integrationDataMap,
             avgDataMap);
     }
 
+    /**
+     * @brief Copies the arg of the 1st column of avgData into phaseAnglesI1
+     * 
+     * @param I1 
+     * @param avgData 
+     * @param phaseAnglesI1 
+     * @return __global__ 
+     */
     __global__ void g_AvgDataToPhaseAngles(
         const Eigen::Map<const Eigen::VectorXi> I1,
         const Eigen::Map<const Eigen::Matrix<thrust::complex<double>, -1, -1>> avgData,
@@ -401,6 +413,15 @@ namespace cuda
         g_AvgDataToPhaseAngles<<<blockSize, gridSize>>>(I1Map, avgDataMap, phaseAnglesI1Map);
     }
 
+    /**
+     * @brief Computes dInt matrix
+     * 
+     * @param A 
+     * @param cal1 
+     * @param avgData 
+     * @param dInt 
+     * @return __global__ 
+     */
     __global__ void g_CalcDInt(
         const Eigen::Map<const Eigen::MatrixXd> A,
         const Eigen::Map<const Eigen::VectorXd> cal1,
@@ -440,7 +461,14 @@ namespace cuda
         g_CalcDInt<<<blockSize,gridSize>>>(AMap, cal1Map, avgDataMap, dIntMap);
     }
 
-    __global__ void g_GenDeltaPhaseColumn(const Eigen::Map<const Eigen::MatrixXd> dInt, Eigen::Map<Eigen::VectorXd> deltaPhaseColumn)
+    /**
+     * @brief Copies the first column of dInt into deltaPhaseColumn
+     * 
+     * @param dInt 
+     * @param deltaPhaseColumn 
+     * @return __global__ 
+     */
+    __global__ void g_GenerateDeltaPhaseColumn(const Eigen::Map<const Eigen::MatrixXd> dInt, Eigen::Map<Eigen::VectorXd> deltaPhaseColumn)
     {
         int row = blockDim.x * blockIdx.x + threadIdx.x;
         if(row < dInt.rows())
@@ -453,7 +481,7 @@ namespace cuda
         }
     }
 
-    __host__ void CudaLeapCalibrator::GenDeltaPhaseColumn(const device_matrix<double>& dInt, device_vector<double>& deltaPhaseColumn)
+    __host__ void CudaLeapCalibrator::GenerateDeltaPhaseColumn(const device_matrix<double>& dInt, device_vector<double>& deltaPhaseColumn)
     {
         if(dInt.GetRows()+1 != deltaPhaseColumn.GetRows())
         {
@@ -465,7 +493,7 @@ namespace cuda
 
         auto dIntMap = Eigen::Map<const Eigen::MatrixXd>(dInt.Get(), dInt.GetRows(), dInt.GetCols());
         auto deltaPhaseColumnMap = Eigen::Map<Eigen::VectorXd>(deltaPhaseColumn.Get(), deltaPhaseColumn.GetRows());
-        g_GenDeltaPhaseColumn<<<blockSize,gridSize>>>(dIntMap, deltaPhaseColumnMap);
+        g_GenerateDeltaPhaseColumn<<<blockSize,gridSize>>>(dIntMap, deltaPhaseColumnMap);
     }
 
 } // namespace cuda
