@@ -235,7 +235,7 @@ namespace cuda
         cuda::multiply(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd1(), devicePhaseAnglesI1, deviceCal1);
         CalcDInt(deviceMetadata.GetConstantBuffer().GetA(), deviceCal1, deviceMetadata.GetAvgData(), deviceDInt);
         GenerateDeltaPhaseColumn(deviceDInt, deviceDeltaPhaseColumn);
-        icrar::cuda::multiply_add<double>(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd(), deviceDeltaPhaseColumn, deviceCal1);
+        cuda::multiply_add<double>(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd(), deviceDeltaPhaseColumn, deviceCal1);
         deviceCal1.ToHost(cal1);
         output_calibrations.emplace_back(direction, cal1);
     }
@@ -277,7 +277,6 @@ namespace cuda
      * @param UVW unrotated uvws
      * @param integrationData inout integration data 
      * @param avgData output avgData to increment
-     * @return __global__ 
      */
     __global__ void g_RotateVisibilities(
         const icrar::cpu::Constants constants,
@@ -382,7 +381,6 @@ namespace cuda
      * @param I1 
      * @param avgData 
      * @param phaseAnglesI1 
-     * @return __global__ 
      */
     __global__ void g_AvgDataToPhaseAngles(
         const Eigen::Map<const Eigen::VectorXi> I1,
@@ -420,7 +418,6 @@ namespace cuda
      * @param cal1 
      * @param avgData 
      * @param dInt 
-     * @return __global__ 
      */
     __global__ void g_CalcDInt(
         const Eigen::Map<const Eigen::MatrixXd> A,
@@ -466,7 +463,6 @@ namespace cuda
      * 
      * @param dInt 
      * @param deltaPhaseColumn 
-     * @return __global__ 
      */
     __global__ void g_GenerateDeltaPhaseColumn(const Eigen::Map<const Eigen::MatrixXd> dInt, Eigen::Map<Eigen::VectorXd> deltaPhaseColumn)
     {
