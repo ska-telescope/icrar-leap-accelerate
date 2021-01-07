@@ -289,7 +289,7 @@ test_memcheck:
 pages:
   extends: .required_dependencies
   stage: pages
-  needs: ["test_debug_minimal", "lint_clang_tidy"]
+  needs: ["test_debug_minimal", "lint_clang_tidy", "lint_cppcheck"]
   before_script:
     - apt update && apt install -y curl gcovr gwenhywfar-tools
   script:
@@ -300,8 +300,7 @@ pages:
     - cp ../build/ctest.xml build/reports/unit-tests.xml
     - cp ../build/cppcheck-junit.xml build/reports/cppcheck-junit.xml    
     - cp ../build/clang-tidy-junit.xml build/reports/clang-tidy-junit.xml
-    - cp clang-tidy-junit.xml linting.xml
-    #- xmlmerge clang-tidy-junit.xml cppcheck-junit.xml -o linting.xml //TODO: xmlmerge can't handle totals
+    - xmlmerge clang-tidy-junit.xml cppcheck-junit.xml -o linting.xml
 
     # Create and upload GitLab badges
     - python ../.produce-ci-metrics.py build/reports > ci-metrics.json
