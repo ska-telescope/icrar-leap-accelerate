@@ -276,9 +276,9 @@ namespace cuda
      */
     __global__ void g_RotateVisibilities(
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>> integration_data,
-        icrar::cpu::Constants constants,
-        const double3* uvw, int uvwLength,
-        const double3* oldUVW, int oldUVWLegth,
+        const icrar::cpu::Constants constants,
+        const Eigen::Map<Eigen::Matrix<double3, -1, 1>> rotatedUVW,
+        const Eigen::Map<Eigen::Matrix<double3, -1, 1>> UVW,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> avg_data)
     {
         const int integration_baselines = integration_data.dimension(1);
@@ -296,7 +296,7 @@ namespace cuda
 
             // loop over baselines
             constexpr double two_pi = 2 * CUDART_PI;
-            double shiftFactor = -two_pi * (uvw[baseline].z - oldUVW[baseline].z);
+            double shiftFactor = -two_pi * (rotatedUVW[baseline].z - UVW[baseline].z);
 
             // loop over channels
             double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
@@ -354,11 +354,21 @@ namespace cuda
             (int)metadata.GetAvgData().GetCols() // inferring (const int) causes error
         );
 
+        auto rotatedUVWMap = Eigen::Map<Eigen::Matrix<double3, -1, 1>>(
+            (double3*)metadata.GetRotatedUVW().Get(),
+            metadata.GetRotatedUVW().GetCount()
+        );
+
+        auto UVWMap = Eigen::Map<Eigen::Matrix<double3, -1, 1>>(
+            (double3*)metadata.GetUVW().Get(),
+            metadata.GetUVW().GetCount()
+        );
+
         g_RotateVisibilities<<<gridSize, blockSize>>>(
             integrationDataMap,
             constants,
-            (double3*)metadata.GetRotatedUVW().Get(), metadata.GetRotatedUVW().GetCount(),
-            (double3*)metadata.GetUVW().Get(), metadata.GetUVW().GetCount(),
+            rotatedUVWMap,
+            UVWMap,
             avgDataMap);
     }
 
