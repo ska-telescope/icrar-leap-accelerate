@@ -275,17 +275,14 @@ namespace cuda
      * @note Atomic operator required for writing to @p pAvgData
      */
     __global__ void g_RotateVisibilities(
-        cuDoubleComplex* pIntegrationData, int integration_data_dim0, int integration_data_dim1, int integration_data_dim2,
+        Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>> integration_data,
         icrar::cpu::Constants constants,
         const double3* uvw, int uvwLength,
         const double3* oldUVW, int oldUVWLegth,
-        cuDoubleComplex* pAvgData, int avgDataRows, int avgDataCols)
+        Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> avg_data)
     {
-        using Tensor2Xcucd = Eigen::Tensor<cuDoubleComplex, 2>;
-        using Tensor3Xcucd = Eigen::Tensor<cuDoubleComplex, 3>;
-        
-        const int integration_baselines = integration_data_dim1;
-        const int integration_channels = integration_data_dim2;
+        const int integration_baselines = integration_data.dimension(1);
+        const int integration_channels = integration_data.dimension(2);
         const int md_baselines = constants.nbaselines; //metadata baselines
         const int polarizations = constants.num_pols;
 
@@ -295,9 +292,6 @@ namespace cuda
 
         if(baseline < integration_baselines && channel < integration_channels)
         {
-            auto integration_data = Eigen::TensorMap<Tensor3Xcucd>(pIntegrationData, integration_data_dim0, integration_data_dim1, integration_data_dim2);
-            auto avg_data = Eigen::TensorMap<Tensor2Xcucd>(pAvgData, avgDataRows, avgDataCols);
-    
             int md_baseline = baseline % md_baselines;
 
             // loop over baselines
@@ -347,12 +341,25 @@ namespace cuda
             1
         );
 
+        auto integrationDataMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>>(
+            (cuDoubleComplex*)integration.GetVis().Get(),
+            (int)integration.GetVis().GetDimensionSize(0), // inferring (const int) causes error
+            (int)integration.GetVis().GetDimensionSize(1), // inferring (const int) causes error
+            (int)integration.GetVis().GetDimensionSize(2) // inferring (const int) causes error
+        );
+
+        auto avgDataMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>>(
+            (cuDoubleComplex*)metadata.GetAvgData().Get(),
+            (int)metadata.GetAvgData().GetRows(), // inferring (const int) causes error
+            (int)metadata.GetAvgData().GetCols() // inferring (const int) causes error
+        );
+
         g_RotateVisibilities<<<gridSize, blockSize>>>(
-            (cuDoubleComplex*)integration.GetVis().Get(), integration.GetVis().GetDimensionSize(0), integration.GetVis().GetDimensionSize(1), integration.GetVis().GetDimensionSize(2),
+            integrationDataMap,
             constants,
             (double3*)metadata.GetRotatedUVW().Get(), metadata.GetRotatedUVW().GetCount(),
             (double3*)metadata.GetUVW().Get(), metadata.GetUVW().GetCount(),
-            (cuDoubleComplex*)metadata.GetAvgData().Get(), metadata.GetAvgData().GetRows(), metadata.GetAvgData().GetCols());
+            avgDataMap);
     }
 
     __global__ void g_AvgDataToPhaseAngles(
