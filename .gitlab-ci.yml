@@ -206,6 +206,7 @@ lint_iwyu:
     - cd build
     - 'cppcheck
       --xml-version=2
+      --enable=all
       --project=compile_commands.json
       --platform=unix64
       -q --std=c++14
@@ -223,6 +224,7 @@ lint_iwyu:
     - cd build
     - 'cppcheck
       --xml-version=2
+      --enable=all
       --project=compile_commands.json
       --platform=unix64
       --std=c++14
@@ -300,7 +302,7 @@ pages:
     - cp ../build/ctest.xml build/reports/unit-tests.xml
     - cp ../build/cppcheck-junit.xml build/reports/cppcheck-junit.xml    
     - cp ../build/clang-tidy-junit.xml build/reports/clang-tidy-junit.xml
-    - xmlmerge clang-tidy-junit.xml cppcheck-junit.xml -o linting.xml
+    - xmlmerge build/reports/clang-tidy-junit.xml build/reports/cppcheck-junit.xml -o build/reports/linting.xml
 
     # Create and upload GitLab badges
     - python ../.produce-ci-metrics.py build/reports > ci-metrics.json
