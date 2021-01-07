@@ -154,6 +154,16 @@ if(CUDA_ENABLED)
   enable_language(CUDA)
 endif()
 
+#modify exported compile commands for linting
+if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+set(CMAKE_CUDA_COMPILER ${CMAKE_CXX_COMPILER})
+  # Clang IWYU Configuration
+  # Clang will ignore explicit includes of its preconfigured include directory
+  #include_directories(SYSTEM "/usr/lib/clang/${CMAKE_CXX_COMPILER_VERSION}/include")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem /usr/lib/clang/${CMAKE_CXX_COMPILER_VERSION}/include")
+  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -isystem=/usr/lib/clang/${CMAKE_CXX_COMPILER_VERSION}/include")
+endif()
+
 add_definitions(-DBOOST_ALL_DYN_LINK)
 
 find_package(Boost REQUIRED COMPONENTS log log_setup program_options)

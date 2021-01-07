@@ -183,8 +183,6 @@ lint_clang_tidy:
   stage: linting
   script:
     - cd build
-    - ls /usr/lib/
-    - ls /usr/lib/llvm-6.0/lib/clang/
     - iwyu_tool -j 2 -p . 2>&1 | tee iwyu.log
   artifacts:
     paths:
@@ -300,9 +298,10 @@ pages:
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o index.html &> gcovr-index.log
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml &> gcovr-code-coverage.log
     - cp ../build/ctest.xml build/reports/unit-tests.xml
-    - cp ../build/cppcheck-junit.xml build/reports/cppcheck-junit.xml    
+    - cp ../build/cppcheck-junit.xml build/reports/cppcheck-junit.xml
     - cp ../build/clang-tidy-junit.xml build/reports/clang-tidy-junit.xml
-    - xmlmerge build/reports/clang-tidy-junit.xml build/reports/cppcheck-junit.xml -o build/reports/linting.xml
+    - cp ../build/clang-tidy-junit.xml build/reports/lint.xml
+    #- xmlmerge build/reports/clang-tidy-junit.xml build/reports/cppcheck-junit.xml -o build/reports/linting.xml
 
     # Create and upload GitLab badges
     - python ../.produce-ci-metrics.py build/reports > ci-metrics.json
