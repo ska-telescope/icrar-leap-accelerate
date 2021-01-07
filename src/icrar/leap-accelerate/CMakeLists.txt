@@ -117,15 +117,15 @@ endif()
 
 
 if(CUDA_ENABLED)
+  target_compile_definitions(${TARGET_NAME} PUBLIC CUDA_ENABLED)
+  if(HIGH_GPU_MEMORY)
+    target_compile_definitions(${TARGET_NAME} PUBLIC HIGH_GPU_MEMORY)
+  endif()
+
   # Request that the target be built with -std=c++14
   # As this is a public compile feature anything that links to the target
   # will also build with -std=c++14
   target_compile_features(${TARGET_NAME} PUBLIC cxx_std_14)
-  target_compile_definitions(${TARGET_NAME} PUBLIC CUDA_ENABLED)
-  
-  if(HIGH_GPU_MEMORY)
-    target_compile_definitions(${TARGET_NAME} PUBLIC HIGH_GPU_MEMORY)
-  endif()
   
   # We need to explicitly state that we need all CUDA files in the target
   # library to be built with -dc as the member functions could be called by
@@ -146,7 +146,7 @@ if(CUDA_ENABLED)
   endif()
   
   #set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -lineinfo --default-stream per-thread)
-  #message("CUDA_NVCC_FLAGS = ${CUDA_NVCC_FLAGS}")
+  message("CUDA_NVCC_FLAGS = ${CUDA_NVCC_FLAGS}")
 
   target_include_directories(${TARGET_NAME} SYSTEM PUBLIC ${CUDA_INCLUDE_DIRS})
   target_link_libraries(${TARGET_NAME} ${CUDA_LIBRARIES})
