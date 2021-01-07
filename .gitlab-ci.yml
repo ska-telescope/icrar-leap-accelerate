@@ -301,8 +301,8 @@ pages:
     - cp ../build/ctest.xml build/reports/unit-tests.xml
     - cp ../build/cppcheck-junit.xml build/reports/cppcheck-junit.xml
     - cp ../build/clang-tidy-junit.xml build/reports/clang-tidy-junit.xml
-    - cp ../build/clang-tidy-junit.xml build/reports/lint.xml
-    #- xmlmerge build/reports/clang-tidy-junit.xml build/reports/cppcheck-junit.xml -o build/reports/linting.xml
+    - cp ../build/iwyu-junit.xml build/reports/iwyu-junit.xml
+    - xmlmerge build/reports/clang-tidy-junit.xml build/reports/iwyu-junit.xml -o build/reports/linting.xml
 
     # Create and upload GitLab badges
     - python ../.produce-ci-metrics.py build/reports > ci-metrics.json
