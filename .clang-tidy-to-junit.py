@@ -69,6 +69,12 @@ class ClangTidyConverter:
     )
 
     # Group 1: file path
+    # Group 2: error message
+    iwyu_regex = re.compile(
+            re.compile(r'^(\/[\w\/\.\-\ ]+) ([\w ]+):$')
+    )
+
+    # Group 1: file path
     failure_regex = re.compile(
         r"^Error while processing ([\w\/\.\-]+).\n$"
     )
@@ -76,6 +82,8 @@ class ClangTidyConverter:
     # This identifies the main error line (it has a [the-warning-type] at the end)
     # We only create a new error when we encounter one of these.
     main_error_identifier = re.compile(r'\[[\w\-,\.]+\]$')
+
+    main_iwyu_identifier = re.compile(r'^\/[\w\/\.\-\ ]+ [\w ]+:$')
 
     main_note_identifier = re.compile(r'^\/[\w\/\.\-\ ]+:\d+:\d+: [a-z]+: [\w ]+$')
 
@@ -206,6 +214,26 @@ class ClangTidyConverter:
                 "".join(error_array[1:]).rstrip())
             self.errors.append(error)
 
+        elif self.main_iwyu_identifier.search(error_array[0]):
+            #Processing a iwyu error
+            result = self.iwyu_regex.match(error_array[0])
+            if result is None:
+                logging.warning(
+                    'Could not match error_array to regex: %s', error_array)
+                return
+
+            # We remove the `basename` from the `file_path` to make prettier filenames in the JUnit file.
+            file_path = result.group(1).replace(self.basename, "")
+            error = ErrorDescription(
+                file_path,
+                0,
+                0,
+                "warning",
+                result.group(2),
+                result.group(2),
+                "".join(error_array[1:]).rstrip())
+            self.errors.append(error)
+
         elif self.main_failure_identifier.search(error_array[0]):
             #Processing a failure
             result = self.failure_regex.match(error_array[0])
@@ -232,6 +260,7 @@ class ClangTidyConverter:
             # If the line starts with "Error while processing ", a linting failure about a file has occured.
             if (line[0] == '/' and self.main_error_identifier.search(line, re.M))\
                 or self.main_note_identifier.search(line)\
+                or self.main_iwyu_identifier.search(line)\
                 or "Error while processing " in line:
                 # Start of an error or failure. Process any existing `current_error` we might have
                 self.process_error(current_error)
