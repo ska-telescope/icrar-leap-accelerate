@@ -101,6 +101,7 @@ download_lfs:
     - bash install.sh
     - cd ..
   artifacts:
+    when: always
     paths:
       - testdata
 
@@ -112,6 +113,7 @@ download_lfs:
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"
     - make -j2
   artifacts:
+    when: always
     paths:
       - build
 
@@ -129,6 +131,7 @@ build_debug:
     - cmake .. -DCMAKE_BUILD_TYPE=Release
     - make -j2
   artifacts:
+    when: always
     paths:
       - build
 
@@ -147,6 +150,7 @@ build_release:
     # This filters out external source file dependencies such as gtest
     - jq '[ . - map(select(.file | contains("/external/"))) | .[] ]' compile_commands.json | sponge compile_commands.json
   artifacts:
+    when: always
     paths:
       - build
 
@@ -168,6 +172,7 @@ build_export_compile_commands:
     - cd ..
     - cat build/clang-tidy.log | python .clang-tidy-to-junit.py $PWD/ clang-tidy > build/clang-tidy-junit.xml
   artifacts:
+    when: always
     paths:
       - build
 
@@ -183,9 +188,10 @@ lint_clang_tidy:
 .lint_iwyu:
   stage: linting
   script:
-    - iwyu_tool -j 2 -p ./build -- -Xiwyu --transitive_includes_only 2>&1 | tee build/iwyu.log
+    - 'iwyu_tool -j 2 -p ./build -- --transitive_includes_only 2>&1 | tee build/iwyu.log'
     - cat build/iwyu.log | python .clang-tidy-to-junit.py $PWD/ iwyu > build/iwyu-junit.xml
   artifacts:
+    when: always
     paths:
       - build
 
@@ -214,7 +220,9 @@ lint_iwyu:
       --library=googletest 2>&1 | tee cppcheck.xml'
     - cppcheck_junit cppcheck.xml cppcheck-junit.xml
     - 'xq "{ testsuites: . }" cppcheck-junit.xml --xml-output | sponge cppcheck-junit.xml'
+
   artifacts:
+    when: always
     paths:
       - build
 
@@ -234,6 +242,7 @@ lint_iwyu:
       -i $PWD/../src/icrar/leap-accelerate-cli/tests 2>&1 | tee cppcheck.xml'
     - cppcheck_junit cppcheck.xml cppcheck-junit.xml
   artifacts:
+    when: always
     paths:
       - build
 
@@ -259,6 +268,7 @@ lint_cppcheck:
     - cd build
     - ctest2junit > ctest.xml
   artifacts:
+    when: always
     paths:
       - build/
     reports:
@@ -312,5 +322,6 @@ pages:
     - cd ..
     - mv .public public
   artifacts:
+    when: always
     paths:
       - public
