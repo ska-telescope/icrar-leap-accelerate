@@ -303,7 +303,7 @@ pages:
   stage: pages
   needs: ["test_debug_minimal", "lint_clang_tidy", "lint_cppcheck", "lint_iwyu"]
   before_script:
-    - apt update && apt install -y curl gcovr
+    - apt update && apt install -y curl gcovr python3-pip
     - pip install yq
   script:
     - mkdir -p .public/build/reports
