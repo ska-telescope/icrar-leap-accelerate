@@ -314,13 +314,15 @@ pages:
     - cp ../build/cppcheck-junit.xml build/reports/cppcheck-junit.xml
     - cp ../build/clang-tidy-junit.xml build/reports/clang-tidy-junit.xml
     - cp ../build/iwyu-junit.xml build/reports/iwyu-junit.xml
+    
     # Combine XML
     - 'xq -s "{testsuites: { testsuite: [ .[0].testsuite, .[1].testsuite, .[2].testsuite ] } }" --xml-output | sponge build/reports/linting.xml
       build/reports/clang-tidy-junit.xml
       build/reports/cppcheck-junit.xml
       build/reports/iwyu-junit.xml
       --xml-output | sponge build/reports/linting.xml'
-    # Compute Suites Metrics
+
+    # Calculate Metrics
     - 'xq ".testsuites |= {\"@tests\": .testsuite | map(.\"@tests\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
     - 'xq ".testsuites |= {\"@errors\": .testsuite | map(.\"@errors\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
     - 'xq ".testsuites |= {\"@failures\": .testsuite | map(.\"@failures\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
