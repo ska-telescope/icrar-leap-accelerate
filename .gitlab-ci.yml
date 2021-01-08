@@ -209,7 +209,6 @@ lint_iwyu:
   stage: linting
   script:
     - pip install cppcheck-junit
-    - pip install yq
     - cd build
     - 'cppcheck
       --xml-version=2
@@ -220,7 +219,6 @@ lint_iwyu:
       -j 2
       --library=googletest 2>&1 | tee cppcheck.xml'
     - cppcheck_junit cppcheck.xml cppcheck-junit.xml
-    - 'xq "{ testsuites: . }" cppcheck-junit.xml --xml-output | sponge cppcheck-junit.xml'
 
   artifacts:
     when: always
@@ -305,7 +303,8 @@ pages:
   stage: pages
   needs: ["test_debug_minimal", "lint_clang_tidy", "lint_cppcheck", "lint_iwyu"]
   before_script:
-    - apt update && apt install -y curl gcovr gwenhywfar-tools
+    - apt update && apt install -y curl gcovr
+    - pip install yq
   script:
     - mkdir -p .public/build/reports
     - cd .public
@@ -315,7 +314,11 @@ pages:
     - cp ../build/cppcheck-junit.xml build/reports/cppcheck-junit.xml
     - cp ../build/clang-tidy-junit.xml build/reports/clang-tidy-junit.xml
     - cp ../build/iwyu-junit.xml build/reports/iwyu-junit.xml
-    - xmlmerge build/reports/clang-tidy-junit.xml build/reports/cppcheck-junit.xml build/reports/iwyu-junit.xml -o build/reports/linting.xml
+    - 'xq -s "{testsuites: { testsuite: [ .[0].testsuite, .[1].testsuite, .[2].testsuite ] } }" --xml-output | sponge build/reports/linting.xml
+      build/reports/clang-tidy-junit.xml
+      build/reports/cppcheck-junit.xml
+      build/reports/iwyu-junit.xml
+      --xml-output | sponge build/reports/linting.xml'
 
     # Create and upload GitLab badges
     - python ../.produce-ci-metrics.py build/reports > ci-metrics.json

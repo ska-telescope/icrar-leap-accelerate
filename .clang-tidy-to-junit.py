@@ -144,14 +144,7 @@ class ClangTidyConverter:
 
     def print_junit_file(self, output_file, suite_name):
         # Write the header.
-        output_file.write("""<?xml version="1.0" encoding="UTF-8" ?>
-<testsuites tests="{test_count}" errors="{error_count}" failures="{failure_count}" time="0">\n"""
-            .format(
-                test_count=len(self.errors)+len(self.failures),
-                error_count=len(self.errors),
-                failure_count=len(self.failures
-            )))
-
+        output_file.write("""<?xml version="1.0" encoding="UTF-8" ?>\n""")
         output_file.write("""    <testsuite name="{suite_name}" tests="{test_count}" errors="{error_count}" failures="{failure_count}">\n"""
             .format(
                 suite_name=escape(suite_name),
@@ -165,7 +158,6 @@ class ClangTidyConverter:
         self.print_junit_errors(sorted_errors, output_file)
 
         output_file.write("    </testsuite>\n")
-        output_file.write("</testsuites>\n")
 
     def process_error(self, error_array):
         """
