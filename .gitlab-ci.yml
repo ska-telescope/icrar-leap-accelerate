@@ -316,7 +316,7 @@ pages:
     - cp ../build/iwyu-junit.xml build/reports/iwyu-junit.xml
     
     # Combine XML
-    - 'xq -s "{testsuites: { testsuite: [ .[0].testsuite, .[1].testsuite, .[2].testsuite ] } }" --xml-output | sponge build/reports/linting.xml
+    - 'xq -s "{testsuites: { testsuite: [ .[0].testsuite, .[1].testsuite, .[2].testsuite ] } }"
       build/reports/clang-tidy-junit.xml
       build/reports/cppcheck-junit.xml
       build/reports/iwyu-junit.xml
