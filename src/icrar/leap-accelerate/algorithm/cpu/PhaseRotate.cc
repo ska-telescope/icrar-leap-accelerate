@@ -37,8 +37,6 @@
 
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/ms/MeasurementSets/MSAntenna.h>
-#include <casacore/casa/Quanta/MVDirection.h>
-#include <casacore/casa/Quanta/MVuvw.h>
 
 #include <boost/math/constants/constants.hpp>
 #include <boost/optional.hpp>
@@ -61,7 +59,7 @@ namespace cpu
 {
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions,
+        const std::vector<SphericalDirection>& directions,
         double minimumBaselineThreshold,
 		bool isFileSystemCacheEnabled)
     {
@@ -130,7 +128,7 @@ namespace cpu
 
     void PhaseRotate(
         cpu::MetaData& metadata,
-        const icrar::MVDirection& direction,
+        const SphericalDirection& direction,
         std::vector<cpu::Integration>& input,
         std::vector<cpu::IntegrationResult>& output_integrations,
         std::vector<cpu::CalibrationResult>& output_calibrations)
@@ -174,7 +172,7 @@ namespace cpu
         // loop over smeared baselines
         for(size_t baseline = 0; baseline < integration.GetBaselines(); ++baseline)
         {
-            int md_baseline = static_cast<int>(baseline % static_cast<size_t>(metadata.GetConstants().nbaselines)); // metadata baseline
+            auto md_baseline = static_cast<int>(baseline % static_cast<size_t>(metadata.GetConstants().nbaselines)); // metadata baseline
 
             double shiftFactor = -two_pi<double>() * (metadata.GetRotatedUVW()[baseline](2) - metadata.GetUVW()[baseline](2));
 

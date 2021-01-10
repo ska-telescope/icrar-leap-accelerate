@@ -7,7 +7,6 @@ set(sources
   test_helper.cc
 
   math/eigen_helper.cc
-  math/CasacoreMatrixTests.cc
   math/MatrixTests.cc
   math/VectorTests.cc
   math/MatrixTests.cc
@@ -45,8 +44,17 @@ if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
 endif()
 
 # CUDA Options
-target_compile_options(${TEST_TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)
-configure_cuda_warnings(${TEST_TARGET_NAME})
+if(CUDA_ENABLED)
+if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+  message("generating clang-tidy cuda compatible configuration")
+  target_compile_options(${TEST_TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--cuda-gpu-arch=sm_60>)
+else()
+  set_target_properties(${TEST_TARGET_NAME} PROPERTIES CUDA_STANDARD 14)
+  target_compile_options(${TEST_TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)
+  target_compile_options(${TEST_TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --display_error_number>)
+  configure_cuda_warnings(${TEST_TARGET_NAME})
+endif()
+endif()
 
 target_link_libraries(${TEST_TARGET_NAME} LeapAccelerate gtest)
 

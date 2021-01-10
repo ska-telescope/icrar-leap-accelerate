@@ -76,10 +76,6 @@ if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GN
   endif()
 endif()
 
-if(TRACE)
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DTRACE")
-endif()
-
 # Load Modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -108,9 +104,6 @@ else()
   message(WARNING "git not found!")
 endif()
 
-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/CLI11/CMakeLists.txt")
-  message(FATAL_ERROR "Submodule CLI11 was not downloaded! Please update submodules and try again.")
-endif()
 if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/eigen-3.3.90/CMakeLists.txt")
   message(FATAL_ERROR "Submodule eigen-3.3.90 was not downloaded! Please update submodules and try again.")
 endif()
@@ -119,24 +112,6 @@ if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/gtest-1.8.1/CMakeLists.txt")
 endif()
 if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/rapidjson-1.1.0/CMakeLists.txt")
   message(FATAL_ERROR "Submodule rapidjson-1.1.0 was not downloaded! Please update submodules and try again.")
-endif()
-
-
-if (BUILD_TESTING)
-  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # required for Win32
-  add_subdirectory(external/gtest-1.8.1 googletest EXCLUDE_FROM_ALL)
-  enable_testing()
-  
-  include(GoogleTest)
-  mark_as_advanced(
-      BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS
-      gmock_build_tests gtest_build_samples gtest_build_tests
-      gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols
-  )
-  set_target_properties(gtest PROPERTIES FOLDER external)
-  set_target_properties(gtest_main PROPERTIES FOLDER external)
-  set_target_properties(gmock PROPERTIES FOLDER external)
-  set_target_properties(gmock_main PROPERTIES FOLDER external)
 endif()
 
 # Global Libraries
@@ -165,15 +140,42 @@ if(CUDA_ENABLED)
   find_package(CUDA 9.0)
   enable_language(CUDA)
 endif()
+#modify exported compile commands for linting
+if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+set(CMAKE_CUDA_COMPILER ${CMAKE_CXX_COMPILER})
+  # Clang IWYU Configuration
+  # Clang will ignore explicit includes of its preconfigured include directory
+  #include_directories(SYSTEM "/usr/lib/clang/${CMAKE_CXX_COMPILER_VERSION}/include")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem /usr/lib/clang/${CMAKE_CXX_COMPILER_VERSION}/include")
+  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -isystem /usr/lib/clang/${CMAKE_CXX_COMPILER_VERSION}/include")
+endif()
 
 add_definitions(-DBOOST_ALL_DYN_LINK)
 
-find_package(Boost REQUIRED COMPONENTS log log_setup)
+find_package(Boost REQUIRED COMPONENTS log log_setup program_options)
 
 set(CASACORE_FIND_QUIETLY ON)
 find_package(Casacore REQUIRED)
 
 find_package(LAPACK)
+
+# Testing Libraries
+if (BUILD_TESTING)
+  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # required for Win32
+  add_subdirectory(external/gtest-1.8.1 googletest EXCLUDE_FROM_ALL)
+  enable_testing()
+  
+  include(GoogleTest)
+  mark_as_advanced(
+      BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS
+      gmock_build_tests gtest_build_samples gtest_build_tests
+      gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols
+  )
+  set_target_properties(gtest PROPERTIES FOLDER external)
+  set_target_properties(gtest_main PROPERTIES FOLDER external)
+  set_target_properties(gmock PROPERTIES FOLDER external)
+  set_target_properties(gmock_main PROPERTIES FOLDER external)
+endif()
 
 # Local Libraries
 #add_subdirectory(external/eigen-3.3.90) # builds eigen3 tests

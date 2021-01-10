@@ -46,7 +46,7 @@ set(sources
     core/profiling/UsageReporter.cc
     core/version.cc
 
-    common/MVDirection.cc
+    common/SphericalDirection.cc
     common/MVuvw.cc
     
     algorithm/LeapCalibratorFactory.cc
@@ -115,30 +115,36 @@ endif()
 
 
 if(CUDA_ENABLED)
+  target_compile_definitions(${TARGET_NAME} PUBLIC CUDA_ENABLED)
+  if(HIGH_GPU_MEMORY)
+    target_compile_definitions(${TARGET_NAME} PUBLIC HIGH_GPU_MEMORY)
+  endif()
+
   # Request that the target be built with -std=c++14
   # As this is a public compile feature anything that links to the target
   # will also build with -std=c++14
   target_compile_features(${TARGET_NAME} PUBLIC cxx_std_14)
-  target_compile_definitions(${TARGET_NAME} PUBLIC CUDA_ENABLED)
-  
-  if(HIGH_GPU_MEMORY)
-    target_compile_definitions(${TARGET_NAME} PUBLIC HIGH_GPU_MEMORY)
-  endif()
   
   # We need to explicitly state that we need all CUDA files in the target
   # library to be built with -dc as the member functions could be called by
   # other libraries and executables
-  set_target_properties(${TARGET_NAME} PROPERTIES CUDA_STANDARD 14)
   
   #set(CUDA_PROPAGATE_HOST_FLAGS ON)
   #set_target_properties(${TARGET_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
   #set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
-  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)
-  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --display_error_number>)
   
-  configure_cuda_warnings(${TARGET_NAME})
+  if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+    message("generating clang-tidy cuda compatible configuration")
+    target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--cuda-gpu-arch=sm_60>)
+  else()
+    set_target_properties(${TARGET_NAME} PROPERTIES CUDA_STANDARD 14)
+    target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)
+    target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --display_error_number>)
+    configure_cuda_warnings(${TARGET_NAME})
+  endif()
+  
   #set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -lineinfo --default-stream per-thread)
-  #message("CUDA_NVCC_FLAGS = ${CUDA_NVCC_FLAGS}")
+  message("CUDA_NVCC_FLAGS = ${CUDA_NVCC_FLAGS}")
 
   target_include_directories(${TARGET_NAME} SYSTEM PUBLIC ${CUDA_INCLUDE_DIRS})
   target_link_libraries(${TARGET_NAME} ${CUDA_LIBRARIES})

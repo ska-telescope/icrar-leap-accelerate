@@ -20,7 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
-#include "MVDirection.h"
+#include "SphericalDirection.h"
 
 #include <icrar/leap-accelerate/math/math_conversion.h>
 #include <icrar/leap-accelerate/exception/exception.h>
@@ -28,14 +28,14 @@
 
 namespace icrar
 {
-    std::vector<icrar::MVDirection> ParseDirections(const std::string& json)
+    std::vector<SphericalDirection> ParseDirections(const std::string& json)
     {
         rapidjson::Document doc;
         doc.Parse(json.c_str());
         return ParseDirections(doc);
     }
 
-    std::vector<icrar::MVDirection> ParseDirections(const rapidjson::Value& doc)
+    std::vector<SphericalDirection> ParseDirections(const rapidjson::Value& doc)
     {
         //Validate Schema
         if(!doc.IsArray())
@@ -44,7 +44,7 @@ namespace icrar
         }
         
         //Parse
-        auto result = std::vector<icrar::MVDirection>();
+        auto result = std::vector<SphericalDirection>();
         for(auto it = doc.Begin(); it != doc.End(); it++)
         {
             if(!it->IsArray())
@@ -57,8 +57,7 @@ namespace icrar
             }
 
             auto& array = *it;
-            auto d = casacore::MVDirection(array[0].GetDouble(), array[1].GetDouble());
-            result.push_back(ToDirection(d));
+            result.emplace_back(array[0].GetDouble(), array[1].GetDouble());
         }
         return result;
     }

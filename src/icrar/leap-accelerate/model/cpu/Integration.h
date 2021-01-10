@@ -25,7 +25,7 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/common/MVuvw.h>
-#include <icrar/leap-accelerate/common/MVDirection.h>
+#include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 
 #include <casacore/casa/Quanta/MVuvw.h>

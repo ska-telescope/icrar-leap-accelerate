@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/common/MVDirection.h>
+#include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 
@@ -59,7 +59,7 @@ namespace icrar
         boost::optional<std::string> configFilePath;
         boost::optional<std::string> outputFilePath;
 
-        boost::optional<std::string> stations;
+        boost::optional<int> stations;
         boost::optional<std::string> directions;
         boost::optional<std::string> computeImplementation;
         boost::optional<double> minimumBaselineThreshold;
@@ -75,7 +75,7 @@ namespace icrar
      */
     struct Arguments
     {
-        Arguments() {}
+        Arguments() = default;
         Arguments(CLIArguments&& args);
 
         boost::optional<InputType> source; // MeasurementSet source type
@@ -84,7 +84,7 @@ namespace icrar
         boost::optional<std::string> outputFilePath; // Calibration output file, print to terminal if empty
 
         boost::optional<int> stations;
-        boost::optional<std::vector<icrar::MVDirection>> directions;
+        boost::optional<std::vector<SphericalDirection>> directions;
         boost::optional<ComputeImplementation> computeImplementation;
         boost::optional<double> minimumBaselineThreshold;
         boost::optional<bool> readAutocorrelations;
@@ -107,7 +107,7 @@ namespace icrar
         boost::optional<std::string> m_outputFilePath; // Calibration output filepath
 
         boost::optional<int> m_stations; // Overriden number of stations (will be removed in a later release)
-        std::vector<MVDirection> m_directions; // Calibration directions
+        std::vector<SphericalDirection> m_directions; // Calibration directions
         ComputeImplementation m_computeImplementation; // Specifies the implementation for calibration computation
         double m_minimumBaselineThreshold; // Minimum baseline length otherwise flagged at runtime
         bool m_readAutocorrelations; // Adjusts the number of baselines calculation to include autocorrelations
@@ -154,7 +154,7 @@ namespace icrar
          */
         MeasurementSet& GetMeasurementSet();
 
-        const std::vector<icrar::MVDirection>& GetDirections() const;
+        const std::vector<SphericalDirection>& GetDirections() const;
 
         ComputeImplementation GetComputeImplementation() const;
 

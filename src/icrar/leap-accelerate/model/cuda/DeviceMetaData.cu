@@ -63,7 +63,7 @@ namespace cuda
     {}
 
     DirectionBuffer::DirectionBuffer(
-        const icrar::MVDirection& direction,
+        const SphericalDirection& direction,
         const Eigen::Matrix3d& dd,
         const std::vector<icrar::MVuvw>& rotatedUVW,
         const Eigen::MatrixXcd& avgData)
@@ -74,7 +74,7 @@ namespace cuda
     {}
 
     DirectionBuffer::DirectionBuffer(
-        const icrar::MVDirection& direction,
+        const SphericalDirection& direction,
         const Eigen::Matrix3d& dd,
         int uvwSize,
         int avgDataRows,
@@ -85,7 +85,7 @@ namespace cuda
     , m_avgData(avgDataRows, avgDataCols)
     {}
 
-    void DirectionBuffer::SetDirection(const icrar::MVDirection& direction)
+    void DirectionBuffer::SetDirection(const SphericalDirection& direction)
     {
         m_direction = direction;
     }

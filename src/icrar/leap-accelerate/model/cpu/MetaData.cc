@@ -139,7 +139,7 @@ namespace cpu
         SetUVW(uvws);
     }
 
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold, bool useCache)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold, bool useCache)
     : MetaData(ms, uvws, minimumBaselineThreshold, useCache)
     {
         SetDirection(direction);
@@ -159,18 +159,17 @@ namespace cpu
     const Eigen::VectorXi& MetaData::GetI1() const { return m_I1; }
     const Eigen::MatrixXd& MetaData::GetAd1() const { return m_Ad1; }
 
-    void MetaData::SetDirection(const icrar::MVDirection& direction)
+    void MetaData::SetDirection(const SphericalDirection& direction)
     {
         m_direction = direction;
 
-        Eigen::Vector2d polar_direction = icrar::ToPolar(direction); 
-        m_constants.dlm_ra = polar_direction(0) - m_constants.phase_centre_ra_rad;
-        m_constants.dlm_dec = polar_direction(1) - m_constants.phase_centre_dec_rad;
+        m_constants.dlm_ra = direction(0) - m_constants.phase_centre_ra_rad;
+        m_constants.dlm_dec = direction(1) - m_constants.phase_centre_dec_rad;
         
         constexpr double pi = boost::math::constants::pi<double>();
         double ang1 = pi / 2.0 - m_constants.phase_centre_dec_rad;
-        double ang2 = polar_direction(0) - m_constants.phase_centre_ra_rad;
-        double ang3 = -pi / 2.0 + polar_direction(1);
+        double ang2 = direction(0) - m_constants.phase_centre_ra_rad;
+        double ang3 = -pi / 2.0 + direction(1);
 
         auto dd1 = Eigen::Matrix3d();
         dd1 <<

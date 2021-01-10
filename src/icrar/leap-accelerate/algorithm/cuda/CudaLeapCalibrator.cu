@@ -48,6 +48,7 @@
 #include <math_constants.h>
 #include <cuComplex.h>
 #include <cublas_v2.h>
+#include <cublasLt.h>
 #include <thrust/complex.h>
 
 #include <boost/math/constants/constants.hpp>
@@ -70,6 +71,7 @@ namespace icrar
 namespace cuda
 {
     CudaLeapCalibrator::CudaLeapCalibrator()
+    : m_cublasContext(nullptr)
     {
         int deviceCount = 0;
         checkCudaErrors(cudaGetDeviceCount(&deviceCount));
@@ -91,7 +93,7 @@ namespace cuda
 
     cpu::CalibrateResult CudaLeapCalibrator::Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions,
+        const std::vector<SphericalDirection>& directions,
         double minimumBaselineThreshold,
         bool isFileSystemCacheEnabled)
     {
@@ -211,7 +213,7 @@ namespace cuda
     void CudaLeapCalibrator::PhaseRotate(
         cpu::MetaData& metadata,
         DeviceMetaData& deviceMetadata,
-        const icrar::MVDirection& direction,
+        const SphericalDirection& direction,
         std::vector<cuda::DeviceIntegration>& input,
         std::vector<cpu::IntegrationResult>& output_integrations,
         std::vector<cpu::CalibrationResult>& output_calibrations)
@@ -345,8 +347,6 @@ namespace cuda
             1
         );
 
-        //TODO: store polar form in advance
-        const auto polar_direction = icrar::ToPolar(metadata.GetDirection());
         g_RotateVisibilities<<<gridSize, blockSize>>>(
             (cuDoubleComplex*)integration.GetVis().Get(), integration.GetVis().GetDimensionSize(0), integration.GetVis().GetDimensionSize(1), integration.GetVis().GetDimensionSize(2),
             constants,
@@ -395,7 +395,7 @@ namespace cuda
 
         if(n < A.rows())
         {
-            double sum = A.row(n) * cal1; //TODO: use a sum ColumnVector from a matmul kernel
+            double sum = A.row(n) * cal1; //TODO(calgray): use a sum ColumnVector from a matmul kernel
             dInt.row(n) = (thrust::exp(thrust::complex<double>(0, -sum * two_pi)) * avgData.row(n))
             .unaryExpr([](const thrust::complex<double>& v){ return thrust::arg(v); });
         }
