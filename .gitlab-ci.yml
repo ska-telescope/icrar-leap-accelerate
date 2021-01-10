@@ -101,6 +101,7 @@ download_lfs:
     - bash install.sh
     - cd ..
   artifacts:
+    when: always
     paths:
       - testdata
 
@@ -112,6 +113,7 @@ download_lfs:
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"
     - make -j2
   artifacts:
+    when: always
     paths:
       - build
 
@@ -129,6 +131,7 @@ build_debug:
     - cmake .. -DCMAKE_BUILD_TYPE=Release
     - make -j2
   artifacts:
+    when: always
     paths:
       - build
 
@@ -147,6 +150,7 @@ build_release:
     # This filters out external source file dependencies such as gtest
     - jq '[ . - map(select(.file | contains("/external/"))) | .[] ]' compile_commands.json | sponge compile_commands.json
   artifacts:
+    when: always
     paths:
       - build
 
@@ -165,8 +169,10 @@ build_export_compile_commands:
     - cd build
     - pip install pyyaml
     - python -u /usr/bin/run-clang-tidy-6.0.py -quiet 2>&1 | tee clang-tidy.log
-    - cat clang-tidy.log | python ../.clang-tidy-to-junit.py $PWD > clang-tidy-junit.xml
+    - cd ..
+    - cat build/clang-tidy.log | python .clang-tidy-to-junit.py $PWD/ clang-tidy > build/clang-tidy-junit.xml
   artifacts:
+    when: always
     paths:
       - build
 
@@ -182,11 +188,11 @@ lint_clang_tidy:
 .lint_iwyu:
   stage: linting
   script:
-    - cd build
-    - ls /usr/lib/
-    - ls /usr/lib/llvm-6.0/lib/clang/
-    - iwyu_tool -j 2 -p . 2>&1 | tee iwyu.log
+    - iwyu_tool -j 2 -p ./build -- --transitive_includes_only 2>&1 | tee build/iwyu.log
+    # iwyu 0.12+ iwyu_tool -j 2 -p ./build -- -Xiwyu --transitive_includes_only 2>&1 | tee build/iwyu.log
+    - cat build/iwyu.log | python .clang-tidy-to-junit.py $PWD/ iwyu > build/iwyu-junit.xml
   artifacts:
+    when: always
     paths:
       - build
 
@@ -206,13 +212,16 @@ lint_iwyu:
     - cd build
     - 'cppcheck
       --xml-version=2
+      --enable=all
       --project=compile_commands.json
       --platform=unix64
       -q --std=c++14
       -j 2
       --library=googletest 2>&1 | tee cppcheck.xml'
     - cppcheck_junit cppcheck.xml cppcheck-junit.xml
+
   artifacts:
+    when: always
     paths:
       - build
 
@@ -223,6 +232,7 @@ lint_iwyu:
     - cd build
     - 'cppcheck
       --xml-version=2
+      --enable=all
       --project=compile_commands.json
       --platform=unix64
       --std=c++14
@@ -231,6 +241,7 @@ lint_iwyu:
       -i $PWD/../src/icrar/leap-accelerate-cli/tests 2>&1 | tee cppcheck.xml'
     - cppcheck_junit cppcheck.xml cppcheck-junit.xml
   artifacts:
+    when: always
     paths:
       - build
 
@@ -256,6 +267,7 @@ lint_cppcheck:
     - cd build
     - ctest2junit > ctest.xml
   artifacts:
+    when: always
     paths:
       - build/
     reports:
@@ -289,19 +301,31 @@ test_memcheck:
 pages:
   extends: .required_dependencies
   stage: pages
-  needs: ["test_debug_minimal", "lint_clang_tidy"]
+  needs: ["test_debug_minimal", "lint_clang_tidy", "lint_cppcheck", "lint_iwyu"]
   before_script:
-    - apt update && apt install -y curl gcovr gwenhywfar-tools
+    - apt update && apt install -y curl gcovr moreutils python3-pip jq
+    - pip3 install yq
   script:
     - mkdir -p .public/build/reports
     - cd .public
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o index.html &> gcovr-index.log
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml &> gcovr-code-coverage.log
     - cp ../build/ctest.xml build/reports/unit-tests.xml
-    - cp ../build/cppcheck-junit.xml build/reports/cppcheck-junit.xml    
+    - cp ../build/cppcheck-junit.xml build/reports/cppcheck-junit.xml
     - cp ../build/clang-tidy-junit.xml build/reports/clang-tidy-junit.xml
-    - cp clang-tidy-junit.xml linting.xml
-    #- xmlmerge clang-tidy-junit.xml cppcheck-junit.xml -o linting.xml //TODO: xmlmerge can't handle totals
+    - cp ../build/iwyu-junit.xml build/reports/iwyu-junit.xml
+    
+    # Combine XML
+    - 'xq -s "{testsuites: { testsuite: [ .[0].testsuite, .[1].testsuite, .[2].testsuite ] } }"
+      build/reports/clang-tidy-junit.xml
+      build/reports/cppcheck-junit.xml
+      build/reports/iwyu-junit.xml
+      --xml-output | sponge build/reports/linting.xml'
+
+    # Calculate Metrics
+    - 'xq ".testsuites |= {\"@tests\": .testsuite | map(.\"@tests\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
+    - 'xq ".testsuites |= {\"@errors\": .testsuite | map(.\"@errors\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
+    - 'xq ".testsuites |= {\"@failures\": .testsuite | map(.\"@failures\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
 
     # Create and upload GitLab badges
     - python ../.produce-ci-metrics.py build/reports > ci-metrics.json
@@ -309,5 +333,6 @@ pages:
     - cd ..
     - mv .public public
   artifacts:
+    when: always
     paths:
       - public
