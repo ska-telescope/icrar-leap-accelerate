@@ -123,7 +123,12 @@ int main(int argc, char** argv)
             LOG(info) << arg_string(argc, argv);
 
             auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
-            auto result = calibrator->Calibrate(args.GetMeasurementSet(), args.GetDirections(), args.GetMinimumBaselineThreshold(), args.IsFileSystemCacheEnabled());
+            auto result = calibrator->Calibrate(
+                args.GetMeasurementSet(),
+                args.GetDirections(),
+                args.GetMinimumBaselineThreshold(),
+                args.GetReferenceAntenna(),
+                args.IsFileSystemCacheEnabled());
             cpu::PrintResult(result, args.GetOutputStream());
         }
     }

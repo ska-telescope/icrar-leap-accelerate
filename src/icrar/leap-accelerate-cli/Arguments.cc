@@ -43,7 +43,7 @@ namespace icrar
         args.outputFilePath = boost::none;
 
         args.stations = boost::none;
-        args.referenceAntenna = 0;
+        args.referenceAntenna = boost::none;
         args.directions = boost::none;
         args.computeImplementation = std::string("cpu");
         args.readAutocorrelations = true;
@@ -261,6 +261,11 @@ namespace icrar
     ComputeImplementation ArgumentsValidated::GetComputeImplementation() const
     {
         return m_computeImplementation;
+    }
+
+    boost::optional<unsigned int> ArgumentsValidated::GetReferenceAntenna() const
+    {
+        return m_referenceAntenna;
     }
 
     double ArgumentsValidated::GetMinimumBaselineThreshold() const

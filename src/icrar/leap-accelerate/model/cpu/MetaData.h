@@ -132,7 +132,7 @@ namespace cpu
          * @param minimumBaselineThreshold
          * @param useCache
          */
-        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold = 0.0, bool useCache = true);
+        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold = 0.0, unsigned int refAnt = 0, bool useCache = true);
 
         /**
          * @brief Construct a new MetaData object
@@ -142,7 +142,7 @@ namespace cpu
          * @param minimumBaselineThreshold
          * @param useCache
          */
-        MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold = 0.0, bool useCache = true);
+        MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold = 0.0, unsigned int refAnt = 0, bool useCache = true);
 
         const Constants& GetConstants() const;
 

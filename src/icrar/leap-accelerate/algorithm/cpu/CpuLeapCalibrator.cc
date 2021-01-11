@@ -32,9 +32,10 @@ namespace cpu
         const icrar::MeasurementSet& ms,
         const std::vector<SphericalDirection>& directions,
         double minimumBaselineThreshold,
+        boost::optional<unsigned int> referenceAntenna,
         bool isFileSystemCacheEnabled)
         {
-            return cpu::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
+            return cpu::Calibrate(ms, directions, minimumBaselineThreshold, referenceAntenna, isFileSystemCacheEnabled);
         }
 } // namespace cpu
 } // namespace icrar

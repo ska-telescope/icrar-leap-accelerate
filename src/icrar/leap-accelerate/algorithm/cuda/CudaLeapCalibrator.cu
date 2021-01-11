@@ -95,6 +95,7 @@ namespace cuda
         const icrar::MeasurementSet& ms,
         const std::vector<SphericalDirection>& directions,
         double minimumBaselineThreshold,
+        boost::optional<unsigned int> referenceAntenna,
         bool isFileSystemCacheEnabled)
     {
         LOG(info) << "Starting Calibration using cuda";
@@ -138,7 +139,7 @@ namespace cuda
             profiling::timer metadata_read_timer;
             LOG(info) << "Loading MetaData";
             
-            auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), minimumBaselineThreshold, isFileSystemCacheEnabled);
+            auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), minimumBaselineThreshold, referenceAntenna.get(), isFileSystemCacheEnabled);
             
             auto constantBuffer = std::make_shared<ConstantBuffer>(
                 metadata.GetConstants(),
