@@ -218,7 +218,7 @@ fi
 
 # build
 banner Installing leap-accelerate $branch
-build_and_install https://github.com/ICRAR/leap-accelerate.git $branch $cmake_opts
+build_and_install https://gitlab.com/ska-telescope/icrar-leap-accelerate.git $branch $cmake_opts
 
 cd $original_dir
 
