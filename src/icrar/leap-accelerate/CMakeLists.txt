@@ -123,7 +123,7 @@ if(CUDA_ENABLED)
   
   if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
     message("generating clang-tidy cuda compatible configuration")
-    configure_nvcc_cuda_compiler(${TARGET_NAME})
+    configure_clang_cuda_compiler(${TARGET_NAME})
   else()
     configure_nvcc_cuda_compiler(${TARGET_NAME})
     configure_cuda_warnings(${TARGET_NAME})
