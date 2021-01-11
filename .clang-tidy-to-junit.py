@@ -65,7 +65,7 @@ class ClangTidyConverter:
     # Group 4: severity
     # Group 5: error message
     note_regex = re.compile(
-        r"^([\w\/\.\-\ ]+):(\d+)\:(\d+)\: ([a-z]+)\: (.+)$"
+        r"^([\w\/\.\-\ ]+):(\d+):(\d+): ([a-z]+): (.+)$"
     )
 
     # Group 1: file path
