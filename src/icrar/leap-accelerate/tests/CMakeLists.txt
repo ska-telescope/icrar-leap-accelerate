@@ -45,8 +45,13 @@ endif()
 
 # CUDA Options
 if(CUDA_ENABLED)
-  target_compile_options(${TEST_TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)
-  configure_cuda_warnings(${TEST_TARGET_NAME})
+  if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+    message("generating clang-tidy cuda compatible configuration")
+    configure_clang_cuda_compiler(${TEST_TARGET_NAME})
+  else()
+    configure_nvcc_cuda_compiler(${TEST_TARGET_NAME})
+    configure_cuda_warnings(${TEST_TARGET_NAME})
+  endif()
 endif()
 
 target_link_libraries(${TEST_TARGET_NAME} LeapAccelerate gtest)
