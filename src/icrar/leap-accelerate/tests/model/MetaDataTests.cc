@@ -49,7 +49,7 @@ namespace icrar
         void SetUp() override
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, 102, true);
+            ms = std::make_unique<icrar::MeasurementSet>(filename, boost::none, true);
         }
 
         void TearDown() override
@@ -69,15 +69,14 @@ namespace icrar
 
         void TestRawReadFromFile()
         {
-            std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
-            auto rawms = std::make_unique<icrar::MeasurementSet>(filename, boost::none, true);
-            auto meta = icrar::cpu::MetaData(*rawms, ToUVWVector(rawms->GetCoords(0, rawms->GetNumRows())));
+            auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())), boost::none);
 
-            //ASSERT_EQ(false, meta.m_initialized);
+            ASSERT_EQ(102, ms->GetNumStations());
+            ASSERT_EQ(5253, ms->GetNumBaselines());
             ASSERT_EQ(48, meta.GetConstants().channels);
             ASSERT_EQ(4, meta.GetConstants().num_pols);
             ASSERT_EQ(102, meta.GetConstants().stations);
-            ASSERT_EQ(5253, rawms->GetNumBaselines());
+            ASSERT_EQ(101, meta.GetConstants().referenceAntenna);
             ASSERT_EQ(73542, meta.GetConstants().rows);
             ASSERT_EQ(1.39195e+08, meta.GetConstants().freq_start_hz);
             ASSERT_EQ(640000, meta.GetConstants().freq_inc_hz);
@@ -107,13 +106,16 @@ namespace icrar
 
         void TestReadFromFileOverrideStations()
         {
-            auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())));
+            std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
+            auto rawms = std::make_unique<icrar::MeasurementSet>(filename, 102, true);
+            auto meta = icrar::cpu::MetaData(*rawms, ToUVWVector(rawms->GetCoords(0, rawms->GetNumRows())), boost::none);
 
-            //ASSERT_EQ(false, meta.m_initialized);
+            ASSERT_EQ(102, rawms->GetNumStations());
+            ASSERT_EQ(5253, rawms->GetNumBaselines());
             ASSERT_EQ(48, meta.GetConstants().channels);
             ASSERT_EQ(4, meta.GetConstants().num_pols);
             ASSERT_EQ(102, meta.GetConstants().stations);
-            ASSERT_EQ(5253, ms->GetNumBaselines());
+            ASSERT_EQ(101, meta.GetConstants().referenceAntenna);
             ASSERT_EQ(73542, meta.GetConstants().rows);
             ASSERT_EQ(1.39195e+08, meta.GetConstants().freq_start_hz);
             ASSERT_EQ(640000, meta.GetConstants().freq_inc_hz);
@@ -122,8 +124,8 @@ namespace icrar
             ASSERT_NEAR(1.047198e-01, meta.GetConstants().phase_centre_dec_rad, PRECISION);
 
             // Check A, I
-            const int expectedK = 4754;
-            ASSERT_EQ(expectedK, meta.GetA().rows()); // (102-1)*102/2 + 1
+            const int expectedK = 4754; // (102-1)*102/2 + 1
+            ASSERT_EQ(expectedK, meta.GetA().rows());
             ASSERT_EQ(128, meta.GetA().cols());
             ASSERT_EQ(128, meta.GetAd().rows());
             ASSERT_EQ(expectedK, meta.GetAd().cols());
@@ -143,7 +145,7 @@ namespace icrar
 
         void TestDD()
         {
-            auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())));
+            auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())), boost::none);
             auto direction = SphericalDirection(-0.4606549305661674,-0.29719233792392513);
             
             EXPECT_EQ(-0.4606549305661674, direction(0));

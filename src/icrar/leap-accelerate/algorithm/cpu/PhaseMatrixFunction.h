@@ -39,10 +39,10 @@ namespace cpu
      * @param a1 indexes of 1st antenna of each baselines
      * @param a2 indexes of 2nd antenna of each baselines
      * @param refAnt the reference antenna (0, 1), -1 
-     * @param map 
+     * @param fg a flag map of flagged stations to ignore when true
      * @return std::pair<Matrixd, Matrixi>
-     * for refAnt=-1: first matrix is of size [baselines,stations] and seconds of size[baselines,1]
-     * for refAnt>-1: first matrix is of size [stations,stations] and seconds of size[stations,1]
+     * for refAnt = none: first matrix is of size [baselines,stations] and seconds of size[baselines,1]
+     * for refAnt >= 0 > stations: first matrix is of size [stations,stations] and seconds of size[stations,1]
      */
     std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         const Eigen::VectorXi& a1,

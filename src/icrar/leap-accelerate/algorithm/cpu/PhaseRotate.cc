@@ -109,7 +109,12 @@ namespace cpu
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
-        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), minimumBaselineThreshold, referenceAntenna.get(), isFileSystemCacheEnabled);
+        auto metadata = icrar::cpu::MetaData(
+            ms,
+            integration.GetUVW(),
+            referenceAntenna,
+            minimumBaselineThreshold,
+            isFileSystemCacheEnabled);
         LOG(info) << "Read metadata in " << metadata_read_timer;
 
         profiling::timer phase_rotate_timer;
