@@ -60,6 +60,7 @@ namespace icrar
         boost::optional<std::string> outputFilePath;
 
         boost::optional<int> stations;
+        boost::optional<unsigned int> referenceAntenna;
         boost::optional<std::string> directions;
         boost::optional<std::string> computeImplementation;
         boost::optional<double> minimumBaselineThreshold;
@@ -84,6 +85,7 @@ namespace icrar
         boost::optional<std::string> outputFilePath; // Calibration output file, print to terminal if empty
 
         boost::optional<int> stations;
+        boost::optional<unsigned int> referenceAntenna;
         boost::optional<std::vector<SphericalDirection>> directions;
         boost::optional<ComputeImplementation> computeImplementation;
         boost::optional<double> minimumBaselineThreshold;
@@ -107,6 +109,7 @@ namespace icrar
         boost::optional<std::string> m_outputFilePath; // Calibration output filepath
 
         boost::optional<int> m_stations; // Overriden number of stations (will be removed in a later release)
+        unsigned int m_referenceAntenna; // Index of the reference antenna
         std::vector<SphericalDirection> m_directions; // Calibration directions
         ComputeImplementation m_computeImplementation; // Specifies the implementation for calibration computation
         double m_minimumBaselineThreshold; // Minimum baseline length otherwise flagged at runtime

@@ -43,6 +43,7 @@ namespace icrar
         args.outputFilePath = boost::none;
 
         args.stations = boost::none;
+        args.referenceAntenna = 0;
         args.directions = boost::none;
         args.computeImplementation = std::string("cpu");
         args.readAutocorrelations = true;
@@ -59,6 +60,7 @@ namespace icrar
         , configFilePath(std::move(args.configFilePath))
         , outputFilePath(std::move(args.outputFilePath))
         , stations(std::move(args.stations))
+        , referenceAntenna(std::move(args.referenceAntenna))
         , minimumBaselineThreshold(args.minimumBaselineThreshold)
         , readAutocorrelations(args.readAutocorrelations)
         , mwaSupport(args.mwaSupport)
@@ -179,6 +181,11 @@ namespace icrar
         if(args.stations.is_initialized())
         {
             m_stations = std::move(args.stations.get());
+        }
+
+        if(args.referenceAntenna.is_initialized())
+        {
+            m_referenceAntenna = std::move(args.referenceAntenna.get());
         }
 
         if(args.directions.is_initialized())
@@ -338,6 +345,17 @@ namespace icrar
                     else
                     {
                         throw json_exception("outFilePath must be of type int", __FILE__, __LINE__);
+                    }
+                }
+                else if(key == "referenceAntenna")
+                {
+                    if(it->value.IsInt())
+                    {
+                        args.referenceAntenna = it->value.GetInt();
+                    }
+                    else
+                    {
+                        throw json_exception("referenceAntenna must be of type unsigned int", __FILE__, __LINE__);
                     }
                 }
                 else if(key == "directions")
