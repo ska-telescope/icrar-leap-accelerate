@@ -1,7 +1,6 @@
 # LEAP Accelerate
 
 ![License](https://img.shields.io/badge/license-LGPL_2.1-blue)
-[![Build Status](https://travis-ci.com/ICRAR/leap-accelerate.svg?token=1YzqBsytWggkjwq3sjZP&branch=master)](https://travis-ci.com/ICRAR/leap-accelerate)
 
 A calibration tool for Low-frequency Excision of the Atmosphere in Parallel ([LEAP](https://arxiv.org/abs/1807.04685)) utilizing GPGPU acceleration.
 
