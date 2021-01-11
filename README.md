@@ -46,7 +46,7 @@ LEAP-Accelerate includes:
 * sudo apt-get install gcc-6 g++-6 gdb doxygen casacore-dev libboost1.58-all-dev libgsl-dev
 * https://developer.nvidia.com/cuda-92-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1604&target_type=deblocal
 
-## Compilation
+## Compile Commands
 
 From the repository root folder run:
 
