@@ -3,7 +3,7 @@
 ![License](https://img.shields.io/badge/license-LGPL_2.1-blue)
 [![Build Status](https://travis-ci.com/ICRAR/leap-accelerate.svg?token=1YzqBsytWggkjwq3sjZP&branch=master)](https://travis-ci.com/ICRAR/leap-accelerate)
 
-A Low-frequency Excision of the Atmosphere in Parallel ([LEAP](https://arxiv.org/abs/1807.04685)) Calibration tool utilizing GPGPU acceleration.
+A calibration tool for Low-frequency Excision of the Atmosphere in Parallel ([LEAP](https://arxiv.org/abs/1807.04685)) utilizing GPGPU acceleration.
 
 LEAP-Accelerate includes:
 
@@ -12,7 +12,7 @@ LEAP-Accelerate includes:
 <!---* leap-accelerate-client: a socket client interface for processing data from a LEAP-Cal server--->
 <!---* leap-accelerate-server: a socket server interface for dispatching data processing to LEAP-Cal clients--->
 
-## System Dependencies
+## Compiling from Source
 
 ### Recommended Versions Compatibility
 
@@ -36,10 +36,6 @@ LEAP-Accelerate includes:
 * sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.71-all-dev libgsl-dev
 * https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=2004&target_type=deblocal
 
-or
-
-* sudo apt-get install nvidia-cuda-toolkit-gcc
-
 18.04 LTS
 
 * sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.65-all-dev libgsl-dev
@@ -51,7 +47,7 @@ or
 * sudo apt-get install gcc-6 g++-6 gdb doxygen casacore-dev libboost1.58-all-dev libgsl-dev
 * https://developer.nvidia.com/cuda-92-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1604&target_type=deblocal
 
-## Compiling from Source
+## Compilation
 
 From the repository root folder run:
 
@@ -75,7 +71,7 @@ NOTE: pulling exernal submodules via git is required to build. This may change i
 
 `cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_BUILD_TYPE=Debug`
 
-(with tracing):
+With tracing to file:
 
 `cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DTRACE=ON -DCMAKE_BUILD_TYPE=Debug`
 
