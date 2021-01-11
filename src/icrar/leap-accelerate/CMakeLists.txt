@@ -146,14 +146,14 @@ if(CUDA_ENABLED)
   endif()
   
   #set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -lineinfo --default-stream per-thread)
-  message("CUDA_NVCC_FLAGS = ${CUDA_NVCC_FLAGS}")
+  #message("CUDA_NVCC_FLAGS = ${CUDA_NVCC_FLAGS}")
 
   target_include_directories(${TARGET_NAME} SYSTEM PUBLIC ${CUDA_INCLUDE_DIRS})
   target_link_libraries(${TARGET_NAME} ${CUDA_LIBRARIES})
   target_link_libraries(${TARGET_NAME} cublas)
   if(CUDA_VERSION_MAJOR VERSION_GREATER 9)
-  target_link_libraries(${TARGET_NAME} cublasLt)
-  #target_link_libraries(${TARGET_NAME} ${CUDA_cusolver_LIBRARY})
+    target_link_libraries(${TARGET_NAME} cublasLt)
+    #target_link_libraries(${TARGET_NAME} ${CUDA_cusolver_LIBRARY})
   endif()
 endif()
 
