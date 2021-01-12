@@ -254,7 +254,7 @@ namespace cuda
     {
         // Compute rows in parallel
         int row = blockDim.x * blockIdx.x + threadIdx.x;
-        if(row < UVWS.rows())
+        if(row < UVWs.rows())
         {
             RotatedUVWs.col(row) = dd * UVWs.col(row);
         }
