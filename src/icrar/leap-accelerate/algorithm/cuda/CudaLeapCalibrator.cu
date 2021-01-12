@@ -254,7 +254,10 @@ namespace cuda
     {
         // Compute rows in parallel
         int row = blockDim.x * blockIdx.x + threadIdx.x;
-        RotatedUVWs.col(row) = dd * UVWs.col(row);
+        if(row < UVWS.rows())
+        {
+            RotatedUVWs.col(row) = dd * UVWs.col(row);
+        }
     }
 
     __host__ void CudaLeapCalibrator::RotateUVW(Eigen::Matrix3d dd, const device_vector<icrar::MVuvw>& UVWs, device_vector<icrar::MVuvw>& rotatedUVWs)
