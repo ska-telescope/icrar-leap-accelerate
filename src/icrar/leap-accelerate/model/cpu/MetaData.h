@@ -146,10 +146,25 @@ namespace cpu
 
         const Constants& GetConstants() const;
 
+        /**
+         * @brief Matrix of baseline pairs of shape [baselines, stations] 
+         */
         const Eigen::MatrixXd& GetA() const;
+
+        /**
+         * @brief Vector of indexes of the stations that are not flagged, shape [stations]
+         */
         const Eigen::VectorXi& GetI() const;
+
+        /**
+         * @brief The pseudoinverse of A with shape [stations, baselines]
+         */
         const Eigen::MatrixXd& GetAd() const;
 
+        /**
+         * @brief Matrix of baselines using the reference antenna of shape [stations+1, stations]
+         * the last row represents the reference antenna
+         */
         const Eigen::MatrixXd& GetA1() const;
         const Eigen::VectorXi& GetI1() const;
         const Eigen::MatrixXd& GetAd1() const;
