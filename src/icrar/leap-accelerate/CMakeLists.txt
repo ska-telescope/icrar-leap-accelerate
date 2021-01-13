@@ -53,9 +53,8 @@ set(sources
     
     algorithm/LeapCalibratorFactory.cc
     algorithm/cpu/CpuLeapCalibrator.cc
-    
+    algorithm/cpu/Calibrate.cc
     algorithm/cpu/PhaseMatrixFunction.cc
-    algorithm/cpu/PhaseRotate.cc
     )
     
     set(cuda_headers
