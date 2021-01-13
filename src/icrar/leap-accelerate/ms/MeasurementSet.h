@@ -125,6 +125,13 @@ namespace icrar
         unsigned int GetNumRows() const;
 
         /**
+         * @brief Get the Epochs object
+         * 
+         * @return std::vector<double> 
+         */
+        std::vector<double> GetEpochs() const;
+
+        /**
          * @brief Gets a vector of size nBaselines with a true value at the index of flagged baselines.
          * Checks for flagged data on the first channel and polarization.
          * 

@@ -105,6 +105,18 @@ namespace icrar
         return m_msmc->uvw().nrow();
     }
 
+    std::vector<double> MeasurementSet::GetEpochs() const
+    {
+        casacore::Vector<double> time = m_msmc->time().getColumn();
+        unsigned int timesteps = (unsigned int)GetNumRows() / GetNumBaselines();
+        std::vector<double> result;
+        for(unsigned int i = 0; i < timesteps; ++i)
+        {
+            result.push_back(time[i * GetNumBaselines()]);
+        }
+        return result;
+    }
+
     unsigned int MeasurementSet::GetNumStations() const
     {
         return m_stations;
@@ -232,9 +244,9 @@ namespace icrar
             *m_measurementSet,
             start_row,
             nBaselines,
-            matrix(Eigen::all, 0).data(),
-            matrix(Eigen::all, 1).data(),
-            matrix(Eigen::all, 2).data());
+            matrix.col(0).data(),
+            matrix.col(1).data(),
+            matrix.col(2).data());
         return matrix;
     }
 

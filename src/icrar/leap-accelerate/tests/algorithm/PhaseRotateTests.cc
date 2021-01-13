@@ -103,7 +103,7 @@ namespace icrar
 
             std::vector<std::vector<cpu::IntegrationResult>> integrations;
             std::vector<std::vector<cpu::CalibrationResult>> calibrations;
-            std::tie(integrations, calibrations) = LeapCalibratorFactory::Create(impl)->Calibrate(*ms, ToDirectionVector(directions), Range(0,1,1), 0.0, 0, false);
+            std::tie(integrations, calibrations) = LeapCalibratorFactory::Create(impl)->Calibrate(*ms, ToDirectionVector(directions), Range(0,-1,-1), 0.0, 0, false);
 
             auto expected = GetExpectedCalibration();
 

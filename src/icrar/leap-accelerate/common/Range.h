@@ -29,9 +29,9 @@ namespace icrar
 {
     struct Range
     {
-        std::uint32_t start;
-        std::uint32_t interval;
-        std::uint32_t end;
+        std::int32_t start;
+        std::int32_t interval;
+        std::int32_t end;
 
         Range() = default;
         Range(int start, int interval, int end);

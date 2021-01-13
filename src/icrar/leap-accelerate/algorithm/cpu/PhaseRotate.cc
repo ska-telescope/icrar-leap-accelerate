@@ -78,7 +78,7 @@ namespace cpu
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
-        << "timesteps: " << ms.GetNumRows() / ms.GetNumBaselines();
+        << "timesteps: " << ms.GetNumRows() / (float)ms.GetNumBaselines();
 
         profiling::timer calibration_timer;
 
@@ -90,46 +90,68 @@ namespace cpu
 
         constexpr unsigned int integrationNumber = 0;
 
-        auto integration = Integration(
-                integrationNumber,
+        size_t timesteps = (size_t)ms.GetNumRows() / ms.GetNumBaselines();
+        Range validatedSolutionInterval = Range(
+            solutionInterval.start == -1 ? timesteps : solutionInterval.start,
+            solutionInterval.interval == -1 ? timesteps : solutionInterval.interval,
+            solutionInterval.end == -1 ? timesteps : solutionInterval.end
+        );
+
+        std::cout << validatedSolutionInterval.start << std::endl;
+        std::cout << validatedSolutionInterval.interval << std::endl;
+        std::cout << validatedSolutionInterval.end << std::endl;
+
+        size_t solutions = 1;
+        //from epoch: 0 -> interval 
+        for(size_t solution = 0; solution < solutions; ++solution)
+        {
+            std::cout << "integrations" << std::endl;
+            //Iterate solutions
+            const Integration integration = Integration(
+                    integrationNumber,
+                    ms,
+                    0,
+                    ms.GetNumChannels(),
+                    validatedSolutionInterval.interval * ms.GetNumBaselines(),
+                    ms.GetNumPols());
+
+            for(size_t i = 0; i < directions.size(); ++i)
+            {
+                auto queue = std::vector<cpu::Integration>();
+                queue.push_back(integration);
+                input_queues.push_back(queue);
+
+                output_integrations.emplace_back();
+                output_calibrations.emplace_back();
+            }
+
+            LOG(info) << "Read integration data in " << integration_read_timer;
+
+            //auto epochs = ms.GetEpochs();
+
+            profiling::timer metadata_read_timer;
+            LOG(info) << "Loading MetaData";
+            auto metadata = icrar::cpu::MetaData(
                 ms,
-                0,
-                ms.GetNumChannels(),
-                ms.GetNumRows(),
-                ms.GetNumPols());
+                integration.GetUVW(), // UVWs shouldn't change per timestep
+                referenceAntenna,
+                minimumBaselineThreshold,
+                isFileSystemCacheEnabled);
+            LOG(info) << "Read metadata in " << metadata_read_timer;
 
-        for(size_t i = 0; i < directions.size(); ++i)
-        {
-            auto queue = std::vector<cpu::Integration>();
-            queue.push_back(integration);
-
-            input_queues.push_back(queue);
-            output_integrations.emplace_back();
-            output_calibrations.emplace_back();
+            profiling::timer phase_rotate_timer;
+            for(size_t i = 0; i < directions.size(); ++i)
+            {
+                LOG(info) << "Processing direction " << i;
+                metadata.SetDirection(directions[i]);
+                metadata.CalcUVW();
+                metadata.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
+                icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
+            }
+            
+            LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
+            LOG(info) << "Finished calibration in " << calibration_timer;
         }
-        LOG(info) << "Read integration data in " << integration_read_timer;
-
-        profiling::timer metadata_read_timer;
-        LOG(info) << "Loading MetaData";
-        auto metadata = icrar::cpu::MetaData(
-            ms,
-            integration.GetUVW(),
-            referenceAntenna,
-            minimumBaselineThreshold,
-            isFileSystemCacheEnabled);
-        LOG(info) << "Read metadata in " << metadata_read_timer;
-
-        profiling::timer phase_rotate_timer;
-        for(size_t i = 0; i < directions.size(); ++i)
-        {
-            LOG(info) << "Processing direction " << i;
-            metadata.SetDirection(directions[i]);
-            metadata.CalcUVW();
-            metadata.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
-            icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
-        }
-        LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
-        LOG(info) << "Finished calibration in " << calibration_timer;
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
