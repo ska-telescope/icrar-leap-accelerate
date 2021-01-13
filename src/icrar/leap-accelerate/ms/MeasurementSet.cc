@@ -80,7 +80,7 @@ namespace icrar
             LOG(error) << "epoch rows does not match baselines";
             LOG(error) << "epoch rows: " << epochRows;
             LOG(error) << "baselines: " << GetNumBaselines();
-            throw exception("epoch size doesnt match number of baselines", __FILE__, __LINE__);
+            throw exception("visibilities at first epoch does not match number of baselines", __FILE__, __LINE__);
         }
 
         if(GetNumRows() < GetNumBaselines())

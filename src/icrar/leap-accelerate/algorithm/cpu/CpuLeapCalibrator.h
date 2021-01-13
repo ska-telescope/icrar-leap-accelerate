@@ -37,6 +37,7 @@ namespace cpu
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             double minimumBaselineThreshold,
+            boost::optional<unsigned int> referenceAntenna,
             bool isFileSystemCacheEnabled) override;
     };
 } // namespace cpu
