@@ -62,6 +62,7 @@ namespace icrar
         boost::optional<int> stations;
         boost::optional<std::string> directions;
         boost::optional<std::string> computeImplementation;
+        boost::optional<std::string> solutionInterval;
         boost::optional<double> minimumBaselineThreshold;
         boost::optional<bool> useFileSystemCache;
         boost::optional<bool> mwaSupport;
@@ -86,6 +87,7 @@ namespace icrar
         boost::optional<int> stations;
         boost::optional<std::vector<SphericalDirection>> directions;
         boost::optional<ComputeImplementation> computeImplementation;
+        boost::optional<std::string> solutionInterval;
         boost::optional<double> minimumBaselineThreshold;
         boost::optional<bool> readAutocorrelations;
         boost::optional<bool> mwaSupport;
