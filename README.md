@@ -46,6 +46,26 @@ LEAP-Accelerate includes:
 * sudo apt-get install gcc-6 g++-6 gdb doxygen casacore-dev libboost1.58-all-dev libgsl-dev
 * https://developer.nvidia.com/cuda-92-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1604&target_type=deblocal
 
+## CMake Options
+
+Use `cmake .. -D<OPTION>=<VALUE> ...` or `ccmake ..` to set cmake options.
+
+Setting an environment variable of the same name will also override these cmake options
+
+### Options
+
+`CUDA_ENABLED` - Enables building with cuda support
+
+`HIGH_GPU_MEMORY` - Optimizes device performance at the cost of extra device memory
+
+`WERROR` - Enables warnings as Errors
+
+`WCONVERSION` - Enables warnings on implicit numeric conversions
+
+`TRACE` - Traces data to the local directory
+
+`CMAKE_RUN_CLANG_TIDY` - Enables running clang-tidy with the compiler
+
 ## Compile Commands
 
 From the repository root folder run:
