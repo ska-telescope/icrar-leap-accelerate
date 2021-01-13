@@ -21,25 +21,23 @@
  */
 
 #pragma once
-
-#include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
-#include <boost/noncopyable.hpp>
-#include <vector>
+#include <rapidjson/document.h>
+#include <string>
+#include <stdint.h>
 
 namespace icrar
 {
-namespace cpu
-{
-    class CpuLeapCalibrator : public ILeapCalibrator
+    struct Range
     {
-    public:
-        virtual cpu::CalibrateResult Calibrate(
-            const icrar::MeasurementSet& ms,
-            const std::vector<SphericalDirection>& directions,
-            const Range& solutionInterval,
-            double minimumBaselineThreshold,
-            boost::optional<unsigned int> referenceAntenna,
-            bool isFileSystemCacheEnabled) override;
+        std::uint32_t start;
+        std::uint32_t interval;
+        std::uint32_t end;
+
+        Range() = default;
+        Range(int start, int interval, int end);
     };
-} // namespace cpu
+
+    Range ParseRange(const std::string& json);
+
+    Range ParseRange(const rapidjson::Value& doc);
 } // namespace icrar

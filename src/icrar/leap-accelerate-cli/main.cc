@@ -126,6 +126,7 @@ int main(int argc, char** argv)
             auto result = calibrator->Calibrate(
                 args.GetMeasurementSet(),
                 args.GetDirections(),
+                args.GetSolutionInterval(),
                 args.GetMinimumBaselineThreshold(),
                 args.GetReferenceAntenna(),
                 args.IsFileSystemCacheEnabled());

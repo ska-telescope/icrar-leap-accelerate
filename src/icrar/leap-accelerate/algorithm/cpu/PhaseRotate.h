@@ -22,11 +22,12 @@
 
 #pragma once
 
-#include <casacore/ms/MeasurementSets.h>
 
+#include <icrar/leap-accelerate/common/Range.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
 
+#include <casacore/ms/MeasurementSets.h>
 #include <Eigen/Core>
 
 #include <boost/optional.hpp>
@@ -63,6 +64,7 @@ namespace cpu
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<SphericalDirection>& directions,
+        const Range& solutionInterval,
         double minimumBaselineThreshold,
         boost::optional<unsigned int> referenceAntenna,
         bool isFileSystemCacheEnabled);

@@ -60,6 +60,7 @@ namespace cpu
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<SphericalDirection>& directions,
+        const Range& solutionInterval,
         double minimumBaselineThreshold,
         boost::optional<unsigned int> referenceAntenna,
 		bool isFileSystemCacheEnabled)
@@ -69,6 +70,7 @@ namespace cpu
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
+        << "solutionInterval" << solutionInterval.start << ", "
         << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
         << "baseline threshold: " << minimumBaselineThreshold << "m, "
         << "short baselines: " << ms.GetNumShortBaselines(minimumBaselineThreshold) << ", "

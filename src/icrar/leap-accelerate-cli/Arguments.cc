@@ -46,6 +46,7 @@ namespace icrar
         args.referenceAntenna = boost::none;
         args.directions = boost::none;
         args.computeImplementation = std::string("cpu");
+        args.solutionInterval = std::string("[0,-1,-1]"); // Average over all timesteps
         args.readAutocorrelations = true;
         args.minimumBaselineThreshold = 0.0;
         args.mwaSupport = false;
@@ -66,6 +67,7 @@ namespace icrar
         , mwaSupport(args.mwaSupport)
         , useFileSystemCache(args.useFileSystemCache)
     {
+        //Perform type conversions
         if(args.computeImplementation.is_initialized())
         {
             computeImplementation.reset(ComputeImplementation()); //Defualt value ignored
@@ -80,6 +82,11 @@ namespace icrar
             directions = ParseDirections(args.directions.get());
         }
 
+        if(args.solutionInterval.is_initialized())
+        {
+            solutionInterval = ParseRange(args.solutionInterval.get());
+        }
+
         if(args.verbosity.is_initialized())
         {
             verbosity = static_cast<icrar::log::Verbosity>(args.verbosity.get());
@@ -89,6 +96,7 @@ namespace icrar
     ArgumentsValidated::ArgumentsValidated(Arguments&& cliArgs)
     : m_source(InputType::FILENAME)
     , m_computeImplementation(ComputeImplementation::cpu)
+    , m_solutionInterval()
     , m_minimumBaselineThreshold(0)
     , m_readAutocorrelations(false)
     , m_mwaSupport(false)
@@ -198,6 +206,11 @@ namespace icrar
             m_computeImplementation = std::move(args.computeImplementation.get());
         }
 
+        if(args.solutionInterval.is_initialized())
+        {
+            m_solutionInterval = std::move(args.solutionInterval.get());
+        }
+
         if(args.minimumBaselineThreshold.is_initialized())
         {
             m_minimumBaselineThreshold = std::move(args.minimumBaselineThreshold.get());
@@ -261,6 +274,11 @@ namespace icrar
     ComputeImplementation ArgumentsValidated::GetComputeImplementation() const
     {
         return m_computeImplementation;
+    }
+
+    Range ArgumentsValidated::GetSolutionInterval() const
+    {
+        return m_solutionInterval;
     }
 
     boost::optional<unsigned int> ArgumentsValidated::GetReferenceAntenna() const

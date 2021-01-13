@@ -53,7 +53,7 @@ namespace cpu
             ss << "refAnt " << refAnt << "is out of bounds";
             throw exception(ss.str(), __FILE__, __LINE__);
         }
-        if(fg[refAnt])
+        if(fg(refAnt))
         {
             std::stringstream ss;
             ss << "refAnt " << refAnt << " is flagged";

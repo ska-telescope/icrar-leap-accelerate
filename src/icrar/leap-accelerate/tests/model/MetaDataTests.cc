@@ -69,8 +69,9 @@ namespace icrar
 
         void TestRawReadFromFile()
         {
+            std::cout << "metadata" << std::endl;
             auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())), boost::none);
-
+            std::cout << "asserts" << std::endl;
             ASSERT_EQ(102, ms->GetNumStations());
             ASSERT_EQ(5253, ms->GetNumBaselines());
             ASSERT_EQ(48, meta.GetConstants().channels);
@@ -84,6 +85,7 @@ namespace icrar
             ASSERT_NEAR(5.759587e-01, meta.GetConstants().phase_centre_ra_rad, PRECISION);
             ASSERT_NEAR(1.047198e-01, meta.GetConstants().phase_centre_dec_rad, PRECISION);
 
+            std::cout << "check A" << std::endl;
             // Check A, I
             const int expectedK = 4754;
             ASSERT_EQ(expectedK, meta.GetA().rows());
@@ -92,6 +94,7 @@ namespace icrar
             ASSERT_EQ(expectedK, meta.GetAd().cols());
             ASSERT_EQ(expectedK-1, meta.GetI().rows());
 
+            std::cout << "check A1" << std::endl;
             // Check A1, I1
             const int expectedK1 = 98;
             ASSERT_EQ(expectedK1, meta.GetA1().rows());

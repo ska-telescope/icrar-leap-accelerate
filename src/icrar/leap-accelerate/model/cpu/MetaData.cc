@@ -81,14 +81,14 @@ namespace cpu
         m_avgData = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
         LOG(info) << "avg_data: " << memory_amount(m_avgData.size() * sizeof(std::complex<double>));
 
-
         auto flaggedBaselines = ms.GetFilteredBaselines(m_minimumBaselineThreshold);
-
+        
         //select the first epoch only
         auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1); //TODO(calgray): assuming epoch indices are sorted
+
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumnRange(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
-        
+
         LOG(info) << "Calculating PhaseMatrix A1";
         std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), flaggedBaselines, m_constants.referenceAntenna);
         trace_matrix(m_A1, "A1");
