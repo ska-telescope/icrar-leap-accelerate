@@ -248,13 +248,13 @@ namespace icrar
                     throw icrar::invalid_argument_exception("invalid PhaseMatrixFunction implementation", "impl", __FILE__, __LINE__);
                 }
             }
-            catch(std::invalid_argument& e)
+            catch(invalid_argument_exception& e)
             {
                 SUCCEED();
             }
             catch(...)
             {
-                FAIL() << "Expected std::invalid_argument";
+                FAIL() << "Expected icrar::invalid_argument_exception";
             }
         }
 
