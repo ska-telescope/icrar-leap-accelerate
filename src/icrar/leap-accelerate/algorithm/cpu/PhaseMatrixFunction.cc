@@ -40,7 +40,7 @@ namespace cpu
     {
         if(a1.size() != a2.size() && a1.size() != fg.size())
         {
-            throw exception("a1 and a2 must be equal size", __FILE__, __LINE__);
+            throw invalid_argument_exception("a1 and a2 must be equal size", "a", __FILE__, __LINE__);
         }
 
         auto unique = std::set<std::int32_t>(a1.begin(), a1.end());
@@ -50,14 +50,14 @@ namespace cpu
         if(refAnt >= nAnt)
         {
             std::stringstream ss;
-            ss << "refAnt " << refAnt << "is out of bounds";
-            throw exception(ss.str(), __FILE__, __LINE__);
+            ss << "refAnt " << refAnt << " is out of bounds";
+            throw invalid_argument_exception(ss.str(), "refAnt", __FILE__, __LINE__);
         }
         if(fg(refAnt))
         {
             std::stringstream ss;
             ss << "refAnt " << refAnt << " is flagged";
-            throw exception(ss.str(), __FILE__, __LINE__);
+            throw invalid_argument_exception(ss.str(), "refAnt", __FILE__, __LINE__);
         }
 
         Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, std::max(a1.maxCoeff(), a2.maxCoeff()) + 1);
