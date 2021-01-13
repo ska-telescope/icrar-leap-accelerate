@@ -24,7 +24,6 @@
 #include "PhaseMatrixFunction.h"
 
 #include <icrar/leap-accelerate/exception/exception.h>
-
 #include <sstream>
 #include <set>
 
@@ -53,7 +52,7 @@ namespace cpu
             ss << "refAnt " << refAnt << " is out of bounds";
             throw invalid_argument_exception(ss.str(), "refAnt", __FILE__, __LINE__);
         }
-        if(fg(refAnt))
+        if(refAnt > -1 && fg(refAnt))
         {
             std::stringstream ss;
             ss << "refAnt " << refAnt << " is flagged";
