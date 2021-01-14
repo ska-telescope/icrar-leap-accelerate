@@ -114,7 +114,7 @@ namespace cuda
 
         profiling::timer calibration_timer;
         profiling::timer integration_read_timer;
-        auto output_calibrations = std::vector<std::vector<cpu::DirectionCalibration>>();
+        auto output_calibrations = std::vector<std::vector<cpu::BeamCalibration>>();
         auto input_queue = std::vector<cuda::DeviceIntegration>();
 
         // Flooring to remove incomplete measurements
@@ -209,7 +209,7 @@ namespace cuda
             LOG(info) << "Finished calibration in " << calibration_timer;
         }
 
-        return output_calibrations;
+        return cpu::CalibrationCollection(output_calibrations);
     }
 
     void CudaLeapCalibrator::PhaseRotate(
@@ -217,7 +217,7 @@ namespace cuda
         DeviceMetaData& deviceMetadata,
         const SphericalDirection& direction,
         std::vector<cuda::DeviceIntegration>& input,
-        std::vector<cpu::DirectionCalibration>& output_calibrations)
+        std::vector<cpu::BeamCalibration>& output_calibrations)
     {
         for(DeviceIntegration& integration : input)
         {

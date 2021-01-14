@@ -36,7 +36,7 @@ namespace icrar
     {
         class Integration;
         class IntegrationResult;
-        class DirectionCalibration;
+        class BeamCalibration;
     }
 
     /**

@@ -31,24 +31,6 @@ namespace icrar
 {
 namespace cpu
 {
-    void DirectionCalibration::Serialize(std::ostream& os) const
-    {
-        constexpr uint32_t PRECISION = 15;
-        os.precision(PRECISION);
-        os.setf(std::ios::fixed);
-
-        rapidjson::StringBuffer s;
-
-#define PRETTY_WRITER 1
-#ifdef PRETTY_WRITER
-        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
-#else
-        rapidjson::Writer<rapidjson::StringBuffer> writer(s);
-#endif
-        Write(writer);
-        os << s.GetString() << std::endl;
-    }
-
     void PrintResult(const CalibrationCollection& result, std::ostream& out)
     {
         result.Serialize(out);

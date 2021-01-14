@@ -51,7 +51,7 @@ namespace icrar
     {
         class Integration;
         class IntegrationResult;
-        class DirectionCalibration;
+        class BeamCalibration;
         class MetaData;
     }
     namespace cuda
@@ -93,7 +93,7 @@ namespace cuda
             DeviceMetaData& deviceMetadata,
             const SphericalDirection& direction,
             std::vector<cuda::DeviceIntegration>& input,
-            std::vector<cpu::DirectionCalibration>& output_calibrations);
+            std::vector<cpu::BeamCalibration>& output_calibrations);
 
         /**
          * @brief Rotates oldUVW by dd into UVW

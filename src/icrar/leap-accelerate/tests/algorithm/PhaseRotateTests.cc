@@ -106,15 +106,15 @@ namespace icrar
 
             auto expected = getExpected();
 
-            ASSERT_EQ(directions.size(), calibrations.GetResults().size());
+            ASSERT_EQ(directions.size(), calibrations.GetCalibrations().size());
             for(size_t i = 0; i < expected.size(); i++)
             {
                 SphericalDirection expectedDirection;
                 std::vector<double> expectedCalibration;
                 std::tie(expectedDirection, expectedCalibration) = expected[i];
 
-                ASSERT_EQ(1, calibrations.GetResults()[i].size());
-                const auto& result = calibrations.GetResults()[i].front();
+                ASSERT_EQ(1, calibrations.GetCalibrations().size());
+                const auto& result = calibrations.GetCalibrations()[i].GetBeamCalibrations().front();
 
                 ASSERT_EQ(expectedDirection(0), result.GetDirection()(0));
                 ASSERT_EQ(expectedDirection(1), result.GetDirection()(1));

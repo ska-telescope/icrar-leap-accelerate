@@ -82,7 +82,7 @@ namespace cpu
 
         profiling::timer calibration_timer;
 
-        auto output_calibrations = std::vector<std::vector<cpu::DirectionCalibration>>();
+        auto output_calibrations = std::vector<std::vector<cpu::BeamCalibration>>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
 
         profiling::timer integration_read_timer;
@@ -156,7 +156,7 @@ namespace cpu
         cpu::MetaData& metadata,
         const SphericalDirection& direction,
         std::vector<cpu::Integration>& input,
-        std::vector<cpu::DirectionCalibration>& output_calibrations)
+        std::vector<cpu::BeamCalibration>& output_calibrations)
     {
         for(auto& integration : input)
         {

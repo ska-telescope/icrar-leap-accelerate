@@ -46,7 +46,7 @@ namespace icrar
     {
         class Integration;
         class IntegrationResult;
-        class DirectionCalibration;
+        class BeamCalibration;
     } // namespace cpu
 } // namespace icrar
 
@@ -81,7 +81,7 @@ namespace cpu
         MetaData& metadata,
         const SphericalDirection& direction,
         std::vector<Integration>& input,
-        std::vector<DirectionCalibration>& output_calibrations);
+        std::vector<BeamCalibration>& output_calibrations);
 
     /**
      * @brief Performs averaging over each baseline, channel and polarization.
