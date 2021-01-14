@@ -126,6 +126,17 @@ namespace cpu
         Eigen::MatrixXcd m_avgData; // matrix of size (baselines, polarizations), late initialized
     
     public:
+        
+        /**
+         * @brief Construct a new MetaData object. SetUVW() and SetDirection() must be called after construction
+         * 
+         * @param ms 
+         * @param minimumBaselineThreshold
+         * @param useCache
+         */
+        MetaData(const icrar::MeasurementSet& ms, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool useCache = true);
+
+
         /**
          * @brief Construct a new MetaData object. SetDirection() must be called after construction
          * 

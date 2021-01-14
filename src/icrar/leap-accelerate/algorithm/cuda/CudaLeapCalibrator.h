@@ -51,7 +51,7 @@ namespace icrar
     {
         class Integration;
         class IntegrationResult;
-        class CalibrationResult;
+        class DirectionCalibration;
         class MetaData;
     }
     namespace cuda
@@ -77,7 +77,7 @@ namespace cuda
         CudaLeapCalibrator();
         ~CudaLeapCalibrator() override;
 
-        virtual cpu::CalibrateResult Calibrate(
+        virtual cpu::CalibrationCollection Calibrate(
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             const Range& solutionInterval,
@@ -93,8 +93,7 @@ namespace cuda
             DeviceMetaData& deviceMetadata,
             const SphericalDirection& direction,
             std::vector<cuda::DeviceIntegration>& input,
-            std::vector<cpu::IntegrationResult>& output_integrations,
-            std::vector<cpu::CalibrationResult>& output_calibrations);
+            std::vector<cpu::DirectionCalibration>& output_calibrations);
 
         /**
          * @brief Rotates oldUVW by dd into UVW

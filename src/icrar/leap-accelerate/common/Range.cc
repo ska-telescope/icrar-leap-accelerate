@@ -25,11 +25,29 @@
 
 namespace icrar
 {
+    Range::Range(int start, int end)
+    : Range(start, end == -1 ? -1 : end - start, end)
+    {}
+
     Range::Range(int start, int interval, int end)
     {
         if(start < -1) throw icrar::exception("expected a positive integer or -1", __FILE__, __LINE__);
         if(interval < -1) throw icrar::exception("expected a positive integer or -1", __FILE__, __LINE__);
         if(end < -1) throw icrar::exception("expected a positive integer or -1", __FILE__, __LINE__);
+
+        //forward sequences only
+        if(end != -1 && start >= end)
+        {
+            throw icrar::exception("range start must be greater than end", __FILE__, __LINE__);
+        }
+        if(interval > (end - start))
+        {
+            throw icrar::exception("range increment out of bounds", __FILE__, __LINE__);
+        }
+        if(interval == -1)
+        {
+            interval = end - start;
+        }
 
         this->start = start;
         this->interval = interval;

@@ -36,7 +36,7 @@ namespace icrar
     {
         class Integration;
         class IntegrationResult;
-        class CalibrationResult;
+        class DirectionCalibration;
     }
 
     /**
@@ -57,9 +57,9 @@ namespace icrar
          * @param solutionInterval
          * @param referenceAntenna the reference antenna of metrix A1
          * @param isFileSystemCacheEnabled enable to use the filesystem to cache data between calibration calls
-         * @return CalibrateResult the calibrationn result
+         * @return CalibrationCollection the calibrationn result
          */
-        virtual cpu::CalibrateResult Calibrate(
+        virtual cpu::CalibrationCollection Calibrate(
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             const Range& solutionInterval,

@@ -50,48 +50,22 @@ namespace icrar
 namespace cpu
 {
     /**
-     * @brief Contains the results of the integration stage
-     * 
-     */
-    class IntegrationResult
-    {
-        int m_integrationNumber;
-        SphericalDirection m_direction;
-
-        boost::optional<std::vector<Eigen::VectorXd>> m_data;
-
-    public:
-        IntegrationResult(
-            int integrationNumber,
-            SphericalDirection direction,
-            boost::optional<std::vector<Eigen::VectorXd>> data)
-            : m_integrationNumber(integrationNumber)
-            , m_direction(std::move(direction))
-            , m_data(std::move(data))
-        {
-
-        }
-
-        int GetIntegrationNumber() const { return m_integrationNumber; }
-    };
-
-    /**
      * @brief Contains the results of leap calibration
      * 
      */
-    class CalibrationResult
+    class DirectionCalibration
     {
         SphericalDirection m_direction;
         Eigen::MatrixXd m_calibration;
 
     public:
             /**
-         * @brief Construct a new Calibration Result object
+         * @brief Construct a new Direction Calibration object
          * 
          * @param direction direciton of calibration
          * @param calibration calibration of each antenna for the given direction 
          */
-        CalibrationResult(
+        DirectionCalibration(
             SphericalDirection direction,
             Eigen::MatrixXd calibration)
             : m_direction(std::move(direction))
@@ -115,9 +89,8 @@ namespace cpu
 
         void Serialize(std::ostream& os) const;
 
-    private:
         template<typename Writer>
-        void CreateJsonStrFormat(Writer& writer) const
+        void Write(Writer& writer) const
         {
             assert(m_calibration.cols() == 1);
 
@@ -130,7 +103,7 @@ namespace cpu
             }
             writer.EndArray();
 
-            writer.String("data");
+            writer.String("calibration");
             writer.StartArray();
             for(int i = 0; i < m_calibration.rows(); ++i)
             {
@@ -142,11 +115,68 @@ namespace cpu
         }
     };
 
-    using CalibrateResult = std::pair<
-        std::vector<std::vector<cpu::IntegrationResult>>,
-        std::vector<std::vector<cpu::CalibrationResult>>
-    >;
+    // class DirectionCalibration {}
 
-    void PrintResult(const CalibrateResult& result, std::ostream& out);
+    // class Calibration
+    // {
+    //     std::vector<cpu::DirectionCalibration> m_directionCalibrations;
+    // }
+
+    /**
+     * @brief Contains a collection of calibrations
+     * 
+     */
+    class CalibrationCollection
+    {
+        std::vector<std::vector<cpu::DirectionCalibration>> m_calibrations;
+    public:
+        CalibrationCollection(const std::vector<std::vector<cpu::DirectionCalibration>>& calibrations)
+        {
+            m_calibrations = calibrations;
+        }
+
+        const std::vector<std::vector<cpu::DirectionCalibration>>& GetResults() const
+        {
+            return m_calibrations;
+        }
+
+        void Serialize(std::ostream& os) const
+        {
+            constexpr uint32_t PRECISION = 15;
+            os.precision(PRECISION);
+            os.setf(std::ios::fixed);
+
+            rapidjson::StringBuffer s;
+
+#ifdef PRETTY_WRITER
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
+#else
+            rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+#endif
+            Write(writer);
+            os << s.GetString() << std::endl;
+        }
+
+        template<typename Writer>
+        void Write(Writer& writer) const
+        {
+            for(auto& calibrations : m_calibrations)
+            {
+                writer.StartObject();
+                //write.String("epoch");
+                //write.Double();
+                writer.String("calibration");
+                for(auto& calibration : calibrations)
+                {
+                    calibration.Write(writer);
+                }
+                writer.EndObject();
+            }
+        }
+    };
+
+    //using CalibrationCollection = std::vector<std::vector<cpu::DirectionCalibration>>;
+
+    void PrintResult(const CalibrationCollection& result, std::ostream& out);
 }
 }

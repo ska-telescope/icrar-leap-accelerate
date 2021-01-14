@@ -28,7 +28,7 @@ namespace icrar
 {
 namespace cpu
 {
-    cpu::CalibrateResult CpuLeapCalibrator::Calibrate(
+    cpu::CalibrationCollection CpuLeapCalibrator::Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<SphericalDirection>& directions,
         const Range& solutionInterval,

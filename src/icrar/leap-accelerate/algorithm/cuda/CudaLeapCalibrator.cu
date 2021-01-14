@@ -90,7 +90,7 @@ namespace cuda
         //checkCudaErrors(cudaDeviceReset());
     }
 
-    cpu::CalibrateResult CudaLeapCalibrator::Calibrate(
+    cpu::CalibrationCollection CudaLeapCalibrator::Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<SphericalDirection>& directions,
         const Range& solutionInterval,
@@ -114,8 +114,7 @@ namespace cuda
 
         profiling::timer calibration_timer;
         profiling::timer integration_read_timer;
-        auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
-        auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
+        auto output_calibrations = std::vector<std::vector<cpu::DirectionCalibration>>();
         auto input_queue = std::vector<cuda::DeviceIntegration>();
 
         // Flooring to remove incomplete measurements
@@ -131,7 +130,6 @@ namespace cuda
             auto integration = cuda::HostIntegration(0, ms, 0, ms.GetNumChannels(), ms.GetNumRows(), ms.GetNumPols());
             for(int i = 0; i < directions.size(); ++i)
             {
-                output_integrations.emplace_back();
                 output_calibrations.emplace_back();
             }
             LOG(info) << "Read integration data in " << integration_read_timer;
@@ -205,14 +203,13 @@ namespace cuda
                     deviceMetadata,
                     directions[i],
                     input_queue,
-                    output_integrations[i],
                     output_calibrations[i]);
             }
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
             LOG(info) << "Finished calibration in " << calibration_timer;
         }
 
-        return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
+        return output_calibrations;
     }
 
     void CudaLeapCalibrator::PhaseRotate(
@@ -220,8 +217,7 @@ namespace cuda
         DeviceMetaData& deviceMetadata,
         const SphericalDirection& direction,
         std::vector<cuda::DeviceIntegration>& input,
-        std::vector<cpu::IntegrationResult>& output_integrations,
-        std::vector<cpu::CalibrationResult>& output_calibrations)
+        std::vector<cpu::DirectionCalibration>& output_calibrations)
     {
         for(DeviceIntegration& integration : input)
         {

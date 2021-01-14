@@ -39,7 +39,7 @@ namespace icrar
 {
 namespace cpu
 {
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool useCache)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool useCache)
     : m_constants({})
     , m_minimumBaselineThreshold(minimumBaselineThreshold)
     {
@@ -136,13 +136,18 @@ namespace cpu
         {
             LOG(warning) << "Ad1 is degenerate";
         }
+    }
 
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool useCache)
+    : MetaData(ms, refAnt, minimumBaselineThreshold, useCache)
+    {
         SetUVW(uvws);
     }
 
     MetaData::MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool useCache)
     : MetaData(ms, uvws, refAnt, minimumBaselineThreshold, useCache)
     {
+        SetUVW(uvws);
         SetDirection(direction);
         CalcUVW();
     }

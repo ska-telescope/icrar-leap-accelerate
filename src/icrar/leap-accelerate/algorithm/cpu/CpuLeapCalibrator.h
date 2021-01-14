@@ -33,7 +33,7 @@ namespace cpu
     class CpuLeapCalibrator : public ILeapCalibrator
     {
     public:
-        virtual cpu::CalibrateResult Calibrate(
+        virtual cpu::CalibrationCollection Calibrate(
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             const Range& solutionInterval,

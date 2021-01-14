@@ -27,6 +27,16 @@
 
 namespace icrar
 {
+    // template<typename Rows, typename Numeric>
+    // struct PositionVector
+    // {
+    //     Eigen::Vector<Rows, 1, Numeric> Position;
+    //     Eigen::Vector<Rows, 1, Numeric> Direction;
+    // }
+    // using PositionVector1d = PositionVector<1,double>;
+    // using PositionVector2d = PositionVector<2,double>;
+    // using PositionVector3d = PositionVector<3,double>;
+
     struct Range
     {
         std::int32_t start;
@@ -34,6 +44,7 @@ namespace icrar
         std::int32_t end;
 
         Range() = default;
+        Range(int start, int end);
         Range(int start, int interval, int end);
     };
 
