@@ -127,8 +127,8 @@ namespace cuda
             throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
         }
 
-        auto integration = cuda::HostIntegration(0, ms, 0, ms.GetNumChannels(), ms.GetNumRows(), ms.GetNumPols());
         {
+            auto integration = cuda::HostIntegration(0, ms, 0, ms.GetNumChannels(), ms.GetNumRows(), ms.GetNumPols());
             for(int i = 0; i < directions.size(); ++i)
             {
                 output_integrations.emplace_back();
@@ -211,7 +211,6 @@ namespace cuda
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
             LOG(info) << "Finished calibration in " << calibration_timer;
         }
-        cudaHostUnregister(integration.GetVis().data());
 
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
