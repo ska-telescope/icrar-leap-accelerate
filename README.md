@@ -118,6 +118,14 @@ With tracing to file:
 
 `cmake .. -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release`
 
+#### Deploy
+
+In hyades03:
+
+`cd deploy`
+
+`./build.sh -s hyades -c /usr/local/cuda-10.0/ -D "-DCUDA_ENABLED=TRUE -DHIGH_GPU_MEMORY=TRUE"`
+
 ## Test
 
 Testing provided via googletest. To test using CTest use the following command in build/linux:

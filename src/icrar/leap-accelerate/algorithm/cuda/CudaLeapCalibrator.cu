@@ -48,7 +48,6 @@
 #include <math_constants.h>
 #include <cuComplex.h>
 #include <cublas_v2.h>
-#include <cublasLt.h>
 #include <thrust/complex.h>
 
 #include <boost/math/constants/constants.hpp>
