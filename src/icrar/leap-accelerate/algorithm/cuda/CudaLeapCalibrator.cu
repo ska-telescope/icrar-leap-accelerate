@@ -257,11 +257,12 @@ namespace cuda
         const Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>> UVWs,
         Eigen::Map<Eigen::Matrix<double, 3, Eigen::Dynamic>> RotatedUVWs)
     {
-        // Compute rows in parallel
-        int row = blockDim.x * blockIdx.x + threadIdx.x;
-        if(row < UVWs.rows())
+        // Compute cols in parallel
+        // TODO: UVWs is in transpose form
+        int col = blockDim.x * blockIdx.x + threadIdx.x;
+        if(col < UVWs.cols())
         {
-            RotatedUVWs.col(row) = dd * UVWs.col(row);
+            RotatedUVWs.col(col) = dd * UVWs.col(col);
         }
     }
 
