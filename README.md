@@ -1,7 +1,6 @@
 # LEAP Accelerate
 
 ![License](https://img.shields.io/badge/license-LGPL_2.1-blue)
-[![Build Status](https://travis-ci.com/ICRAR/leap-accelerate.svg?token=1YzqBsytWggkjwq3sjZP&branch=master)](https://travis-ci.com/ICRAR/leap-accelerate)
 
 A calibration tool for Low-frequency Excision of the Atmosphere in Parallel ([LEAP](https://arxiv.org/abs/1807.04685)) utilizing GPGPU acceleration.
 
@@ -47,7 +46,27 @@ LEAP-Accelerate includes:
 * sudo apt-get install gcc-6 g++-6 gdb doxygen casacore-dev libboost1.58-all-dev libgsl-dev
 * https://developer.nvidia.com/cuda-92-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1604&target_type=deblocal
 
-## Compilation
+## CMake Options
+
+Use `cmake .. -D<OPTION>=<VALUE> ...` or `ccmake ..` to set cmake options.
+
+Setting an environment variable of the same name will also override these cmake options
+
+### Options
+
+`CUDA_ENABLED` - Enables building with cuda support
+
+`HIGH_GPU_MEMORY` - Optimizes device performance at the cost of extra device memory
+
+`WERROR` - Enables warnings as Errors
+
+`WCONVERSION` - Enables warnings on implicit numeric conversions
+
+`TRACE` - Traces data to the local directory
+
+`CMAKE_RUN_CLANG_TIDY` - Enables running clang-tidy with the compiler
+
+## Compile Commands
 
 From the repository root folder run:
 
@@ -98,6 +117,14 @@ With tracing to file:
 `mkdir -p build && cd build`
 
 `cmake .. -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release`
+
+#### Deploy
+
+In hyades03:
+
+`cd deploy`
+
+`./build.sh -s hyades -c /usr/local/cuda-10.0/ -D "-DCUDA_ENABLED=TRUE -DHIGH_GPU_MEMORY=TRUE"`
 
 ## Test
 

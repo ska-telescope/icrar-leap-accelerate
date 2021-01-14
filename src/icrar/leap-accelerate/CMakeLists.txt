@@ -54,9 +54,8 @@ set(sources
 
     algorithm/LeapCalibratorFactory.cc
     algorithm/cpu/CpuLeapCalibrator.cc
-    
+    algorithm/cpu/Calibrate.cc
     algorithm/cpu/PhaseMatrixFunction.cc
-    algorithm/cpu/PhaseRotate.cc
     )
     
     set(cuda_headers
@@ -138,8 +137,8 @@ if(CUDA_ENABLED)
   target_link_libraries(${TARGET_NAME} ${CUDA_LIBRARIES})
   target_link_libraries(${TARGET_NAME} cublas)
   if(CUDA_VERSION_MAJOR VERSION_GREATER 9)
-  target_link_libraries(${TARGET_NAME} cublasLt)
-  #target_link_libraries(${TARGET_NAME} ${CUDA_cusolver_LIBRARY})
+    target_link_libraries(${TARGET_NAME} cublasLt)
+    #target_link_libraries(${TARGET_NAME} ${CUDA_cusolver_LIBRARY})
   endif()
 endif()
 

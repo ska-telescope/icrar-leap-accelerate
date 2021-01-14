@@ -20,7 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
-#include "PhaseRotate.h"
+#include "Calibrate.h"
 
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
@@ -180,13 +180,14 @@ namespace cpu
 
         Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAnglesI1;
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
+
+        Eigen::VectorXd ACal1 = metadata.GetA() * cal1;
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
-            double sum = metadata.GetA()(n, Eigen::all) * cal1;
-            dInt(n, Eigen::all) = icrar::arg(std::exp(std::complex<double>(0, -sum * two_pi<double>())) * metadata.GetAvgData()(n, Eigen::all));
+            dInt.row(n) = icrar::arg(std::exp(std::complex<double>(0, -ACal1(n) * two_pi<double>())) * metadata.GetAvgData().row(n));
         }
 
-        Eigen::VectorXd deltaPhaseColumn = dInt(Eigen::all, 0); // 1st pol only
+        Eigen::VectorXd deltaPhaseColumn = dInt.col(0); // 1st pol only
         deltaPhaseColumn.conservativeResize(deltaPhaseColumn.size() + 1);
         deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0;
 
