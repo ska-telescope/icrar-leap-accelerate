@@ -113,6 +113,8 @@ namespace cpu
         //from epoch: 0 -> interval 
         for(size_t solution = 0; solution < solutions; ++solution)
         {
+            output_calibrations.emplace_back();
+
             //Iterate solutions
             const Integration integration = Integration(
                     integrationNumber,
@@ -122,13 +124,13 @@ namespace cpu
                     validatedSolutionInterval.interval * ms.GetNumBaselines(),
                     ms.GetNumPols());
 
-            for(size_t i = 0; i < directions.size(); ++i)
+            for(size_t direction = 0; direction < directions.size(); ++direction)
             {
                 auto queue = std::vector<cpu::Integration>();
                 queue.push_back(integration);
                 input_queues.push_back(queue);
 
-                output_calibrations.emplace_back();
+                //output_calibrations[solution].emplace_back();
             }
 
             LOG(info) << "Read integration data in " << integration_read_timer;
@@ -143,7 +145,7 @@ namespace cpu
                 metadata.SetDirection(directions[i]);
                 metadata.CalcUVW();
                 metadata.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
-                icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_calibrations[i]);
+                icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_calibrations[solution]);
             }
 
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;

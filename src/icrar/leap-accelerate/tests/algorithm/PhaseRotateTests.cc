@@ -94,7 +94,7 @@ namespace icrar
             const double THRESHOLD = 1e-11;
 
             auto metadata = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())));
-            std::vector<casacore::MVDirection> directions =
+            std::vector<casacore::MVDirection> directions = //TODO: use icrar Direction
             {
                 { -0.4606549305661674,-0.29719233792392513 },
                 { -0.753231018062671,-0.44387635324622354 },
@@ -102,19 +102,26 @@ namespace icrar
                 { -0.753231018062671,-0.44387635324622354 },
             };
 
-            auto calibrations = LeapCalibratorFactory::Create(impl)->Calibrate(*ms, ToDirectionVector(directions), solutionInterval, 0.0, 0, false);
+            auto calibrations = LeapCalibratorFactory::Create(impl)->Calibrate(
+                *ms,
+                ToDirectionVector(directions),
+                solutionInterval,
+                0.0,
+                0,
+                false);
 
             auto expected = getExpected();
 
-            ASSERT_EQ(directions.size(), calibrations.GetCalibrations().size());
+            ASSERT_EQ(1, calibrations.GetCalibrations().size());
+            auto calibration = calibrations.GetCalibrations()[0];
+            ASSERT_EQ(directions.size(), calibration.GetBeamCalibrations().size());
+
             for(size_t i = 0; i < expected.size(); i++)
             {
                 SphericalDirection expectedDirection;
                 std::vector<double> expectedCalibration;
                 std::tie(expectedDirection, expectedCalibration) = expected[i];
-
-                ASSERT_EQ(1, calibrations.GetCalibrations().size());
-                const auto& result = calibrations.GetCalibrations()[i].GetBeamCalibrations().front();
+                const cpu::BeamCalibration& result = calibration.GetBeamCalibrations()[i];
 
                 ASSERT_EQ(expectedDirection(0), result.GetDirection()(0));
                 ASSERT_EQ(expectedDirection(1), result.GetDirection()(1));

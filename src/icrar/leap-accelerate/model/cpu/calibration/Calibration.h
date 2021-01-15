@@ -45,9 +45,26 @@ namespace cpu
         {
         }
 
-        const std::vector<BeamCalibration> GetBeamCalibrations() const
+        const std::vector<BeamCalibration>& GetBeamCalibrations() const
         {
             return m_beamCalibrations;
+        }
+
+        void Serialize(std::ostream& os) const
+        {
+            constexpr uint32_t PRECISION = 15;
+            os.precision(PRECISION);
+            os.setf(std::ios::fixed);
+
+            rapidjson::StringBuffer s;
+
+#ifdef PRETTY_WRITER
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
+#else
+            rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+#endif
+            Write(writer);
+            os << s.GetString() << std::endl;
         }
 
         template<typename Writer>

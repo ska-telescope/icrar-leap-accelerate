@@ -105,7 +105,7 @@ namespace cpu
             }
             writer.EndArray();
 
-            writer.String("calibration");
+            writer.String("beamCalibration");
             writer.StartArray();
             for(int i = 0; i < m_calibration.rows(); ++i)
             {
