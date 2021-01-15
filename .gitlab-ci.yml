@@ -294,9 +294,9 @@ test_memcheck:
   script:
     - cd build
     - ctest -T memcheck
-  only:
-    - tags
-    - schedules
+  # only:
+  #   - tags
+  #   - schedules
 
 pages:
   extends: .required_dependencies
