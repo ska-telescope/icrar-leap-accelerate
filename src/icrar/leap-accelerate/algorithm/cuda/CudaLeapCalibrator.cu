@@ -93,7 +93,7 @@ namespace cuda
     cpu::CalibrationCollection CudaLeapCalibrator::Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<SphericalDirection>& directions,
-        const Range& solutionInterval,
+        const Slice& solutionInterval,
         double minimumBaselineThreshold,
         boost::optional<unsigned int> referenceAntenna,
         bool isFileSystemCacheEnabled)

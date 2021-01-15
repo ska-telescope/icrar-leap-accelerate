@@ -78,7 +78,7 @@ namespace cpu
          * 
          * @return const Eigen::MatrixXd 
          */
-        const Eigen::MatrixXd& GetCalibration() const { return m_calibration; }
+        const Eigen::MatrixXd& GetPhaseCalibration() const { return m_calibration; }
 
         void Serialize(std::ostream& os) const
         {
@@ -118,7 +118,6 @@ namespace cpu
                 writer.Double(m_calibration(i,0));
             }
             writer.EndArray();
-
             writer.EndObject();
         }
     };

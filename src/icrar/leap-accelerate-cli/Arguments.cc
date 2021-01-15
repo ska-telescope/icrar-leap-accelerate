@@ -276,7 +276,7 @@ namespace icrar
         return m_computeImplementation;
     }
 
-    Range ArgumentsValidated::GetSolutionInterval() const
+    Slice ArgumentsValidated::GetSolutionInterval() const
     {
         return m_solutionInterval;
     }

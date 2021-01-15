@@ -55,6 +55,13 @@ namespace cpu
                 m_calibrations.emplace_back(calibration);
             }
         }
+        CalibrationCollection(const std::vector<std::vector<std::pair<SphericalDirection, std::vector<double>>>>& calibrations)
+        {
+            for(const auto& calibration : calibrations)
+            {
+                m_calibrations.emplace_back(calibration);
+            }
+        }
 
         const std::vector<cpu::Calibration>& GetCalibrations() const
         {

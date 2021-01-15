@@ -75,7 +75,7 @@ namespace icrar
                 casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
             };
 
-            auto output = LeapCalibratorFactory::Create(impl)->Calibrate(*ms, ToDirectionVector(directions), Range(0,1,1), 0.0, 0, false);
+            auto output = LeapCalibratorFactory::Create(impl)->Calibrate(*ms, ToDirectionVector(directions), Slice(0,1,1), 0.0, 0, false);
         }
     };
 

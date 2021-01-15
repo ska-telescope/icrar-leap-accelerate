@@ -91,7 +91,7 @@ namespace icrar
         boost::optional<unsigned int> referenceAntenna;
         boost::optional<std::vector<SphericalDirection>> directions;
         boost::optional<ComputeImplementation> computeImplementation;
-        boost::optional<Range> solutionInterval;
+        boost::optional<Slice> solutionInterval;
         boost::optional<double> minimumBaselineThreshold;
         boost::optional<bool> readAutocorrelations;
         boost::optional<bool> mwaSupport;
@@ -116,7 +116,7 @@ namespace icrar
         boost::optional<unsigned int> m_referenceAntenna; // Index of the reference antenna
         std::vector<SphericalDirection> m_directions; // Calibration directions
         ComputeImplementation m_computeImplementation; // Specifies the implementation for calibration computation
-        Range m_solutionInterval; // Specifies the interval to calculate solutions for
+        Slice m_solutionInterval; // Specifies the interval to calculate solutions for
         double m_minimumBaselineThreshold; // Minimum baseline length otherwise flagged at runtime
         bool m_readAutocorrelations; // Adjusts the number of baselines calculation to include autocorrelations
         bool m_mwaSupport; // Negates baselines when enabled
@@ -166,7 +166,7 @@ namespace icrar
 
         ComputeImplementation GetComputeImplementation() const;
 
-        Range GetSolutionInterval() const;
+        Slice GetSolutionInterval() const;
 
         boost::optional<unsigned int> GetReferenceAntenna() const;
 

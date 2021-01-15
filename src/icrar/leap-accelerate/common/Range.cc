@@ -25,17 +25,17 @@
 
 namespace icrar
 {
-    Range::Range(int interval)
-    : Range(0, interval, -1)
+    Slice::Slice(int interval)
+    : Slice(0, interval, -1)
     {}
 
-    Range::Range(int start, int end)
-    : Range(start, end == -1 ? -1 : end - start, end)
+    Slice::Slice(int start, int end)
+    : Slice(start, end == -1 ? -1 : end - start, end)
     {}
 
-    Range::Range(int start, int interval, int end)
+    Slice::Slice(int start, int interval, int end)
     {
-        if(start < -1) throw icrar::exception("expected a positive integer or -1", __FILE__, __LINE__);
+        if(start < 0) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
         if(interval < -1) throw icrar::exception("expected a positive integer or -1", __FILE__, __LINE__);
         if(interval == 0) throw icrar::exception("expected a non zero integer", __FILE__, __LINE__);
         if(end < -1) throw icrar::exception("expected a positive integer or -1", __FILE__, __LINE__);
@@ -45,13 +45,16 @@ namespace icrar
         {
             throw icrar::exception("range start must be greater than end", __FILE__, __LINE__);
         }
-        if(interval > (end - start))
+        if(end != -1)
         {
-            throw icrar::exception("range increment out of bounds", __FILE__, __LINE__);
-        }
-        if(interval == -1)
-        {
-            interval = end - start;
+            if(interval == -1)
+            {
+                interval = end - start;
+            }
+            if(interval > (end - start))
+            {
+                throw icrar::exception("range increment out of bounds", __FILE__, __LINE__);
+            }
         }
 
         this->start = start;
@@ -59,14 +62,14 @@ namespace icrar
         this->end = end;
     }
 
-    Range ParseRange(const std::string& json)
+    Slice ParseRange(const std::string& json)
     {
         rapidjson::Document doc;
         doc.Parse(json.c_str());
         return ParseRange(doc);
     }
 
-    Range ParseRange(const rapidjson::Value& doc)
+    Slice ParseRange(const rapidjson::Value& doc)
     {
         //Validate Schema
         if(!doc.IsArray())
@@ -79,6 +82,6 @@ namespace icrar
             throw icrar::exception("expected 3 integers", __FILE__, __LINE__);
         }
 
-        return Range(doc[0].GetInt(), doc[1].GetInt(), doc[2].GetInt());
+        return Slice(doc[0].GetInt(), doc[1].GetInt(), doc[2].GetInt());
     }
 } // namespace icrar

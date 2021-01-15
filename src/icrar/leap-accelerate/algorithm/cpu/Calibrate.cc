@@ -60,7 +60,7 @@ namespace cpu
     CalibrationCollection Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<SphericalDirection>& directions,
-        const Range& solutionInterval,
+        const Slice& solutionInterval,
         double minimumBaselineThreshold,
         boost::optional<unsigned int> referenceAntenna,
 		bool isFileSystemCacheEnabled)
@@ -90,15 +90,7 @@ namespace cpu
         constexpr unsigned int integrationNumber = 0;
 
         size_t timesteps = (size_t)ms.GetNumRows() / ms.GetNumBaselines();
-        Range validatedSolutionInterval = Range(
-            solutionInterval.start == -1 ? timesteps : solutionInterval.start,
-            solutionInterval.interval == -1 ? timesteps : solutionInterval.interval,
-            solutionInterval.end == -1 ? timesteps : solutionInterval.end
-        );
-
-        std::cout << validatedSolutionInterval.start << std::endl;
-        std::cout << validatedSolutionInterval.interval << std::endl;
-        std::cout << validatedSolutionInterval.end << std::endl;
+        Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
@@ -109,8 +101,7 @@ namespace cpu
             isFileSystemCacheEnabled);
         LOG(info) << "Read metadata in " << metadata_read_timer;
 
-        size_t solutions = 1;
-        //from epoch: 0 -> interval 
+        size_t solutions = validatedSolutionInterval.GetSize();
         for(size_t solution = 0; solution < solutions; ++solution)
         {
             output_calibrations.emplace_back();
@@ -129,8 +120,6 @@ namespace cpu
                 auto queue = std::vector<cpu::Integration>();
                 queue.push_back(integration);
                 input_queues.push_back(queue);
-
-                //output_calibrations[solution].emplace_back();
             }
 
             LOG(info) << "Read integration data in " << integration_read_timer;

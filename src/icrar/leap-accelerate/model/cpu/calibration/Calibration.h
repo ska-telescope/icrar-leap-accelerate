@@ -23,6 +23,7 @@
 #pragma once
 
 #include <icrar/leap-accelerate/model/cpu/calibration/BeamCalibration.h>
+#include <icrar/leap-accelerate/math/math_conversion.h>
 #include <vector>
 
 namespace icrar
@@ -49,6 +50,16 @@ namespace cpu
             for(const auto& beamCalibration : beamCalibrations)
             {
                 m_beamCalibrations.emplace_back(beamCalibration);
+            }
+        }
+        Calibration(const std::vector<std::pair<SphericalDirection, std::vector<double>>>& beamCalibrations)
+        {
+            for(const auto& beamCalibration : beamCalibrations)
+            {
+                SphericalDirection direction;
+                std::vector<double> phaseCalibration;
+                std::tie(direction, phaseCalibration) = beamCalibration;
+                m_beamCalibrations.emplace_back(direction, ToVector(phaseCalibration));
             }
         }
 

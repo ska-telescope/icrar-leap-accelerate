@@ -21,35 +21,71 @@
  */
 
 #pragma once
+#include <icrar/leap-accelerate/exception/exception.h>
 #include <rapidjson/document.h>
 #include <string>
 #include <stdint.h>
 
 namespace icrar
 {
-    // template<typename Rows, typename Numeric>
-    // struct PositionVector
-    // {
-    //     Eigen::Vector<Rows, 1, Numeric> Position;
-    //     Eigen::Vector<Rows, 1, Numeric> Direction;
-    // }
-    // using PositionVector1d = PositionVector<1,double>;
-    // using PositionVector2d = PositionVector<2,double>;
-    // using PositionVector3d = PositionVector<3,double>;
-
+    /**
+     * @brief Represents a linear sequence of integers
+     * 
+     */
     struct Range
     {
         std::int32_t start;
         std::int32_t interval;
         std::int32_t end;
 
-        Range() = default;
-        Range(int interval);
-        Range(int start, int end);
-        Range(int start, int interval, int end);
+        Range(int start, int interval, int end)
+        {
+            this->start = start;
+            this->interval = interval;
+            this->end = end;
+        }
+
+        /**
+         * @brief Gets the number of elements in the range
+         * 
+         * @return int 
+         */
+        int GetSize() const
+        {
+            if(start == -1 || interval == -1 || end == -1)
+            {
+                throw exception("cannot calculate range with wildcards", __FILE__, __LINE__);
+            }
+            return (end - start) / interval;
+        }
     };
 
-    Range ParseRange(const std::string& json);
+    /**
+     * @brief Represents a linear sequence of indexes for some collection
+     * 
+     */
+    struct Slice
+    {
+        std::int32_t start;
+        std::int32_t interval;
+        std::int32_t end;
 
-    Range ParseRange(const rapidjson::Value& doc);
+        Slice() = default;
+        Slice(int interval);
+        Slice(int start, int end);
+        Slice(int start, int interval, int end);
+        
+        Range Evaluate(int collectionSize) const
+        {
+            return Range(
+                (start == -1) ? collectionSize : start,
+                (interval == -1) ? collectionSize : interval,
+                (end == -1) ? collectionSize : end
+            );
+        }
+    };
+
+    Slice ParseRange(const std::string& json);
+
+    Slice ParseRange(const rapidjson::Value& doc);
 } // namespace icrar
