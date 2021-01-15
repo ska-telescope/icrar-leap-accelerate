@@ -117,26 +117,25 @@ namespace cuda
         auto output_calibrations = std::vector<std::vector<cpu::BeamCalibration>>();
         auto input_queue = std::vector<cuda::DeviceIntegration>();
 
-        // Flooring to remove incomplete measurements
-        int integrations = ms.GetNumRows() / ms.GetNumBaselines();
-        if(integrations == 0)
+        int solutions = 1;
+        for(int solution = 0; solution < solutions; solution++)
         {
-            std::stringstream ss;
-            ss << "invalid number of rows, expected >" << ms.GetNumBaselines() << ", got " << ms.GetNumRows();
-            throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
-        }
+            output_calibrations.emplace_back();
 
-        {
-            auto integration = cuda::HostIntegration(0, ms, 0, ms.GetNumChannels(), ms.GetNumRows(), ms.GetNumPols());
-            for(int i = 0; i < directions.size(); ++i)
+            // Flooring to remove incomplete measurements
+            int integrations = ms.GetNumRows() / ms.GetNumBaselines();
+            if(integrations == 0)
             {
-                output_calibrations.emplace_back();
+                std::stringstream ss;
+                ss << "invalid number of rows, expected >" << ms.GetNumBaselines() << ", got " << ms.GetNumRows();
+                throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
             }
+        
+            auto integration = cuda::HostIntegration(0, ms, 0, ms.GetNumChannels(), ms.GetNumRows(), ms.GetNumPols());
             LOG(info) << "Read integration data in " << integration_read_timer;
 
             profiling::timer metadata_read_timer;
             LOG(info) << "Loading MetaData";
-            
             auto metadata = icrar::cpu::MetaData(
                 ms,
                 integration.GetUVW(),
@@ -164,12 +163,12 @@ namespace cuda
                 metadata.GetAvgData().cols());
 
             auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
+            LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
             // Emplace a single empty tensor
     #ifdef HIGH_GPU_MEMORY
             const auto deviceIntegration = DeviceIntegration(integration);
     #endif
-            LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
             // always use a single integration
             input_queue.emplace_back(0, integration.GetVis().dimensions());
@@ -178,7 +177,7 @@ namespace cuda
             for(int i = 0; i < directions.size(); ++i)
             {
                 LOG(info) << "Processing direction " << i;
-                LOG(info) << "Setting Metadata";
+                LOG(info) << "Setting Metadata Direction";
                 metadata.SetDirection(directions[i]);
                 directionBuffer->SetDirection(metadata.GetDirection());
                 directionBuffer->SetDD(metadata.GetDD());
@@ -203,12 +202,11 @@ namespace cuda
                     deviceMetadata,
                     directions[i],
                     input_queue,
-                    output_calibrations[i]);
+                    output_calibrations[solution]);
             }
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
             LOG(info) << "Finished calibration in " << calibration_timer;
         }
-
         return cpu::CalibrationCollection(output_calibrations);
     }
 
