@@ -71,17 +71,34 @@ namespace icrar
 
     Slice ParseRange(const rapidjson::Value& doc)
     {
+        Slice result;
+
         //Validate Schema
-        if(!doc.IsArray())
+        if(doc.IsInt())
         {
-            throw icrar::exception("expected an array", __FILE__, __LINE__);
+            result = Slice(doc.GetInt());
+        }
+        else if(doc.IsArray())
+        {
+            if(doc.Size() == 2)
+            {
+                result = Slice(doc[0].GetInt(), doc[1].GetInt());
+            }
+            if(doc.Size() == 3)
+            {
+                result = Slice(doc[0].GetInt(), doc[1].GetInt(), doc[2].GetInt());
+            }
+            else
+            {
+                throw icrar::exception("expected 3 integers", __FILE__, __LINE__);
+            }
+            
+        }
+        else
+        {
+            throw icrar::exception("expected an integer or array of integers", __FILE__, __LINE__);
         }
 
-        if(doc.Size() != 3)
-        {
-            throw icrar::exception("expected 3 integers", __FILE__, __LINE__);
-        }
-
-        return Slice(doc[0].GetInt(), doc[1].GetInt(), doc[2].GetInt());
+        return result;
     }
 } // namespace icrar
