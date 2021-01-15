@@ -65,7 +65,7 @@ branch=
 cudahome=$CUDA_HOME
 buildtype="Release"
 cmake_opts=
-prefix=
+prefix=$HOME/leap
 system="local"
 
 make_jobs=1
