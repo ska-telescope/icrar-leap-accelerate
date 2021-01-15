@@ -23,6 +23,11 @@
 #pragma once
 
 #include <icrar/leap-accelerate/model/cpu/calibration/Calibration.h>
+
+#include <rapidjson/writer.h>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/stringbuffer.h>
+
 #include <vector>
 
 namespace icrar

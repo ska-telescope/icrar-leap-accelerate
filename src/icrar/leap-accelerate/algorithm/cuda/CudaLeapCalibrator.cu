@@ -117,10 +117,14 @@ namespace cuda
         auto output_calibrations = std::vector<std::vector<cpu::BeamCalibration>>();
         auto input_queue = std::vector<cuda::DeviceIntegration>();
 
-        int solutions = 1;
+        size_t timesteps = (size_t)ms.GetNumRows() / ms.GetNumBaselines();
+        Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
+        size_t solutions = validatedSolutionInterval.GetSize();
+        constexpr unsigned int integrationNumber = 0;
         for(int solution = 0; solution < solutions; solution++)
         {
             output_calibrations.emplace_back();
+            input_queue.clear();
 
             // Flooring to remove incomplete measurements
             int integrations = ms.GetNumRows() / ms.GetNumBaselines();
@@ -131,7 +135,14 @@ namespace cuda
                 throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
             }
         
-            auto integration = cuda::HostIntegration(0, ms, 0, ms.GetNumChannels(), ms.GetNumRows(), ms.GetNumPols());
+            auto integration = cuda::HostIntegration(
+                integrationNumber,
+                ms,
+                solution * validatedSolutionInterval.interval * ms.GetNumBaselines(),
+                ms.GetNumChannels(),
+                validatedSolutionInterval.interval * ms.GetNumBaselines(),
+                ms.GetNumPols());
+
             LOG(info) << "Read integration data in " << integration_read_timer;
 
             profiling::timer metadata_read_timer;
@@ -165,12 +176,11 @@ namespace cuda
             auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
             LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
-            // Emplace a single empty tensor
     #ifdef HIGH_GPU_MEMORY
             const auto deviceIntegration = DeviceIntegration(integration);
     #endif
 
-            // always use a single integration
+            // Emplace a single zero'd tensor
             input_queue.emplace_back(0, integration.GetVis().dimensions());
 
             profiling::timer phase_rotate_timer;

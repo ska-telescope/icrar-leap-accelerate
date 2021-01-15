@@ -87,7 +87,6 @@ namespace cpu
 
         profiling::timer integration_read_timer;
 
-        constexpr unsigned int integrationNumber = 0;
 
         size_t timesteps = (size_t)ms.GetNumRows() / ms.GetNumBaselines();
         Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
@@ -102,15 +101,17 @@ namespace cpu
         LOG(info) << "Read metadata in " << metadata_read_timer;
 
         size_t solutions = validatedSolutionInterval.GetSize();
+        constexpr unsigned int integrationNumber = 0;
         for(size_t solution = 0; solution < solutions; ++solution)
         {
             output_calibrations.emplace_back();
+            input_queues.clear();
 
             //Iterate solutions
             const Integration integration = Integration(
                     integrationNumber,
                     ms,
-                    0,
+                    solution * validatedSolutionInterval.interval * ms.GetNumBaselines(),
                     ms.GetNumChannels(),
                     validatedSolutionInterval.interval * ms.GetNumBaselines(),
                     ms.GetNumPols());
@@ -140,7 +141,7 @@ namespace cpu
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
             LOG(info) << "Finished calibration in " << calibration_timer;
         }
-        return output_calibrations;
+        return CalibrationCollection(output_calibrations);
     }
 
     void PhaseRotate(

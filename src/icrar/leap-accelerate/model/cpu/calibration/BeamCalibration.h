@@ -28,6 +28,7 @@
 #include <Eigen/Dense>
 
 #include <rapidjson/writer.h>
+#include <rapidjson/prettywriter.h>
 #include <rapidjson/stringbuffer.h>
 
 #include <boost/optional.hpp>

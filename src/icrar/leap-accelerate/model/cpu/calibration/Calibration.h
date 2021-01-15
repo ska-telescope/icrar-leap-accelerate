@@ -24,6 +24,11 @@
 
 #include <icrar/leap-accelerate/model/cpu/calibration/BeamCalibration.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
+
+#include <rapidjson/writer.h>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/stringbuffer.h>
+
 #include <vector>
 
 namespace icrar
@@ -37,7 +42,7 @@ namespace cpu
     class Calibration
     {
         std::vector<BeamCalibration> m_beamCalibrations;
-        //double m_startEpoch;
+        double m_startEpoch = 0.0;
         //double m_endEpoch;
 
     public:
@@ -89,13 +94,15 @@ namespace cpu
         void Write(Writer& writer) const
         {
             writer.StartObject();
-            //write.String("epoch");
-            //write.Double();
+            writer.String("epoch");
+            writer.Double(m_startEpoch);
             writer.String("calibration");
+            writer.StartArray();
             for(auto& calibration : m_beamCalibrations)
             {
                 calibration.Write(writer);
             }
+            writer.EndArray();
             writer.EndObject();
         }
     };

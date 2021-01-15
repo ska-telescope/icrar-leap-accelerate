@@ -115,6 +115,7 @@ if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
 #  )
 endif()
 
+target_compile_definitions(${TARGET_NAME} PUBLIC PRETTY_WRITER)
 
 if(CUDA_ENABLED)
   if(HIGH_GPU_MEMORY)

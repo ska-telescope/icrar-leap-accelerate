@@ -422,9 +422,9 @@ namespace icrar
     TEST_F(PhaseRotateTests, PhaseRotateAllTimesteps1TestCpu) { PhaseRotateTest(ComputeImplementation::cpu, Slice(0,-1), &GetAllTimestepsMWACalibration); }
     TEST_F(PhaseRotateTests, PhaseRotateEachTimestepTestCpu) { PhaseRotateTest(ComputeImplementation::cpu, Slice(1), &GetEachTimestepMWACalibration); }
 #ifdef CUDA_ENABLED
-    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateFirstTimestepsTestCuda) { PhaseRotateTest(ComputeImplementation::cuda, Slice(0,1), &GetFirstTimestepMWACalibration); }
+    TEST_F(PhaseRotateTests, PhaseRotateFirstTimestepsTestCuda) { PhaseRotateTest(ComputeImplementation::cuda, Slice(0,1), &GetFirstTimestepMWACalibration); }
     TEST_F(PhaseRotateTests, PhaseRotateAllTimesteps0TestCuda) { PhaseRotateTest(ComputeImplementation::cuda, Slice(0,14), &GetAllTimestepsMWACalibration); }
     TEST_F(PhaseRotateTests, PhaseRotateAllTimesteps1TestCuda) { PhaseRotateTest(ComputeImplementation::cuda, Slice(0,-1), &GetAllTimestepsMWACalibration); }
-    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateEachTimestepTestCuda) { PhaseRotateTest(ComputeImplementation::cuda, Slice(1), &GetEachTimestepMWACalibration); }
+    TEST_F(PhaseRotateTests, PhaseRotateEachTimestepTestCuda) { PhaseRotateTest(ComputeImplementation::cuda, Slice(1), &GetEachTimestepMWACalibration); }
 #endif
 } // namespace icrar

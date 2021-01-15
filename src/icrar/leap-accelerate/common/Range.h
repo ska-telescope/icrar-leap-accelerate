@@ -29,7 +29,7 @@
 namespace icrar
 {
     /**
-     * @brief Represents a linear sequence of integers
+     * @brief Represents a linear sequence of indexes for some collection
      * 
      */
     struct Range
@@ -40,6 +40,10 @@ namespace icrar
 
         Range(int start, int interval, int end)
         {
+            if(start < 0) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
+            if(interval < 1) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
+            if(end < 0) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
+
             this->start = start;
             this->interval = interval;
             this->end = end;
@@ -61,7 +65,7 @@ namespace icrar
     };
 
     /**
-     * @brief Represents a linear sequence of indexes for some collection
+     * @brief Represents a linear sequence of indexes for some arbitrary collection
      * 
      */
     struct Slice
