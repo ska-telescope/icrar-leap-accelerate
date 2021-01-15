@@ -25,6 +25,10 @@
 
 namespace icrar
 {
+    Range::Range(int interval)
+    : Range(0, interval, -1)
+    {}
+
     Range::Range(int start, int end)
     : Range(start, end == -1 ? -1 : end - start, end)
     {}
@@ -33,6 +37,7 @@ namespace icrar
     {
         if(start < -1) throw icrar::exception("expected a positive integer or -1", __FILE__, __LINE__);
         if(interval < -1) throw icrar::exception("expected a positive integer or -1", __FILE__, __LINE__);
+        if(interval == 0) throw icrar::exception("expected a non zero integer", __FILE__, __LINE__);
         if(end < -1) throw icrar::exception("expected a positive integer or -1", __FILE__, __LINE__);
 
         //forward sequences only

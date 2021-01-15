@@ -44,6 +44,7 @@ namespace icrar
         std::int32_t end;
 
         Range() = default;
+        Range(int interval);
         Range(int start, int end);
         Range(int start, int interval, int end);
     };

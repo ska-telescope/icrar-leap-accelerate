@@ -89,7 +89,7 @@ namespace icrar
 #endif
         }
 
-        void PhaseRotateTest(ComputeImplementation impl, const Range solutionInterval, std::function<std::vector<std::pair<SphericalDirection, std::vector<double>>>()> getExpected)
+        void PhaseRotateTest(ComputeImplementation impl, const Range solutionInterval, std::function<cpu::CalibrationCollection()> getExpected)
         {
             const double THRESHOLD = 1e-11;
 
@@ -110,27 +110,27 @@ namespace icrar
                 0,
                 false);
 
-            auto expected = getExpected();
+            auto expected = getExpected().GetCalibrations()[0];
 
             ASSERT_EQ(1, calibrations.GetCalibrations().size());
             auto calibration = calibrations.GetCalibrations()[0];
+            
+            // This supports expected calibrations to be an incomplete collection
             ASSERT_EQ(directions.size(), calibration.GetBeamCalibrations().size());
-
-            for(size_t i = 0; i < expected.size(); i++)
+            size_t totalDirections = expected.GetBeamCalibrations().size();
+            for(size_t directionIndex = 0; directionIndex < totalDirections; directionIndex++)
             {
-                SphericalDirection expectedDirection;
-                std::vector<double> expectedCalibration;
-                std::tie(expectedDirection, expectedCalibration) = expected[i];
-                const cpu::BeamCalibration& result = calibration.GetBeamCalibrations()[i];
+                const cpu::BeamCalibration& expectedCalibration = expected.GetBeamCalibrations()[directionIndex];   
+                const cpu::BeamCalibration& actualCalibration = calibration.GetBeamCalibrations()[directionIndex];
 
-                ASSERT_EQ(expectedDirection(0), result.GetDirection()(0));
-                ASSERT_EQ(expectedDirection(1), result.GetDirection()(1));
+                ASSERT_EQ(expectedCalibration.GetDirection()(0), actualCalibration.GetDirection()(0));
+                ASSERT_EQ(expectedCalibration.GetDirection()(1), actualCalibration.GetDirection()(1));
 
-                if(!ToVector(expectedCalibration).isApprox(result.GetCalibration(), THRESHOLD))
+                if(!expectedCalibration.GetCalibration().isApprox(actualCalibration.GetCalibration(), THRESHOLD))
                 {
-                    std::cout << i+1 << "/" << expected.size() << " got:\n" << result.GetCalibration() << std::endl;
+                    std::cout << directionIndex+1 << "/" << totalDirections << " got:\n" << actualCalibration.GetCalibration() << std::endl;
                 }
-                ASSERT_MEQD(ToVector(expectedCalibration), result.GetCalibration(), THRESHOLD);
+                ASSERT_MEQD(expectedCalibration.GetCalibration(), actualCalibration.GetCalibration(), THRESHOLD);
             }
         }
 
@@ -410,11 +410,13 @@ namespace icrar
 #endif
 
     TEST_F(PhaseRotateTests, PhaseRotateFirstTimestepTestCpu) { PhaseRotateTest(ComputeImplementation::cpu, Range(0, 1), &GetFirstTimestepMWACalibration); }
-    TEST_F(PhaseRotateTests, PhaseRotateAllTimesteps1TestCpu) { PhaseRotateTest(ComputeImplementation::cpu, Range(0,14), &GetAllTimestepsMWACalibration); }
-    TEST_F(PhaseRotateTests, PhaseRotateAllTimesteps0TestCpu) { PhaseRotateTest(ComputeImplementation::cpu, Range(0,-1), &GetAllTimestepsMWACalibration); }
+    TEST_F(PhaseRotateTests, PhaseRotateAllTimesteps0TestCpu) { PhaseRotateTest(ComputeImplementation::cpu, Range(0,14), &GetAllTimestepsMWACalibration); }
+    TEST_F(PhaseRotateTests, PhaseRotateAllTimesteps1TestCpu) { PhaseRotateTest(ComputeImplementation::cpu, Range(0,-1), &GetAllTimestepsMWACalibration); }
+    TEST_F(PhaseRotateTests, PhaseRotateEachTimestepTestCpu) { PhaseRotateTest(ComputeImplementation::cpu, Range(1), &GetEachTimestepMWACalibration); }
 #ifdef CUDA_ENABLED
     //TEST_F(PhaseRotateTests, PhaseRotateFirstTimestepsTestCuda) { PhaseRotateTest(ComputeImplementation::cuda, Range(0,1), &GetFirstTimestepsMWACalibration); }
     TEST_F(PhaseRotateTests, PhaseRotateAllTimesteps0TestCuda) { PhaseRotateTest(ComputeImplementation::cuda, Range(0,14), &GetAllTimestepsMWACalibration); }
     TEST_F(PhaseRotateTests, PhaseRotateAllTimesteps1TestCuda) { PhaseRotateTest(ComputeImplementation::cuda, Range(0,-1), &GetAllTimestepsMWACalibration); }
+    TEST_F(PhaseRotateTests, PhaseRotateEachTimestepTestCuda) { PhaseRotateTest(ComputeImplementation::cuda, Range(1), &GetEachTimestepMWACalibration); }
 #endif
 } // namespace icrar

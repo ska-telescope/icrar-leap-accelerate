@@ -22,9 +22,10 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/common/SphericalDirection.h>
+
 #include <Eigen/Core>
 #include <Eigen/Dense>
-#include <unsupported/Eigen/CXX11/Tensor>
 
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
@@ -46,7 +47,7 @@ namespace cpu
         Eigen::MatrixXd m_calibration;
 
     public:
-            /**
+        /**
          * @brief Construct a new Direction Calibration object
          * 
          * @param direction direciton of calibration
@@ -60,15 +61,20 @@ namespace cpu
         {
         }
 
+        BeamCalibration(const std::pair<SphericalDirection, Eigen::MatrixXd>& beamCalibration)
+        {
+            std::tie(m_direction, m_calibration) = beamCalibration;
+        }
+
         /**
          * @brief Gets the calibration direction
          * 
          * @return const SphericalDirection 
          */
-        const SphericalDirection GetDirection() const { return m_direction; }
+        const SphericalDirection& GetDirection() const { return m_direction; }
 
         /**
-         * @brief Get the calibration Vector for the antenna array in the specified direction
+         * @brief Get the phase calibration Vector for the antenna array in the specified direction
          * 
          * @return const Eigen::MatrixXd 
          */

@@ -44,6 +44,13 @@ namespace cpu
         : m_beamCalibrations(beamCalibrations)
         {
         }
+        Calibration(const std::vector<std::pair<SphericalDirection, Eigen::MatrixXd>>& beamCalibrations)
+        {
+            for(const auto& beamCalibration : beamCalibrations)
+            {
+                m_beamCalibrations.emplace_back(beamCalibration);
+            }
+        }
 
         const std::vector<BeamCalibration>& GetBeamCalibrations() const
         {

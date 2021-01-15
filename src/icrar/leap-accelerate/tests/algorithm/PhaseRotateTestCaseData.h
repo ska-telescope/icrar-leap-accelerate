@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
 
 #include <vector>
@@ -29,12 +30,17 @@
 
 namespace icrar
 {
+    cpu::CalibrationCollection GetEachTimestepMWACalibration()
+    {
+      return cpu::CalibrationCollection(std::vector<std::vector<cpu::BeamCalibration>>());
+    }
+
     /**
      * @brief Gets the expected calibration output averaging over all timesteps. From LEAP-Cal:ported
      * 
      * @return a vector of direction and antenna calibration pairs
      */
-    std::vector<std::pair<SphericalDirection, std::vector<double>>> GetAllTimestepsMWACalibration()
+    cpu::CalibrationCollection GetAllTimestepsMWACalibration()
     {
         std::vector<std::pair<SphericalDirection, std::vector<double>>> output;
         output.push_back(std::make_pair(SphericalDirection(-0.4606549305661674,-0.29719233792392513), std::vector<double>
@@ -300,7 +306,7 @@ namespace icrar
                 1.1708114845029,
               0.621967188914773,
         }));
-        return output;
+        return cpu::CalibrationCollection(std::vector<std::vector<cpu::BeamCalibration>>());
     }
 
     /**
@@ -308,7 +314,7 @@ namespace icrar
      * 
      * @return std::vector<std::pair<SphericalDirection, std::vector<double>>> 
      */
-    std::vector<std::pair<SphericalDirection, std::vector<double>>> GetFirstTimestepMWACalibration()
+    cpu::CalibrationCollection GetFirstTimestepMWACalibration()
     {
         std::vector<std::pair<SphericalDirection, std::vector<double>>> output;
         output.push_back(std::make_pair(SphericalDirection(-0.4606549305661674,-0.29719233792392513), std::vector<double>
@@ -574,6 +580,7 @@ namespace icrar
                2.91996434066302,
                1.19117497840134,
         }));
-        return output;
+        //return cpu::CalibrationCollection(std::vector<cpu::Calibration>{output});
+        return cpu::CalibrationCollection(std::vector<std::vector<cpu::BeamCalibration>>());
     }
 }
