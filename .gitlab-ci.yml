@@ -286,7 +286,7 @@ test_debug_minimal:
 # A job that runs the tests under valgrid
 # It might take a while, so not always run by default
 test_memcheck:
-  extends: .common
+  extends: .required_dependencies
   stage: test
   needs: ["download_lfs", "build_debug_minimal"]
   before_script:
