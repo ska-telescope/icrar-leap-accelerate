@@ -2,162 +2,33 @@
 
 ![License](https://img.shields.io/badge/license-LGPL_2.1-blue)
 
-A calibration tool for Low-frequency Excision of the Atmosphere in Parallel ([LEAP](https://arxiv.org/abs/1807.04685)) utilizing GPGPU acceleration.
+LEAP-Accelerate is a calibration tool for Low-frequency Excision of the Atmosphere in Parallel ([LEAP](https://arxiv.org/abs/1807.04685)) utilizing GPGPU acceleration. Leap is freely available on [GitLab](https://gitlab.com/ska-telescope/icrar-leap-accelerate) under the LGPLv2 [License](LICENSE). 
 
 LEAP-Accelerate includes:
 
-* [leap-accelerate-lib](src/icrar/leap-accelerate/ReadMe.md): a shared library for gpu accelerated direction centering and phase calibration
-* [leap-accelerate-cli](src/icrar/leap-accelerate-cli/ReadMe.md): a CLI interface for I/O datastream or plasma data access 
+* [leap-accelerate-lib](src/icrar/leap-accelerate/ReadMe.md): a shared library for gpu accelerated direction centering and phase calibration.
+* [leap-accelerate-cli](src/icrar/leap-accelerate-cli/ReadMe.md): a CLI interface for I/O datastream or plasma data access.
 <!---* leap-accelerate-client: a socket client interface for processing data from a LEAP-Cal server--->
 <!---* leap-accelerate-server: a socket server interface for dispatching data processing to LEAP-Cal clients--->
 
-## Compiling from Source
+## Installation
 
-### Recommended Versions Compatibility
+See the [build](docs/Build.md) documentation for instructions on platform specific compilation.
 
-* g++ 9.3.0
-* cuda 10.1
-* boost 1.71.0
-* casacore 3.1.2
 
-### Minimum Versions Compatibility
+## Usage
 
-* g++ 6.3.0
-* cuda 9.0
-* boost 1.63.0
-* cmake 3.15.1
-* casacore 3.1.2
+See [leap-accelerate-cli](src/icrar/leap-accelerate-cli/ReadMe.md) for instructions on command line arguments and configuration files.
 
-### Ubuntu/Debian Dependencies
+Examples:
 
-20.04 LTS
+`LeapAccelerateCLI --help`
 
-* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.71-all-dev libgsl-dev
-* https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=2004&target_type=deblocal
+`LeapAccelerateCLI --config "./askap.json"`
 
-18.04 LTS
+## Contributions
 
-* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.65-all-dev libgsl-dev
-* https://developer.nvidia.com/cuda-10.1-download-archive-update2?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=deblocal
+Refer to the following style guides for making repository contributions
 
-16.04 LTS
-
-* https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line
-* sudo apt-get install gcc-6 g++-6 gdb doxygen casacore-dev libboost1.58-all-dev libgsl-dev
-* https://developer.nvidia.com/cuda-92-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1604&target_type=deblocal
-
-## CMake Options
-
-Use `cmake .. -D<OPTION>=<VALUE> ...` or `ccmake ..` to set cmake options.
-
-Setting an environment variable of the same name will also override these cmake options
-
-### Options
-
-`CUDA_ENABLED` - Enables building with cuda support
-
-`HIGH_GPU_MEMORY` - Optimizes device performance at the cost of extra device memory
-
-`WERROR` - Enables warnings as Errors
-
-`WCONVERSION` - Enables warnings on implicit numeric conversions
-
-`TRACE` - Traces data to the local directory
-
-`CMAKE_RUN_CLANG_TIDY` - Enables running clang-tidy with the compiler
-
-## Compile Commands
-
-From the repository root folder run:
-
-`git submodule update --init --recursive`
-
-NOTE: pulling exernal submodules via git is required to build. This may change in future.
-
-### Linux
-
-`export CUDA_HOME=/usr/local/cuda`
-
-`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64`
-
-`export PATH=$PATH:$CUDA_HOME/bin`
-
-`mkdir -p build/linux/{Debug,Release} && cd build/linux`
-
-#### Debug
-
-`cd Debug`
-
-`cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_BUILD_TYPE=Debug`
-
-With tracing to file:
-
-`cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DTRACE=ON -DCMAKE_BUILD_TYPE=Debug`
-
-#### Release
-
-`cd Release`
-
-`cmake ../../ -DCMAKE_BUILD_TYPE=Release`
-
-### Linux Cluster
-
-`module load cmake/3.15.1 gcc/6.3.0 boost/1.66.0 casacore/3.1.2`
-
-`module unload gfortran/default`
-
-`module load isl/default`
-
-`export CUDA_HOME=/usr/local/cuda`
-
-`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64`
-
-`export PATH=$PATH:$CUDA_HOME/bin`
-
-`mkdir -p build && cd build`
-
-`cmake .. -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release`
-
-#### Deploy
-
-In hyades03:
-
-`cd deploy`
-
-`./build.sh -s hyades -c /usr/local/cuda-10.0/ -D "-DCUDA_ENABLED=TRUE -DHIGH_GPU_MEMORY=TRUE"`
-
-## Test
-
-Testing provided via googletest. To test using CTest use the following command in build/linux:
-
-`make test` or `ctest`
-
-for verbose output use:
-
-`ctest --verbose` or `ctest --output-on-failure`
-
-To test using the google test runner, the test binaries can be executed directly using the following commands:
-
-`./src/icrar/leap-accelerate/tests/LeapAccelerate.Tests`
-`./src/icrar/leap-accelerate-cli/tests/LeapAccelerateCLI.Tests`
-
-## Doxygen
-
-Doxygen is generated with the following target:
-
-`make doxygen`
-
-Generated doxygen is available at the following file location:
-
-`src/out/html/index.html`
-
-## Run CLI
-
-See [leap-accelerate-cli](src/icrar/leap-accelerate-cli/ReadMe.md)
-
-Example:
-
-`./bin/LeapAccelerateCLI --help`
-
-`./bin/LeapAccelerateCLI --config "./askap.json"`
-
+* [CMake Style Guide](docs/CMakeStyleGuide.md)
+* [C++ Style Guide](docs/CPlusPlusStyleGuide.md)
