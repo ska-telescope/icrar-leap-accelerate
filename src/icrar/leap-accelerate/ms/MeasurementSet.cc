@@ -105,6 +105,11 @@ namespace icrar
         return m_msmc->uvw().nrow();
     }
 
+    unsigned int MeasurementSet::GetTotalAntennas() const
+    {
+        return m_measurementSet->antenna().nrow();
+    }
+
     unsigned int MeasurementSet::GetNumStations() const
     {
         return m_stations;

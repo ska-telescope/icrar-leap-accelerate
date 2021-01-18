@@ -48,7 +48,7 @@ namespace cpu
         auto msmc = ms.GetMSMainColumns();
 
         m_constants.nbaselines = ms.GetNumBaselines();
-        m_constants.referenceAntenna = refAnt ? refAnt.get() : ms.GetNumStations() - 1;
+        m_constants.referenceAntenna = refAnt ? refAnt.get() : ms.GetTotalAntennas() - 1;
 
         m_constants.channels = 0;
         m_constants.freq_start_hz = 0;

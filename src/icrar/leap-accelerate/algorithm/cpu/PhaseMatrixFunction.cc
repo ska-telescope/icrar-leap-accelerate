@@ -42,11 +42,7 @@ namespace cpu
             throw invalid_argument_exception("a1 and a2 must be equal size", "a", __FILE__, __LINE__);
         }
 
-        auto unique = std::set<std::int32_t>(a1.begin(), a1.end());
-        unique.insert(a2.begin(), a2.end());
-        int nAnt = unique.size();
-
-        if(refAnt >= nAnt)
+        if(refAnt >= a1.size())
         {
             std::stringstream ss;
             ss << "refAnt " << refAnt << " is out of bounds";
