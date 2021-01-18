@@ -90,9 +90,10 @@ namespace cuda
         //checkCudaErrors(cudaDeviceReset());
     }
 
-    cpu::CalibrateResult CudaLeapCalibrator::Calibrate(
+    cpu::CalibrationCollection CudaLeapCalibrator::Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<SphericalDirection>& directions,
+        const Slice& solutionInterval,
         double minimumBaselineThreshold,
         boost::optional<unsigned int> referenceAntenna,
         bool isFileSystemCacheEnabled)
@@ -113,31 +114,39 @@ namespace cuda
 
         profiling::timer calibration_timer;
         profiling::timer integration_read_timer;
-        auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
-        auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
+        auto output_calibrations = std::vector<std::vector<cpu::BeamCalibration>>();
         auto input_queue = std::vector<cuda::DeviceIntegration>();
 
-        // Flooring to remove incomplete measurements
-        int integrations = ms.GetNumRows() / ms.GetNumBaselines();
-        if(integrations == 0)
+        size_t timesteps = (size_t)ms.GetNumRows() / ms.GetNumBaselines();
+        Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
+        size_t solutions = validatedSolutionInterval.GetSize();
+        constexpr unsigned int integrationNumber = 0;
+        for(int solution = 0; solution < solutions; solution++)
         {
-            std::stringstream ss;
-            ss << "invalid number of rows, expected >" << ms.GetNumBaselines() << ", got " << ms.GetNumRows();
-            throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
-        }
+            output_calibrations.emplace_back();
+            input_queue.clear();
 
-        auto integration = cuda::HostIntegration(0, ms, 0, ms.GetNumChannels(), ms.GetNumRows(), ms.GetNumPols());
-        {
-            for(int i = 0; i < directions.size(); ++i)
+            // Flooring to remove incomplete measurements
+            int integrations = ms.GetNumRows() / ms.GetNumBaselines();
+            if(integrations == 0)
             {
-                output_integrations.emplace_back();
-                output_calibrations.emplace_back();
+                std::stringstream ss;
+                ss << "invalid number of rows, expected >" << ms.GetNumBaselines() << ", got " << ms.GetNumRows();
+                throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
             }
+        
+            auto integration = cuda::HostIntegration(
+                integrationNumber,
+                ms,
+                solution * validatedSolutionInterval.interval * ms.GetNumBaselines(),
+                ms.GetNumChannels(),
+                validatedSolutionInterval.interval * ms.GetNumBaselines(),
+                ms.GetNumPols());
+
             LOG(info) << "Read integration data in " << integration_read_timer;
 
             profiling::timer metadata_read_timer;
             LOG(info) << "Loading MetaData";
-            
             auto metadata = icrar::cpu::MetaData(
                 ms,
                 integration.GetUVW(),
@@ -165,21 +174,20 @@ namespace cuda
                 metadata.GetAvgData().cols());
 
             auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
+            LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
-            // Emplace a single empty tensor
     #ifdef HIGH_GPU_MEMORY
             const auto deviceIntegration = DeviceIntegration(integration);
     #endif
-            LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
-            // always use a single integration
+            // Emplace a single zero'd tensor
             input_queue.emplace_back(0, integration.GetVis().dimensions());
 
             profiling::timer phase_rotate_timer;
             for(int i = 0; i < directions.size(); ++i)
             {
                 LOG(info) << "Processing direction " << i;
-                LOG(info) << "Setting Metadata";
+                LOG(info) << "Setting Metadata Direction";
                 metadata.SetDirection(directions[i]);
                 directionBuffer->SetDirection(metadata.GetDirection());
                 directionBuffer->SetDD(metadata.GetDD());
@@ -204,15 +212,12 @@ namespace cuda
                     deviceMetadata,
                     directions[i],
                     input_queue,
-                    output_integrations[i],
-                    output_calibrations[i]);
+                    output_calibrations[solution]);
             }
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
             LOG(info) << "Finished calibration in " << calibration_timer;
         }
-        cudaHostUnregister(integration.GetVis().data());
-
-        return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
+        return cpu::CalibrationCollection(output_calibrations);
     }
 
     void CudaLeapCalibrator::PhaseRotate(
@@ -220,8 +225,7 @@ namespace cuda
         DeviceMetaData& deviceMetadata,
         const SphericalDirection& direction,
         std::vector<cuda::DeviceIntegration>& input,
-        std::vector<cpu::IntegrationResult>& output_integrations,
-        std::vector<cpu::CalibrationResult>& output_calibrations)
+        std::vector<cpu::BeamCalibration>& output_calibrations)
     {
         for(DeviceIntegration& integration : input)
         {
@@ -257,11 +261,12 @@ namespace cuda
         const Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>> UVWs,
         Eigen::Map<Eigen::Matrix<double, 3, Eigen::Dynamic>> RotatedUVWs)
     {
-        // Compute rows in parallel
-        int row = blockDim.x * blockIdx.x + threadIdx.x;
-        if(row < UVWs.rows())
+        // Compute cols in parallel
+        // TODO: UVWs is in transpose form
+        int col = blockDim.x * blockIdx.x + threadIdx.x;
+        if(col < UVWs.cols())
         {
-            RotatedUVWs.col(row) = dd * UVWs.col(row);
+            RotatedUVWs.col(col) = dd * UVWs.col(col);
         }
     }
 

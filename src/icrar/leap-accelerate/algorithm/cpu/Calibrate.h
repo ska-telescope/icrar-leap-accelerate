@@ -22,11 +22,12 @@
 
 #pragma once
 
-#include <casacore/ms/MeasurementSets.h>
 
+#include <icrar/leap-accelerate/common/Range.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
 
+#include <casacore/ms/MeasurementSets.h>
 #include <Eigen/Core>
 
 #include <boost/optional.hpp>
@@ -45,7 +46,7 @@ namespace icrar
     {
         class Integration;
         class IntegrationResult;
-        class CalibrationResult;
+        class BeamCalibration;
     } // namespace cpu
 } // namespace icrar
 
@@ -60,9 +61,10 @@ namespace cpu
      * Calibrates by performing phase rotation for each direction in @p directions
      * by splitting uvws into integration batches.
      */
-    CalibrateResult Calibrate(
+    CalibrationCollection Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<SphericalDirection>& directions,
+        const Slice& solutionInterval,
         double minimumBaselineThreshold,
         boost::optional<unsigned int> referenceAntenna,
         bool isFileSystemCacheEnabled);
@@ -73,15 +75,13 @@ namespace cpu
      * @param metadata metadata object containing data required for calibration
      * @param direction the direction to calibrate for 
      * @param input batches of uvws and visibilities to process
-     * @param output_integrations output from summing a function of uvws and visibilities
      * @param output_calibrations output calibration from summing a function of uvws and visibilities
      */
     void PhaseRotate(
         MetaData& metadata,
         const SphericalDirection& direction,
         std::vector<Integration>& input,
-        std::vector<IntegrationResult>& output_integrations,
-        std::vector<CalibrationResult>& output_calibrations);
+        std::vector<BeamCalibration>& output_calibrations);
 
     /**
      * @brief Performs averaging over each baseline, channel and polarization.

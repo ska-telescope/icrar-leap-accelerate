@@ -57,9 +57,10 @@ namespace icrar
 {
 namespace cpu
 {
-    CalibrateResult Calibrate(
+    CalibrationCollection Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<SphericalDirection>& directions,
+        const Slice& solutionInterval,
         double minimumBaselineThreshold,
         boost::optional<unsigned int> referenceAntenna,
 		bool isFileSystemCacheEnabled)
@@ -69,6 +70,7 @@ namespace cpu
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
+        << "solutionInterval" << solutionInterval.start << ", "
         << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
         << "baseline threshold: " << minimumBaselineThreshold << "m, "
         << "short baselines: " << ms.GetNumShortBaselines(minimumBaselineThreshold) << ", "
@@ -76,79 +78,86 @@ namespace cpu
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
-        << "timesteps: " << ms.GetNumRows() / ms.GetNumBaselines();
+        << "timesteps: " << ms.GetNumRows() / (float)ms.GetNumBaselines();
 
         profiling::timer calibration_timer;
 
-        auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
-        auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
+        auto output_calibrations = std::vector<std::vector<cpu::BeamCalibration>>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
 
         profiling::timer integration_read_timer;
 
-        constexpr unsigned int integrationNumber = 0;
 
-        auto integration = Integration(
-                integrationNumber,
-                ms,
-                0,
-                ms.GetNumChannels(),
-                ms.GetNumRows(),
-                ms.GetNumPols());
-
-        for(size_t i = 0; i < directions.size(); ++i)
-        {
-            auto queue = std::vector<cpu::Integration>();
-            queue.push_back(integration);
-
-            input_queues.push_back(queue);
-            output_integrations.emplace_back();
-            output_calibrations.emplace_back();
-        }
-        LOG(info) << "Read integration data in " << integration_read_timer;
+        size_t timesteps = (size_t)ms.GetNumRows() / ms.GetNumBaselines();
+        Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
         auto metadata = icrar::cpu::MetaData(
             ms,
-            integration.GetUVW(),
             referenceAntenna,
             minimumBaselineThreshold,
             isFileSystemCacheEnabled);
         LOG(info) << "Read metadata in " << metadata_read_timer;
 
-        profiling::timer phase_rotate_timer;
-        for(size_t i = 0; i < directions.size(); ++i)
+        size_t solutions = validatedSolutionInterval.GetSize();
+        constexpr unsigned int integrationNumber = 0;
+        for(size_t solution = 0; solution < solutions; ++solution)
         {
-            LOG(info) << "Processing direction " << i;
-            metadata.SetDirection(directions[i]);
-            metadata.CalcUVW();
-            metadata.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
-            icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
-        }
-        LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
+            output_calibrations.emplace_back();
+            input_queues.clear();
 
-        LOG(info) << "Finished calibration in " << calibration_timer;
-        return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
+            //Iterate solutions
+            const Integration integration = Integration(
+                    integrationNumber,
+                    ms,
+                    solution * validatedSolutionInterval.interval * ms.GetNumBaselines(),
+                    ms.GetNumChannels(),
+                    validatedSolutionInterval.interval * ms.GetNumBaselines(),
+                    ms.GetNumPols());
+
+            for(size_t direction = 0; direction < directions.size(); ++direction)
+            {
+                auto queue = std::vector<cpu::Integration>();
+                queue.push_back(integration);
+                input_queues.push_back(queue);
+            }
+
+            LOG(info) << "Read integration data in " << integration_read_timer;
+
+            //auto epochs = ms.GetEpochs();
+            metadata.SetUVW(integration.GetUVW());
+
+            profiling::timer phase_rotate_timer;
+            for(size_t i = 0; i < directions.size(); ++i)
+            {
+                LOG(info) << "Processing direction " << i;
+                metadata.SetDirection(directions[i]);
+                metadata.CalcUVW();
+                metadata.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
+                icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_calibrations[solution]);
+            }
+
+            LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
+            LOG(info) << "Finished calibration in " << calibration_timer;
+        }
+        return CalibrationCollection(output_calibrations);
     }
 
     void PhaseRotate(
         cpu::MetaData& metadata,
         const SphericalDirection& direction,
         std::vector<cpu::Integration>& input,
-        std::vector<cpu::IntegrationResult>& output_integrations,
-        std::vector<cpu::CalibrationResult>& output_calibrations)
+        std::vector<cpu::BeamCalibration>& output_calibrations)
     {
         for(auto& integration : input)
         {
             LOG(info) << "Rotating Integration " << integration.GetIntegrationNumber();
             icrar::cpu::RotateVisibilities(integration, metadata);
-            output_integrations.emplace_back(integration.GetIntegrationNumber(), direction, boost::none);
         }
         trace_matrix(metadata.GetAvgData(), "avg_data");
 
         LOG(info) << "Calculating Calibration";
-
         // PhaseAngles I1
         // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
         Eigen::VectorXd phaseAnglesI1 = icrar::arg(icrar::cpu::VectorRangeSelect(metadata.GetAvgData(), metadata.GetI1(), 0)); // 1st pol only
@@ -161,7 +170,7 @@ namespace cpu
         Eigen::VectorXd ACal1 = metadata.GetA() * cal1;
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
-            dInt.row(n) = icrar::arg(std::exp(std::complex<double>(0, -ACal1(n) * two_pi<double>())) * metadata.GetAvgData().row(n));
+            dInt.row(n) = icrar::arg(std::exp(std::complex<double>(0, -two_pi<double>() * ACal1(n))) * metadata.GetAvgData().row(n));
         }
 
         Eigen::VectorXd deltaPhaseColumn = dInt.col(0); // 1st pol only
@@ -180,14 +189,12 @@ namespace cpu
         for(size_t baseline = 0; baseline < integration.GetBaselines(); ++baseline)
         {
             auto md_baseline = static_cast<int>(baseline % static_cast<size_t>(metadata.GetConstants().nbaselines)); // metadata baseline
-
             double shiftFactor = -two_pi<double>() * (metadata.GetRotatedUVW()[baseline](2) - metadata.GetUVW()[baseline](2));
 
             // Loop over channels
             for(uint32_t channel = 0; channel < metadata.GetConstants().channels; channel++)
             {
                 double shiftRad = shiftFactor / metadata.GetConstants().GetChannelWavelength(channel);
-                
                 for(uint32_t polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
                 {
                     integration_data(polarization, baseline, channel) *= std::exp(std::complex<double>(0.0, shiftRad));
