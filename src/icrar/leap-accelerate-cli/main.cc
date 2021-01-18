@@ -94,7 +94,7 @@ int main(int argc, char** argv)
         ("referenceAntenna,r", po::value<boost::optional<unsigned int>>(&rawArgs.referenceAntenna), "Specifies the reference antenna, defaults to 0")
         // TODO(calgray): app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
         ("implementation,i", po::value<boost::optional<std::string>>(&rawArgs.computeImplementation), "Compute implementation type (cpu, cuda)")
-        ("solutionInterval,si", po::value<boost::optional<std::string>>(&rawArgs.solutionInterval), "Sets the intervals to generate solutions for, [start, interval, end]")
+        ("solutionInterval,n", po::value<boost::optional<std::string>>(&rawArgs.solutionInterval), "Sets the intervals to generate solutions for, [start, interval, end]")
         ("autoCorrelations,a", po::value<boost::optional<bool>>(&rawArgs.readAutocorrelations), "Set to true if measurement set rows store autocorrelations")
         ("minimumBaselineThreshold,m", po::value<boost::optional<double>>(&rawArgs.minimumBaselineThreshold), "Minimum baseline length in meters")
         ("useFileSystemCache,u", po::value<boost::optional<bool>>(&rawArgs.useFileSystemCache), "Use filesystem caching between calls")
