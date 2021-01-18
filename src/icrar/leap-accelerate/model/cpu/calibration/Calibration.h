@@ -41,26 +41,32 @@ namespace cpu
      */
     class Calibration
     {
-        std::vector<BeamCalibration> m_beamCalibrations;
         double m_startEpoch;
-        //double m_endEpoch;
+        double m_endEpoch;
+        std::vector<BeamCalibration> m_beamCalibrations;
 
     public:
-        Calibration(double epoch, const std::vector<cpu::BeamCalibration>& beamCalibrations)
-        : m_startEpoch(epoch)
+        Calibration(double startEpoch, double endEpoch, const std::vector<cpu::BeamCalibration>& beamCalibrations)
+        : m_startEpoch(startEpoch)
+        , m_endEpoch(endEpoch)
         , m_beamCalibrations(beamCalibrations)
         {
         }
-        Calibration(double epoch, const std::vector<std::pair<SphericalDirection, Eigen::MatrixXd>>& beamCalibrations)
-        : m_startEpoch(epoch)
+
+        [[deprecated]]
+        Calibration(const std::vector<std::pair<SphericalDirection, Eigen::MatrixXd>>& beamCalibrations)
+        : m_startEpoch(0.0)
+        , m_endEpoch(0.0)
         {
             for(const auto& beamCalibration : beamCalibrations)
             {
                 m_beamCalibrations.emplace_back(beamCalibration);
             }
         }
-        Calibration(double epoch, const std::vector<std::pair<SphericalDirection, std::vector<double>>>& beamCalibrations)
-        : m_startEpoch(epoch)
+
+        [[deprecated]]
+        Calibration(const std::vector<std::pair<SphericalDirection, std::vector<double>>>& beamCalibrations)
+        : m_startEpoch(0.0)
         {
             for(const auto& beamCalibration : beamCalibrations)
             {
