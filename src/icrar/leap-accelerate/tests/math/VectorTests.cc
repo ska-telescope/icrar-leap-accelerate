@@ -50,19 +50,19 @@ public:
 #endif
     }
 
-    template<unsigned int n>
-    void TestCpuArrayAdd(bool useCuda)
+    void CheckCudaEnabled()
     {
-        if(useCuda)
-        {
 #ifdef CUDA_ENABLED
             // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
             int deviceCount = 0;
             checkCudaErrors(cudaGetDeviceCount(&deviceCount));
             ASSERT_EQ(1, deviceCount);
 #endif
-        }
+    }
 
+    template<unsigned int n>
+    void TestCpuArrayAdd(bool useCuda)
+    {
         std::array<int, n> a = {};
         std::array<int, n> b = {};
         std::array<int, n> c = {};
@@ -73,6 +73,7 @@ public:
         if(useCuda)
         {
 #ifdef CUDA_ENABLED
+            CheckCudaEnabled();
             icrar::cuda::add(n, a.data(), b.data(), c.data());
 #endif
         }
@@ -95,6 +96,7 @@ public:
         if(useCuda)
         {
 #ifdef CUDA_ENABLED
+            CheckCudaEnabled();
             icrar::cuda::add(a, b, c);
 #endif
         }
@@ -116,6 +118,7 @@ public:
         if(useCuda)
         {
 #ifdef CUDA_ENABLED
+            CheckCudaEnabled();
             auto d_a = icrar::cuda::device_vector<int>(a);
             auto d_b = icrar::cuda::device_vector<int>(b);
             auto d_c = icrar::cuda::device_vector<int>(c);
@@ -141,6 +144,7 @@ public:
         if(useCuda)
         {
 #ifdef CUDA_ENABLED
+            CheckCudaEnabled();
             auto d_a = icrar::cuda::device_vector<int>(a);
             auto d_b = icrar::cuda::device_vector<int>(b);
             auto d_c = icrar::cuda::device_vector<int>(out);
