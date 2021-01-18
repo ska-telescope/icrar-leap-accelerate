@@ -112,7 +112,7 @@ In hyades03:
 
 `cd deploy`
 
-`./build.sh -s hyades -c /usr/local/cuda-10.0/ -D "-DCUDA_ENABLED=TRUE -DHIGH_GPU_MEMORY=TRUE"`
+`./build.sh -s hyades -c /usr/local/cuda-11.0/ -D "-DCUDA_ENABLED=TRUE -DHIGH_GPU_MEMORY=TRUE"`
 
 ## Testing
 
