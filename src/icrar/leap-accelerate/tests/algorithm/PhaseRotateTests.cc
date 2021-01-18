@@ -103,7 +103,7 @@ namespace icrar
 
             std::vector<std::vector<cpu::IntegrationResult>> integrations;
             std::vector<std::vector<cpu::CalibrationResult>> calibrations;
-            std::tie(integrations, calibrations) = LeapCalibratorFactory::Create(impl)->Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
+            std::tie(integrations, calibrations) = LeapCalibratorFactory::Create(impl)->Calibrate(*ms, ToDirectionVector(directions), 0.0, 0, false);
 
             auto expected = GetExpectedCalibration();
 
@@ -248,13 +248,13 @@ namespace icrar
                     throw icrar::invalid_argument_exception("invalid PhaseMatrixFunction implementation", "impl", __FILE__, __LINE__);
                 }
             }
-            catch(std::invalid_argument& e)
+            catch(invalid_argument_exception& e)
             {
                 SUCCEED();
             }
             catch(...)
             {
-                FAIL() << "Expected std::invalid_argument";
+                FAIL() << "Expected icrar::invalid_argument_exception";
             }
         }
 

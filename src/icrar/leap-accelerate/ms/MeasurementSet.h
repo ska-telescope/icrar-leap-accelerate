@@ -89,6 +89,12 @@ namespace icrar
         const casacore::MSColumns* GetMSColumns() const { return m_msc.get(); }
 
         /**
+         * @brief Gets the total number of antennas including flagged antennas.
+         * 
+         */
+        unsigned int GetTotalAntennas() const;
+
+        /**
          * @brief Gets the number of stations excluding flagged stations. Overridable at construction.
          * 
          * @return unsigned int 

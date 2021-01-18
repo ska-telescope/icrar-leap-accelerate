@@ -74,6 +74,8 @@ namespace cpu
     {
         uint32_t nbaselines; //the total number station pairs (excluding self cycles) 
 
+        uint32_t referenceAntenna;
+
         uint32_t channels; // The number of channels of the current observation
         uint32_t num_pols; // The number of polarizations used by the current observation
         uint32_t stations; // The number of stations used by the current observation
@@ -132,7 +134,7 @@ namespace cpu
          * @param minimumBaselineThreshold
          * @param useCache
          */
-        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold = 0.0, bool useCache = true);
+        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool useCache = true);
 
         /**
          * @brief Construct a new MetaData object
@@ -142,7 +144,7 @@ namespace cpu
          * @param minimumBaselineThreshold
          * @param useCache
          */
-        MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold = 0.0, bool useCache = true);
+        MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool useCache = true);
 
         const Constants& GetConstants() const;
 

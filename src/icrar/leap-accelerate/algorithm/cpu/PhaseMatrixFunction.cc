@@ -23,6 +23,8 @@
 
 #include "PhaseMatrixFunction.h"
 
+#include <icrar/leap-accelerate/exception/exception.h>
+#include <sstream>
 #include <set>
 
 namespace icrar
@@ -37,16 +39,20 @@ namespace cpu
     {
         if(a1.size() != a2.size() && a1.size() != fg.size())
         {
-            throw std::invalid_argument("a1 and a2 must be equal size");
+            throw invalid_argument_exception("a1 and a2 must be equal size", "a", __FILE__, __LINE__);
         }
 
-        auto unique = std::set<std::int32_t>(a1.begin(), a1.end());
-        unique.insert(a2.begin(), a2.end());
-        int nAnt = unique.size();
-
-        if(refAnt >= nAnt - 1)
+        if(refAnt >= a1.size())
         {
-            throw std::invalid_argument("RefAnt out of bounds");
+            std::stringstream ss;
+            ss << "refAnt " << refAnt << " is out of bounds";
+            throw invalid_argument_exception(ss.str(), "refAnt", __FILE__, __LINE__);
+        }
+        if(refAnt > -1 && fg(refAnt))
+        {
+            std::stringstream ss;
+            ss << "refAnt " << refAnt << " is flagged";
+            throw invalid_argument_exception(ss.str(), "refAnt", __FILE__, __LINE__);
         }
 
         Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, std::max(a1.maxCoeff(), a2.maxCoeff()) + 1);

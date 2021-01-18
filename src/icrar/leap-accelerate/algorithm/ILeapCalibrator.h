@@ -53,6 +53,7 @@ namespace icrar
          * @param ms the mesurement set containing all input measurements
          * @param directions the directions to calibrate for
          * @param minimumBaselineThreshold the minimum baseline length to use in calibrations
+         * @param referenceAntenna the reference antenna of metrix A1
          * @param isFileSystemCacheEnabled enable to use the filesystem to cache data between calibration calls
          * @return CalibrateResult the calibrationn result
          */
@@ -60,6 +61,7 @@ namespace icrar
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             double minimumBaselineThreshold,
+            boost::optional<unsigned int> referenceAntenna,
             bool isFileSystemCacheEnabled) = 0;
     };
 } // namespace icrar
