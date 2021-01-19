@@ -62,6 +62,10 @@ namespace cuda
     : m_UVW(uvw)
     {}
 
+    SolutionIntervalBuffer::SolutionIntervalBuffer(size_t baselines)
+    : m_UVW(baselines, nullptr)
+    {}
+
     DirectionBuffer::DirectionBuffer(
         const SphericalDirection& direction,
         const Eigen::Matrix3d& dd,

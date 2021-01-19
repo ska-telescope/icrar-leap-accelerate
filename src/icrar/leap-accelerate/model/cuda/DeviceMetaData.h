@@ -102,8 +102,15 @@ namespace cuda
         device_vector<icrar::MVuvw> m_UVW;
     public:
         explicit SolutionIntervalBuffer(const std::vector<icrar::MVuvw>& UVW);
+        explicit SolutionIntervalBuffer(size_t baselines);
         
         const device_vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
+
+        void SetUVW(std::vector<icrar::MVuvw> UVW)
+        {
+            assert(UVW.size() == m_UVW.GetCount());
+            m_UVW.SetDataAsync(UVW.data());
+        }
     };
 
     /**

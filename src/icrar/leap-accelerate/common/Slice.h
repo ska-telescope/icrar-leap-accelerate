@@ -21,45 +21,40 @@
  */
 
 #pragma once
+#include <icrar/leap-accelerate/common/Range.h>
 #include <icrar/leap-accelerate/exception/exception.h>
+#include <rapidjson/document.h>
 #include <string>
 #include <stdint.h>
 
 namespace icrar
 {
     /**
-     * @brief Represents a linear sequence of indexes for some finite collection
+     * @brief Represents a linear sequence of indexes for some arbitrary collection
      * 
      */
-    struct Range
+    struct Slice
     {
         std::int32_t start;
         std::int32_t interval;
         std::int32_t end;
 
-        Range(int start, int interval, int end)
+        Slice() = default;
+        Slice(int interval);
+        Slice(int start, int end);
+        Slice(int start, int interval, int end);
+        
+        Range Evaluate(int collectionSize) const
         {
-            if(start < 0) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
-            if(interval < 1) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
-            if(end < 0) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
-
-            this->start = start;
-            this->interval = interval;
-            this->end = end;
-        }
-
-        /**
-         * @brief Gets the number of elements in the range
-         * 
-         * @return int 
-         */
-        int GetSize() const
-        {
-            if(start == -1 || interval == -1 || end == -1)
-            {
-                throw exception("cannot calculate range with wildcards", __FILE__, __LINE__);
-            }
-            return (end - start) / interval;
+            return Range(
+                (start == -1) ? collectionSize : start,
+                (interval == -1) ? collectionSize : interval,
+                (end == -1) ? collectionSize : end
+            );
         }
     };
+
+    Slice ParseSlice(const std::string& json);
+
+    Slice ParseSlice(const rapidjson::Value& doc);
 } // namespace icrar

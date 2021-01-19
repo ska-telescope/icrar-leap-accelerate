@@ -20,7 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
-#include "Range.h"
+#include "Slice.h"
 #include <icrar/leap-accelerate/exception/exception.h>
 
 namespace icrar
