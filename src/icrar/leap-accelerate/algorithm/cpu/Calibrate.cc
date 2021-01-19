@@ -82,7 +82,7 @@ namespace cpu
 
         profiling::timer calibration_timer;
 
-        auto output_calibrations = std::vector<std::vector<cpu::BeamCalibration>>();
+        auto output_calibrations = std::vector<cpu::Calibration>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
 
         profiling::timer integration_read_timer;
@@ -104,7 +104,7 @@ namespace cpu
         constexpr unsigned int integrationNumber = 0;
         for(size_t solution = 0; solution < solutions; ++solution)
         {
-            output_calibrations.emplace_back();
+            output_calibrations.emplace_back(solution * validatedSolutionInterval.interval, (solution+1) * validatedSolutionInterval.interval);
             input_queues.clear();
 
             //Iterate solutions
@@ -135,7 +135,7 @@ namespace cpu
                 metadata.SetDirection(directions[i]);
                 metadata.CalcUVW();
                 metadata.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
-                icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_calibrations[solution]);
+                icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_calibrations[solution].GetBeamCalibrations());
             }
 
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;

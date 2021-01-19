@@ -50,7 +50,7 @@ set(sources
 
     common/SphericalDirection.cc
     common/MVuvw.cc
-    common/Range.cc
+    common/Slice.cc
 
     algorithm/LeapCalibratorFactory.cc
     algorithm/cpu/CpuLeapCalibrator.cc

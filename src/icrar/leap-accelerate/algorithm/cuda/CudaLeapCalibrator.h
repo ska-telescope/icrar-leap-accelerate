@@ -89,7 +89,7 @@ namespace cuda
          * Performs only visibilities rotation on the GPU
          */
         void PhaseRotate(
-            cpu::MetaData& hostMetadata,
+            const cpu::MetaData& hostMetadata,
             DeviceMetaData& deviceMetadata,
             const SphericalDirection& direction,
             std::vector<cuda::DeviceIntegration>& input,

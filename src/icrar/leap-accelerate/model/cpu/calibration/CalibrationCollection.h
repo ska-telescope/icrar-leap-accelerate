@@ -46,27 +46,6 @@ namespace cpu
         {
             m_calibrations = calibrations;
         }
-        CalibrationCollection(const std::vector<std::vector<cpu::BeamCalibration>>& calibrations)
-        {
-            for(const auto& calibration : calibrations)
-            {
-                m_calibrations.emplace_back(calibration);
-            }
-        }
-        CalibrationCollection(const std::vector<std::vector<std::pair<SphericalDirection, Eigen::MatrixXd>>>& calibrations)
-        {
-            for(const auto& calibration : calibrations)
-            {
-                m_calibrations.emplace_back(calibration);
-            }
-        }
-        CalibrationCollection(const std::vector<std::vector<std::pair<SphericalDirection, std::vector<double>>>>& calibrations)
-        {
-            for(const auto& calibration : calibrations)
-            {
-                m_calibrations.emplace_back(calibration);
-            }
-        }
 
         const std::vector<cpu::Calibration>& GetCalibrations() const
         {

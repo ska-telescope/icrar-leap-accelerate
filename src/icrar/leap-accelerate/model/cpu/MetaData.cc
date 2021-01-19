@@ -165,13 +165,8 @@ namespace cpu
     const Eigen::VectorXi& MetaData::GetI1() const { return m_I1; }
     const Eigen::MatrixXd& MetaData::GetAd1() const { return m_Ad1; }
 
-    void MetaData::SetDirection(const SphericalDirection& direction)
+    Eigen::Matrix3d MetaData::GenerateDDMatrix(const SphericalDirection& direction) const
     {
-        m_direction = direction;
-
-        m_constants.dlm_ra = direction(0) - m_constants.phase_centre_ra_rad;
-        m_constants.dlm_dec = direction(1) - m_constants.phase_centre_dec_rad;
-        
         constexpr double pi = boost::math::constants::pi<double>();
         double ang1 = pi / 2.0 - m_constants.phase_centre_dec_rad;
         double ang2 = direction(0) - m_constants.phase_centre_ra_rad;
@@ -195,13 +190,6 @@ namespace cpu
         0, std::cos(ang3), -std::sin(ang3),
         0, std::sin(ang3),  std::cos(ang3);
 
-
-        m_dd = dd3 * dd2 * dd1;
-        LOG(trace) << "dd3: " << pretty_matrix(dd3);
-        LOG(trace) << "dd2: " << pretty_matrix(dd2);
-        LOG(trace) << "dd1: " << pretty_matrix(dd1);
-        LOG(trace) << "dd: " << pretty_matrix(m_dd);
-
         // TODO(calgray) Alternatively calc only the three vec
         // m_lmn = Eigen::Vector3d();
         // m_lmn(0) = std::cos(polar_direction(1)) * std::sin(-m_constants.dlm_ra);
@@ -209,6 +197,22 @@ namespace cpu
         // m_lmn(2) = std::sin(polar_direction(1)) * std::sin(m_constants.phase_centre_dec_rad) + std::cos(polar_direction(1)) * std::cos(m_constants.phase_centre_dec_rad) * std::cos(-m_constants.dlm_ra);
         // // m_lmn(0)*m_lmn(0) + m_lmn(1)*m_lmn(1) + m_lmn(2)*m_lmn(2) = 1
         // m_lmn(2) = m_lmn(2) - 1;
+
+        LOG(trace) << "dd3: " << pretty_matrix(dd3);
+        LOG(trace) << "dd2: " << pretty_matrix(dd2);
+        LOG(trace) << "dd1: " << pretty_matrix(dd1);
+        return dd3 * dd2 * dd1;
+    }
+
+    void MetaData::SetDirection(const SphericalDirection& direction)
+    {
+        m_direction = direction;
+
+        m_constants.dlm_ra = direction(0) - m_constants.phase_centre_ra_rad; //TODO: dlm_ra is not a constant
+        m_constants.dlm_dec = direction(1) - m_constants.phase_centre_dec_rad; //TODO: dlm_dec is not a constant
+        
+        m_dd = GenerateDDMatrix(direction);
+        LOG(trace) << "dd: " << pretty_matrix(m_dd);
     }
 
     void MetaData::SetUVW(const std::vector<icrar::MVuvw>& uvw)

@@ -51,6 +51,7 @@
 #include <thrust/complex.h>
 
 #include <boost/math/constants/constants.hpp>
+#include <boost/optional/optional_io.hpp>
 
 #include <complex>
 #include <istream>
@@ -104,6 +105,8 @@ namespace cuda
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
+        << "solutionInterval: " << "[" << solutionInterval.start << "," << solutionInterval.interval << "," << solutionInterval.end << "], "
+        << "reference antenna: " << referenceAntenna << ", "
         << "baseline threshold: " << minimumBaselineThreshold << ", "
         << "short baselines: " << ms.GetNumShortBaselines(minimumBaselineThreshold) << ", "
         << "filtered baselines: " << ms.GetNumFilteredBaselines(minimumBaselineThreshold) << ", "
@@ -114,16 +117,47 @@ namespace cuda
 
         profiling::timer calibration_timer;
         profiling::timer integration_read_timer;
-        auto output_calibrations = std::vector<std::vector<cpu::BeamCalibration>>();
+        auto output_calibrations = std::vector<cpu::Calibration>();
         auto input_queue = std::vector<cuda::DeviceIntegration>();
 
         size_t timesteps = (size_t)ms.GetNumRows() / ms.GetNumBaselines();
         Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
+
+
+        profiling::timer metadata_read_timer;
+        LOG(info) << "Loading MetaData Constants";
+        const auto metadata = icrar::cpu::MetaData(
+            ms,
+            referenceAntenna,
+            minimumBaselineThreshold,
+            isFileSystemCacheEnabled);
+        auto constantBuffer = std::make_shared<ConstantBuffer>(
+            metadata.GetConstants(),
+            metadata.GetA(),
+            metadata.GetI(),
+            metadata.GetAd(),
+            metadata.GetA1(),
+            metadata.GetI1(),
+            metadata.GetAd1()
+        );
+        auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetConstants().nbaselines * validatedSolutionInterval.interval);
+        auto directionBuffer = std::make_shared<DirectionBuffer>(
+                metadata.GetConstants().nbaselines * validatedSolutionInterval.interval,
+                metadata.GetAvgData().rows(),
+                metadata.GetAvgData().cols());
+        auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
+        LOG(info) << "Metadata Constants loaded in " << metadata_read_timer;
+
         size_t solutions = validatedSolutionInterval.GetSize();
         constexpr unsigned int integrationNumber = 0;
         for(int solution = 0; solution < solutions; solution++)
         {
-            output_calibrations.emplace_back();
+            output_calibrations.emplace_back(
+                solution * validatedSolutionInterval.interval,
+                (solution+1) * validatedSolutionInterval.interval);
+
+            std::cout << "start: " << solution * validatedSolutionInterval.interval << std::endl;
+            std::cout << "end: " << (solution+1) * validatedSolutionInterval.interval << std::endl;
             input_queue.clear();
 
             // Flooring to remove incomplete measurements
@@ -142,39 +176,11 @@ namespace cuda
                 ms.GetNumChannels(),
                 validatedSolutionInterval.interval * ms.GetNumBaselines(),
                 ms.GetNumPols());
-
             LOG(info) << "Read integration data in " << integration_read_timer;
 
-            profiling::timer metadata_read_timer;
-            LOG(info) << "Loading MetaData";
-            auto metadata = icrar::cpu::MetaData(
-                ms,
-                integration.GetUVW(),
-                referenceAntenna,
-                minimumBaselineThreshold,
-                isFileSystemCacheEnabled);
-            
-            auto constantBuffer = std::make_shared<ConstantBuffer>(
-                metadata.GetConstants(),
-                metadata.GetA(),
-                metadata.GetI(),
-                metadata.GetAd(),
-                metadata.GetA1(),
-                metadata.GetI1(),
-                metadata.GetAd1()
-            );
-
-            auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetUVW());
-            
-            auto directionBuffer = std::make_shared<DirectionBuffer>(
-                metadata.GetDirection(),
-                metadata.GetDD(),
-                metadata.GetUVW().size(),
-                metadata.GetAvgData().rows(),
-                metadata.GetAvgData().cols());
-
-            auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
-            LOG(info) << "Metadata loaded in " << metadata_read_timer;
+            LOG(info) << "Loading Metadata UVW";
+            solutionIntervalBuffer->SetUVW(integration.GetUVW());
+            LOG(info) << "Metadata Constants loaded";
 
     #ifdef HIGH_GPU_MEMORY
             const auto deviceIntegration = DeviceIntegration(integration);
@@ -188,9 +194,9 @@ namespace cuda
             {
                 LOG(info) << "Processing direction " << i;
                 LOG(info) << "Setting Metadata Direction";
-                metadata.SetDirection(directions[i]);
-                directionBuffer->SetDirection(metadata.GetDirection());
-                directionBuffer->SetDD(metadata.GetDD());
+                
+                directionBuffer->SetDirection(directions[i]);
+                directionBuffer->SetDD(metadata.GenerateDDMatrix(directions[i]));
                 directionBuffer->GetAvgData().SetZeroAsync();
 
                 LOG(info) << "Sending integration to device";
@@ -212,7 +218,7 @@ namespace cuda
                     deviceMetadata,
                     directions[i],
                     input_queue,
-                    output_calibrations[solution]);
+                    output_calibrations[solution].GetBeamCalibrations());
             }
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
             LOG(info) << "Finished calibration in " << calibration_timer;
@@ -221,7 +227,7 @@ namespace cuda
     }
 
     void CudaLeapCalibrator::PhaseRotate(
-        cpu::MetaData& metadata,
+        const cpu::MetaData& metadata,
         DeviceMetaData& deviceMetadata,
         const SphericalDirection& direction,
         std::vector<cuda::DeviceIntegration>& input,
@@ -262,7 +268,6 @@ namespace cuda
         Eigen::Map<Eigen::Matrix<double, 3, Eigen::Dynamic>> RotatedUVWs)
     {
         // Compute cols in parallel
-        // TODO: UVWs is in transpose form
         int col = blockDim.x * blockIdx.x + threadIdx.x;
         if(col < UVWs.cols())
         {

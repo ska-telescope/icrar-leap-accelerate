@@ -23,7 +23,7 @@
 #pragma once
 
 
-#include <icrar/leap-accelerate/common/Range.h>
+#include <icrar/leap-accelerate/common/Slice.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
 

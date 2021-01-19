@@ -70,6 +70,9 @@ namespace icrar
 {
 namespace cpu
 {
+    /**
+     * @brief Container of fixed sized variables that do not change during calibration
+     */
     struct Constants
     {
         uint32_t nbaselines; //the total number station pairs (excluding self cycles) 
@@ -196,6 +199,15 @@ namespace cpu
          * @pre DD is set, oldUVW is set
          */
         void CalcUVW();
+
+        /**
+         * @brief Utility method to generate a direction matrix using the
+         * configured zenith direction
+         * 
+         * @param direction 
+         * @return Eigen::Matrix3d 
+         */
+        Eigen::Matrix3d GenerateDDMatrix(const SphericalDirection& direction) const;
 
         const Eigen::MatrixXcd& GetAvgData() const { return m_avgData; }
         Eigen::MatrixXcd& GetAvgData() { return m_avgData; }
