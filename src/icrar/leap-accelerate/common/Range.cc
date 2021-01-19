@@ -62,14 +62,14 @@ namespace icrar
         this->end = end;
     }
 
-    Slice ParseRange(const std::string& json)
+    Slice ParseSlice(const std::string& json)
     {
         rapidjson::Document doc;
         doc.Parse(json.c_str());
-        return ParseRange(doc);
+        return ParseSlice(doc);
     }
 
-    Slice ParseRange(const rapidjson::Value& doc)
+    Slice ParseSlice(const rapidjson::Value& doc)
     {
         Slice result;
 

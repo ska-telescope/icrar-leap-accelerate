@@ -51,6 +51,7 @@
 #include <thrust/complex.h>
 
 #include <boost/math/constants/constants.hpp>
+#include <boost/optional/optional_io.hpp>
 
 #include <complex>
 #include <istream>
@@ -104,6 +105,8 @@ namespace cuda
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
+        << "solutionInterval: " << "[" << solutionInterval.start << "," << solutionInterval.interval << "," << solutionInterval.end << "], "
+        << "reference antenna: " << referenceAntenna << ", "
         << "baseline threshold: " << minimumBaselineThreshold << ", "
         << "short baselines: " << ms.GetNumShortBaselines(minimumBaselineThreshold) << ", "
         << "filtered baselines: " << ms.GetNumFilteredBaselines(minimumBaselineThreshold) << ", "
