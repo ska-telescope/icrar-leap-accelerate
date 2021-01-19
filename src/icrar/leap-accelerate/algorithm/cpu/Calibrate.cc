@@ -70,7 +70,7 @@ namespace cpu
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
-        << "solutionInterval" << solutionInterval.start << ", "
+        << "solutionInterval: [" << solutionInterval.start << "," << solutionInterval.interval << "," << solutionInterval.end << "], "
         << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
         << "baseline threshold: " << minimumBaselineThreshold << "m, "
         << "short baselines: " << ms.GetNumShortBaselines(minimumBaselineThreshold) << ", "

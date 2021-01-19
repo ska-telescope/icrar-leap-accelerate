@@ -155,9 +155,6 @@ namespace cuda
             output_calibrations.emplace_back(
                 solution * validatedSolutionInterval.interval,
                 (solution+1) * validatedSolutionInterval.interval);
-
-            std::cout << "start: " << solution * validatedSolutionInterval.interval << std::endl;
-            std::cout << "end: " << (solution+1) * validatedSolutionInterval.interval << std::endl;
             input_queue.clear();
 
             // Flooring to remove incomplete measurements
