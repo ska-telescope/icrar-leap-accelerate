@@ -84,7 +84,7 @@ namespace icrar
 
         if(args.solutionInterval.is_initialized())
         {
-            solutionInterval = ParseRange(args.solutionInterval.get());
+            solutionInterval = ParseSlice(args.solutionInterval.get());
         }
 
         if(args.verbosity.is_initialized())
@@ -368,6 +368,13 @@ namespace icrar
                     else
                     {
                         throw json_exception("outFilePath must be of type int", __FILE__, __LINE__);
+                    }
+                }
+                else if(key == "solutionInterval")
+                {
+                    if(it->value.IsArray())
+                    {
+                        args.solutionInterval = ParseSlice(it->value);
                     }
                 }
                 else if(key == "referenceAntenna")

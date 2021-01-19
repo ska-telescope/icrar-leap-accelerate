@@ -89,7 +89,7 @@ namespace icrar
         }
     };
 
-    Slice ParseRange(const std::string& json);
+    Slice ParseSlice(const std::string& json);
 
-    Slice ParseRange(const rapidjson::Value& doc);
+    Slice ParseSlice(const rapidjson::Value& doc);
 } // namespace icrar
