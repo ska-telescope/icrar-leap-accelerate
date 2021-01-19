@@ -98,7 +98,7 @@ namespace cpu
             writer.StartObject();
                 writer.String("epoch"); writer.StartObject();
                     writer.String("start"); writer.Double(m_startEpoch);
-                    writer.String("end"); writer.Double(m_startEpoch);
+                    writer.String("end"); writer.Double(m_endEpoch);
                 writer.EndObject(); 
                 writer.String("calibration"); writer.StartArray();
                     for(auto& calibration : m_beamCalibrations)
