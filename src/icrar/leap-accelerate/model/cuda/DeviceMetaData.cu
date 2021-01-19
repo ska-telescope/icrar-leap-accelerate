@@ -74,14 +74,10 @@ namespace cuda
     {}
 
     DirectionBuffer::DirectionBuffer(
-        const SphericalDirection& direction,
-        const Eigen::Matrix3d& dd,
         int uvwSize,
         int avgDataRows,
         int avgDataCols)
-    : m_direction(direction)
-    , m_dd(dd)
-    , m_rotatedUVW(uvwSize)
+    : m_rotatedUVW(uvwSize)
     , m_avgData(avgDataRows, avgDataCols)
     {}
 

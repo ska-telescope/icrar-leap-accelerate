@@ -46,6 +46,18 @@ namespace cpu
         std::vector<BeamCalibration> m_beamCalibrations;
 
     public:
+        /**
+         * @brief Creates an empty calibration
+         * 
+         * @param startEpoch 
+         * @param endEpoch 
+         */
+        Calibration(double startEpoch, double endEpoch)
+        : m_startEpoch(startEpoch)
+        , m_endEpoch(endEpoch)
+        {}
+
+
         Calibration(double startEpoch, double endEpoch, const std::vector<cpu::BeamCalibration>& beamCalibrations)
         : m_startEpoch(startEpoch)
         , m_endEpoch(endEpoch)
@@ -53,31 +65,12 @@ namespace cpu
         {
         }
 
-        [[deprecated]]
-        Calibration(const std::vector<std::pair<SphericalDirection, Eigen::MatrixXd>>& beamCalibrations)
-        : m_startEpoch(0.0)
-        , m_endEpoch(0.0)
-        {
-            for(const auto& beamCalibration : beamCalibrations)
-            {
-                m_beamCalibrations.emplace_back(beamCalibration);
-            }
-        }
-
-        [[deprecated]]
-        Calibration(const std::vector<std::pair<SphericalDirection, std::vector<double>>>& beamCalibrations)
-        : m_startEpoch(0.0)
-        {
-            for(const auto& beamCalibration : beamCalibrations)
-            {
-                SphericalDirection direction;
-                std::vector<double> phaseCalibration;
-                std::tie(direction, phaseCalibration) = beamCalibration;
-                m_beamCalibrations.emplace_back(direction, ToVector(phaseCalibration));
-            }
-        }
-
         const std::vector<BeamCalibration>& GetBeamCalibrations() const
+        {
+            return m_beamCalibrations;
+        }
+
+        std::vector<BeamCalibration>& GetBeamCalibrations()
         {
             return m_beamCalibrations;
         }
@@ -103,15 +96,16 @@ namespace cpu
         void Write(Writer& writer) const
         {
             writer.StartObject();
-            writer.String("epoch");
-            writer.Double(m_startEpoch);
-            writer.String("calibration");
-            writer.StartArray();
-            for(auto& calibration : m_beamCalibrations)
-            {
-                calibration.Write(writer);
-            }
-            writer.EndArray();
+                writer.String("epoch"); writer.StartObject();
+                    writer.String("start"); writer.Double(m_startEpoch);
+                    writer.String("end"); writer.Double(m_startEpoch);
+                writer.EndObject(); 
+                writer.String("calibration"); writer.StartArray();
+                    for(auto& calibration : m_beamCalibrations)
+                    {
+                        calibration.Write(writer);
+                    }
+                writer.EndArray();
             writer.EndObject();
         }
     };

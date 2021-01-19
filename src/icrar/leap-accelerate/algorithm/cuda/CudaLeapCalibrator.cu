@@ -117,16 +117,36 @@ namespace cuda
 
         profiling::timer calibration_timer;
         profiling::timer integration_read_timer;
-        auto output_calibrations = std::vector<std::vector<cpu::BeamCalibration>>();
+        auto output_calibrations = std::vector<cpu::Calibration>();
         auto input_queue = std::vector<cuda::DeviceIntegration>();
 
         size_t timesteps = (size_t)ms.GetNumRows() / ms.GetNumBaselines();
         Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
+
+
+        profiling::timer metadata_read_timer;
+        LOG(info) << "Loading MetaData Constants";
+        auto metadata = icrar::cpu::MetaData(
+            ms,
+            referenceAntenna,
+            minimumBaselineThreshold,
+            isFileSystemCacheEnabled);
+        auto constantBuffer = std::make_shared<ConstantBuffer>(
+            metadata.GetConstants(),
+            metadata.GetA(),
+            metadata.GetI(),
+            metadata.GetAd(),
+            metadata.GetA1(),
+            metadata.GetI1(),
+            metadata.GetAd1()
+        );
+        LOG(info) << "Metadata Constants loaded in " << metadata_read_timer;
+
         size_t solutions = validatedSolutionInterval.GetSize();
         constexpr unsigned int integrationNumber = 0;
         for(int solution = 0; solution < solutions; solution++)
         {
-            output_calibrations.emplace_back();
+            output_calibrations.emplace_back(0.0, 0.0);
             input_queue.clear();
 
             // Flooring to remove incomplete measurements
@@ -148,36 +168,15 @@ namespace cuda
 
             LOG(info) << "Read integration data in " << integration_read_timer;
 
-            profiling::timer metadata_read_timer;
-            LOG(info) << "Loading MetaData";
-            auto metadata = icrar::cpu::MetaData(
-                ms,
-                integration.GetUVW(),
-                referenceAntenna,
-                minimumBaselineThreshold,
-                isFileSystemCacheEnabled);
-            
-            auto constantBuffer = std::make_shared<ConstantBuffer>(
-                metadata.GetConstants(),
-                metadata.GetA(),
-                metadata.GetI(),
-                metadata.GetAd(),
-                metadata.GetA1(),
-                metadata.GetI1(),
-                metadata.GetAd1()
-            );
-
+            LOG(info) << "Loading Direction Dependent Metadata";
+            metadata.SetUVW(integration.GetUVW());
             auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetUVW());
-            
             auto directionBuffer = std::make_shared<DirectionBuffer>(
-                metadata.GetDirection(),
-                metadata.GetDD(),
                 metadata.GetUVW().size(),
                 metadata.GetAvgData().rows(),
                 metadata.GetAvgData().cols());
-
             auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
-            LOG(info) << "Metadata loaded in " << metadata_read_timer;
+            LOG(info) << "Metadata Constants loaded in " << metadata_read_timer;
 
     #ifdef HIGH_GPU_MEMORY
             const auto deviceIntegration = DeviceIntegration(integration);
@@ -215,7 +214,7 @@ namespace cuda
                     deviceMetadata,
                     directions[i],
                     input_queue,
-                    output_calibrations[solution]);
+                    output_calibrations[solution].GetBeamCalibrations());
             }
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
             LOG(info) << "Finished calibration in " << calibration_timer;

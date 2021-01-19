@@ -134,17 +134,13 @@ namespace cuda
             const Eigen::MatrixXcd& avgData);
 
         /**
-         * @brief Constructs a new Direction Buffer object for computation by zeroing uvw and avgData
+         * @brief Constructs a new Direction Buffer object for late initialization
          * 
-         * @param direction 
-         * @param dd 
          * @param uvwSize 
          * @param avgDataRows 
          * @param avgDataCols 
          */
         DirectionBuffer(
-            const SphericalDirection& direction,
-            const Eigen::Matrix3d& dd,
             int uvwSize,
             int avgDataRows,
             int avgDataCols);
