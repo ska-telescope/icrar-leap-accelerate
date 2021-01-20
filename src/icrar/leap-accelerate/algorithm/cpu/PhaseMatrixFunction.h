@@ -23,6 +23,8 @@
 #pragma once
 
 #include <Eigen/Core>
+
+#include <boost/optional.hpp>
 #include <utility>
 
 namespace icrar
@@ -48,6 +50,6 @@ namespace cpu
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
         const Eigen::Matrix<bool, Eigen::Dynamic, 1>& fg,
-        int refAnt=-1);
+        boost::optional<unsigned int> refAnt);
 }
 }
