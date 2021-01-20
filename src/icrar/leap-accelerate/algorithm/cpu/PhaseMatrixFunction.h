@@ -23,6 +23,8 @@
 #pragma once
 
 #include <Eigen/Core>
+
+#include <boost/optional.hpp>
 #include <utility>
 
 namespace icrar
@@ -42,12 +44,12 @@ namespace cpu
      * @param fg a flag map of flagged stations to ignore when true
      * @return std::pair<Matrixd, Matrixi>
      * for refAnt = none: first matrix is of size [baselines,stations] and seconds of size[baselines,1]
-     * for refAnt >= 0 > stations: first matrix is of size [stations,stations] and seconds of size[stations,1]
+     * for 0 <= refAnt < stations: first matrix is of size [stations,stations] and seconds of size[stations,1]
      */
     std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
         const Eigen::Matrix<bool, Eigen::Dynamic, 1>& fg,
-        int refAnt=-1);
+        boost::optional<unsigned int> refAnt);
 }
 }

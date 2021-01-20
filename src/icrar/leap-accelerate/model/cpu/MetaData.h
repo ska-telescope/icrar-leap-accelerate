@@ -101,8 +101,8 @@ namespace cpu
     };
 
     /**
-     * @brief container of phaserotation constants and variables
-     * 
+     * @brief container of phaserotation constants and variables for calibrating a single beam.
+     * Can be mutated to calibrate for multiple directions.
      */
     class MetaData
     {
@@ -123,9 +123,7 @@ namespace cpu
         std::vector<icrar::MVuvw> m_rotatedUVW; // late initialized
     
         SphericalDirection m_direction; // calibration direction, late initialized
-
         Eigen::Matrix3d m_dd; // direction matrix, late initialized
-        
         Eigen::MatrixXcd m_avgData; // matrix of size (baselines, polarizations), late initialized
     
     public:
@@ -143,20 +141,23 @@ namespace cpu
         /**
          * @brief Construct a new MetaData object. SetDirection() must be called after construction
          * 
-         * @param ms 
-         * @param uvws 
-         * @param minimumBaselineThreshold
-         * @param useCache
+         * @param ms measurement set to read observations from
+         * @param uvws uvw coordinates of stations
+         * @param refAnt the reference antenna index, default is the last index
+         * @param minimumBaselineThreshold baseline lengths less that the minimum in meters are flagged
+         * @param useCache whether to load Ad matrix from cache
          */
         MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool useCache = true);
 
         /**
-         * @brief Construct a new MetaData object
+         * @brief Construct a new MetaData object.
          * 
-         * @param ms 
-         * @param uvws 
-         * @param minimumBaselineThreshold
-         * @param useCache
+         * @param ms measurement set to read observations from
+         * @param direction the direction of the beam to calibrate for
+         * @param uvws uvw coordinates of stations
+         * @param refAnt the reference antenna index, default is the last index
+         * @param minimumBaselineThreshold baseline lengths less that the minimum in meters are flagged
+         * @param useCache whether to load Ad matrix from cache
          */
         MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool useCache = true);
 
@@ -196,7 +197,7 @@ namespace cpu
 
         /**
          * @brief Updates the rotated UVW vector using the DD matrix
-         * @pre DD is set, oldUVW is set
+         * @pre DD is set, UVW is set
          */
         void CalcUVW();
 

@@ -30,6 +30,7 @@
 
 #include <icrar/leap-accelerate/tests/test_helper.h>
 #include <icrar/leap-accelerate/tests/math/eigen_helper.h>
+#include <icrar/leap-accelerate/common/eigen_extensions.h>
 
 #include <casacore/ms/MeasurementSets.h>
 #include <casacore/ms/MeasurementSets/MSColumns.h>
@@ -75,7 +76,7 @@ namespace icrar
             ASSERT_EQ(48, meta.GetConstants().channels);
             ASSERT_EQ(4, meta.GetConstants().num_pols);
             ASSERT_EQ(102, meta.GetConstants().stations);
-            ASSERT_EQ(101, meta.GetConstants().referenceAntenna);
+            ASSERT_EQ(127, meta.GetConstants().referenceAntenna);
             ASSERT_EQ(73542, meta.GetConstants().rows);
             ASSERT_EQ(1.39195e+08, meta.GetConstants().freq_start_hz);
             ASSERT_EQ(640000, meta.GetConstants().freq_inc_hz);
@@ -114,7 +115,7 @@ namespace icrar
             ASSERT_EQ(48, meta.GetConstants().channels);
             ASSERT_EQ(4, meta.GetConstants().num_pols);
             ASSERT_EQ(102, meta.GetConstants().stations);
-            ASSERT_EQ(101, meta.GetConstants().referenceAntenna);
+            ASSERT_EQ(127, meta.GetConstants().referenceAntenna);
             ASSERT_EQ(73542, meta.GetConstants().rows);
             ASSERT_EQ(1.39195e+08, meta.GetConstants().freq_start_hz);
             ASSERT_EQ(640000, meta.GetConstants().freq_inc_hz);
@@ -185,6 +186,31 @@ namespace icrar
             EXPECT_DOUBLE_EQ(2.1537588131757608, meta.GetConstants().GetChannelWavelength(0));
         }
 
+        void TestReferenceAntenna()
+        {
+            auto meta = icrar::cpu::MetaData(*ms, SphericalDirection(), std::vector<icrar::MVuvw>(), boost::none);
+            int k = meta.GetA1().rows() - 1;
+            int n = meta.GetA1().cols() - 1;
+            ASSERT_EQ(0, meta.GetA1()(k, 0));
+            ASSERT_EQ(1, meta.GetA1()(k, n));
+
+            meta = icrar::cpu::MetaData(*ms, SphericalDirection(), std::vector<icrar::MVuvw>(), n);
+            k = meta.GetA1().rows() - 1;
+            n = meta.GetA1().cols() - 1;
+            ASSERT_EQ(0, meta.GetA1()(k, 0));
+            ASSERT_EQ(1, meta.GetA1()(k, n));
+
+            meta = icrar::cpu::MetaData(*ms, SphericalDirection(), std::vector<icrar::MVuvw>(), 0);
+            k = meta.GetA1().rows() - 1;
+            ASSERT_EQ(1, meta.GetA1()(k, 0));
+            ASSERT_EQ(0, meta.GetA1()(k, 1));
+
+            meta = icrar::cpu::MetaData(*ms, SphericalDirection(), std::vector<icrar::MVuvw>(), 1);
+            k = meta.GetA1().rows() - 1;
+            ASSERT_EQ(0, meta.GetA1()(k, 0));
+            ASSERT_EQ(1, meta.GetA1()(k, 1));
+        }
+
 #ifdef CUDA_ENABLED
         void TestCudaBufferCopy()
         {
@@ -230,6 +256,7 @@ namespace icrar
     TEST_F(MetaDataTests, TestReadFromFileOverrideStations) { TestReadFromFileOverrideStations(); }
     TEST_F(MetaDataTests, TestChannelWavelengths) { TestChannelWavelengths(); }
     TEST_F(MetaDataTests, TestDD) { TestDD(); }
+    TEST_F(MetaDataTests, TestReferenceAntenna) { TestReferenceAntenna(); }
 
 #ifdef CUDA_ENABLED
     TEST_F(MetaDataTests, TestCudaBufferCopy) { TestCudaBufferCopy(); }
