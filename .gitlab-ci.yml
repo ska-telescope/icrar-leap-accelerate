@@ -289,7 +289,7 @@ test_debug_minimal:
     - apt update && apt install -y valgrind
     - cd build
     - cmake ..
-    - ctest -T memcheck --verbose
+    - ctest -T memcheck --timeout 10800 --verbose
   timeout: 3h
   # only:
   #   - tags
