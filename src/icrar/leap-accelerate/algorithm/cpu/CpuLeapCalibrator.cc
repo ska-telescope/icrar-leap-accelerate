@@ -22,7 +22,7 @@
 
 
 #include "CpuLeapCalibrator.h"
-#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/cpu/Calibrate.h>
 
 namespace icrar
 {

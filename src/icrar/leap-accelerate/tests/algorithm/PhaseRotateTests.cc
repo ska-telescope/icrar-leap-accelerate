@@ -29,7 +29,7 @@
 
 #include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
-#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/cpu/Calibrate.h>
 #include <icrar/leap-accelerate/algorithm/cuda/CudaLeapCalibrator.h>
 
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
