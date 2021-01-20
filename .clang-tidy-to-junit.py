@@ -71,7 +71,7 @@ class ClangTidyConverter:
     # Group 1: file path
     # Group 2: error message
     iwyu_regex = re.compile(
-            re.compile(r'^(\/[\w\/\.\-\ ]+) ([\w ]+):$')
+        r'^(\/[\w\/\.\-]+) ([\w ]+):$'
     )
 
     # Group 1: file path
@@ -83,9 +83,9 @@ class ClangTidyConverter:
     # We only create a new error when we encounter one of these.
     main_error_identifier = re.compile(r'\[[\w\-,\.]+\]$')
 
-    main_iwyu_identifier = re.compile(r'^\/[\w\/\.\-\ ]+ [\w ]+:$')
-
     main_note_identifier = re.compile(r'^\/[\w\/\.\-\ ]+:\d+:\d+: [a-z]+: [\w ]+$')
+    
+    main_iwyu_identifier = re.compile(r'^\/[\w\/\.\-\ ]+ [\w ]+:$')
 
     main_failure_identifier = re.compile(r'^Error while processing ')
 
