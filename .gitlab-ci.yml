@@ -289,9 +289,8 @@ test_memcheck:
   extends: .all_dependencies
   stage: test
   needs: ["download_lfs", "build_debug_minimal"]
-  before_script:
-    - apt update && apt install -y valgrind
   script:
+    - apt update && apt install -y valgrind
     - cd build
     - ctest -T memcheck --verbose
   # only:
