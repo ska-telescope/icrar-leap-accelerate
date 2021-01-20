@@ -64,7 +64,7 @@ namespace cpu
         boost::optional<unsigned int> referenceAntenna,
 		bool isFileSystemCacheEnabled)
     {
-        LOG(info) << "Starting Calibration using cpu";
+        LOG(info) << "Starting calibration using cpu";
         LOG(info)
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
@@ -145,10 +145,8 @@ namespace cpu
             icrar::cpu::RotateVisibilities(integration, metadata);
             output_integrations.emplace_back(integration.GetIntegrationNumber(), direction, boost::none);
         }
-        trace_matrix(metadata.GetAvgData(), "avg_data");
 
         LOG(info) << "Calculating Calibration";
-
         // PhaseAngles I1
         // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
         Eigen::VectorXd phaseAnglesI1 = icrar::arg(icrar::cpu::VectorRangeSelect(metadata.GetAvgData(), metadata.GetI1(), 0)); // 1st pol only
@@ -179,7 +177,6 @@ namespace cpu
         for(size_t baseline = 0; baseline < integration.GetBaselines(); ++baseline)
         {
             auto md_baseline = static_cast<int>(baseline % static_cast<size_t>(metadata.GetConstants().nbaselines)); // metadata baseline
-
             double shiftFactor = -two_pi<double>() * (metadata.GetRotatedUVW()[baseline](2) - metadata.GetUVW()[baseline](2));
 
             // Loop over channels
