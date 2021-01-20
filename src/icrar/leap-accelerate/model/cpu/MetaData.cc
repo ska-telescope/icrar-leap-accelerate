@@ -97,7 +97,7 @@ namespace cpu
         trace_matrix(m_I1, "I1");
 
         LOG(info) << "Calculating PhaseMatrix A";
-        std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), flaggedBaselines, -1);
+        std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), flaggedBaselines, boost::none);
         trace_matrix(m_A, "A");
 
 

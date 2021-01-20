@@ -105,6 +105,11 @@ namespace icrar
         return m_msmc->uvw().nrow();
     }
 
+    unsigned int MeasurementSet::GetTotalAntennas() const
+    {
+        return m_measurementSet->antenna().nrow();
+    }
+
     std::vector<double> MeasurementSet::GetEpochs() const
     {
         casacore::Vector<double> time = m_msmc->time().getColumn();
@@ -115,11 +120,6 @@ namespace icrar
             result.push_back(time[i * GetNumBaselines()]);
         }
         return result;
-    }
-
-    unsigned int MeasurementSet::GetTotalAntennas() const
-    {
-        return m_measurementSet->antenna().nrow();
     }
 
     unsigned int MeasurementSet::GetNumStations() const

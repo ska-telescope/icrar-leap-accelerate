@@ -35,23 +35,23 @@ namespace cpu
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
         const Eigen::Matrix<bool, Eigen::Dynamic, 1>& fg,
-        int refAnt)
+        boost::optional<unsigned int> refAnt)
     {
         if(a1.size() != a2.size() && a1.size() != fg.size())
         {
             throw invalid_argument_exception("a1 and a2 must be equal size", "a", __FILE__, __LINE__);
         }
 
-        if(refAnt >= a1.size())
+        if(refAnt.is_initialized() && refAnt.get() >= a1.size())
         {
             std::stringstream ss;
-            ss << "refAnt " << refAnt << " is out of bounds";
+            ss << "refAnt " << refAnt.get() << " is out of bounds";
             throw invalid_argument_exception(ss.str(), "refAnt", __FILE__, __LINE__);
         }
-        if(refAnt > -1 && fg(refAnt))
+        if(refAnt.is_initialized() && fg(refAnt.get()))
         {
             std::stringstream ss;
-            ss << "refAnt " << refAnt << " is flagged";
+            ss << "refAnt " << refAnt.get() << " is flagged";
             throw invalid_argument_exception(ss.str(), "refAnt", __FILE__, __LINE__);
         }
 
@@ -66,7 +66,8 @@ namespace cpu
             if(a1(n) != a2(n))
             {
                 // skip entry if data not flagged
-                if(!fg(n) && ((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt)))))
+                if(!fg(n) && ((!refAnt.is_initialized())
+                || ((refAnt.is_initialized()) && ((static_cast<unsigned int>(a1(n)) == refAnt.get()) || (static_cast<unsigned int>(a2(n)) == refAnt.get())))))
                 {
                     A(k, a1(n)) = 1;
                     A(k, a2(n)) = -1;
@@ -75,12 +76,13 @@ namespace cpu
                 }
             }
         }
-        if(refAnt < 0)
+
+        if(!refAnt.is_initialized())
         {
             refAnt = 0;
         }
 
-        A(k, refAnt) = 1;
+        A(k, refAnt.get()) = 1;
         k++;
         
         A.conservativeResize(k, Eigen::NoChange);

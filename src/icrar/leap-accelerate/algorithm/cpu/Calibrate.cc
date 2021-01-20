@@ -65,7 +65,7 @@ namespace cpu
         boost::optional<unsigned int> referenceAntenna,
 		bool isFileSystemCacheEnabled)
     {
-        LOG(info) << "Starting Calibration using cpu";
+        LOG(info) << "Starting calibration using cpu";
         LOG(info)
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
@@ -155,7 +155,6 @@ namespace cpu
             LOG(info) << "Rotating Integration " << integration.GetIntegrationNumber();
             icrar::cpu::RotateVisibilities(integration, metadata);
         }
-        trace_matrix(metadata.GetAvgData(), "avg_data");
 
         LOG(info) << "Calculating Calibration";
         // PhaseAngles I1

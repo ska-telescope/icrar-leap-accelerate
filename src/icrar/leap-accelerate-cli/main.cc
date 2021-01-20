@@ -91,7 +91,7 @@ int main(int argc, char** argv)
         ("output,o", po::value<boost::optional<std::string>>(&rawArgs.outputFilePath), "Calibration output file path")
         ("directions,d", po::value<boost::optional<std::string>>(&rawArgs.directions), "Directions to calibrations")
         ("stations,s", po::value<boost::optional<int>>(&rawArgs.stations), "Overrides number of stations in measurement set")
-        ("referenceAntenna,r", po::value<boost::optional<unsigned int>>(&rawArgs.referenceAntenna), "Specifies the reference antenna, defaults to 0")
+        ("referenceAntenna,r", po::value<boost::optional<unsigned int>>(&rawArgs.referenceAntenna), "Specifies the reference antenna, defaults to the last antenna")
         // TODO(calgray): app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
         ("implementation,i", po::value<boost::optional<std::string>>(&rawArgs.computeImplementation), "Compute implementation type (cpu, cuda)")
         ("solutionInterval,n", po::value<boost::optional<std::string>>(&rawArgs.solutionInterval), "Sets the intervals to generate solutions for, [start, interval, end]")
