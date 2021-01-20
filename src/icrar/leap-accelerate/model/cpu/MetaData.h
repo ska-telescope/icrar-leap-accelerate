@@ -99,7 +99,7 @@ namespace cpu
 
     /**
      * @brief container of phaserotation constants and variables for calibrating a single beam.
-     * Can be mutated to calirate for multiple directions.
+     * Can be mutated to calibrate for multiple directions.
      */
     class MetaData
     {
