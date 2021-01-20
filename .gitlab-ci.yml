@@ -292,7 +292,7 @@ test_memcheck:
     - apt update && apt install -y valgrind
   script:
     - cd build
-    - ctest -T memcheck
+    - ctest -T memcheck --verbose
   only:
     - tags
     - schedules
