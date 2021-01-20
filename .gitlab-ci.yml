@@ -288,7 +288,7 @@ test_debug_minimal:
 test_memcheck:
   extends: .all_dependencies
   stage: test
-  needs: ["download_lfs", "build_debug_minimal"]
+  needs: ["download_lfs", "build_debug"]
   script:
     - apt update && apt install -y valgrind
     - cd build
