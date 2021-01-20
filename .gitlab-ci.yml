@@ -292,6 +292,7 @@ test_memcheck:
   script:
     - apt update && apt install -y valgrind
     - cd build
+    - cmake ..
     - ctest -T memcheck --verbose
   # only:
   #   - tags
