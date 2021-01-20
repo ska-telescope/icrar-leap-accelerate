@@ -284,10 +284,8 @@ test_debug_minimal:
 
 # A job that runs the tests under valgrid
 # It might take a while, so not always run by default
-test_memcheck:
-  extends: .all_dependencies
+.test_memcheck:
   stage: test
-  needs: ["download_lfs", "build_debug"]
   script:
     - apt update && apt install -y valgrind
     - cd build
@@ -296,6 +294,15 @@ test_memcheck:
   # only:
   #   - tags
   #   - schedules
+
+test_memcheck_minimal:
+  extends: [.required_dependencies, .test_memcheck]
+  needs: ["download_lfs", "build_debug_minimal"]
+
+.test_memcheck_all:
+  extends: [.all_dependencies, .test_memcheck]
+  stage: test
+  needs: ["download_lfs", "build_debug"]
 
 pages:
   extends: .required_dependencies
