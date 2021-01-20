@@ -23,16 +23,37 @@
 #pragma once
 
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
+
+#include <icrar/leap-accelerate/common/Slice.h>
+#include <icrar/leap-accelerate/model/cpu/Integration.h>
+#include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
+
+#include <casacore/ms/MeasurementSets.h>
+#include <Eigen/Core>
+
 #include <boost/noncopyable.hpp>
+#include <boost/optional.hpp>
+
+#include <string>
+#include <memory>
 #include <vector>
+#include <complex>
+#include <queue>
 
 namespace icrar
 {
 namespace cpu
 {
+    class MetaData;
+
     class CpuLeapCalibrator : public ILeapCalibrator
     {
     public:
+        /**
+         * @copydoc ILeapEngine::ILeapCalibrator
+         * Calibrates by performing phase rotation for each direction in @p directions
+         * by splitting uvws into integration batches.
+         */
         virtual cpu::CalibrationCollection Calibrate(
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
@@ -40,6 +61,30 @@ namespace cpu
             double minimumBaselineThreshold,
             boost::optional<unsigned int> referenceAntenna,
             bool isFileSystemCacheEnabled) override;
+
+        /**
+         * @brief Performs rotation, summing and calibration for @p direction
+         * 
+         * @param metadata metadata object containing data required for calibration
+         * @param direction the direction to calibrate for 
+         * @param input batches of uvws and visibilities to process
+         * @param output_calibrations output calibration from summing a function of uvws and visibilities
+         */
+        static void PhaseRotate(
+            MetaData& metadata,
+            const SphericalDirection& direction,
+            std::vector<Integration>& input,
+            std::vector<BeamCalibration>& output_calibrations);
+
+        /**
+         * @brief Performs averaging over each baseline, channel and polarization.
+         * 
+         * @param integration The input integration batch of uvws and visibilities
+         * @param metadata The metadata object where AverageData is written to
+         */
+        static void RotateVisibilities(
+            Integration& integration,
+            MetaData& metadata);
     };
 } // namespace cpu
 } // namespace icrar
