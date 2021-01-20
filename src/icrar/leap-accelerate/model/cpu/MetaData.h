@@ -170,7 +170,7 @@ namespace cpu
 
         /**
          * @brief Updates the rotated UVW vector using the DD matrix
-         * @pre DD is set, oldUVW is set
+         * @pre DD is set, UVW is set
          */
         void CalcUVW();
 
