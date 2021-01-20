@@ -16,7 +16,7 @@ from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
 # @param gitrepo $(GIT_REPO)
 # @param version $(PROJECT_VERSION)
 # @param category PythonApp
-# @param[in] param/measurementSetFilename/Measurement Set Filename//String/readwrite
+# @param[in] param/measurementSetFilename/Measurement Set Filename/""/String/readwrite
 #     \~English The file from which the input measurement set should be loaded\n
 #     \~Chinese \n
 #     \~
