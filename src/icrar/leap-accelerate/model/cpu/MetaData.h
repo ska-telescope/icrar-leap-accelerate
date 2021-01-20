@@ -123,7 +123,7 @@ namespace cpu
         std::vector<icrar::MVuvw> m_rotatedUVW; // late initialized
     
         SphericalDirection m_direction; // calibration direction, late initialized
-        Eigen::Matrix3d m_dd; // direction matrix, late initialized
+        Eigen::Matrix3d m_dd; // direction dependant matrix, late initialized
         Eigen::MatrixXcd m_avgData; // matrix of size (baselines, polarizations), late initialized
     
     public:
