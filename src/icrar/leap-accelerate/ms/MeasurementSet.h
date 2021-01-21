@@ -131,19 +131,27 @@ namespace icrar
         unsigned int GetNumRows() const;
 
         /**
-         * @brief Get the Epochs object
+         * @brief Gets the number of timesteps in the measurement set
          * 
-         * @return std::vector<double> 
+         * @return unsigned int 
          */
-        std::vector<double> GetEpochs() const;
+        unsigned int GetNumTimesteps() const;
+
+        /**
+         * @brief Gets the unique timesteps in the measurement set
+         * 
+         * @return std::vector<double>
+         */
+        std::vector<double> GetTimesteps() const;
 
         /**
          * @brief Gets a vector of size nBaselines with a true value at the index of flagged baselines.
          * Checks for flagged data on the first channel and polarization.
          * 
+         * @param timestep 
          * @return Eigen::Matrix<bool, -1, 1> 
          */
-        Eigen::Matrix<bool, -1, 1> GetFlaggedBaselines() const;
+        Eigen::Matrix<bool, -1, 1> GetFlaggedBaselines(unsigned int timestep = 0) const;
 
         /**
          * @brief Get the number of baselines that are flagged by the measurement set

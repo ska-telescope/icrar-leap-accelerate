@@ -22,7 +22,7 @@
 
 #include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/common/stream_extensions.h>
-#include <icrar/leap-accelerate/math/vector_extensions.h>
+#include <icrar/leap-accelerate/common/vector_extensions.h>
 #include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 
 #include <unsupported/Eigen/CXX11/Tensor>

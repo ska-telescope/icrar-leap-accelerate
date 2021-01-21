@@ -24,13 +24,13 @@
 #include <icrar/leap-accelerate/model/cpu/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
-#include <icrar/leap-accelerate/math/vector_extensions.h>
+#include <icrar/leap-accelerate/common/vector_extensions.h>
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/tests/test_helper.h>
 #include <icrar/leap-accelerate/tests/math/eigen_helper.h>
-#include <icrar/leap-accelerate/common/eigen_extensions.h>
+#include <icrar/leap-accelerate/math/eigen_extensions.h>
 
 #include <casacore/ms/MeasurementSets.h>
 #include <casacore/ms/MeasurementSets/MSColumns.h>
@@ -66,6 +66,8 @@ namespace icrar
             ASSERT_EQ(5020320156, time[0]);
             ASSERT_EQ(5020320156, time(casacore::IPosition(1,0)));
 
+            ASSERT_EQ(14, ms->GetNumTimesteps());
+            ASSERT_EQ(14, ms->GetTimesteps().size());
         }
 
         void TestRawReadFromFile()

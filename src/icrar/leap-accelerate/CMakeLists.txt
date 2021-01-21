@@ -21,7 +21,7 @@ set(public_headers
 set(private_headers
     math/casacore_helper.h
     math/math_conversion.h
-    math/vector_extensions.h
+    math/eigen_extensions.h
 )
 set(sources
     ${git_revision_cc}
@@ -35,7 +35,7 @@ set(sources
     model/cpu/MetaData.cc
     model/cpu/CalibrateResult.cc
     
-    math/vector_extensions.cc
+    math/eigen_extensions.cc
     math/math_conversion.cc
     math/casa/matrix.cc
     math/casa/matrix_invert.cc

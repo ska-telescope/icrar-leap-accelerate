@@ -22,7 +22,6 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <vector>
 #include <iostream>
 #include <vector>
@@ -57,7 +56,7 @@ namespace icrar
      * @return std::vector<IntType> 
      */
     template <typename IntType>
-    std::vector<IntType> range(IntType start, IntType stop, IntType step)
+    std::vector<IntType> range(IntType start, IntType stop, IntType step) // = 1
     {
         if (step == IntType(0))
         {
@@ -76,21 +75,21 @@ namespace icrar
     }
 
     /**
-     * @brief 
+     * @brief returns a sequence of integers with interval of 1
      * 
      * @tparam IntType 
      * @param start 
-     * @param stop 
+     * @param end 
      * @return std::vector<IntType> 
      */
     template <typename IntType>
-    std::vector<IntType> range(IntType start, IntType stop)
+    std::vector<IntType> range(IntType start, IntType end)
     {
-        return range(start, stop, IntType(1));
+        return range(start, end, IntType(1));
     }
 
     /**
-     * @brief 
+     * @brief returns a sequence of integers with interval of 1 from 0
      * 
      * @tparam IntType 
      * @param stop 
@@ -101,8 +100,6 @@ namespace icrar
     {
         return range(IntType(0), stop, IntType(1));
     }
-
-    Eigen::MatrixXd arg(const Eigen::Ref<const Eigen::MatrixXcd>& a);
 
     /**
      * @brief Returns of true if all vector elements of @param lhs are within the threshold difference to @param rhs 

@@ -22,7 +22,7 @@
 
 #include "test_helper.h"
 #include <icrar/leap-accelerate/common/stream_extensions.h>
-#include <icrar/leap-accelerate/math/vector_extensions.h>
+#include <icrar/leap-accelerate/common/vector_extensions.h>
 #include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 
 void assert_near_metadata(const icrar::cpu::MetaData& expected, const icrar::cpu::MetaData& actual, const std::string& ln, const std::string& rn, const std::string& file, int line)

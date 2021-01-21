@@ -24,7 +24,7 @@
 
 #include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 
-#include <icrar/leap-accelerate/common/eigen_extensions.h>
+#include <icrar/leap-accelerate/math/eigen_extensions.h>
 #include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 
 #include <Eigen/Core>

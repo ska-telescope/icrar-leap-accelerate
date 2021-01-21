@@ -23,7 +23,7 @@
 #include "CudaLeapCalibrator.h"
 
 #include <icrar/leap-accelerate/math/casacore_helper.h>
-#include <icrar/leap-accelerate/math/vector_extensions.h>
+#include <icrar/leap-accelerate/common/vector_extensions.h>
 
 #include <icrar/leap-accelerate/model/cuda/HostIntegration.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
@@ -36,7 +36,7 @@
 
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
-#include <icrar/leap-accelerate/common/eigen_extensions.h>
+#include <icrar/leap-accelerate/math/eigen_extensions.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/timer.h>
 
@@ -186,7 +186,7 @@ namespace cuda
             // Emplace a single zero'd tensor
             input_queue.emplace_back(0, integration.GetVis().dimensions());
 
-            profiling::timer phase_rotate_timer;
+            profiling::timer solution_timer;
             for(int i = 0; i < directions.size(); ++i)
             {
                 LOG(info) << "Processing direction " << i;
@@ -217,7 +217,7 @@ namespace cuda
                     input_queue,
                     output_calibrations[solution].GetBeamCalibrations());
             }
-            LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
+            LOG(info) << "Calculated solution in " << solution_timer;
             LOG(info) << "Finished calibration in " << calibration_timer;
         }
         return cpu::CalibrationCollection(output_calibrations);
@@ -243,6 +243,7 @@ namespace cuda
         auto deviceDeltaPhaseColumn = device_vector<double>(metadata.GetI().size() + 1);
         auto cal1 = Eigen::VectorXd(metadata.GetAd1().rows());
 
+        // Cuda Calibration Pipeline
         AvgDataToPhaseAngles(deviceMetadata.GetConstantBuffer().GetI1(), deviceMetadata.GetAvgData(), devicePhaseAnglesI1);
         cuda::multiply(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd1(), devicePhaseAnglesI1, deviceCal1);
         CalcDInt(deviceMetadata.GetConstantBuffer().GetA(), deviceCal1, deviceMetadata.GetAvgData(), deviceDInt);

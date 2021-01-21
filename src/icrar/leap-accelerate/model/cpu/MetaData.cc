@@ -25,11 +25,11 @@
 
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
 
-#include <icrar/leap-accelerate/math/vector_extensions.h>
+#include <icrar/leap-accelerate/common/vector_extensions.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 #include <icrar/leap-accelerate/exception/exception.h>
-#include <icrar/leap-accelerate/common/eigen_extensions.h>
+#include <icrar/leap-accelerate/math/eigen_extensions.h>
 #include <icrar/leap-accelerate/core/ioutils.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 
@@ -39,6 +39,19 @@ namespace icrar
 {
 namespace cpu
 {
+    std::vector<size_t> GetMatches(Eigen::Matrix<bool, Eigen::Dynamic, 1> container)
+    {
+        std::vector<size_t> result; 
+        for(int row = 0; row < container.rows(); row++)
+        {
+            if(container(row))
+            {
+                result.push_back(row);
+            }
+        }
+        return result;
+    }
+
     MetaData::MetaData(const icrar::MeasurementSet& ms, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool useCache)
     : m_constants({})
     , m_minimumBaselineThreshold(minimumBaselineThreshold)
@@ -49,8 +62,6 @@ namespace cpu
 
         m_constants.nbaselines = ms.GetNumBaselines();
         m_constants.referenceAntenna = refAnt ? refAnt.get() : ms.GetTotalAntennas() - 1;
-
-        std::cout << m_constants.referenceAntenna << std::endl;
 
         m_constants.channels = 0;
         m_constants.freq_start_hz = 0;
@@ -83,21 +94,32 @@ namespace cpu
         m_avgData = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
         LOG(info) << "avg_data: " << memory_amount(m_avgData.size() * sizeof(std::complex<double>));
 
-        auto flaggedBaselines = ms.GetFilteredBaselines(m_minimumBaselineThreshold);
+        //Flags need to be constant in order to calculate a single A matrix
+        auto flags = ms.GetFlaggedBaselines();
+        for(unsigned int timestepIndex = 0; timestepIndex < ms.GetNumTimesteps(); timestepIndex++)
+        {
+            auto checkFlags = ms.GetFlaggedBaselines(timestepIndex);
+            //std::cout << GetMatches(checkFlags) << std::endl;
+            if(checkFlags != flags)
+            {
+                LOG(warning) << "baseline flags not consistent for timestep " << timestepIndex << std::endl;
+                //throw exception("baseline flags not consistent for each timestep", __FILE__, __LINE__);
+            }
+        }
+        auto filteredBaselines = ms.GetFilteredBaselines(m_minimumBaselineThreshold);
         
         //select the first epoch only
         auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1); //TODO(calgray): assuming epoch indices are sorted
-
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumnRange(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
 
         LOG(info) << "Calculating PhaseMatrix A1";
-        std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), flaggedBaselines, m_constants.referenceAntenna);
+        std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), filteredBaselines, m_constants.referenceAntenna);
         trace_matrix(m_A1, "A1");
         trace_matrix(m_I1, "I1");
 
         LOG(info) << "Calculating PhaseMatrix A";
-        std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), flaggedBaselines, boost::none);
+        std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), filteredBaselines, boost::none);
         trace_matrix(m_A, "A");
 
 

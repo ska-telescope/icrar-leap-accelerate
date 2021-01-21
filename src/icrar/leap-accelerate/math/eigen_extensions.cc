@@ -21,7 +21,7 @@
  * MA 02111 - 1307  USA
  */
 
-#include "vector_extensions.h"
+#include "eigen_extensions.h"
 
 namespace icrar
 {

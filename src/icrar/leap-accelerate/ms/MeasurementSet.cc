@@ -23,8 +23,9 @@
 #include "MeasurementSet.h"
 #include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
-#include <icrar/leap-accelerate/common/eigen_extensions.h>
+#include <icrar/leap-accelerate/math/eigen_extensions.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
+#include <icrar/leap-accelerate/common/vector_extensions.h>
 #include <cstddef>
 
 namespace icrar
@@ -110,7 +111,12 @@ namespace icrar
         return m_measurementSet->antenna().nrow();
     }
 
-    std::vector<double> MeasurementSet::GetEpochs() const
+    unsigned int MeasurementSet::GetNumTimesteps() const
+    {
+        return GetNumRows() / GetNumBaselines();
+    }
+
+    std::vector<double> MeasurementSet::GetTimesteps() const
     {
         casacore::Vector<double> time = m_msmc->time().getColumn();
         unsigned int timesteps = (unsigned int)GetNumRows() / GetNumBaselines();
@@ -171,20 +177,18 @@ namespace icrar
         }
     }
 
-    Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFlaggedBaselines() const
+    Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFlaggedBaselines(unsigned int timestep) const
     {
-        // TODO(calgray): may want to consider using logical OR over for each channel and polarization.
         auto nBaselines = GetNumBaselines();
-
-        // Selects the flags of the first epoch
-        auto epochIndices = casacore::Slicer(casacore::Slice(0, nBaselines));
+        auto timestepIndices = casacore::Slicer(casacore::Slice(timestep*nBaselines, nBaselines));
         
+        // TODO(calgray): may want to consider using logical OR over for each channel and polarization.
         // Selects only the flags of the first channel and polarization
         auto flagSlice = casacore::Slicer(
             casacore::IPosition(2, 0, 0),
             casacore::IPosition(2, 1, 1),
             casacore::IPosition(2, 1, 1));
-        casacore::Vector<bool> flags = m_msmc->flag().getColumnRange(epochIndices, flagSlice);
+        casacore::Vector<bool> flags = m_msmc->flag().getColumnRange(timestepIndices, flagSlice);
         return ToVector(flags);
     }
 
