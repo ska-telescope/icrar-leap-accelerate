@@ -159,20 +159,21 @@ namespace icrar
         }
     }
 
-    Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFlaggedBaselines() const
+    Eigen::Matrix<bool, Eigen::Dynamic, 1> MeasurementSet::GetFlaggedBaselines() const
     {
-        // TODO(calgray): may want to consider using logical OR over for each channel and polarization.
         auto nBaselines = GetNumBaselines();
 
         // Selects the flags of the first epoch
         auto epochIndices = casacore::Slicer(casacore::Slice(0, nBaselines));
         
         // Selects only the flags of the first channel and polarization
+        // TODO(calgray): may want to consider using logical OR over for each channel and polarization.
         auto flagSlice = casacore::Slicer(
             casacore::IPosition(2, 0, 0),
             casacore::IPosition(2, 1, 1),
             casacore::IPosition(2, 1, 1));
         casacore::Vector<bool> flags = m_msmc->flag().getColumnRange(epochIndices, flagSlice);
+
         return ToVector(flags);
     }
 
@@ -194,7 +195,7 @@ namespace icrar
             casacore::Matrix<double> uv = m_msmc->uvw().getColumn(firstChannelSlicer);
 
             // TODO(calgray): uv is of size baselines * timesteps, consider throwing a warning if flags change
-            //  in later timesteps
+            // in later timesteps
             for(unsigned int i = 0; i < nBaselines; i++)
             {
                 if(std::sqrt(uv(i, 0) * uv(i, 0) + uv(i, 1) * uv(i, 1)) < minimumBaselineThreshold)
