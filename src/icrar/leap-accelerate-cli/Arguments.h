@@ -23,14 +23,13 @@
 #pragma once
 
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
+#include <icrar/leap-accelerate/common/Slice.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 
-#include <icrar/leap-accelerate/common/Slice.h>
-
 #include <boost/optional.hpp>
-#include <string>
 #include <vector>
+#include <string>
 #include <memory>
 #include <fstream>
 #include <iostream>

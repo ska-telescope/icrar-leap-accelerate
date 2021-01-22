@@ -20,7 +20,7 @@
 #  * cuda 10.1
 #  * and more
 #
-# For details see https://gitlab.com/ska-telescope/dspr
+# For details see https://gitlab.com/ska-telescope/dspsr
 #
 # To run locally use docker command:
 # sudo docker run -it nexus.engageska-portugal.pt/ska-docker/dspsr-build

@@ -113,16 +113,16 @@ namespace cuda
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
-        << "timesteps: " << ms.GetNumRows() / ms.GetNumBaselines();
+        << "timesteps: " << ms.GetNumTimesteps();
 
         profiling::timer calibration_timer;
         profiling::timer integration_read_timer;
         auto output_calibrations = std::vector<cpu::Calibration>();
         auto input_queue = std::vector<cuda::DeviceIntegration>();
 
-        size_t timesteps = (size_t)ms.GetNumRows() / ms.GetNumBaselines();
+        size_t timesteps = ms.GetNumTimesteps();
         Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
-
+        std::vector<double> epochs = ms.GetEpochs();
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData Constants";
@@ -153,12 +153,12 @@ namespace cuda
         for(int solution = 0; solution < solutions; solution++)
         {
             output_calibrations.emplace_back(
-                solution * validatedSolutionInterval.interval,
-                (solution+1) * validatedSolutionInterval.interval);
+                epochs[solution * validatedSolutionInterval.interval],
+                epochs[(solution+1) * validatedSolutionInterval.interval - 1]);
             input_queue.clear();
 
             // Flooring to remove incomplete measurements
-            int integrations = ms.GetNumRows() / ms.GetNumBaselines();
+            int integrations = ms.GetNumTimesteps();
             if(integrations == 0)
             {
                 std::stringstream ss;

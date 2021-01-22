@@ -110,10 +110,15 @@ namespace icrar
         return m_measurementSet->antenna().nrow();
     }
 
+    unsigned int MeasurementSet::GetNumTimesteps() const
+    {
+        return (unsigned int)GetNumRows() / GetNumBaselines();
+    }
+
     std::vector<double> MeasurementSet::GetEpochs() const
     {
         casacore::Vector<double> time = m_msmc->time().getColumn();
-        unsigned int timesteps = (unsigned int)GetNumRows() / GetNumBaselines();
+        unsigned int timesteps = GetNumTimesteps();
         std::vector<double> result;
         for(unsigned int i = 0; i < timesteps; ++i)
         {

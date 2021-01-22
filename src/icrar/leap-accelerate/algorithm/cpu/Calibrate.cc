@@ -78,7 +78,7 @@ namespace cpu
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
-        << "timesteps: " << ms.GetNumRows() / (float)ms.GetNumBaselines();
+        << "timesteps: " << ms.GetNumTimesteps();
 
         profiling::timer calibration_timer;
 
@@ -88,8 +88,9 @@ namespace cpu
         profiling::timer integration_read_timer;
 
 
-        size_t timesteps = (size_t)ms.GetNumRows() / ms.GetNumBaselines();
+        size_t timesteps = ms.GetNumTimesteps();
         Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
+        std::vector<double> epochs = ms.GetEpochs();
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
@@ -104,7 +105,9 @@ namespace cpu
         constexpr unsigned int integrationNumber = 0;
         for(size_t solution = 0; solution < solutions; ++solution)
         {
-            output_calibrations.emplace_back(solution * validatedSolutionInterval.interval, (solution+1) * validatedSolutionInterval.interval);
+            output_calibrations.emplace_back(
+                epochs[solution * validatedSolutionInterval.interval],
+                epochs[(solution+1) * validatedSolutionInterval.interval - 1]);
             input_queues.clear();
 
             //Iterate solutions
@@ -122,13 +125,10 @@ namespace cpu
                 queue.push_back(integration);
                 input_queues.push_back(queue);
             }
-
             LOG(info) << "Read integration data in " << integration_read_timer;
 
-            //auto epochs = ms.GetEpochs();
-            metadata.SetUVW(integration.GetUVW());
-
             profiling::timer phase_rotate_timer;
+            metadata.SetUVW(integration.GetUVW());
             for(size_t i = 0; i < directions.size(); ++i)
             {
                 LOG(info) << "Processing direction " << i;

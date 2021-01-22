@@ -131,6 +131,13 @@ namespace icrar
         unsigned int GetNumRows() const;
 
         /**
+         * @brief Gets the total number of timesteps in the measurement set
+         * 
+         * @return unsigned int 
+         */
+        unsigned int GetNumTimesteps() const;
+
+        /**
          * @brief Get the Epochs object
          * 
          * @return std::vector<double> 
