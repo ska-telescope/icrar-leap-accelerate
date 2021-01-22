@@ -131,6 +131,13 @@ namespace icrar
         unsigned int GetNumRows() const;
 
         /**
+         * @brief Gets the total number of timesteps in the measurement set
+         * 
+         * @return unsigned int 
+         */
+        unsigned int GetNumTimesteps() const;
+
+        /**
          * @brief Get the Epochs object
          * 
          * @return std::vector<double> 
@@ -177,7 +184,7 @@ namespace icrar
         Eigen::Matrix<bool, -1, 1> GetFilteredBaselines(double minimumBaselineThreshold = 0.0) const;
 
         /**
-         * @brief Gets the number of baselines filtered by measurementset flagging and short baselines
+         * @brief Gets the number of baselines that are flagged baselines or short baselines
          * 
          * @param minimumBaselineThreshold 
          * @return unsigned int 
