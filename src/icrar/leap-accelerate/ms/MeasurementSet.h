@@ -177,7 +177,7 @@ namespace icrar
         Eigen::Matrix<bool, -1, 1> GetFilteredBaselines(double minimumBaselineThreshold = 0.0) const;
 
         /**
-         * @brief Gets the number of baselines filtered by measurementset flagging and short baselines
+         * @brief Gets the number of baselines that are flagged baselines or short baselines
          * 
          * @param minimumBaselineThreshold 
          * @return unsigned int 
