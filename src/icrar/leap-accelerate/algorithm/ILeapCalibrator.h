@@ -66,5 +66,14 @@ namespace icrar
             double minimumBaselineThreshold,
             boost::optional<unsigned int> referenceAntenna,
             bool isFileSystemCacheEnabled) = 0;
+
+        virtual void Calibrate(
+            const icrar::MeasurementSet& ms,
+            const std::vector<SphericalDirection>& directions,
+            const Slice& solutionInterval,
+            double minimumBaselineThreshold,
+            boost::optional<unsigned int> referenceAntenna,
+            bool isFileSystemCacheEnabled,
+            std::ostream& output) = 0;
     };
 } // namespace icrar

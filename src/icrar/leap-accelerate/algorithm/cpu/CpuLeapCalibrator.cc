@@ -66,6 +66,18 @@ namespace cpu
         boost::optional<unsigned int> referenceAntenna,
         bool isFileSystemCacheEnabled)
     {
+        
+    }
+
+    virtual void CpuLeapCalibrator::Calibrate(
+            const icrar::MeasurementSet& ms,
+            const std::vector<SphericalDirection>& directions,
+            const Slice& solutionInterval,
+            double minimumBaselineThreshold,
+            boost::optional<unsigned int> referenceAntenna,
+            bool isFileSystemCacheEnabled,
+            std::ostream& output)
+    {
         LOG(info) << "Starting calibration using cpu";
         LOG(info)
         << "stations: " << ms.GetNumStations() << ", "
@@ -87,7 +99,6 @@ namespace cpu
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
 
         profiling::timer integration_read_timer;
-
 
         size_t timesteps = (size_t)ms.GetNumRows() / ms.GetNumBaselines();
         Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
@@ -123,7 +134,6 @@ namespace cpu
                 queue.push_back(integration);
                 input_queues.push_back(queue);
             }
-
             LOG(info) << "Read integration data in " << integration_read_timer;
 
             //auto epochs = ms.GetEpochs();
@@ -141,8 +151,9 @@ namespace cpu
 
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
             LOG(info) << "Finished calibration in " << calibration_timer;
+
+            co_return output_calibrations[solution];
         }
-        return CalibrationCollection(output_calibrations);
     }
 
     void CpuLeapCalibrator::PhaseRotate(
