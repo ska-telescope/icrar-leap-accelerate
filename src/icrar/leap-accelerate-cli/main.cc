@@ -91,6 +91,7 @@ int main(int argc, char** argv)
         ("output,o", po::value<boost::optional<std::string>>(&rawArgs.outputFilePath), "Calibration output file path")
         ("directions,d", po::value<boost::optional<std::string>>(&rawArgs.directions), "Directions to calibrations")
         ("stations,s", po::value<boost::optional<int>>(&rawArgs.stations), "Overrides number of stations in measurement set")
+        ("referenceAntenna,r", po::value<boost::optional<unsigned int>>(&rawArgs.referenceAntenna), "Specifies the reference antenna, defaults to the last antenna")
         // TODO(calgray): app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
         // TODO(calgray): app.add_option("v,--solutionInterval");
         ("implementation,i", po::value<boost::optional<std::string>>(&rawArgs.computeImplementation), "Compute implementation type (cpu, cuda)")
@@ -122,7 +123,12 @@ int main(int argc, char** argv)
             LOG(info) << arg_string(argc, argv);
 
             auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
-            auto result = calibrator->Calibrate(args.GetMeasurementSet(), args.GetDirections(), args.GetMinimumBaselineThreshold(), args.IsFileSystemCacheEnabled());
+            auto result = calibrator->Calibrate(
+                args.GetMeasurementSet(),
+                args.GetDirections(),
+                args.GetMinimumBaselineThreshold(),
+                args.GetReferenceAntenna(),
+                args.IsFileSystemCacheEnabled());
             cpu::PrintResult(result, args.GetOutputStream());
         }
     }

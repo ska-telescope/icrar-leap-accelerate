@@ -74,6 +74,8 @@ namespace cpu
     {
         uint32_t nbaselines; //the total number station pairs (excluding self cycles) 
 
+        uint32_t referenceAntenna;
+
         uint32_t channels; // The number of channels of the current observation
         uint32_t num_pols; // The number of polarizations used by the current observation
         uint32_t stations; // The number of stations used by the current observation
@@ -96,8 +98,8 @@ namespace cpu
     };
 
     /**
-     * @brief container of phaserotation constants and variables
-     * 
+     * @brief container of phaserotation constants and variables for calibrating a single beam.
+     * Can be mutated to calibrate for multiple directions.
      */
     class MetaData
     {
@@ -118,38 +120,54 @@ namespace cpu
         std::vector<icrar::MVuvw> m_rotatedUVW; // late initialized
     
         SphericalDirection m_direction; // calibration direction, late initialized
-
         Eigen::Matrix3d m_dd; // direction matrix, late initialized
-        
         Eigen::MatrixXcd m_avgData; // matrix of size (baselines, polarizations), late initialized
     
     public:
         /**
          * @brief Construct a new MetaData object. SetDirection() must be called after construction
          * 
-         * @param ms 
-         * @param uvws 
-         * @param minimumBaselineThreshold
-         * @param useCache
+         * @param ms measurement set to read observations from
+         * @param uvws uvw coordinates of stations
+         * @param refAnt the reference antenna index, default is the last index
+         * @param minimumBaselineThreshold baseline lengths less that the minimum in meters are flagged
+         * @param useCache whether to load Ad matrix from cache
          */
-        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold = 0.0, bool useCache = true);
+        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool useCache = true);
 
         /**
-         * @brief Construct a new MetaData object
+         * @brief Construct a new MetaData object.
          * 
-         * @param ms 
-         * @param uvws 
-         * @param minimumBaselineThreshold
-         * @param useCache
+         * @param ms measurement set to read observations from
+         * @param direction the direction of the beam to calibrate for
+         * @param uvws uvw coordinates of stations
+         * @param refAnt the reference antenna index, default is the last index
+         * @param minimumBaselineThreshold baseline lengths less that the minimum in meters are flagged
+         * @param useCache whether to load Ad matrix from cache
          */
-        MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold = 0.0, bool useCache = true);
+        MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool useCache = true);
 
         const Constants& GetConstants() const;
 
+        /**
+         * @brief Matrix of baseline pairs of shape [baselines, stations] 
+         */
         const Eigen::MatrixXd& GetA() const;
+
+        /**
+         * @brief Vector of indexes of the stations that are not flagged, shape [stations]
+         */
         const Eigen::VectorXi& GetI() const;
+
+        /**
+         * @brief The pseudoinverse of A with shape [stations, baselines]
+         */
         const Eigen::MatrixXd& GetAd() const;
 
+        /**
+         * @brief Matrix of baselines using the reference antenna of shape [stations+1, stations]
+         * the last row represents the reference antenna
+         */
         const Eigen::MatrixXd& GetA1() const;
         const Eigen::VectorXi& GetI1() const;
         const Eigen::MatrixXd& GetAd1() const;
@@ -165,7 +183,7 @@ namespace cpu
 
         /**
          * @brief Updates the rotated UVW vector using the DD matrix
-         * @pre DD is set, oldUVW is set
+         * @pre DD is set, UVW is set
          */
         void CalcUVW();
 

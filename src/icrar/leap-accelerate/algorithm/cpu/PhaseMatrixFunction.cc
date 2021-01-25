@@ -24,6 +24,8 @@
 #include "PhaseMatrixFunction.h"
 
 #include <boost/numeric/conversion/cast.hpp>
+#include <icrar/leap-accelerate/exception/exception.h>
+#include <sstream>
 #include <set>
 
 namespace icrar
@@ -34,21 +36,24 @@ namespace cpu
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
         const Eigen::Matrix<bool, Eigen::Dynamic, 1>& fg,
-        int refAnt)
+        boost::optional<uint32_t> refAnt)
     {
         if(a1.size() != a2.size() && a1.size() != fg.size())
         {
-            throw std::invalid_argument("a1 and a2 must be equal size");
+            throw invalid_argument_exception("a1 and a2 must be equal size", "a", __FILE__, __LINE__);
         }
 
-        auto unique = std::set<std::int32_t>(a1.begin(), a1.end());
-        unique.insert(a2.begin(), a2.end());
-
-        int nAnt = boost::numeric_cast<int>(unique.size());
-
-        if(refAnt >= nAnt - 1)
+        if(refAnt.is_initialized() && refAnt.get() >= a1.size())
         {
-            throw std::invalid_argument("RefAnt out of bounds");
+            std::stringstream ss;
+            ss << "refAnt " << refAnt.get() << " is out of bounds";
+            throw invalid_argument_exception(ss.str(), "refAnt", __FILE__, __LINE__);
+        }
+        if(refAnt.is_initialized() && fg(refAnt.get()))
+        {
+            std::stringstream ss;
+            ss << "refAnt " << refAnt.get() << " is flagged";
+            throw invalid_argument_exception(ss.str(), "refAnt", __FILE__, __LINE__);
         }
 
         Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, std::max(a1.maxCoeff(), a2.maxCoeff()) + 1);
@@ -62,7 +67,7 @@ namespace cpu
             if(a1(n) != a2(n))
             {
                 // skip entry if data not flagged
-                if(!fg(n) && ((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt)))))
+                if(!fg(n) && ((!refAnt.is_initialized()) || ((refAnt.is_initialized()) && ((boost::numeric_cast<uint32_t>(a1(n)) == refAnt.get()) || (boost::numeric_cast<uint32_t>(a2(n)) == refAnt.get())))))
                 {
                     A(k, a1(n)) = 1;
                     A(k, a2(n)) = -1;
@@ -71,12 +76,13 @@ namespace cpu
                 }
             }
         }
-        if(refAnt < 0)
+
+        if(!refAnt.is_initialized())
         {
             refAnt = 0;
         }
 
-        A(k, refAnt) = 1;
+        A(k, refAnt.get()) = 1;
         k++;
         
         A.conservativeResize(k, Eigen::NoChange);

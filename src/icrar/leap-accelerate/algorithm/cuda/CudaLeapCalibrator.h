@@ -81,6 +81,7 @@ namespace cuda
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             double minimumBaselineThreshold,
+            boost::optional<unsigned int> referenceAntenna,
             bool isFileSystemCacheEnabled) override;
 
         /**
@@ -154,7 +155,7 @@ namespace cuda
          * @param deltaPhaseColumn 
          * @return __host__ 
          */
-        __host__ void GenDeltaPhaseColumn(
+        __host__ void GenerateDeltaPhaseColumn(
             const device_matrix<double>& dInt,
             device_vector<double>& deltaPhaseColumn);
     };

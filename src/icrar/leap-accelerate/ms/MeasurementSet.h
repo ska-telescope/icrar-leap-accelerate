@@ -89,6 +89,12 @@ namespace icrar
         const casacore::MSColumns* GetMSColumns() const { return m_msc.get(); }
 
         /**
+         * @brief Gets the total number of antennas including flagged antennas.
+         * 
+         */
+        unsigned int GetTotalAntennas() const;
+
+        /**
          * @brief Gets the number of stations excluding flagged stations. Overridable at construction.
          * 
          * @return unsigned int 
@@ -164,7 +170,7 @@ namespace icrar
         Eigen::Matrix<bool, -1, 1> GetFilteredBaselines(double minimumBaselineThreshold = 0.0) const;
 
         /**
-         * @brief Gets the number of baselines filtered by measurementset flagging and short baselines
+         * @brief Gets the number of baselines that are flagged baselines or short baselines
          * 
          * @param minimumBaselineThreshold 
          * @return unsigned int 

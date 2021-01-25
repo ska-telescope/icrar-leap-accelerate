@@ -29,7 +29,7 @@
 
 #include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
-#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/cpu/Calibrate.h>
 #include <icrar/leap-accelerate/algorithm/cuda/CudaLeapCalibrator.h>
 
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
@@ -103,7 +103,7 @@ namespace icrar
 
             std::vector<std::vector<cpu::IntegrationResult>> integrations;
             std::vector<std::vector<cpu::CalibrationResult>> calibrations;
-            std::tie(integrations, calibrations) = LeapCalibratorFactory::Create(impl)->Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
+            std::tie(integrations, calibrations) = LeapCalibratorFactory::Create(impl)->Calibrate(*ms, ToDirectionVector(directions), 0.0, 0, false);
 
             auto expected = GetExpectedCalibration();
 
@@ -248,13 +248,13 @@ namespace icrar
                     throw icrar::invalid_argument_exception("invalid PhaseMatrixFunction implementation", "impl", __FILE__, __LINE__);
                 }
             }
-            catch(std::invalid_argument& e)
+            catch(invalid_argument_exception& e)
             {
                 SUCCEED();
             }
             catch(...)
             {
-                FAIL() << "Expected std::invalid_argument";
+                FAIL() << "Expected icrar::invalid_argument_exception";
             }
         }
 
@@ -299,7 +299,7 @@ namespace icrar
                 auto ea1 = ToVector(a1);
                 auto ea2 = ToVector(a2);
                 auto efg = ToVector(flags);
-                std::tie(A, I) = cpu::PhaseMatrixFunction(ea1, ea2, efg, -1);
+                std::tie(A, I) = cpu::PhaseMatrixFunction(ea1, ea2, efg, boost::none);
                 Ad = icrar::cpu::PseudoInverse(A);
 
                 std::tie(A1, I1) = cpu::PhaseMatrixFunction(ea1, ea2, efg, 0);

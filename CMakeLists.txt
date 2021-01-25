@@ -188,8 +188,6 @@ find_package(RapidJSON REQUIRED)
 # Local Targets
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_subdirectory(src/icrar/leap-accelerate)
-add_subdirectory(src/icrar/leap-accelerate-client)
-add_subdirectory(src/icrar/leap-accelerate-server)
 add_subdirectory(src/icrar/leap-accelerate-cli)
 
 # Install cmake config + version + target files
