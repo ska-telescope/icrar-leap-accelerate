@@ -31,6 +31,7 @@
 #include <casacore/ms/MeasurementSets.h>
 #include <Eigen/Core>
 
+#include <boost/coroutine/all.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 
@@ -49,6 +50,15 @@ namespace cpu
     class CpuLeapCalibrator : public ILeapCalibrator
     {
     public:
+        static void AsyncCalibrate(
+            boost::coroutines::coroutine<cpu::Calibration&>::push_type& sink,
+            const icrar::MeasurementSet& ms,
+            const std::vector<SphericalDirection>& directions,
+            const Slice& solutionInterval,
+            double minimumBaselineThreshold,
+            boost::optional<unsigned int> referenceAntenna,
+            bool isFileSystemCacheEnabled);
+
         /**
          * @copydoc ILeapEngine::ILeapCalibrator
          * Calibrates by performing phase rotation for each direction in @p directions
@@ -61,15 +71,6 @@ namespace cpu
             double minimumBaselineThreshold,
             boost::optional<unsigned int> referenceAntenna,
             bool isFileSystemCacheEnabled) override;
-
-        virtual void Calibrate(
-            const icrar::MeasurementSet& ms,
-            const std::vector<SphericalDirection>& directions,
-            const Slice& solutionInterval,
-            double minimumBaselineThreshold,
-            boost::optional<unsigned int> referenceAntenna,
-            bool isFileSystemCacheEnabled,
-            std::ostream& output) override;
 
         /**
          * @brief Performs rotation, summing and calibration for @p direction

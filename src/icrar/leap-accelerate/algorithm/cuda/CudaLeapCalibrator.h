@@ -77,6 +77,14 @@ namespace cuda
         CudaLeapCalibrator();
         ~CudaLeapCalibrator() override;
 
+        static cpu::Calibration AsyncCalibrate(
+            const icrar::MeasurementSet& ms,
+            const std::vector<SphericalDirection>& directions,
+            const Slice& solutionInterval,
+            double minimumBaselineThreshold,
+            boost::optional<unsigned int> referenceAntenna,
+            bool isFileSystemCacheEnabled) { return cpu::Calibration(0,0); }
+
         virtual cpu::CalibrationCollection Calibrate(
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
