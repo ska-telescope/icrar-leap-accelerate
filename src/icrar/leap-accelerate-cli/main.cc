@@ -126,23 +126,41 @@ int main(int argc, char** argv)
             LOG(info) << version_information(argv[0]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             LOG(info) << arg_string(argc, argv);
 
-            using namespace boost::coroutines;
-            auto func = [&](boost::coroutines::coroutine<cpu::Calibration&>::push_type& sink)
+            bool async = false;
+            if(async)
             {
-                cpu::CpuLeapCalibrator::AsyncCalibrate(
-                    sink,
+                using namespace boost::coroutines;
+                auto func = [&](boost::coroutines::coroutine<cpu::Calibration&>::push_type& sink)
+                {
+                    cpu::CpuLeapCalibrator::AsyncCalibrate(
+                        sink,
+                        args.GetMeasurementSet(),
+                        args.GetDirections(),
+                        args.GetSolutionInterval(),
+                        args.GetMinimumBaselineThreshold(),
+                        args.GetReferenceAntenna(),
+                        args.IsFileSystemCacheEnabled());
+                };
+                boost::coroutines::coroutine<cpu::Calibration&>::pull_type source {func};
+                for(auto& cal : source)
+                {
+                    cal.Serialize(args.GetOutputStream());
+                }
+            }
+            else
+            {
+                auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
+                auto result = calibrator->Calibrate(
                     args.GetMeasurementSet(),
                     args.GetDirections(),
                     args.GetSolutionInterval(),
                     args.GetMinimumBaselineThreshold(),
                     args.GetReferenceAntenna(),
                     args.IsFileSystemCacheEnabled());
-            };
-            boost::coroutines::coroutine<cpu::Calibration&>::pull_type source {func};
-            for(auto& cal : source)
-            {
-                cal.Serialize(args.GetOutputStream());
+                result.Serialize(args.GetOutputStream());
             }
+            
+            
         }
     }
     catch(const std::exception& e)

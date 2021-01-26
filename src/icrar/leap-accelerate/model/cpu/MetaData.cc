@@ -133,7 +133,6 @@ namespace cpu
         {
             LOG(warning) << "Ad is degenerate";
         }
-        std::cout << m_Ad1 * m_A1 << std::endl;
         if(!(m_Ad1 * m_A1).isApprox(Eigen::MatrixXd::Identity(m_A1.cols(), m_A1.cols()), 0.001))
         {
             LOG(warning) << "Ad1 is degenerate";
