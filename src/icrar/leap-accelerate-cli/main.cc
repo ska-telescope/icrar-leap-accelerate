@@ -45,6 +45,8 @@
 #include <string>
 #include <exception>
 
+#include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
+
 using namespace icrar;
 namespace po = boost::program_options;
 
@@ -125,7 +127,6 @@ int main(int argc, char** argv)
             LOG(info) << arg_string(argc, argv);
 
             using namespace boost::coroutines;
-
             auto func = [&](boost::coroutines::coroutine<cpu::Calibration&>::push_type& sink)
             {
                 cpu::CpuLeapCalibrator::AsyncCalibrate(
@@ -138,29 +139,15 @@ int main(int argc, char** argv)
                     args.IsFileSystemCacheEnabled());
             };
             boost::coroutines::coroutine<cpu::Calibration&>::pull_type source {func};
-            
             for(auto& cal : source)
             {
                 cal.Serialize(args.GetOutputStream());
-                std::cout << "done" << std::endl;
             }
-
-            //CpuLeapCalibrator::AsyncCalibrate();
-
-            // auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
-            // auto result = calibrator->Calibrate(
-            //     args.GetMeasurementSet(),
-            //     args.GetDirections(),
-            //     args.GetSolutionInterval(),
-            //     args.GetMinimumBaselineThreshold(),
-            //     args.GetReferenceAntenna(),
-            //     args.IsFileSystemCacheEnabled());
-            // result.Serialize(args.GetOutputStream());
         }
     }
     catch(const std::exception& e)
     {
-        std::cerr << e.what() << '\n';
+        std::cerr << "error: " << e.what() << '\n';
         return -1;
     }
 }
