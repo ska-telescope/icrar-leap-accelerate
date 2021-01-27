@@ -67,7 +67,6 @@ set(sources
     math/cuda/matrix.h
     math/cuda/matrix.cuh
     math/cuda/matrix_multiply.cuh
-    math/cuda/matrix_transpose.cuh
     )
     
     set(cuda_sources
