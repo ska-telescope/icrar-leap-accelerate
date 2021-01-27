@@ -124,4 +124,3 @@ TEST_F(CudaVectorTests, test_gpu_vector_add6) { test_vector_add<double>(1000000)
 
 TEST_F(CudaVectorTests, test_gpu_device_vector_add0) { test_device_vector_add<double>(1); }
 TEST_F(CudaVectorTests, test_gpu_device_vector_add4) { test_device_vector_add<double>(10000); }
-
