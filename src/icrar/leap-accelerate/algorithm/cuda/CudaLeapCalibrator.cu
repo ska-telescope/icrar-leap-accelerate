@@ -209,7 +209,6 @@ namespace cuda
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
             LOG(info) << "Finished calibration in " << calibration_timer;
         }
-        cudaHostUnregister(integration.GetVis().data());
 
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
