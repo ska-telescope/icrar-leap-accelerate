@@ -91,13 +91,14 @@ namespace cuda
         //checkCudaErrors(cudaDeviceReset());
     }
 
-    cpu::CalibrationCollection CudaLeapCalibrator::Calibrate(
-        const icrar::MeasurementSet& ms,
-        const std::vector<SphericalDirection>& directions,
-        const Slice& solutionInterval,
-        double minimumBaselineThreshold,
-        boost::optional<unsigned int> referenceAntenna,
-        bool isFileSystemCacheEnabled)
+    void CudaLeapCalibrator::AsyncCalibrate(
+            boost::coroutines::coroutine<cpu::Calibration&>::push_type& sink,
+            const icrar::MeasurementSet& ms,
+            const std::vector<SphericalDirection>& directions,
+            const Slice& solutionInterval,
+            double minimumBaselineThreshold,
+            boost::optional<unsigned int> referenceAntenna,
+            bool isFileSystemCacheEnabled)
     {
         LOG(info) << "Starting Calibration using cuda";
         LOG(info)
@@ -219,8 +220,8 @@ namespace cuda
             }
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
             LOG(info) << "Finished calibration in " << calibration_timer;
+            sink(output_calibrations[solution]);
         }
-        return cpu::CalibrationCollection(output_calibrations);
     }
 
     void CudaLeapCalibrator::PhaseRotate(

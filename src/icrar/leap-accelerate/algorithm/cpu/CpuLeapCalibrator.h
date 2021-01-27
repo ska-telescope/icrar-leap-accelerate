@@ -50,21 +50,14 @@ namespace cpu
     class CpuLeapCalibrator : public ILeapCalibrator
     {
     public:
-        static void AsyncCalibrate(
-            boost::coroutines::coroutine<cpu::Calibration&>::push_type& sink,
-            const icrar::MeasurementSet& ms,
-            const std::vector<SphericalDirection>& directions,
-            const Slice& solutionInterval,
-            double minimumBaselineThreshold,
-            boost::optional<unsigned int> referenceAntenna,
-            bool isFileSystemCacheEnabled);
 
         /**
-         * @copydoc ILeapEngine::ILeapCalibrator
+         * @copydoc ILeapCalibrator
          * Calibrates by performing phase rotation for each direction in @p directions
-         * by splitting uvws into integration batches.
+         * by splitting uvws into integration batches per timestep.
          */
-        virtual cpu::CalibrationCollection Calibrate(
+        void AsyncCalibrate(
+            boost::coroutines::coroutine<cpu::Calibration&>::push_type& sink,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             const Slice& solutionInterval,

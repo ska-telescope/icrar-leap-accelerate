@@ -39,6 +39,7 @@
 #include <boost/optional/optional_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/coroutine/all.hpp>
+#include <boost/thread.hpp>
 
 #include <iostream>
 #include <queue>
@@ -84,7 +85,7 @@ int main(int argc, char** argv)
     auto appName = "LeapAccelerateCLI";
 
     po::options_description desc(appName);
-     
+
     CLIArguments rawArgs;
     desc.add_options()
         ("help,h", "display help message")
@@ -126,13 +127,20 @@ int main(int argc, char** argv)
             LOG(info) << version_information(argv[0]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             LOG(info) << arg_string(argc, argv);
 
+
+
+            boost::thread::attributes main_attributes;
+            std::cout << "stack size:" << main_attributes.get_stack_size() << std::endl;
             bool async = false;
             if(async)
             {
+                boost::thread::attributes thread_attributes;
+                std::cout << "thread stack size:" << thread_attributes.get_stack_size() << std::endl;
                 using namespace boost::coroutines;
-                auto func = [&](boost::coroutines::coroutine<cpu::Calibration&>::push_type& sink)
+                auto func = [&](asymmetric_coroutine<cpu::Calibration&>::push_type& sink)
                 {
-                    cpu::CpuLeapCalibrator::AsyncCalibrate(
+                    auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
+                    calibrator->AsyncCalibrate(
                         sink,
                         args.GetMeasurementSet(),
                         args.GetDirections(),
@@ -141,7 +149,7 @@ int main(int argc, char** argv)
                         args.GetReferenceAntenna(),
                         args.IsFileSystemCacheEnabled());
                 };
-                boost::coroutines::coroutine<cpu::Calibration&>::pull_type source {func};
+                asymmetric_coroutine<cpu::Calibration&>::pull_type source {func};
                 for(auto& cal : source)
                 {
                     cal.Serialize(args.GetOutputStream());
@@ -149,18 +157,30 @@ int main(int argc, char** argv)
             }
             else
             {
-                auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
-                auto result = calibrator->Calibrate(
-                    args.GetMeasurementSet(),
-                    args.GetDirections(),
-                    args.GetSolutionInterval(),
-                    args.GetMinimumBaselineThreshold(),
-                    args.GetReferenceAntenna(),
-                    args.IsFileSystemCacheEnabled());
-                result.Serialize(args.GetOutputStream());
+                boost::thread::attributes thread_attributes;
+                std::cout << "thread stack size:" << thread_attributes.get_stack_size() << std::endl;
+                using namespace boost::coroutines;
+                auto func = [&](asymmetric_coroutine<cpu::Calibration&>::push_type& sink)
+                {
+                    auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
+                    calibrator->AsyncCalibrate(
+                        sink,
+                        args.GetMeasurementSet(),
+                        args.GetDirections(),
+                        args.GetSolutionInterval(),
+                        args.GetMinimumBaselineThreshold(),
+                        args.GetReferenceAntenna(),
+                        args.IsFileSystemCacheEnabled());
+                };
+                asymmetric_coroutine<cpu::Calibration&>::pull_type source {func};
+                std::vector<cpu::Calibration> calibrations;
+                for(auto& cal : source)
+                {
+                    calibrations.push_back(cal);
+                }
+                auto calibrationCollection = cpu::CalibrationCollection(std::move(calibrations));
+                calibrationCollection.Serialize(args.GetOutputStream());
             }
-            
-            
         }
     }
     catch(const std::exception& e)

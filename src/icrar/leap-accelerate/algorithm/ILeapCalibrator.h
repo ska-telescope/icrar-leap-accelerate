@@ -25,6 +25,7 @@
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/common/Slice.h>
 #include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
+#include <boost/coroutine/all.hpp>
 #include <boost/noncopyable.hpp>
 #include <vector>
 
@@ -49,7 +50,7 @@ namespace icrar
         virtual ~ILeapCalibrator() = default;
 
         /**
-         * @brief Performs Leap calibration using a specialized implementation.
+         * @brief Performs Leap calibration for single or multiple solutions.
          * 
          * @param ms the mesurement set containing all input measurements
          * @param directions the directions to calibrate for
@@ -59,20 +60,13 @@ namespace icrar
          * @param isFileSystemCacheEnabled enable to use the filesystem to cache data between calibration calls
          * @return CalibrationCollection the calibrationn result
          */
-        virtual cpu::CalibrationCollection Calibrate(
+        virtual void AsyncCalibrate(
+            boost::coroutines::coroutine<cpu::Calibration&>::push_type& sink,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             const Slice& solutionInterval,
             double minimumBaselineThreshold,
             boost::optional<unsigned int> referenceAntenna,
             bool isFileSystemCacheEnabled) = 0;
-
-        // virtual cpu::Calibration AsyncCalibrate(
-        //     const icrar::MeasurementSet& ms,
-        //     const std::vector<SphericalDirection>& directions,
-        //     const Slice& solutionInterval,
-        //     double minimumBaselineThreshold,
-        //     boost::optional<unsigned int> referenceAntenna,
-        //     bool isFileSystemCacheEnabled) = 0;
     };
 } // namespace icrar
