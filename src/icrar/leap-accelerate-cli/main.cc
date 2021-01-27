@@ -130,7 +130,6 @@ int main(int argc, char** argv)
 
 
             using namespace boost::coroutines;
-            boost::thread::attributes main_attributes;
             bool async = true;
             if(async)
             {
@@ -147,7 +146,7 @@ int main(int argc, char** argv)
                         args.IsFileSystemCacheEnabled());
                 };
 
-                pull_coroutine<cpu::Calibration&> source(func, boost::coroutines::attributes(4194304));
+                pull_coroutine<cpu::Calibration&> source(func, attributes(4194304));
                 for(auto& cal : source)
                 {
                     cal.Serialize(args.GetOutputStream());
@@ -168,7 +167,7 @@ int main(int argc, char** argv)
                         args.IsFileSystemCacheEnabled());
                 };
                 
-                pull_coroutine<cpu::Calibration&> source(func, boost::coroutines::attributes(4194304));
+                pull_coroutine<cpu::Calibration&> source(func, attributes(4194304));
                 std::vector<cpu::Calibration> calibrations;
                 for(auto& cal : source)
                 {
