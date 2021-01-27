@@ -129,15 +129,12 @@ int main(int argc, char** argv)
 
 
 
+            using namespace boost::coroutines;
             boost::thread::attributes main_attributes;
-            std::cout << "stack size:" << main_attributes.get_stack_size() << std::endl;
-            bool async = false;
+            bool async = true;
             if(async)
             {
-                boost::thread::attributes thread_attributes;
-                std::cout << "thread stack size:" << thread_attributes.get_stack_size() << std::endl;
-                using namespace boost::coroutines;
-                auto func = [&](asymmetric_coroutine<cpu::Calibration&>::push_type& sink)
+                auto func = [&](coroutine<cpu::Calibration&>::push_type& sink)
                 {
                     auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
                     calibrator->AsyncCalibrate(
@@ -149,7 +146,8 @@ int main(int argc, char** argv)
                         args.GetReferenceAntenna(),
                         args.IsFileSystemCacheEnabled());
                 };
-                asymmetric_coroutine<cpu::Calibration&>::pull_type source {func};
+
+                pull_coroutine<cpu::Calibration&> source(func, boost::coroutines::attributes(4194304));
                 for(auto& cal : source)
                 {
                     cal.Serialize(args.GetOutputStream());
@@ -157,10 +155,7 @@ int main(int argc, char** argv)
             }
             else
             {
-                boost::thread::attributes thread_attributes;
-                std::cout << "thread stack size:" << thread_attributes.get_stack_size() << std::endl;
-                using namespace boost::coroutines;
-                auto func = [&](asymmetric_coroutine<cpu::Calibration&>::push_type& sink)
+                auto func = [&](coroutine<cpu::Calibration&>::push_type& sink)
                 {
                     auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
                     calibrator->AsyncCalibrate(
@@ -172,7 +167,8 @@ int main(int argc, char** argv)
                         args.GetReferenceAntenna(),
                         args.IsFileSystemCacheEnabled());
                 };
-                asymmetric_coroutine<cpu::Calibration&>::pull_type source {func};
+                
+                pull_coroutine<cpu::Calibration&> source(func, boost::coroutines::attributes(4194304));
                 std::vector<cpu::Calibration> calibrations;
                 for(auto& cal : source)
                 {
