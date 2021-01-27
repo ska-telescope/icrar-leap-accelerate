@@ -58,10 +58,10 @@ namespace cpu
         {}
 
 
-        Calibration(double startEpoch, double endEpoch, const std::vector<cpu::BeamCalibration>& beamCalibrations)
+        Calibration(double startEpoch, double endEpoch, std::vector<cpu::BeamCalibration>&& beamCalibrations)
         : m_startEpoch(startEpoch)
         , m_endEpoch(endEpoch)
-        , m_beamCalibrations(beamCalibrations)
+        , m_beamCalibrations(std::move(beamCalibrations))
         {
         }
 

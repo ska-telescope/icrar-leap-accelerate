@@ -133,7 +133,7 @@ int main(int argc, char** argv)
             bool async = true;
             if(async)
             {
-                auto func = [&](coroutine<cpu::Calibration&>::push_type& sink)
+                auto calibrate = [&](coroutine<cpu::Calibration&>::push_type& sink)
                 {
                     auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
                     calibrator->AsyncCalibrate(
@@ -146,7 +146,7 @@ int main(int argc, char** argv)
                         args.IsFileSystemCacheEnabled());
                 };
 
-                pull_coroutine<cpu::Calibration&> source(func, attributes(4194304));
+                pull_coroutine<cpu::Calibration&> source(calibrate, attributes(4194304));
                 for(auto& cal : source)
                 {
                     cal.Serialize(args.GetOutputStream());
@@ -154,7 +154,7 @@ int main(int argc, char** argv)
             }
             else
             {
-                auto func = [&](coroutine<cpu::Calibration&>::push_type& sink)
+                auto calibrate = [&](coroutine<cpu::Calibration&>::push_type& sink)
                 {
                     auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
                     calibrator->AsyncCalibrate(
@@ -167,7 +167,7 @@ int main(int argc, char** argv)
                         args.IsFileSystemCacheEnabled());
                 };
                 
-                pull_coroutine<cpu::Calibration&> source(func, attributes(4194304));
+                pull_coroutine<cpu::Calibration&> source(calibrate, attributes(4194304));
                 std::vector<cpu::Calibration> calibrations;
                 for(auto& cal : source)
                 {
