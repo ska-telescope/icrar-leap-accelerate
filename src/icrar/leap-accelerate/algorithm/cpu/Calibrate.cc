@@ -109,7 +109,8 @@ namespace cpu
             input_queues.clear();
 
             //Iterate solutions
-            profiling::timer integration_read_timer;
+            profiling::timer integration_read_timer = {};
+
             const Integration integration = Integration(
                     integrationNumber,
                     ms,
@@ -122,10 +123,10 @@ namespace cpu
             for(size_t direction = 0; direction < directions.size(); ++direction)
             {
                 auto queue = std::vector<cpu::Integration>();
-                queue.push_back(integration);
-                input_queues.push_back(queue);
+                queue.push_back(std::move(integration));
+                input_queues.push_back(std::move(queue));
             }
-
+            
             profiling::timer phase_rotate_timer;
             metadata.SetUVW(integration.GetUVW());
             for(size_t i = 0; i < directions.size(); ++i)

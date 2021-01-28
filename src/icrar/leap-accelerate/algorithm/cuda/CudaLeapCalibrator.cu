@@ -116,7 +116,7 @@ namespace cuda
         << "timesteps: " << ms.GetNumTimesteps();
 
         profiling::timer calibration_timer;
-        profiling::timer integration_read_timer;
+
         auto output_calibrations = std::vector<cpu::Calibration>();
         auto input_queue = std::vector<cuda::DeviceIntegration>();
 
@@ -167,6 +167,7 @@ namespace cuda
                 throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
             }
         
+            profiling::timer integration_read_timer;
             auto integration = cuda::HostIntegration(
                 integrationNumber,
                 ms,
