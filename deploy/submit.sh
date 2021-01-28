@@ -64,6 +64,6 @@ export PATH=$PATH:$CUDA_HOME/bin:$LEAP_HOME/bin
 #ctest --verbose
 
 # run leap command and pass through command line arguments
-LEAP_HOME/bin/LeapAccelerateCLI $*
+$LEAP_HOME/bin/LeapAccelerateCLI $*
 
 
