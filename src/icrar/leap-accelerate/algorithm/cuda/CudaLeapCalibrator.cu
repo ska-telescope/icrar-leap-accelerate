@@ -152,6 +152,7 @@ namespace cuda
         constexpr unsigned int integrationNumber = 0;
         for(int solution = 0; solution < solutions; solution++)
         {
+            profiling::timer solution_timer;
             output_calibrations.emplace_back(
                 epochs[solution * validatedSolutionInterval.interval],
                 epochs[(solution+1) * validatedSolutionInterval.interval - 1]);
@@ -218,8 +219,9 @@ namespace cuda
                     output_calibrations[solution].GetBeamCalibrations());
             }
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
-            LOG(info) << "Finished calibration in " << calibration_timer;
+            LOG(info) << "Finished solution in " << solution_timer;
         }
+        LOG(info) << "Finished calibration in " << calibration_timer;
         return cpu::CalibrationCollection(output_calibrations);
     }
 

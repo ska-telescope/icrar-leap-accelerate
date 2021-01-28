@@ -85,9 +85,6 @@ namespace cpu
         auto output_calibrations = std::vector<cpu::Calibration>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
 
-        profiling::timer integration_read_timer;
-
-
         size_t timesteps = ms.GetNumTimesteps();
         Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
         std::vector<double> epochs = ms.GetEpochs();
@@ -105,12 +102,14 @@ namespace cpu
         constexpr unsigned int integrationNumber = 0;
         for(size_t solution = 0; solution < solutions; ++solution)
         {
+            profiling::timer solution_timer;
             output_calibrations.emplace_back(
                 epochs[solution * validatedSolutionInterval.interval],
                 epochs[(solution+1) * validatedSolutionInterval.interval - 1]);
             input_queues.clear();
 
             //Iterate solutions
+            profiling::timer integration_read_timer;
             const Integration integration = Integration(
                     integrationNumber,
                     ms,
@@ -118,6 +117,7 @@ namespace cpu
                     ms.GetNumChannels(),
                     validatedSolutionInterval.interval * ms.GetNumBaselines(),
                     ms.GetNumPols());
+            LOG(info) << "Read integration data in " << integration_read_timer;
 
             for(size_t direction = 0; direction < directions.size(); ++direction)
             {
@@ -125,7 +125,6 @@ namespace cpu
                 queue.push_back(integration);
                 input_queues.push_back(queue);
             }
-            LOG(info) << "Read integration data in " << integration_read_timer;
 
             profiling::timer phase_rotate_timer;
             metadata.SetUVW(integration.GetUVW());
@@ -139,8 +138,9 @@ namespace cpu
             }
 
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
-            LOG(info) << "Finished calibration in " << calibration_timer;
+            LOG(info) << "Finished solution in " << solution_timer;
         }
+        LOG(info) << "Finished calibration in " << calibration_timer;
         return CalibrationCollection(output_calibrations);
     }
 
@@ -152,7 +152,7 @@ namespace cpu
     {
         for(auto& integration : input)
         {
-            LOG(info) << "Rotating Integration " << integration.GetIntegrationNumber();
+            LOG(info) << "Rotating Integration batch " << integration.GetIntegrationNumber();
             icrar::cpu::RotateVisibilities(integration, metadata);
         }
 
