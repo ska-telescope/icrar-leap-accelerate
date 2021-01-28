@@ -83,7 +83,7 @@ int main(int argc, char** argv)
      
     CLIArguments rawArgs;
     desc.add_options()
-        ("help", "display help message")
+        ("help,h", "display help message")
         ("version,v", "display version information")
         ("config,c", po::value<boost::optional<std::string>>(&rawArgs.configFilePath), "Configuration file relative path")
         // TODO(calgray): app.add_option("-i,--input-type", rawArgs.source, "Input source type");
