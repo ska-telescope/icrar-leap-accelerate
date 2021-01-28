@@ -100,6 +100,11 @@ namespace cuda
         bool isFileSystemCacheEnabled)
     {
         LOG(info) << "Starting Calibration using cuda";
+
+        bool highGpuMemory = false;
+#ifdef HIGH_GPU_MEMORY
+        highGpuMemory = true;
+#endif
         LOG(info)
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
@@ -113,7 +118,8 @@ namespace cuda
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
-        << "timesteps: " << ms.GetNumTimesteps();
+        << "timesteps: " << ms.GetNumTimesteps() << ", "
+        << "high gpu memory enabled: " << highGpuMemory; 
 
         profiling::timer calibration_timer;
 
@@ -223,7 +229,7 @@ namespace cuda
             LOG(info) << "Finished solution in " << solution_timer;
         }
         LOG(info) << "Finished calibration in " << calibration_timer;
-        return cpu::CalibrationCollection(output_calibrations);
+        return cpu::CalibrationCollection(std::move(output_calibrations));
     }
 
     void CudaLeapCalibrator::PhaseRotate(

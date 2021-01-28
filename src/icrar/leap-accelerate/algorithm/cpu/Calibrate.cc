@@ -109,8 +109,7 @@ namespace cpu
             input_queues.clear();
 
             //Iterate solutions
-            profiling::timer integration_read_timer = {};
-
+            profiling::timer integration_read_timer;
             const Integration integration = Integration(
                     integrationNumber,
                     ms,
@@ -142,7 +141,7 @@ namespace cpu
             LOG(info) << "Finished solution in " << solution_timer;
         }
         LOG(info) << "Finished calibration in " << calibration_timer;
-        return CalibrationCollection(output_calibrations);
+        return CalibrationCollection(std::move(output_calibrations));
     }
 
     void PhaseRotate(
