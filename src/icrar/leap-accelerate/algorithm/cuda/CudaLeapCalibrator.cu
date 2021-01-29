@@ -32,7 +32,6 @@
 #include <icrar/leap-accelerate/math/cuda/math.cuh>
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
-#include <icrar/leap-accelerate/math/cpu/vector.h>
 
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>

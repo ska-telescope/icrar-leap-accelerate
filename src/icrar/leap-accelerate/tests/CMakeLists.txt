@@ -15,7 +15,6 @@ set(sources
 
   math/eigen_helper.cc
   math/MatrixTests.cc
-  math/VectorTests.cc
   math/MatrixTests.cc
   math/MathConversionTests.cc
 

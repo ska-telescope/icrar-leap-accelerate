@@ -22,7 +22,7 @@
 
 #include <gtest/gtest.h>
 
-#include <icrar/leap-accelerate/common/Slice.h>
+#include <icrar/leap-accelerate/common/eigen_extensions.h>
 
 namespace icrar
 {

@@ -30,11 +30,11 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/math/vector_extensions.h>
-#include <icrar/leap-accelerate/math/cpu/vector.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/common/eigen_extensions.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/timer.h>
+#include <icrar/leap-accelerate/common/eigen_extensions.h>
 
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/ms/MeasurementSets/MSAntenna.h>
@@ -158,7 +158,7 @@ namespace cpu
 
         LOG(info) << "Calculating Calibration";
         // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
-        Eigen::VectorXd phaseAnglesI1 = icrar::arg(icrar::cpu::VectorRangeSelect(metadata.GetAvgData(), metadata.GetI1(), 0)); // 1st pol only
+        Eigen::VectorXd phaseAnglesI1 = icrar::cpu::arg(icrar::cpu::VectorRangeSelect(metadata.GetAvgData(), metadata.GetI1(), 0)); // 1st pol only
         phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
         phaseAnglesI1(phaseAnglesI1.rows() - 1) = 0;
 
@@ -168,7 +168,7 @@ namespace cpu
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
-            dInt.row(n) = icrar::arg(std::exp(std::complex<double>(0, -two_pi<double>() * ACal1(n))) * metadata.GetAvgData().row(n));
+            dInt.row(n) = icrar::cpu::arg(std::exp(std::complex<double>(0, -two_pi<double>() * ACal1(n))) * metadata.GetAvgData().row(n));
         }
 
         Eigen::VectorXd deltaPhaseColumn = dInt.col(0); // 1st pol only

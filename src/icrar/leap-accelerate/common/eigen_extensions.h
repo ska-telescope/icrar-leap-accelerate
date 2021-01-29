@@ -38,6 +38,75 @@ constexpr int pretty_width = 12;
 
 namespace icrar
 {
+    namespace cpu
+    {
+        /**
+         * @brief Provides selecting a range of elements via matrix row indices. Negative indexes
+         * select from the bottom of the matrix with -1 representing the bottom row.
+         * 
+         * @tparam T 
+         * @param matrix the referenced matrix to select from
+         * @param rowIndices a range of row indices to select
+         * @param column a valid column index 
+         */
+        template<typename Matrix>
+        Eigen::IndexedView<Matrix, Eigen::VectorXi, Eigen::internal::SingleRange>
+        VectorRangeSelect(
+            Matrix& matrix,
+            const Eigen::VectorXi& rowIndices,
+            unsigned int column)
+        {
+            Eigen::VectorXi correctedIndices = rowIndices;
+
+            // wrap around
+            for(int& i : correctedIndices)
+            {
+                if(i < 0)
+                {
+                    i += matrix.rows();
+                }
+            }
+
+            return matrix(correctedIndices, column);
+        }
+
+        /**
+         * @brief Provides selecting a range of elements via the index in the matrix. Negative indexes
+         * select from the back of the vector with -1 as the last element.
+         * 
+         * @tparam T 
+         * @param matrix the referenced matrix to select from
+         * @param rowIndices a range of row indices to select
+         * @param column a valid column index 
+         */
+        template<typename Matrix>
+        Eigen::IndexedView<Matrix, Eigen::VectorXi, Eigen::internal::AllRange<-1>>
+        MatrixRangeSelect(
+            Matrix& matrix,
+            const Eigen::VectorXi& rowIndices,
+            Eigen::internal::all_t range)
+        {
+            Eigen::VectorXi correctedIndices = rowIndices;
+            for(int& v : correctedIndices)
+            {
+                if(v < 0)
+                {
+                    v += matrix.rows();
+                }
+            }
+
+            return matrix(correctedIndices, range);
+        }
+
+        /**
+         * @brief Returns the component-wise arguments of a matrix
+         * 
+         * @param a 
+         * @return Eigen::MatrixXd 
+         */
+        Eigen::MatrixXd arg(const Eigen::Ref<const Eigen::MatrixXcd>& a);
+    }
+
     /**
      * @brief Hash function for Eigen matrix and vector.
      * The code is from `hash_combine` function of the Boost library. See

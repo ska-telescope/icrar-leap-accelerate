@@ -35,9 +35,7 @@ set(sources
     model/cpu/MetaData.cc
     model/cpu/CalibrateResult.cc
     
-    math/vector_extensions.cc
     math/math_conversion.cc
-    math/cpu/vector.cc
 
     core/compute_implementation.cc
     core/log/logging.cc
@@ -49,6 +47,7 @@ set(sources
     common/SphericalDirection.cc
     common/MVuvw.cc
     common/Slice.cc
+    common/eigen_extensions.cc
 
     algorithm/LeapCalibratorFactory.cc
     algorithm/cpu/CpuLeapCalibrator.cc

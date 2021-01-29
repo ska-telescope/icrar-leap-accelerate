@@ -1,4 +1,3 @@
-
 /**
  * ICRAR - International Centre for Radio Astronomy Research
  * (c) UWA - The University of Western Australia
@@ -21,12 +20,15 @@
  * MA 02111 - 1307  USA
  */
 
-#include "vector_extensions.h"
+#include "eigen_extensions.h"
 
 namespace icrar
 {
-    Eigen::MatrixXd arg(const Eigen::Ref<const Eigen::MatrixXcd>& a)
+    namespace cpu
     {
-        return a.unaryExpr([](std::complex<double> v){ return std::arg(v); });
+        Eigen::MatrixXd arg(const Eigen::Ref<const Eigen::MatrixXcd>& a)
+        {
+            return a.unaryExpr([](std::complex<double> v){ return std::arg(v); });
+        }
     }
-} // namespace icrar
+}
