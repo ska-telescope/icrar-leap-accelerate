@@ -21,25 +21,40 @@
  */
 
 #pragma once
-
-#include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
-#include <boost/noncopyable.hpp>
-#include <vector>
+#include <icrar/leap-accelerate/common/Range.h>
+#include <icrar/leap-accelerate/exception/exception.h>
+#include <rapidjson/document.h>
+#include <string>
+#include <stdint.h>
 
 namespace icrar
 {
-namespace cpu
-{
-    class CpuLeapCalibrator : public ILeapCalibrator
+    /**
+     * @brief Represents a linear sequence of indexes for some arbitrary collection
+     * 
+     */
+    struct Slice
     {
-    public:
-        virtual cpu::CalibrationCollection Calibrate(
-            const icrar::MeasurementSet& ms,
-            const std::vector<SphericalDirection>& directions,
-            const Slice& solutionInterval,
-            double minimumBaselineThreshold,
-            boost::optional<unsigned int> referenceAntenna,
-            bool isFileSystemCacheEnabled) override;
+        std::int32_t start;
+        std::int32_t interval;
+        std::int32_t end;
+
+        Slice() = default;
+        Slice(int interval);
+        Slice(int start, int end);
+        Slice(int start, int interval, int end);
+        
+        Range Evaluate(int collectionSize) const
+        {
+            return Range(
+                (start == -1) ? collectionSize : start,
+                (interval == -1) ? collectionSize : interval,
+                (end == -1) ? collectionSize : end
+            );
+        }
     };
-} // namespace cpu
+
+    Slice ParseSlice(const std::string& json);
+
+    Slice ParseSlice(const rapidjson::Value& doc);
 } // namespace icrar

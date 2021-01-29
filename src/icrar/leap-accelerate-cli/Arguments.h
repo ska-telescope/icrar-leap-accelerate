@@ -23,12 +23,13 @@
 #pragma once
 
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
+#include <icrar/leap-accelerate/common/Slice.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 
 #include <boost/optional.hpp>
-#include <string>
 #include <vector>
+#include <string>
 #include <memory>
 #include <fstream>
 #include <iostream>
@@ -63,6 +64,7 @@ namespace icrar
         boost::optional<unsigned int> referenceAntenna;
         boost::optional<std::string> directions;
         boost::optional<std::string> computeImplementation;
+        boost::optional<std::string> solutionInterval;
         boost::optional<double> minimumBaselineThreshold;
         boost::optional<bool> useFileSystemCache;
         boost::optional<bool> mwaSupport;
@@ -88,6 +90,7 @@ namespace icrar
         boost::optional<unsigned int> referenceAntenna;
         boost::optional<std::vector<SphericalDirection>> directions;
         boost::optional<ComputeImplementation> computeImplementation;
+        boost::optional<Slice> solutionInterval;
         boost::optional<double> minimumBaselineThreshold;
         boost::optional<bool> readAutocorrelations;
         boost::optional<bool> mwaSupport;
@@ -112,6 +115,7 @@ namespace icrar
         boost::optional<unsigned int> m_referenceAntenna; // Index of the reference antenna
         std::vector<SphericalDirection> m_directions; // Calibration directions
         ComputeImplementation m_computeImplementation; // Specifies the implementation for calibration computation
+        Slice m_solutionInterval; // Specifies the interval to calculate solutions for
         double m_minimumBaselineThreshold; // Minimum baseline length otherwise flagged at runtime
         bool m_readAutocorrelations; // Adjusts the number of baselines calculation to include autocorrelations
         bool m_mwaSupport; // Negates baselines when enabled
@@ -160,6 +164,8 @@ namespace icrar
         const std::vector<SphericalDirection>& GetDirections() const;
 
         ComputeImplementation GetComputeImplementation() const;
+
+        Slice GetSolutionInterval() const;
 
         boost::optional<unsigned int> GetReferenceAntenna() const;
 

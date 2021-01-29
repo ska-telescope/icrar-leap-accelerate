@@ -83,7 +83,7 @@ int main(int argc, char** argv)
      
     CLIArguments rawArgs;
     desc.add_options()
-        ("help", "display help message")
+        ("help,h", "display help message")
         ("version,v", "display version information")
         ("config,c", po::value<boost::optional<std::string>>(&rawArgs.configFilePath), "Configuration file relative path")
         // TODO(calgray): app.add_option("-i,--input-type", rawArgs.source, "Input source type");
@@ -93,8 +93,8 @@ int main(int argc, char** argv)
         ("stations,s", po::value<boost::optional<int>>(&rawArgs.stations), "Overrides number of stations in measurement set")
         ("referenceAntenna,r", po::value<boost::optional<unsigned int>>(&rawArgs.referenceAntenna), "Specifies the reference antenna, defaults to the last antenna")
         // TODO(calgray): app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
-        // TODO(calgray): app.add_option("v,--solutionInterval");
         ("implementation,i", po::value<boost::optional<std::string>>(&rawArgs.computeImplementation), "Compute implementation type (cpu, cuda)")
+        ("solutionInterval,n", po::value<boost::optional<std::string>>(&rawArgs.solutionInterval), "Sets the intervals to generate solutions for, [start, interval, end]")
         ("autoCorrelations,a", po::value<boost::optional<bool>>(&rawArgs.readAutocorrelations), "Set to true if measurement set rows store autocorrelations")
         ("minimumBaselineThreshold,m", po::value<boost::optional<double>>(&rawArgs.minimumBaselineThreshold), "Minimum baseline length in meters")
         ("useFileSystemCache,u", po::value<boost::optional<bool>>(&rawArgs.useFileSystemCache), "Use filesystem caching between calls")
@@ -126,6 +126,7 @@ int main(int argc, char** argv)
             auto result = calibrator->Calibrate(
                 args.GetMeasurementSet(),
                 args.GetDirections(),
+                args.GetSolutionInterval(),
                 args.GetMinimumBaselineThreshold(),
                 args.GetReferenceAntenna(),
                 args.IsFileSystemCacheEnabled());
