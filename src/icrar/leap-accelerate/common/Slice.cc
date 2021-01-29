@@ -57,9 +57,18 @@ namespace icrar
             }
         }
 
-        this->start = start;
-        this->interval = interval;
-        this->end = end;
+        m_start = start;
+        m_interval = interval;
+        m_end = end;
+    }
+
+    Range Slice::Evaluate(int collectionSize) const
+    {
+        return Range(
+            (m_start == -1) ? collectionSize : m_start,
+            (m_interval == -1) ? collectionSize : m_interval,
+            (m_end == -1) ? collectionSize : m_end
+        );
     }
 
     Slice ParseSlice(const std::string& json)

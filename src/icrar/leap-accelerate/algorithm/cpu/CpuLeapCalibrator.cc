@@ -72,7 +72,7 @@ namespace cpu
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
-        << "solutionInterval: [" << solutionInterval.start << "," << solutionInterval.interval << "," << solutionInterval.end << "], "
+        << "solutionInterval: [" << solutionInterval.GetStart() << "," << solutionInterval.GetInterval() << "," << solutionInterval.GetEnd() << "], "
         << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
         << "baseline threshold: " << minimumBaselineThreshold << "m, "
         << "short baselines: " << ms.GetNumShortBaselines(minimumBaselineThreshold) << ", "
@@ -105,16 +105,16 @@ namespace cpu
         constexpr unsigned int integrationNumber = 0;
         for(size_t solution = 0; solution < solutions; ++solution)
         {
-            output_calibrations.emplace_back(solution * validatedSolutionInterval.interval, (solution+1) * validatedSolutionInterval.interval);
+            output_calibrations.emplace_back(solution * validatedSolutionInterval.GetInterval(), (solution+1) * validatedSolutionInterval.GetInterval());
             input_queues.clear();
 
             //Iterate solutions
             const Integration integration = Integration(
                     integrationNumber,
                     ms,
-                    solution * validatedSolutionInterval.interval * ms.GetNumBaselines(),
+                    solution * validatedSolutionInterval.GetInterval() * ms.GetNumBaselines(),
                     ms.GetNumChannels(),
-                    validatedSolutionInterval.interval * ms.GetNumBaselines(),
+                    validatedSolutionInterval.GetInterval() * ms.GetNumBaselines(),
                     ms.GetNumPols());
 
             for(size_t direction = 0; direction < directions.size(); ++direction)

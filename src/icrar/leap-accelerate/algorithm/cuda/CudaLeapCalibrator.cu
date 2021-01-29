@@ -106,7 +106,7 @@ namespace cuda
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
-        << "solutionInterval: " << "[" << solutionInterval.start << "," << solutionInterval.interval << "," << solutionInterval.end << "], "
+        << "solutionInterval: " << "[" << solutionInterval.GetStart() << "," << solutionInterval.GetInterval() << "," << solutionInterval.GetEnd() << "], "
         << "reference antenna: " << referenceAntenna << ", "
         << "baseline threshold: " << minimumBaselineThreshold << ", "
         << "short baselines: " << ms.GetNumShortBaselines(minimumBaselineThreshold) << ", "
@@ -141,9 +141,9 @@ namespace cuda
             metadata.GetI1(),
             metadata.GetAd1()
         );
-        auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetConstants().nbaselines * validatedSolutionInterval.interval);
+        auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetConstants().nbaselines * validatedSolutionInterval.GetInterval());
         auto directionBuffer = std::make_shared<DirectionBuffer>(
-                metadata.GetConstants().nbaselines * validatedSolutionInterval.interval,
+                metadata.GetConstants().nbaselines * validatedSolutionInterval.GetInterval(),
                 metadata.GetAvgData().rows(),
                 metadata.GetAvgData().cols());
         auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
@@ -154,8 +154,8 @@ namespace cuda
         for(int solution = 0; solution < solutions; solution++)
         {
             output_calibrations.emplace_back(
-                epochs[solution * validatedSolutionInterval.interval],
-                epochs[(solution+1) * validatedSolutionInterval.interval - 1]);
+                epochs[solution * validatedSolutionInterval.GetInterval()],
+                epochs[(solution+1) * validatedSolutionInterval.GetInterval() - 1]);
             input_queue.clear();
 
             // Flooring to remove incomplete measurements
@@ -170,9 +170,9 @@ namespace cuda
             auto integration = cuda::HostIntegration(
                 integrationNumber,
                 ms,
-                solution * validatedSolutionInterval.interval * ms.GetNumBaselines(),
+                solution * validatedSolutionInterval.GetInterval() * ms.GetNumBaselines(),
                 ms.GetNumChannels(),
-                validatedSolutionInterval.interval * ms.GetNumBaselines(),
+                validatedSolutionInterval.GetInterval() * ms.GetNumBaselines(),
                 ms.GetNumPols());
             LOG(info) << "Read integration data in " << integration_read_timer;
 

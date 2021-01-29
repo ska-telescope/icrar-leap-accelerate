@@ -31,22 +31,27 @@ namespace icrar
      * @brief Represents a linear sequence of indexes for some finite collection
      * 
      */
-    struct Range
+    class Range
     {
-        std::int32_t start;
-        std::int32_t interval;
-        std::int32_t end;
+        std::int32_t m_start;
+        std::int32_t m_interval;
+        std::int32_t m_end;
 
+    public:
         Range(int start, int interval, int end)
         {
             if(start < 0) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
             if(interval < 1) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
             if(end < 0) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
 
-            this->start = start;
-            this->interval = interval;
-            this->end = end;
+            m_start = start;
+            m_interval = interval;
+            m_end = end;
         }
+
+        int32_t GetStart() const { return m_start; }
+        int32_t GetInterval() const { return m_interval; }
+        int32_t GetEnd() const { return m_end; }
 
         /**
          * @brief Gets the number of elements in the range
@@ -55,11 +60,11 @@ namespace icrar
          */
         int GetSize() const
         {
-            if(start == -1 || interval == -1 || end == -1)
+            if(m_start == -1 || m_interval == -1 || m_end == -1)
             {
                 throw exception("cannot calculate range with wildcards", __FILE__, __LINE__);
             }
-            return (end - start) / interval;
+            return (m_end - m_start) / m_interval;
         }
     };
 } // namespace icrar
