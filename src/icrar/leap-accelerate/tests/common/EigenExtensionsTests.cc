@@ -22,7 +22,7 @@
 
 #include <gtest/gtest.h>
 
-#include <icrar/leap-accelerate/common/eigen_extensions.h>
+#include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 
 namespace icrar
 {
