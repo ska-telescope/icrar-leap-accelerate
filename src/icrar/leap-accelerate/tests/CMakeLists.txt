@@ -6,6 +6,10 @@ set(sources
   
   test_helper.cc
 
+  common/SliceTests.cc
+  common/RangeTests.cc
+  common/SphericalDirectionTests.cc
+
   math/eigen_helper.cc
   math/MatrixTests.cc
   math/VectorTests.cc

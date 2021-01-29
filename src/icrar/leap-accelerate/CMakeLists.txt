@@ -37,7 +37,6 @@ set(sources
     
     math/vector_extensions.cc
     math/math_conversion.cc
-    math/casa/matrix.cc
     math/cpu/vector.cc
 
     core/compute_implementation.cc

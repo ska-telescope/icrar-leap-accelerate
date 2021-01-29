@@ -30,7 +30,7 @@
 namespace icrar
 {
     /**
-     * @brief Represents a linear sequence of indexes for some arbitrary collection
+     * @brief Represents a forwards linear sequence of indexes for some arbitrary collection
      * 
      */
     class Slice

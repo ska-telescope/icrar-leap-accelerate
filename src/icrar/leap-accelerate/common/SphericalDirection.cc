@@ -57,6 +57,14 @@ namespace icrar
             }
 
             auto& array = *it;
+            if(!array[0].IsNumber())
+            {
+                throw icrar::exception("expected an array of 2 numbers", __FILE__, __LINE__);
+            }
+            if(!array[1].IsNumber())
+            {
+                throw icrar::exception("expected an array of 2 numbers", __FILE__, __LINE__);
+            }
             result.emplace_back(array[0].GetDouble(), array[1].GetDouble());
         }
         return result;

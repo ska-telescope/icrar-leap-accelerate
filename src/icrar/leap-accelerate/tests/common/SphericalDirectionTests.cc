@@ -20,9 +20,26 @@
  * MA 02111 - 1307  USA
  */
 
-#include <Eigen/Core>
+#include <gtest/gtest.h>
+
+#include <icrar/leap-accelerate/common/SphericalDirection.h>
+#include <icrar/leap-accelerate/exception/exception.h>
 
 namespace icrar
 {
-    using MVDirection = Eigen::Vector2d;
+    class SphericalDirectionTests : public testing::Test
+    {
+    public:
+        void TestParseDirections()
+        { 
+            ASSERT_NO_THROW(ParseDirections("[]"));
+            ASSERT_THROW(ParseDirections("[[]]"), icrar::exception);
+            ASSERT_THROW(ParseDirections("[0,0]"), icrar::exception);
+            ASSERT_NO_THROW(ParseDirections("[[0,0]]"));
+            ASSERT_THROW(ParseDirections("[[true,true]]"), icrar::exception);
+            ASSERT_NO_THROW(ParseDirections("[[0,0],[0,0]]"));
+        }
+    };
+
+    TEST_F(SphericalDirectionTests, TestParseDirections) { TestParseDirections(); }
 } // namespace icrar
