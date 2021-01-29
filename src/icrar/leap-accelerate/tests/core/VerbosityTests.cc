@@ -22,18 +22,26 @@
 
 #include <gtest/gtest.h>
 
-#include <icrar/leap-accelerate/common/Slice.h>
+#include <icrar/leap-accelerate/core/log/Verbosity.h>
 
 namespace icrar
 {
-    class EigenExtensionsTests : public testing::Test
+    class VerbosityTests : public testing::Test
     {
     public:
-        void TestConstructors()
+        void TestParseVerbosity()
         {
-
+            using namespace log;
+            ASSERT_EQ(Verbosity::fatal, ParseVerbosity("fatal"));
+            ASSERT_EQ(Verbosity::error, ParseVerbosity("error"));
+            ASSERT_EQ(Verbosity::warn, ParseVerbosity("warn"));
+            ASSERT_EQ(Verbosity::info, ParseVerbosity("info"));
+            ASSERT_EQ(Verbosity::debug, ParseVerbosity("debug"));
+            ASSERT_EQ(Verbosity::trace, ParseVerbosity("trace"));
+            ASSERT_EQ(Verbosity::trace, ParseVerbosity("Trace"));
+            ASSERT_EQ(Verbosity::trace, ParseVerbosity("TRACE"));
         }
     };
 
-    TEST_F(EigenExtensionsTests, TestConstructors) { TestConstructors(); }
+    TEST_F(VerbosityTests, TestParseVerbosity) { TestParseVerbosity(); }
 } // namespace icrar

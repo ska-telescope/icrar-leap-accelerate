@@ -149,17 +149,17 @@ namespace icrar
     }
 
     /**
-     * @brief Reads the file file hash and writes to cache if hash file is different
-     * or reads the cache if hash file is the same. 
+     * @brief Reads the hash file and writes to cache if the hash file is different,
+     * else reads the cache file if hash file is the same. 
      * 
-     * @tparam In 
-     * @tparam Out
+     * @tparam In Matrix type
+     * @tparam Out Matrix type
      * @tparam Lambda lambda type of signature Out(const In&)
      * @param in The input matrix to hash and transform
      * @param out The transformed output
      * @param transform the transform lambda
-     * @param cacheFile the transformed cache file
-     * @param hashFile the input hash file
+     * @param cacheFile the transformed out cache file
+     * @param hashFile the in hash file
      */
     template<typename In, typename Out, typename Lambda>
     void ProcessCache(size_t hash,
@@ -193,7 +193,7 @@ namespace icrar
             }
             catch(const std::exception& e)
             {
-                std::cerr << e.what() << '\n';
+                LOG(error) << e.what() << '\n';
             }
         }
     }

@@ -47,21 +47,13 @@ namespace icrar
         auto result = std::vector<SphericalDirection>();
         for(auto it = doc.Begin(); it != doc.End(); it++)
         {
-            if(!it->IsArray())
-            {
-                throw icrar::exception("expected an array of 2 numbers", __FILE__, __LINE__);
-            }
-            if(it->Size() != 2)
+            if(!it->IsArray() || it->Size() != 2)
             {
                 throw icrar::exception("expected an array of 2 numbers", __FILE__, __LINE__);
             }
 
             auto& array = *it;
-            if(!array[0].IsNumber())
-            {
-                throw icrar::exception("expected an array of 2 numbers", __FILE__, __LINE__);
-            }
-            if(!array[1].IsNumber())
+            if(!array[0].IsNumber() || !array[1].IsNumber())
             {
                 throw icrar::exception("expected an array of 2 numbers", __FILE__, __LINE__);
             }
