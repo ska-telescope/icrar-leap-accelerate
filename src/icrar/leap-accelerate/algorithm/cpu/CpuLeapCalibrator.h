@@ -35,6 +35,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 
+#include <functional>
 #include <string>
 #include <memory>
 #include <vector>
@@ -50,14 +51,13 @@ namespace cpu
     class CpuLeapCalibrator : public ILeapCalibrator
     {
     public:
-
         /**
          * @copydoc ILeapCalibrator
          * Calibrates by performing phase rotation for each direction in @p directions
          * by splitting uvws into integration batches per timestep.
          */
         void AsyncCalibrate(
-            boost::coroutines::coroutine<cpu::Calibration&>::push_type& sink,
+            std::function<void(cpu::Calibration&)> outFunc,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             const Slice& solutionInterval,

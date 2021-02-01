@@ -28,6 +28,7 @@
 #include <boost/coroutine/all.hpp>
 #include <boost/noncopyable.hpp>
 #include <vector>
+#include <functional>
 
 namespace icrar
 {
@@ -61,7 +62,7 @@ namespace icrar
          * @return CalibrationCollection the calibrationn result
          */
         virtual void AsyncCalibrate(
-            boost::coroutines::coroutine<cpu::Calibration&>::push_type& sink,
+            std::function<void(cpu::Calibration&)> outFunc,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             const Slice& solutionInterval,

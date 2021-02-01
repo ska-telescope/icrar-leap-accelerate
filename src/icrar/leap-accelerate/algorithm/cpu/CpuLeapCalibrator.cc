@@ -50,6 +50,9 @@
 #include <exception>
 #include <memory>
 #include <sstream>
+#include <future>
+
+//#include <experimental/future>
 
 using Radians = double;
 using namespace boost::math::constants;
@@ -59,7 +62,7 @@ namespace icrar
 namespace cpu
 {
     void CpuLeapCalibrator::AsyncCalibrate(
-        boost::coroutines::coroutine<cpu::Calibration&>::push_type& sink,
+        std::function<void(cpu::Calibration&)> outFunc,
         const icrar::MeasurementSet& ms,
         const std::vector<SphericalDirection>& directions,
         const Slice& solutionInterval,
@@ -103,6 +106,7 @@ namespace cpu
 
         size_t solutions = validatedSolutionInterval.GetSize();
         constexpr unsigned int integrationNumber = 0;
+        std::vector<std::future<void>> ioFutures;
         for(size_t solution = 0; solution < solutions; ++solution)
         {
             output_calibrations.emplace_back(solution * validatedSolutionInterval.interval, (solution+1) * validatedSolutionInterval.interval);
@@ -140,8 +144,12 @@ namespace cpu
 
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
             LOG(info) << "Finished calibration in " << calibration_timer;
-            sink(output_calibrations[solution]);
+
+            std::async(std::launch::async, [&]{outFunc(output_calibrations[solution]); });
+            //ioFutures.push_back(std::async(std::launch::async, [&]{outFunc(output_calibrations[solution]); }));
         }
+        //auto futures = std::when_all(std::move(ioFutures));
+        //futures.wait();
     }
 
     void CpuLeapCalibrator::PhaseRotate(

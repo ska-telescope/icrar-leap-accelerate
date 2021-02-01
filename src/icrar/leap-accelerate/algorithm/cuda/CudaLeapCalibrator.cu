@@ -92,7 +92,7 @@ namespace cuda
     }
 
     void CudaLeapCalibrator::AsyncCalibrate(
-            boost::coroutines::coroutine<cpu::Calibration&>::push_type& sink,
+            std::function<void(cpu::Calibration&)> outFunc,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             const Slice& solutionInterval,
@@ -220,7 +220,7 @@ namespace cuda
             }
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
             LOG(info) << "Finished calibration in " << calibration_timer;
-            sink(output_calibrations[solution]);
+            outFunc(output_calibrations[solution]);
         }
     }
 

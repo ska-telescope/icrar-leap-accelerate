@@ -133,46 +133,43 @@ int main(int argc, char** argv)
             bool async = true;
             if(async)
             {
-                auto calibrate = [&](coroutine<cpu::Calibration&>::push_type& sink)
-                {
-                    auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
-                    calibrator->AsyncCalibrate(
-                        sink,
-                        args.GetMeasurementSet(),
-                        args.GetDirections(),
-                        args.GetSolutionInterval(),
-                        args.GetMinimumBaselineThreshold(),
-                        args.GetReferenceAntenna(),
-                        args.IsFileSystemCacheEnabled());
-                };
-
-                pull_coroutine<cpu::Calibration&> source(calibrate, attributes(4194304));
-                for(auto& cal : source)
+                auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
+                
+                std::function<void(cpu::Calibration&)> outFunc = [&](cpu::Calibration& cal)
                 {
                     cal.Serialize(args.GetOutputStream());
-                }
+                };
+                
+                calibrator->AsyncCalibrate(
+                    outFunc,
+                    args.GetMeasurementSet(),
+                    args.GetDirections(),
+                    args.GetSolutionInterval(),
+                    args.GetMinimumBaselineThreshold(),
+                    args.GetReferenceAntenna(),
+                    args.IsFileSystemCacheEnabled());
             }
             else
             {
-                auto calibrate = [&](coroutine<cpu::Calibration&>::push_type& sink)
+                auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
+                
+                std::vector<cpu::Calibration> calibrations;
+                std::mutex calibrationsMutex;
+                std::function<void(cpu::Calibration&)> outFunc = [&](cpu::Calibration& cal)
                 {
-                    auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
-                    calibrator->AsyncCalibrate(
-                        sink,
-                        args.GetMeasurementSet(),
-                        args.GetDirections(),
-                        args.GetSolutionInterval(),
-                        args.GetMinimumBaselineThreshold(),
-                        args.GetReferenceAntenna(),
-                        args.IsFileSystemCacheEnabled());
+                    std::lock_guard<std::mutex> lock(calibrationsMutex);
+                    calibrations.push_back(cal);
                 };
                 
-                pull_coroutine<cpu::Calibration&> source(calibrate, attributes(4194304));
-                std::vector<cpu::Calibration> calibrations;
-                for(auto& cal : source)
-                {
-                    calibrations.push_back(cal);
-                }
+                calibrator->AsyncCalibrate(
+                    outFunc,
+                    args.GetMeasurementSet(),
+                    args.GetDirections(),
+                    args.GetSolutionInterval(),
+                    args.GetMinimumBaselineThreshold(),
+                    args.GetReferenceAntenna(),
+                    args.IsFileSystemCacheEnabled());
+                
                 auto calibrationCollection = cpu::CalibrationCollection(std::move(calibrations));
                 calibrationCollection.Serialize(args.GetOutputStream());
             }
