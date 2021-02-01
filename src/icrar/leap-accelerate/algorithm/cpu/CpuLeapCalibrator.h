@@ -31,6 +31,7 @@
 #include <casacore/ms/MeasurementSets.h>
 #include <Eigen/Core>
 
+#include <boost/coroutine/all.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 
@@ -49,12 +50,14 @@ namespace cpu
     class CpuLeapCalibrator : public ILeapCalibrator
     {
     public:
+
         /**
-         * @copydoc ILeapEngine::ILeapCalibrator
+         * @copydoc ILeapCalibrator
          * Calibrates by performing phase rotation for each direction in @p directions
-         * by splitting uvws into integration batches.
+         * by splitting uvws into integration batches per timestep.
          */
-        virtual cpu::CalibrationCollection Calibrate(
+        void AsyncCalibrate(
+            boost::coroutines::coroutine<cpu::Calibration&>::push_type& sink,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             const Slice& solutionInterval,

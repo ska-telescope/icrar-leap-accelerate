@@ -23,8 +23,9 @@
 #include <icrar/leap-accelerate-cli/Arguments.h>
 
 #include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
-#include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
+#include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
+#include <icrar/leap-accelerate/algorithm/cpu/CpuLeapCalibrator.h>
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
@@ -37,11 +38,15 @@
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/coroutine/all.hpp>
+#include <boost/thread.hpp>
 
 #include <iostream>
 #include <queue>
 #include <string>
 #include <exception>
+
+#include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 
 using namespace icrar;
 namespace po = boost::program_options;
@@ -80,7 +85,7 @@ int main(int argc, char** argv)
     auto appName = "LeapAccelerateCLI";
 
     po::options_description desc(appName);
-     
+
     CLIArguments rawArgs;
     desc.add_options()
         ("help,h", "display help message")
@@ -122,20 +127,60 @@ int main(int argc, char** argv)
             LOG(info) << version_information(argv[0]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             LOG(info) << arg_string(argc, argv);
 
-            auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
-            auto result = calibrator->Calibrate(
-                args.GetMeasurementSet(),
-                args.GetDirections(),
-                args.GetSolutionInterval(),
-                args.GetMinimumBaselineThreshold(),
-                args.GetReferenceAntenna(),
-                args.IsFileSystemCacheEnabled());
-            cpu::PrintResult(result, args.GetOutputStream());
+
+
+            using namespace boost::coroutines;
+            bool async = true;
+            if(async)
+            {
+                auto calibrate = [&](coroutine<cpu::Calibration&>::push_type& sink)
+                {
+                    auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
+                    calibrator->AsyncCalibrate(
+                        sink,
+                        args.GetMeasurementSet(),
+                        args.GetDirections(),
+                        args.GetSolutionInterval(),
+                        args.GetMinimumBaselineThreshold(),
+                        args.GetReferenceAntenna(),
+                        args.IsFileSystemCacheEnabled());
+                };
+
+                pull_coroutine<cpu::Calibration&> source(calibrate, attributes(4194304));
+                for(auto& cal : source)
+                {
+                    cal.Serialize(args.GetOutputStream());
+                }
+            }
+            else
+            {
+                auto calibrate = [&](coroutine<cpu::Calibration&>::push_type& sink)
+                {
+                    auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
+                    calibrator->AsyncCalibrate(
+                        sink,
+                        args.GetMeasurementSet(),
+                        args.GetDirections(),
+                        args.GetSolutionInterval(),
+                        args.GetMinimumBaselineThreshold(),
+                        args.GetReferenceAntenna(),
+                        args.IsFileSystemCacheEnabled());
+                };
+                
+                pull_coroutine<cpu::Calibration&> source(calibrate, attributes(4194304));
+                std::vector<cpu::Calibration> calibrations;
+                for(auto& cal : source)
+                {
+                    calibrations.push_back(cal);
+                }
+                auto calibrationCollection = cpu::CalibrationCollection(std::move(calibrations));
+                calibrationCollection.Serialize(args.GetOutputStream());
+            }
         }
     }
     catch(const std::exception& e)
     {
-        std::cerr << e.what() << '\n';
+        std::cerr << "error: " << e.what() << '\n';
         return -1;
     }
 }

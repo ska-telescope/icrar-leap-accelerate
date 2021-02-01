@@ -58,7 +58,8 @@ namespace icrar
 {
 namespace cpu
 {
-    cpu::CalibrationCollection CpuLeapCalibrator::Calibrate(
+    void CpuLeapCalibrator::AsyncCalibrate(
+        boost::coroutines::coroutine<cpu::Calibration&>::push_type& sink,
         const icrar::MeasurementSet& ms,
         const std::vector<SphericalDirection>& directions,
         const Slice& solutionInterval,
@@ -88,17 +89,16 @@ namespace cpu
 
         profiling::timer integration_read_timer;
 
-
         size_t timesteps = (size_t)ms.GetNumRows() / ms.GetNumBaselines();
         Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
         auto metadata = icrar::cpu::MetaData(
-            ms,
-            referenceAntenna,
-            minimumBaselineThreshold,
-            isFileSystemCacheEnabled);
+             ms,
+             referenceAntenna,
+             minimumBaselineThreshold,
+             isFileSystemCacheEnabled);
         LOG(info) << "Read metadata in " << metadata_read_timer;
 
         size_t solutions = validatedSolutionInterval.GetSize();
@@ -123,7 +123,6 @@ namespace cpu
                 queue.push_back(integration);
                 input_queues.push_back(queue);
             }
-
             LOG(info) << "Read integration data in " << integration_read_timer;
 
             //auto epochs = ms.GetEpochs();
@@ -141,8 +140,8 @@ namespace cpu
 
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
             LOG(info) << "Finished calibration in " << calibration_timer;
+            sink(output_calibrations[solution]);
         }
-        return CalibrationCollection(output_calibrations);
     }
 
     void CpuLeapCalibrator::PhaseRotate(

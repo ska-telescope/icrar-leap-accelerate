@@ -46,7 +46,6 @@
 #include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 
 #include <icrar/leap-accelerate/core/compute_implementation.h>
-#include <casacore/casa/Quanta/MVDirection.h>
 
 #include <gtest/gtest.h>
 
@@ -55,6 +54,7 @@
 #include <cuda_runtime.h>
 #endif
 
+#include <boost/coroutine/all.hpp>
 #include <boost/log/trivial.hpp>
 
 #include <functional>
@@ -63,6 +63,7 @@
 #include <unordered_map>
 
 using namespace std::literals::complex_literals;
+using namespace boost::coroutines;
 
 namespace icrar
 {
@@ -94,7 +95,7 @@ namespace icrar
             const double THRESHOLD = 1e-11;
 
             auto metadata = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())));
-            std::vector<casacore::MVDirection> directions = //TODO: use icrar Direction
+            std::vector<icrar::SphericalDirection> directions =
             {
                 { -0.4606549305661674,-0.29719233792392513 },
                 { -0.753231018062671,-0.44387635324622354 },
@@ -105,13 +106,25 @@ namespace icrar
             const auto& expected = getExpected();
             ASSERT_LT(0, expected.GetCalibrations().size());
             
-            auto calibrations = LeapCalibratorFactory::Create(impl)->Calibrate(
-                *ms,
-                ToDirectionVector(directions),
-                solutionInterval,
-                0.0,
-                0,
-                false);
+
+            auto calibrate = [&](coroutine<cpu::Calibration&>::push_type& sink)
+            {
+                LeapCalibratorFactory::Create(impl)->AsyncCalibrate(
+                    sink,
+                    *ms,
+                    directions,
+                    solutionInterval,
+                    0.0,
+                    0,
+                    false);
+            };
+            pull_coroutine<cpu::Calibration&> source(calibrate, attributes(4194304));
+            std::vector<cpu::Calibration> calibrationsVector;
+            for(auto& cal : source)
+            {
+                calibrationsVector.push_back(cal);
+            }
+            auto calibrations = cpu::CalibrationCollection(std::move(calibrationsVector));
 
             ASSERT_LT(0, calibrations.GetCalibrations().size());
             ASSERT_EQ(expected.GetCalibrations().size(), calibrations.GetCalibrations().size());
