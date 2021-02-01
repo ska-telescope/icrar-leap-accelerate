@@ -135,7 +135,7 @@ int main(int argc, char** argv)
             {
                 auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
                 
-                std::function<void(cpu::Calibration&)> outFunc = [&](cpu::Calibration& cal)
+                std::function<void(const cpu::Calibration&)> outFunc = [&](const cpu::Calibration& cal)
                 {
                     cal.Serialize(args.GetOutputStream());
                 };
@@ -155,7 +155,7 @@ int main(int argc, char** argv)
                 
                 std::vector<cpu::Calibration> calibrations;
                 std::mutex calibrationsMutex;
-                std::function<void(cpu::Calibration&)> outFunc = [&](cpu::Calibration& cal)
+                std::function<void(const cpu::Calibration&)> outFunc = [&](const cpu::Calibration& cal)
                 {
                     std::lock_guard<std::mutex> lock(calibrationsMutex);
                     calibrations.push_back(cal);

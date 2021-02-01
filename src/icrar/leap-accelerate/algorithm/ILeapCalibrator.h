@@ -62,7 +62,7 @@ namespace icrar
          * @return CalibrationCollection the calibrationn result
          */
         virtual void AsyncCalibrate(
-            std::function<void(cpu::Calibration&)> outFunc,
+            std::function<void(const cpu::Calibration&)> outFunc,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             const Slice& solutionInterval,
