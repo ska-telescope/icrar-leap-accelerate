@@ -41,6 +41,7 @@
 
 #include <boost/math/constants/constants.hpp>
 #include <boost/optional.hpp>
+#include <boost/thread.hpp>
 
 #include <istream>
 #include <iostream>
@@ -51,9 +52,6 @@
 #include <memory>
 #include <sstream>
 #include <future>
-
-#include <boost/thread.hpp>
-//#include <experimental/future>
 
 using Radians = double;
 using namespace boost::math::constants;

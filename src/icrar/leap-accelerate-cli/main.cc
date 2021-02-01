@@ -127,16 +127,16 @@ int main(int argc, char** argv)
             LOG(info) << version_information(argv[0]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             LOG(info) << arg_string(argc, argv);
 
-
-
             using namespace boost::coroutines;
             bool async = true;
             if(async)
             {
                 auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
-                
+                std::mutex outputMutex;
+
                 std::function<void(const cpu::Calibration&)> outFunc = [&](const cpu::Calibration& cal)
                 {
+                    std::lock_guard<std::mutex> lock(outputMutex);
                     cal.Serialize(args.GetOutputStream());
                 };
                 
@@ -152,7 +152,7 @@ int main(int argc, char** argv)
             else
             {
                 auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
-                
+
                 std::vector<cpu::Calibration> calibrations;
                 std::mutex calibrationsMutex;
                 std::function<void(const cpu::Calibration&)> outFunc = [&](const cpu::Calibration& cal)
