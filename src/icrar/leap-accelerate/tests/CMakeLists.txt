@@ -12,11 +12,12 @@ set(sources
   common/RangeTests.cc
   common/SphericalDirectionTests.cc
   common/MVuvwTests.cc
-
+  
   math/eigen_helper.cc
   math/MatrixTests.cc
   math/MatrixTests.cc
   math/MathConversionTests.cc
+  math/EigenExtensionsTests.cc
 
   ms/MSUtilsTests.cc
 
