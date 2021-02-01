@@ -42,9 +42,9 @@ namespace cpu
     {
         std::vector<cpu::Calibration> m_calibrations;
     public:
-        CalibrationCollection(const std::vector<cpu::Calibration>& calibrations)
+        CalibrationCollection(std::vector<cpu::Calibration>&& calibrations)
         {
-            m_calibrations = calibrations;
+            m_calibrations = std::move(calibrations);
         }
 
         const std::vector<cpu::Calibration>& GetCalibrations() const

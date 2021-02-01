@@ -20,8 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
-
-#include "CpuLeapCalibrator.h"
+#include "Calibrate.h"
 
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
@@ -58,13 +57,13 @@ namespace icrar
 {
 namespace cpu
 {
-    cpu::CalibrationCollection CpuLeapCalibrator::Calibrate(
+    CalibrationCollection Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<SphericalDirection>& directions,
         const Slice& solutionInterval,
         double minimumBaselineThreshold,
         boost::optional<unsigned int> referenceAntenna,
-        bool isFileSystemCacheEnabled)
+		bool isFileSystemCacheEnabled)
     {
         LOG(info) << "Starting calibration using cpu";
         LOG(info)
@@ -86,10 +85,7 @@ namespace cpu
         auto output_calibrations = std::vector<cpu::Calibration>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
 
-        profiling::timer integration_read_timer;
-
-
-        size_t timesteps = (size_t)ms.GetNumRows() / ms.GetNumBaselines();
+        size_t timesteps = ms.GetNumTimesteps();
         Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
         std::vector<double> epochs = ms.GetEpochs();
 
@@ -113,7 +109,8 @@ namespace cpu
             input_queues.clear();
 
             //Iterate solutions
-            const auto integration = Integration(
+            profiling::timer integration_read_timer;
+            const Integration integration = Integration(
                     integrationNumber,
                     ms,
                     solution * validatedSolutionInterval.interval * ms.GetNumBaselines(),
@@ -125,10 +122,10 @@ namespace cpu
             for(size_t direction = 0; direction < directions.size(); ++direction)
             {
                 auto queue = std::vector<cpu::Integration>();
-                queue.push_back(integration);
-                input_queues.push_back(queue);
+                queue.push_back(std::move(integration));
+                input_queues.push_back(std::move(queue));
             }
-
+            
             profiling::timer phase_rotate_timer;
             metadata.SetUVW(integration.GetUVW());
             for(size_t i = 0; i < directions.size(); ++i)
@@ -137,20 +134,17 @@ namespace cpu
                 metadata.SetDirection(directions[i]);
                 metadata.CalcUVW();
                 metadata.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
-                PhaseRotate(
-                    metadata,
-                    directions[i],
-                    input_queues[i],
-                    output_calibrations[solution].GetBeamCalibrations());
+                icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_calibrations[solution].GetBeamCalibrations());
             }
 
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
-            LOG(info) << "Finished calibration in " << calibration_timer;
+            LOG(info) << "Finished solution in " << solution_timer;
         }
+        LOG(info) << "Finished calibration in " << calibration_timer;
         return CalibrationCollection(std::move(output_calibrations));
     }
 
-    void CpuLeapCalibrator::PhaseRotate(
+    void PhaseRotate(
         cpu::MetaData& metadata,
         const SphericalDirection& direction,
         std::vector<cpu::Integration>& input,
@@ -158,20 +152,21 @@ namespace cpu
     {
         for(auto& integration : input)
         {
-            LOG(info) << "Rotating Integration " << integration.GetIntegrationNumber();
-            RotateVisibilities(integration, metadata);
+            LOG(info) << "Rotating Integration batch " << integration.GetIntegrationNumber();
+            icrar::cpu::RotateVisibilities(integration, metadata);
         }
 
         LOG(info) << "Calculating Calibration";
+        // PhaseAngles I1
         // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
         Eigen::VectorXd phaseAnglesI1 = icrar::arg(icrar::cpu::VectorRangeSelect(metadata.GetAvgData(), metadata.GetI1(), 0)); // 1st pol only
         phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
         phaseAnglesI1(phaseAnglesI1.rows() - 1) = 0;
 
         Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAnglesI1;
-        Eigen::VectorXd ACal1 = metadata.GetA() * cal1;
-
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
+
+        Eigen::VectorXd ACal1 = metadata.GetA() * cal1;
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
             dInt.row(n) = icrar::arg(std::exp(std::complex<double>(0, -two_pi<double>() * ACal1(n))) * metadata.GetAvgData().row(n));
@@ -184,7 +179,7 @@ namespace cpu
         output_calibrations.emplace_back(direction, (metadata.GetAd() * deltaPhaseColumn) + cal1);
     }
 
-    void CpuLeapCalibrator::RotateVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)
+    void RotateVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)
     {
         using namespace std::literals::complex_literals;
         Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.GetVis();
