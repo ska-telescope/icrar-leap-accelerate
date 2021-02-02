@@ -41,6 +41,7 @@ set(sources
     math/cpu/vector.cc
 
     core/compute_implementation.cc
+    core/stream_out_type.cc
     core/log/logging.cc
     core/log/Verbosity.cc
     core/profiling/resource_usage.cc

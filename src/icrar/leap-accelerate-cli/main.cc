@@ -29,6 +29,7 @@
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
+// #include <icrar/leap-accelerate/core/stream_out_type.h>
 #include <icrar/leap-accelerate/core/git_revision.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/UsageReporter.h>
@@ -93,6 +94,7 @@ int main(int argc, char** argv)
         ("config,c", po::value<boost::optional<std::string>>(&rawArgs.configFilePath), "Configuration file relative path")
         // TODO(calgray): app.add_option("-i,--input-type", rawArgs.source, "Input source type");
         ("filepath,f", po::value<boost::optional<std::string>>(&rawArgs.filePath), "Measurement set file path")
+        ("streamOut", po::value<boost::optional<std::string>>(&rawArgs.streamOutType), "Stream out setting (c=collection, s=singlefile, m=multiplefile)")
         ("output,o", po::value<boost::optional<std::string>>(&rawArgs.outputFilePath), "Calibration output file path")
         ("directions,d", po::value<boost::optional<std::string>>(&rawArgs.directions), "Directions to calibrations")
         ("stations,s", po::value<boost::optional<int>>(&rawArgs.stations), "Overrides number of stations in measurement set")
@@ -128,8 +130,8 @@ int main(int argc, char** argv)
             LOG(info) << arg_string(argc, argv);
 
             using namespace boost::coroutines;
-            bool async = true;
-            if(async)
+            
+            if(IsAsync(args.GetStreamOutType()))
             {
                 auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
                 std::mutex outputMutex;
@@ -137,7 +139,7 @@ int main(int argc, char** argv)
                 std::function<void(const cpu::Calibration&)> outFunc = [&](const cpu::Calibration& cal)
                 {
                     std::lock_guard<std::mutex> lock(outputMutex);
-                    cal.Serialize(args.GetOutputStream());
+                    cal.Serialize(args.GetOutputStream(cal.GetStartEpoch()));
                 };
                 
                 calibrator->AsyncCalibrate(

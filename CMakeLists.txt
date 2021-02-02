@@ -65,7 +65,7 @@ project(${SOLUTION_NAME} LANGUAGES CXX VERSION ${SOLUTION_VERSION})
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra") # TODO(calgray) -Wconversion
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra") # TODO(calgray) -Wall -Wconversion
   if(WERROR)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
   endif()
@@ -110,7 +110,6 @@ if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/rapidjson-1.1.0/CMakeLists.txt")
 endif()
 
 # Global Libraries
-
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
     # set input and output files
