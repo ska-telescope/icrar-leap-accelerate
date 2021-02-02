@@ -105,25 +105,23 @@ namespace icrar
 
             const auto& expected = getExpected();
             ASSERT_LT(0, expected.GetCalibrations().size());
-            
-
-            auto calibrate = [&](coroutine<cpu::Calibration&>::push_type& sink)
-            {
-                LeapCalibratorFactory::Create(impl)->AsyncCalibrate(
-                    sink,
-                    *ms,
-                    directions,
-                    solutionInterval,
-                    0.0,
-                    0,
-                    false);
-            };
-            pull_coroutine<cpu::Calibration&> source(calibrate, attributes(4194304));
+        
             std::vector<cpu::Calibration> calibrationsVector;
-            for(auto& cal : source)
+            std::mutex calibrationsMutex;
+            std::function<void(const cpu::Calibration&)> outFunc = [&](const cpu::Calibration& cal)
             {
+                std::lock_guard<std::mutex> lock(calibrationsMutex);
                 calibrationsVector.push_back(cal);
-            }
+            };
+            
+            LeapCalibratorFactory::Create(impl)->AsyncCalibrate(
+                outFunc,
+                *ms,
+                directions,
+                solutionInterval,
+                0.0,
+                0,
+                false);
             auto calibrations = cpu::CalibrationCollection(std::move(calibrationsVector));
 
             ASSERT_LT(0, calibrations.GetCalibrations().size());

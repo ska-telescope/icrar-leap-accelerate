@@ -76,18 +76,19 @@ namespace icrar
                 SphericalDirection(-0.1512764129166089,-0.21161026349648748)
             };
 
-            auto calibrate = [&](coroutine<cpu::Calibration&>::push_type& sink)
-            {
-                LeapCalibratorFactory::Create(impl)->AsyncCalibrate(
-                    sink, *ms, directions, Slice(0,1,1), 0.0, 0, false);
-            };
-            
-            pull_coroutine<cpu::Calibration&> source(calibrate, attributes(4194304));
             std::vector<cpu::Calibration> calibrations;
-            for(auto& cal : source)
+            std::mutex calibrationsMutex;
+            std::function<void(const cpu::Calibration&)> outFunc = [&](const cpu::Calibration& cal)
             {
+                std::lock_guard<std::mutex> lock(calibrationsMutex);
                 calibrations.push_back(cal);
-            }
+            };
+
+            LeapCalibratorFactory::Create(impl)->AsyncCalibrate(
+                outFunc,
+                *ms,
+                directions,
+                Slice(0,1,1), 0.0, 0, false); 
         }
     };
 
