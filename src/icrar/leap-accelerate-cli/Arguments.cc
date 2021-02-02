@@ -268,15 +268,15 @@ namespace icrar
         return m_outputFilePath;
     }
 
-    std::ostream& ArgumentsValidated::GetOutputStream(double startEpoch)
+    std::pair<std::ostream&, std::mutex&> ArgumentsValidated::GetOutputStream(double startEpoch)
     {
         if(!m_outputFilePath.is_initialized())
         {
-            return *m_outputStream;
+            return std::make_pair(std::ref(*m_outputStream), std::ref(m_outputStreamMutex));
         }
         if(m_streamOutType == StreamOutType::COLLECTION)
         {
-            return *m_outputStream;
+            return std::make_pair(std::ref(*m_outputStream), std::ref(m_outputStreamMutex));
         }
         else if(m_streamOutType == StreamOutType::SINGLE_FILE)
         {
@@ -290,7 +290,7 @@ namespace icrar
                 throw exception(ss.str(), __FILE__, __LINE__);
             }
             m_outputStream = m_outputFileStream.get();
-            return *m_outputStream;
+            return std::make_pair(std::ref(*m_outputStream), std::ref(m_outputStreamMutex));
         }
         else if(m_streamOutType == StreamOutType::MUTLIPLE_FILES)
         {
@@ -303,7 +303,7 @@ namespace icrar
                 throw exception(ss.str(), __FILE__, __LINE__);
             }
             m_outputFileStreams.push_back(std::move(stream));
-            return *m_outputFileStreams.back();
+            return std::make_pair(std::ref(*m_outputFileStreams.back()), std::ref(m_outputStreamMutex));
         }
         else
         {

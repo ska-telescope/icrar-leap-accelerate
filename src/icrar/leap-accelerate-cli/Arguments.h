@@ -28,7 +28,7 @@
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/stream_out_type.h>
 
-#include <boost/thread/synchronized_value.hpp>
+//#include <boost/thread/synchronized_value.hpp>
 #include <boost/optional.hpp>
 #include <vector>
 #include <string>
@@ -39,6 +39,32 @@
 
 namespace icrar
 {
+    template<typename T>
+    class synchronized_value
+    {
+        T m_data;
+        std::unique_lock<std::mutex> m_lock;
+
+    public:
+        synchronized_value(synchronized_value<T>&& other)
+        : m_data(other.m_data)
+        , m_lock(std::move(other.m_lock))
+        {
+        }
+
+        synchronized_value(std::pair<T, std::mutex&>&& other)
+        : m_data(other.first)
+        , m_lock(other.second)
+        {}
+
+        synchronized_value(T data, std::mutex& mutex)
+        : m_data(data)
+        , m_lock(mutex)
+        {}
+
+        T get() { return m_data; }
+    };
+
     class MeasurementSet;
 
     enum class InputType
@@ -160,9 +186,11 @@ namespace icrar
          * 
          * @return std::ostream& 
          */
-        std::ostream& GetOutputStream(double startEpoch = 0.0);
-        std::mutex& GetOutputStreamMutex() { return m_outputStreamMutex; }
-        // boost::synchronized_value<std::ostream&> GetSynchronizedOutputStream(double startEpoch = 0.0);
+        std::pair<std::ostream&, std::mutex&> GetOutputStream(double startEpoch = 0.0);
+        synchronized_value<std::ostream&> GetSynchronizedOutputStream(double startEpoch = 0.0)
+        {
+            return synchronized_value<std::ostream&>(std::move(GetOutputStream(startEpoch)));
+        }
 
         /**
          * @brief Gets the configuration for output stream type
