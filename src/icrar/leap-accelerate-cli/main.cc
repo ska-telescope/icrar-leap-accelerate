@@ -134,12 +134,12 @@ int main(int argc, char** argv)
             if(IsAsync(args.GetStreamOutType()))
             {
                 auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
-                std::mutex outputMutex;
 
                 std::function<void(const cpu::Calibration&)> outFunc = [&](const cpu::Calibration& cal)
                 {
-                    std::lock_guard<std::mutex> lock(outputMutex);
-                    cal.Serialize(args.GetOutputStream(cal.GetStartEpoch()));
+                    auto& stream = args.GetOutputStream(cal.GetStartEpoch());
+                    std::lock_guard<std::mutex> lock(args.GetOutputStreamMutex());
+                    cal.Serialize(stream);
                 };
                 
                 calibrator->AsyncCalibrate(
@@ -156,10 +156,8 @@ int main(int argc, char** argv)
                 auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
 
                 std::vector<cpu::Calibration> calibrations;
-                std::mutex calibrationsMutex;
                 std::function<void(const cpu::Calibration&)> outFunc = [&](const cpu::Calibration& cal)
                 {
-                    std::lock_guard<std::mutex> lock(calibrationsMutex);
                     calibrations.push_back(cal);
                 };
                 
@@ -173,6 +171,7 @@ int main(int argc, char** argv)
                     args.IsFileSystemCacheEnabled());
                 
                 auto calibrationCollection = cpu::CalibrationCollection(std::move(calibrations));
+                std::lock_guard<std::mutex> lock(args.GetOutputStreamMutex());
                 calibrationCollection.Serialize(args.GetOutputStream());
             }
         }

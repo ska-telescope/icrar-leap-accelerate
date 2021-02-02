@@ -152,8 +152,9 @@ namespace icrar
             break;
         }
 
-        if(m_outputFilePath.is_initialized())
+        if(m_outputFilePath.is_initialized() && m_streamOutType == StreamOutType::COLLECTION)
         {
+            std::lock_guard<std::mutex> lock(m_outputStreamMutex);
             m_outputFileStream = std::make_unique<std::ofstream>(m_outputFilePath.get());
             if(!m_outputFileStream->is_open())
             {
@@ -279,6 +280,16 @@ namespace icrar
         }
         else if(m_streamOutType == StreamOutType::SINGLE_FILE)
         {
+            auto path = m_outputFilePath.get();
+            std::lock_guard<std::mutex> lock(m_outputStreamMutex);
+            m_outputFileStream = std::move(std::make_unique<std::ofstream>(path));
+            if(!m_outputFileStream->is_open())
+            {
+                std::stringstream ss;
+                ss << "failed to open file " << path << std::endl;
+                throw exception(ss.str(), __FILE__, __LINE__);
+            }
+            m_outputStream = m_outputFileStream.get();
             return *m_outputStream;
         }
         else if(m_streamOutType == StreamOutType::MUTLIPLE_FILES)
