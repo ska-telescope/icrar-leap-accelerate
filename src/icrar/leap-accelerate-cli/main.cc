@@ -151,8 +151,10 @@ int main(int argc, char** argv)
                 auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
 
                 std::vector<cpu::Calibration> calibrations;
+                std::mutex calibrationsMutex;
                 std::function<void(const cpu::Calibration&)> outFunc = [&](const cpu::Calibration& cal)
                 {
+                    std::lock_guard<std::mutex> lock(calibrationsMutex);
                     calibrations.push_back(cal);
                 };
                 
