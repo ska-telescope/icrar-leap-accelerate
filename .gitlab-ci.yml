@@ -265,6 +265,7 @@ lint_cppcheck:
   after_script:
     - cd build
     - ctest2junit > ctest.xml
+  timeout: 1h
   artifacts:
     when: always
     paths:

@@ -29,7 +29,7 @@
 
 #include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
-#include <icrar/leap-accelerate/algorithm/cpu/Calibrate.h>
+#include <icrar/leap-accelerate/algorithm/cpu/CpuLeapCalibrator.h>
 #include <icrar/leap-accelerate/algorithm/cuda/CudaLeapCalibrator.h>
 
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
@@ -163,7 +163,7 @@ namespace icrar
                     ms->GetNumPols());
 
                 auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
-                icrar::cpu::RotateVisibilities(integration, hostMetadata);
+                cpu::CpuLeapCalibrator::RotateVisibilities(integration, hostMetadata);
 
                 metadataOptionalOutput = hostMetadata;
             }

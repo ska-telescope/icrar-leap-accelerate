@@ -188,7 +188,7 @@ namespace cpu
         0, std::cos(ang3), -std::sin(ang3),
         0, std::sin(ang3),  std::cos(ang3);
 
-        // TODO(calgray) Alternatively calc only the three vec
+        // Alternatively calculate only the three vec
         // m_lmn = Eigen::Vector3d();
         // m_lmn(0) = std::cos(polar_direction(1)) * std::sin(-m_constants.dlm_ra);
         // m_lmn(1) = std::sin(polar_direction(1)) * std::cos(m_constants.phase_centre_ra_rad) - std::cos(polar_direction(1)) * std::cos(m_constants.phase_centre_dec_rad) * std::sin(-m_constants.dlm_ra);
@@ -205,9 +205,8 @@ namespace cpu
     void MetaData::SetDirection(const SphericalDirection& direction)
     {
         m_direction = direction;
-
-        m_constants.dlm_ra = direction(0) - m_constants.phase_centre_ra_rad; //TODO: dlm_ra is not a constant
-        m_constants.dlm_dec = direction(1) - m_constants.phase_centre_dec_rad; //TODO: dlm_dec is not a constant
+        m_constants.dlm_ra = direction(0) - m_constants.phase_centre_ra_rad; //TODO(cgray): dlm_ra is not a constant
+        m_constants.dlm_dec = direction(1) - m_constants.phase_centre_dec_rad; //TODO(cgray): dlm_dec is not a constant
         
         m_dd = GenerateDDMatrix(direction);
         LOG(trace) << "dd: " << pretty_matrix(m_dd);
