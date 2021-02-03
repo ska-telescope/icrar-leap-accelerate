@@ -25,7 +25,7 @@
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/common/Slice.h>
 #include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
-#include <boost/coroutine/all.hpp>
+#include <boost/coroutine2/all.hpp>
 #include <boost/noncopyable.hpp>
 #include <vector>
 
@@ -61,7 +61,7 @@ namespace icrar
          * @return CalibrationCollection the calibrationn result
          */
         virtual void AsyncCalibrate(
-            boost::coroutines::coroutine<cpu::Calibration&>::push_type& sink,
+            boost::coroutines2::coroutine<cpu::Calibration&>::push_type& sink,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             const Slice& solutionInterval,

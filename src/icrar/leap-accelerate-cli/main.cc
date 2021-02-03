@@ -38,7 +38,7 @@
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/coroutine/all.hpp>
+#include <boost/coroutine2/all.hpp>
 #include <boost/thread.hpp>
 
 #include <iostream>
@@ -129,7 +129,7 @@ int main(int argc, char** argv)
 
 
 
-            using namespace boost::coroutines;
+            using namespace boost::coroutines2;
             bool async = true;
             if(async)
             {
@@ -146,7 +146,7 @@ int main(int argc, char** argv)
                         args.IsFileSystemCacheEnabled());
                 };
 
-                pull_coroutine<cpu::Calibration&> source(calibrate, attributes(4194304));
+                detail::pull_coroutine<cpu::Calibration&> source(calibrate);//, attributes(4194304));
                 for(auto& cal : source)
                 {
                     cal.Serialize(args.GetOutputStream());
@@ -167,7 +167,7 @@ int main(int argc, char** argv)
                         args.IsFileSystemCacheEnabled());
                 };
                 
-                pull_coroutine<cpu::Calibration&> source(calibrate, attributes(4194304));
+                detail::pull_coroutine<cpu::Calibration&> source(calibrate);//, attributes(4194304));
                 std::vector<cpu::Calibration> calibrations;
                 for(auto& cal : source)
                 {

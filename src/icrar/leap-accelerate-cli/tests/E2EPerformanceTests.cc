@@ -30,7 +30,7 @@
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 
-#include <boost/coroutine/all.hpp>
+#include <boost/coroutine2/all.hpp>
 
 #include <gtest/gtest.h>
 
@@ -39,7 +39,7 @@
 #include <unordered_map>
 
 using namespace std::literals::complex_literals;
-using namespace boost::coroutines;
+using namespace boost::coroutines2;
 
 namespace icrar
 {
@@ -82,7 +82,7 @@ namespace icrar
                     sink, *ms, directions, Slice(0,1,1), 0.0, 0, false);
             };
             
-            pull_coroutine<cpu::Calibration&> source(calibrate, attributes(4194304));
+            detail::pull_coroutine<cpu::Calibration&> source(calibrate); //, attributes(4194304));
             std::vector<cpu::Calibration> calibrations;
             for(auto& cal : source)
             {

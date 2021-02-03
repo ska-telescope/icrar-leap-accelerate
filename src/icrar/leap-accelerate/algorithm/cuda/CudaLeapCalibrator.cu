@@ -92,7 +92,7 @@ namespace cuda
     }
 
     void CudaLeapCalibrator::AsyncCalibrate(
-            boost::coroutines::coroutine<cpu::Calibration&>::push_type& sink,
+            boost::coroutines2::coroutine<cpu::Calibration&>::push_type& sink,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             const Slice& solutionInterval,

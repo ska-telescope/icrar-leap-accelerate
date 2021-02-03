@@ -54,7 +54,7 @@
 #include <cuda_runtime.h>
 #endif
 
-#include <boost/coroutine/all.hpp>
+#include <boost/coroutine2/all.hpp>
 #include <boost/log/trivial.hpp>
 
 #include <functional>
@@ -63,7 +63,7 @@
 #include <unordered_map>
 
 using namespace std::literals::complex_literals;
-using namespace boost::coroutines;
+using namespace boost::coroutines2;
 
 namespace icrar
 {
@@ -118,7 +118,9 @@ namespace icrar
                     0,
                     false);
             };
-            pull_coroutine<cpu::Calibration&> source(calibrate, attributes(4194304));
+            boost::coroutines2::detail::pull_coroutine<cpu::Calibration&> source(
+                segmented_stack(),
+                calibrate);//, attributes(4194304));
             std::vector<cpu::Calibration> calibrationsVector;
             for(auto& cal : source)
             {

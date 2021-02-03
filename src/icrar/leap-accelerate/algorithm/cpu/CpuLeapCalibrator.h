@@ -31,7 +31,7 @@
 #include <casacore/ms/MeasurementSets.h>
 #include <Eigen/Core>
 
-#include <boost/coroutine/all.hpp>
+#include <boost/coroutine2/all.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 
@@ -57,7 +57,7 @@ namespace cpu
          * by splitting uvws into integration batches per timestep.
          */
         void AsyncCalibrate(
-            boost::coroutines::coroutine<cpu::Calibration&>::push_type& sink,
+            boost::coroutines2::coroutine<cpu::Calibration&>::push_type& sink,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             const Slice& solutionInterval,
