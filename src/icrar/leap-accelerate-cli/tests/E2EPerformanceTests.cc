@@ -30,8 +30,6 @@
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 
-#include <boost/coroutine/all.hpp>
-
 #include <gtest/gtest.h>
 
 #include <vector>
@@ -39,7 +37,6 @@
 #include <unordered_map>
 
 using namespace std::literals::complex_literals;
-using namespace boost::coroutines;
 
 namespace icrar
 {

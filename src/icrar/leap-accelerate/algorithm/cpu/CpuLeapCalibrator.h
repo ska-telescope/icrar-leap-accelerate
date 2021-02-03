@@ -31,7 +31,6 @@
 #include <casacore/ms/MeasurementSets.h>
 #include <Eigen/Core>
 
-#include <boost/coroutine/all.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 

@@ -54,7 +54,6 @@
 #include <cuda_runtime.h>
 #endif
 
-#include <boost/coroutine/all.hpp>
 #include <boost/log/trivial.hpp>
 
 #include <functional>
@@ -63,7 +62,6 @@
 #include <unordered_map>
 
 using namespace std::literals::complex_literals;
-using namespace boost::coroutines;
 
 namespace icrar
 {

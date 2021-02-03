@@ -39,7 +39,6 @@
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/coroutine/all.hpp>
 #include <boost/thread.hpp>
 
 #include <iostream>
@@ -129,8 +128,6 @@ int main(int argc, char** argv)
             LOG(info) << version_information(argv[0]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             LOG(info) << arg_string(argc, argv);
 
-            using namespace boost::coroutines;
-            
             if(IsAsync(args.GetStreamOutType()))
             {
                 auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
