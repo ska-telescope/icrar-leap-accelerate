@@ -87,10 +87,9 @@ namespace cpu
         auto output_calibrations = std::vector<cpu::Calibration>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
 
-        profiling::timer integration_read_timer;
-
         size_t timesteps = (size_t)ms.GetNumRows() / ms.GetNumBaselines();
         Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
+        std::vector<double> epochs = ms.GetEpochs();
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
@@ -105,10 +104,13 @@ namespace cpu
         constexpr unsigned int integrationNumber = 0;
         for(size_t solution = 0; solution < solutions; ++solution)
         {
-            output_calibrations.emplace_back(solution * validatedSolutionInterval.interval, (solution+1) * validatedSolutionInterval.interval);
+            profiling::timer solution_timer;
+            output_calibrations.emplace_back(
+                epochs[solution * validatedSolutionInterval.interval],
+                epochs[(solution+1) * validatedSolutionInterval.interval - 1]);
             input_queues.clear();
 
-            //Iterate solutions
+            profiling::timer integration_read_timer;
             const Integration integration = Integration(
                     integrationNumber,
                     ms,
@@ -125,10 +127,9 @@ namespace cpu
             }
             LOG(info) << "Read integration data in " << integration_read_timer;
 
-            //auto epochs = ms.GetEpochs();
-            metadata.SetUVW(integration.GetUVW());
 
             profiling::timer phase_rotate_timer;
+            metadata.SetUVW(integration.GetUVW());
             for(size_t i = 0; i < directions.size(); ++i)
             {
                 LOG(info) << "Processing direction " << i;
@@ -139,9 +140,10 @@ namespace cpu
             }
 
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
-            LOG(info) << "Finished calibration in " << calibration_timer;
+			LOG(info) << "Finished solution in " << solution_timer;
             sink(output_calibrations[solution]);
         }
+        LOG(info) << "Finished calibration in " << calibration_timer;
     }
 
     void CpuLeapCalibrator::PhaseRotate(

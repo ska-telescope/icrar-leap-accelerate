@@ -50,8 +50,6 @@ namespace cpu
         m_constants.nbaselines = ms.GetNumBaselines();
         m_constants.referenceAntenna = refAnt ? refAnt.get() : ms.GetTotalAntennas() - 1;
 
-        std::cout << m_constants.referenceAntenna << std::endl;
-
         m_constants.channels = 0;
         m_constants.freq_start_hz = 0;
         m_constants.freq_inc_hz = 0;
