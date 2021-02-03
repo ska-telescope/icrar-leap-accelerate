@@ -102,7 +102,7 @@ namespace icrar
         unsigned int GetNumStations() const;
 
         /**
-         * @brief Get the number of baselines in the measurement set including autocorrelations (e.g. (0,0), (1,1), (2,2))
+         * @brief Get the number of baselines in the measurement set using the current autocorrelations setting
          * and including stations not recording rows.
          * @note TODO: baselines should always be n*(n-1) / 2 and without autocorrelations
          * @return unsigned int 

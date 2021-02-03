@@ -47,9 +47,9 @@ namespace cpu
     , baselines(baselines)
     {
         constexpr int startChannel = 0;
-        size_t vis_size = (baselines - startBaseline) * (channels - startChannel) * polarizations * sizeof(std::complex<double>);
+        size_t vis_size = baselines * (channels - startChannel) * polarizations * sizeof(std::complex<double>);
         LOG(info) << "vis: " << memory_amount(vis_size);
-        size_t uvw_size = (baselines - startBaseline) * 3;
+        size_t uvw_size = baselines * 3;
         LOG(info) << "uvw: " << memory_amount(uvw_size);
         m_visibilities = ms.GetVis(startBaseline, startChannel, channels, baselines, polarizations);
         m_UVW = ToUVWVector(ms.GetCoords(startBaseline, baselines));

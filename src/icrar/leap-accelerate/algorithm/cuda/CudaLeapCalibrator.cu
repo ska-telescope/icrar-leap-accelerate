@@ -100,6 +100,11 @@ namespace cuda
         bool isFileSystemCacheEnabled)
     {
         LOG(info) << "Starting Calibration using cuda";
+
+        bool highGpuMemory = false;
+#ifdef HIGH_GPU_MEMORY
+        highGpuMemory = true;
+#endif
         LOG(info)
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
@@ -113,10 +118,11 @@ namespace cuda
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
-        << "timesteps: " << ms.GetNumTimesteps();
+        << "timesteps: " << ms.GetNumTimesteps() << ", "
+        << "high gpu memory enabled: " << highGpuMemory; 
 
         profiling::timer calibration_timer;
-        profiling::timer integration_read_timer;
+
         auto output_calibrations = std::vector<cpu::Calibration>();
         auto input_queue = std::vector<cuda::DeviceIntegration>();
 
@@ -152,6 +158,7 @@ namespace cuda
         constexpr unsigned int integrationNumber = 0;
         for(int solution = 0; solution < solutions; solution++)
         {
+            profiling::timer solution_timer;
             output_calibrations.emplace_back(
                 epochs[solution * validatedSolutionInterval.interval],
                 epochs[(solution+1) * validatedSolutionInterval.interval - 1]);
@@ -166,6 +173,7 @@ namespace cuda
                 throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
             }
         
+            profiling::timer integration_read_timer;
             auto integration = cuda::HostIntegration(
                 integrationNumber,
                 ms,
@@ -218,9 +226,10 @@ namespace cuda
                     output_calibrations[solution].GetBeamCalibrations());
             }
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
-            LOG(info) << "Finished calibration in " << calibration_timer;
+            LOG(info) << "Finished solution in " << solution_timer;
         }
-        return cpu::CalibrationCollection(output_calibrations);
+        LOG(info) << "Finished calibration in " << calibration_timer;
+        return cpu::CalibrationCollection(std::move(output_calibrations));
     }
 
     void CudaLeapCalibrator::PhaseRotate(
