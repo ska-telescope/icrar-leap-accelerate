@@ -137,9 +137,7 @@ int main(int argc, char** argv)
 
                 std::function<void(const cpu::Calibration&)> outFunc = [&](const cpu::Calibration& cal)
                 {
-                    auto synchronizedStream = args.GetSynchronizedOutputStream(cal.GetStartEpoch());
-                    //std::lock_guard<std::mutex> lock(synchronizedStream.second);
-                    cal.Serialize(synchronizedStream.get());
+                    cal.Serialize(args.GetSynchronizedOutputStream(cal.GetStartEpoch()).get());
                 };
                 
                 calibrator->AsyncCalibrate(
@@ -171,8 +169,7 @@ int main(int argc, char** argv)
                     args.IsFileSystemCacheEnabled());
                 
                 auto calibrationCollection = cpu::CalibrationCollection(std::move(calibrations));
-                auto synchronizedStream = args.GetSynchronizedOutputStream();
-                calibrationCollection.Serialize(synchronizedStream.get());
+                calibrationCollection.Serialize(args.GetSynchronizedOutputStream().get());
             }
         }
     }

@@ -302,6 +302,7 @@ namespace icrar
                 ss << "failed to open file " << path << std::endl;
                 throw exception(ss.str(), __FILE__, __LINE__);
             }
+            std::lock_guard<std::mutex> lock(m_outputStreamMutex);
             m_outputFileStreams.push_back(std::move(stream));
             return std::make_pair(std::ref(*m_outputFileStreams.back()), std::ref(m_outputStreamMutex));
         }
@@ -309,6 +310,11 @@ namespace icrar
         {
             throw std::runtime_error("invalid output stream type");
         }
+    }
+
+    synchronized_value<std::ostream&> ArgumentsValidated::GetSynchronizedOutputStream(double startEpoch)
+    {
+        return synchronized_value<std::ostream&>(std::move(GetOutputStream(startEpoch)));
     }
 
     StreamOutType ArgumentsValidated::GetStreamOutType() const
@@ -402,6 +408,18 @@ namespace icrar
                 else if(key == "configFilePath")
                 {
                     throw json_exception("recursive config detected", __FILE__, __LINE__);
+                }
+                else if(key == "streamOutType")
+                {
+                    StreamOutType e;
+                    if(TryParseStreamOutType(it->value.GetString(), e))
+                    {
+                        args.streamOutType = e;
+                    }
+                    else
+                    {
+                        throw json_exception("invalid stream out type string", __FILE__, __LINE__);
+                    }
                 }
                 else if(key == "outputFilePath")
                 {
