@@ -21,27 +21,40 @@
  */
 
 #pragma once
-
-#include <Eigen/Core>
-
+#include <icrar/leap-accelerate/common/Range.h>
+#include <icrar/leap-accelerate/exception/exception.h>
 #include <rapidjson/document.h>
-#include <vector>
+#include <string>
+#include <stdint.h>
 
 namespace icrar
 {
-    using SphericalDirection = Eigen::Vector2d;
-
     /**
-     * @brief Parses a json string to a collection of MVDirections
-     * 
-     * @param json 
-     * @return std::vector<SphericalDirection> 
-     */
-    std::vector<SphericalDirection> ParseDirections(const std::string& json);
-
-    /**
-     * @brief Parses a json object to a collection of MVDirections
+     * @brief Represents a linear sequence of indexes for some arbitrary collection
      * 
      */
-    std::vector<SphericalDirection> ParseDirections(const rapidjson::Value& doc);
+    struct Slice
+    {
+        std::int32_t start;
+        std::int32_t interval;
+        std::int32_t end;
+
+        Slice() = default;
+        Slice(int interval);
+        Slice(int start, int end);
+        Slice(int start, int interval, int end);
+        
+        Range Evaluate(int collectionSize) const
+        {
+            return Range(
+                (start == -1) ? collectionSize : start,
+                (interval == -1) ? collectionSize : interval,
+                (end == -1) ? collectionSize : end
+            );
+        }
+    };
+
+    Slice ParseSlice(const std::string& json);
+
+    Slice ParseSlice(const rapidjson::Value& doc);
 } // namespace icrar

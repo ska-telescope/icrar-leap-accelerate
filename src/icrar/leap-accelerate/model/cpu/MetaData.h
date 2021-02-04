@@ -70,6 +70,9 @@ namespace icrar
 {
 namespace cpu
 {
+    /**
+     * @brief Container of fixed sized variables that do not change during calibration
+     */
     struct Constants
     {
         uint32_t nbaselines; //the total number station pairs (excluding self cycles) 
@@ -120,10 +123,21 @@ namespace cpu
         std::vector<icrar::MVuvw> m_rotatedUVW; // late initialized
     
         SphericalDirection m_direction; // calibration direction, late initialized
-        Eigen::Matrix3d m_dd; // direction matrix, late initialized
+        Eigen::Matrix3d m_dd; // direction dependant matrix, late initialized
         Eigen::MatrixXcd m_avgData; // matrix of size (baselines, polarizations), late initialized
     
     public:
+        
+        /**
+         * @brief Construct a new MetaData object. SetUVW() and SetDirection() must be called after construction
+         * 
+         * @param ms 
+         * @param minimumBaselineThreshold
+         * @param useCache
+         */
+        MetaData(const icrar::MeasurementSet& ms, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool useCache = true);
+
+
         /**
          * @brief Construct a new MetaData object. SetDirection() must be called after construction
          * 
@@ -186,6 +200,15 @@ namespace cpu
          * @pre DD is set, UVW is set
          */
         void CalcUVW();
+
+        /**
+         * @brief Utility method to generate a direction matrix using the
+         * configured zenith direction
+         * 
+         * @param direction 
+         * @return Eigen::Matrix3d 
+         */
+        Eigen::Matrix3d GenerateDDMatrix(const SphericalDirection& direction) const;
 
         const Eigen::MatrixXcd& GetAvgData() const { return m_avgData; }
         Eigen::MatrixXcd& GetAvgData() { return m_avgData; }

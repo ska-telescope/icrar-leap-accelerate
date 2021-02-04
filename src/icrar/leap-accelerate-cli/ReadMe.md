@@ -14,6 +14,10 @@ leap-accelerate-cli is a command line interface to performing leap calibration.
 
 * --stations - Overrides number of stations to use in the specified measurement set
 
+* --solutionInterval - Sets the interval to generate solutions for in the form "interval" or "[start,interval,end]"
+
+* --referenceAntenna - Selects the reference antenna index, default is the last antenna
+
 * --implementation (cpu, cuda) - compute implementation type
 
 * --useFileSystemCache (true, false) - Whether filesystem caching is used between system calls
@@ -42,17 +46,21 @@ filePath: string
 
 outputFilePath: string?
 
-computeImplementation: string?
-
 autoCorrelations: boolean?
 
-useFileSystemCache: bool?
+useFileSystemCache: boolean?
 
-minimumBaselineThreshold: double?
+minimumBaselineThreshold: number?
 
-directions: [[number]]
+solutionInterval: integer|[integer,integer,integer]?
 
-verbosity: int|string?
+referenceAntenna: integer?
+
+directions: [[number, number]]?
+
+computeImplementation: string?
+
+verbosity: integer|string?
 
 ### JSON Example
 

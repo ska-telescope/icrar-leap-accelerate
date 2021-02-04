@@ -71,7 +71,6 @@ namespace icrar
         void TestRawReadFromFile()
         {
             auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())), boost::none);
-
             ASSERT_EQ(102, ms->GetNumStations());
             ASSERT_EQ(5253, ms->GetNumBaselines());
             ASSERT_EQ(48, meta.GetConstants().channels);

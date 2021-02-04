@@ -40,7 +40,8 @@ set(sources
 
     common/SphericalDirection.cc
     common/MVuvw.cc
-    
+    common/Slice.cc
+
     math/vector_extensions.cc
     math/math_conversion.cc
     math/cuda/matrix.h
@@ -54,7 +55,6 @@ set(sources
 
     algorithm/LeapCalibratorFactory.cc
     algorithm/cpu/CpuLeapCalibrator.cc
-    algorithm/cpu/Calibrate.cc
     algorithm/cpu/PhaseMatrixFunction.cc
 )
     

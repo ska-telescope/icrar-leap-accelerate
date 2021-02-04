@@ -30,6 +30,10 @@
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 
+#include <icrar/leap-accelerate/model/cpu/calibration/BeamCalibration.h>
+#include <icrar/leap-accelerate/model/cpu/calibration/Calibration.h>
+#include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
+
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <unsupported/Eigen/CXX11/Tensor>
@@ -49,104 +53,6 @@ namespace icrar
 {
 namespace cpu
 {
-    /**
-     * @brief Contains the results of the integration stage
-     * 
-     */
-    class IntegrationResult
-    {
-        int m_integrationNumber;
-        SphericalDirection m_direction;
-
-        boost::optional<std::vector<Eigen::VectorXd>> m_data;
-
-    public:
-        IntegrationResult(
-            int integrationNumber,
-            SphericalDirection direction,
-            boost::optional<std::vector<Eigen::VectorXd>> data)
-            : m_integrationNumber(integrationNumber)
-            , m_direction(std::move(direction))
-            , m_data(std::move(data))
-        {
-
-        }
-
-        int GetIntegrationNumber() const { return m_integrationNumber; }
-    };
-
-    /**
-     * @brief Contains the results of leap calibration
-     * 
-     */
-    class CalibrationResult
-    {
-        SphericalDirection m_direction;
-        Eigen::MatrixXd m_calibration;
-
-    public:
-            /**
-         * @brief Construct a new Calibration Result object
-         * 
-         * @param direction direciton of calibration
-         * @param calibration calibration of each antenna for the given direction 
-         */
-        CalibrationResult(
-            SphericalDirection direction,
-            Eigen::MatrixXd calibration)
-            : m_direction(std::move(direction))
-            , m_calibration(std::move(calibration))
-        {
-        }
-
-        /**
-         * @brief Gets the calibration direction
-         * 
-         * @return const SphericalDirection 
-         */
-        const SphericalDirection GetDirection() const { return m_direction; }
-
-        /**
-         * @brief Get the calibration Vector for the antenna array in the specified direction
-         * 
-         * @return const Eigen::MatrixXd 
-         */
-        const Eigen::MatrixXd& GetCalibration() const { return m_calibration; }
-
-        void Serialize(std::ostream& os) const;
-
-    private:
-        template<typename Writer>
-        void CreateJsonStrFormat(Writer& writer) const
-        {
-            assert(m_calibration.cols() == 1);
-
-            writer.StartObject();
-            writer.String("direction");
-            writer.StartArray();
-            for(auto& v : m_direction)
-            {
-                writer.Double(v);
-            }
-            writer.EndArray();
-
-            writer.String("data");
-            writer.StartArray();
-            for(int i = 0; i < m_calibration.rows(); ++i)
-            {
-                writer.Double(m_calibration(i,0));
-            }
-            writer.EndArray();
-
-            writer.EndObject();
-        }
-    };
-
-    using CalibrateResult = std::pair<
-        std::vector<std::vector<cpu::IntegrationResult>>,
-        std::vector<std::vector<cpu::CalibrationResult>>
-    >;
-
-    void PrintResult(const CalibrateResult& result, std::ostream& out);
+    void PrintResult(const CalibrationCollection& result, std::ostream& out);
 }
 }

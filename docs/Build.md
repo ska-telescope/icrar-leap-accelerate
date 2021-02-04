@@ -104,7 +104,7 @@ With tracing to file:
 
 `mkdir -p build && cd build`
 
-`cmake .. -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release`
+`cmake .. -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_ENABLED=1 -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release`
 
 #### Deploy
 
@@ -112,7 +112,7 @@ In hyades03:
 
 `cd deploy`
 
-`./build.sh -s hyades -c /usr/local/cuda-10.0/ -D "-DCUDA_ENABLED=TRUE -DHIGH_GPU_MEMORY=TRUE"`
+`./build.sh -s hyades -c /usr/local/cuda-11.0/ -D "-DCUDA_ENABLED=TRUE -DHIGH_GPU_MEMORY=TRUE"`
 
 ## Testing
 

@@ -102,8 +102,15 @@ namespace cuda
         device_vector<icrar::MVuvw> m_UVW;
     public:
         explicit SolutionIntervalBuffer(const std::vector<icrar::MVuvw>& UVW);
+        explicit SolutionIntervalBuffer(size_t baselines);
         
         const device_vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
+
+        void SetUVW(std::vector<icrar::MVuvw> UVW)
+        {
+            assert(UVW.size() == m_UVW.GetCount());
+            m_UVW.SetDataAsync(UVW.data());
+        }
     };
 
     /**
@@ -134,17 +141,13 @@ namespace cuda
             const Eigen::MatrixXcd& avgData);
 
         /**
-         * @brief Constructs a new Direction Buffer object for computation by zeroing uvw and avgData
+         * @brief Constructs a new Direction Buffer object for late initialization
          * 
-         * @param direction 
-         * @param dd 
          * @param uvwSize 
          * @param avgDataRows 
          * @param avgDataCols 
          */
         DirectionBuffer(
-            const SphericalDirection& direction,
-            const Eigen::Matrix3d& dd,
             int uvwSize,
             int avgDataRows,
             int avgDataCols);
