@@ -31,7 +31,6 @@
 
 #include <icrar/leap-accelerate/math/cuda/math.cuh>
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
-#include <icrar/leap-accelerate/math/cuda/vector.h>
 #include <icrar/leap-accelerate/math/cpu/vector.h>
 
 #include <icrar/leap-accelerate/exception/exception.h>
@@ -120,7 +119,7 @@ namespace cuda
         int integrations = ms.GetNumRows() / ms.GetNumBaselines();
         if(integrations == 0)
         {
-            std::stringstream ss;
+            std::stringstream ss; //TODO(calgray): move this to MeasurementSet
             ss << "invalid number of rows, expected >" << ms.GetNumBaselines() << ", got " << ms.GetNumRows();
             throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
         }

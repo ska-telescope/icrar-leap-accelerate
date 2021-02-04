@@ -34,48 +34,6 @@ namespace icrar
 namespace cpu
 {
     /**
-    * @brief Performs vector addition of equal length vectors
-    *
-    * @tparam T vector value type
-    * @param x1 left vector
-    * @param x2 right vector
-    * @param y out vector
-    */
-    template<typename T>
-    void add(size_t n, const T* x1, const T* x2, T* y)
-    {
-        for(size_t i = 0; i < n; i++)
-        {
-            y[i] = x1[i] + x2[i]; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        }
-    }
-
-    template<typename T, size_t N>
-    void add(const std::array<T, N>& a, const std::array<T, N>& b, std::array<T, N>& c)
-    {
-        add(a.size(), a.data(), b.data(), c.data());
-    }
-
-    template<typename T, size_t N>
-    std::array<T, N> add(const std::array<T, N>& a, const std::array<T, N>& b)
-    {
-        std::array<T, N> result;
-        add(a.size(), a.data(), b.data(), result.data());
-        return result;
-    }
-
-    template<typename T>
-    void add(const std::vector<T>& a, const std::vector<T>& b, std::vector<T>& c)
-    {
-        if (a.size() != b.size() && a.size() != c.size())
-        {
-            throw std::runtime_error("argument sizes must be equal");
-        }
-
-        add(a.size(), a.data(), b.data(), c.data());
-    }
-
-    /**
      * @brief Provides selecting a range of elements via matrix row indices. Negative indexes
      * select from the bottom of the matrix with -1 representing the bottom row.
      * 

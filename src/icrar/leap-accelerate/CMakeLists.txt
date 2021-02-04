@@ -31,16 +31,6 @@ set(sources
     ms/utils.cc
     ms/MeasurementSet.cc
 
-    model/cpu/Integration.cc
-    model/cpu/MetaData.cc
-    model/cpu/CalibrateResult.cc
-    
-    math/vector_extensions.cc
-    math/math_conversion.cc
-    math/casa/matrix.cc
-    math/casa/matrix_invert.cc
-    math/cpu/vector.cc
-
     core/compute_implementation.cc
     core/log/logging.cc
     core/log/Verbosity.cc
@@ -51,34 +41,36 @@ set(sources
     common/SphericalDirection.cc
     common/MVuvw.cc
     
+    math/vector_extensions.cc
+    math/math_conversion.cc
+    math/cuda/matrix.h
+    math/cuda/matrix.cuh
+    math/cuda/matrix_multiply.cuh
+    math/cuda/matrix_multiply.cu
+
+    model/cpu/Integration.cc
+    model/cpu/MetaData.cc
+    model/cpu/CalibrateResult.cc
+
     algorithm/LeapCalibratorFactory.cc
     algorithm/cpu/CpuLeapCalibrator.cc
     algorithm/cpu/Calibrate.cc
     algorithm/cpu/PhaseMatrixFunction.cc
-    )
+)
     
     set(cuda_headers
     cuda/cuda_info.h
     cuda/helper_cuda.cuh
     cuda/helper_string.cuh
-    
-    math/cuda/vector.h
-    math/cuda/vector.cuh
-    math/cuda/matrix.h
-    math/cuda/matrix.cuh
-    math/cuda/matrix_multiply.cuh
-    )
+)
     
     set(cuda_sources
     cuda/cuda_info.cu
-    math/cuda/vector.cu
-    math/cuda/matrix.cu
-    math/cuda/matrix_multiply.cu
     
     model/cuda/DeviceMetaData.cu
     model/cuda/DeviceIntegration.cu
     algorithm/cuda/CudaLeapCalibrator.cu
-    )
+)
 
 # Libraries
 option(CASA_ENABLED "Casa Enabled" TRUE)

@@ -8,8 +8,6 @@ set(sources
 
   math/eigen_helper.cc
   math/MatrixTests.cc
-  math/VectorTests.cc
-  math/MatrixTests.cc
   math/MathConversionTests.cc
 
   ms/MSUtilsTests.cc
@@ -21,7 +19,6 @@ set(sources
 )
 
 set(cuda_sources
-  math/cuda/CudaVectorTests.cu
   math/cuda/CudaMatrixTests.cu
   math/cuda/CudaMatrixEigenTests.cu
 )
