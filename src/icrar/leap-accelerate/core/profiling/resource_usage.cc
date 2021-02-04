@@ -24,10 +24,10 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
-#include "icrar/leap-accelerate/core/ioutils.h"
-#include "icrar/leap-accelerate/core/profiling/resource_usage.h"
-#include "icrar/leap-accelerate/core/profiling/timer.h"
-#include "icrar/leap-accelerate/exception/exception.h"
+#include <icrar/leap-accelerate/core/ioutils.h>
+#include <icrar/leap-accelerate/core/profiling/resource_usage.h>
+#include <icrar/leap-accelerate/core/profiling/timer.h>
+#include <icrar/leap-accelerate/exception/exception.h>
 
 namespace icrar
 {
