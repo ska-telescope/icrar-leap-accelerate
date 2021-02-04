@@ -94,10 +94,10 @@ namespace cpu
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
         auto metadata = icrar::cpu::MetaData(
-             ms,
-             referenceAntenna,
-             minimumBaselineThreshold,
-             isFileSystemCacheEnabled);
+            ms,
+            referenceAntenna,
+            minimumBaselineThreshold,
+            isFileSystemCacheEnabled);
         LOG(info) << "Read metadata in " << metadata_read_timer;
 
         size_t solutions = validatedSolutionInterval.GetSize();

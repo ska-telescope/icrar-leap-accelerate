@@ -232,7 +232,6 @@ namespace cuda
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
             LOG(info) << "Calculated solution in " << solution_timer;
 
-            
             ioFutures.push_back(std::async(std::launch::async, [&, solution]
             {
                 outFunc(output_calibrations[solution]);
