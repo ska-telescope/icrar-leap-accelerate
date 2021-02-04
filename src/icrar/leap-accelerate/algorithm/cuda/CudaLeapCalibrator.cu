@@ -42,7 +42,6 @@
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
-#include <icrar/leap-accelerate/cuda/cuda_mapped_matrix.h>
 #include <cuda_runtime.h>
 #include <math_constants.h>
 #include <cuComplex.h>
