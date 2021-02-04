@@ -220,4 +220,5 @@ namespace cuda
     };
 }
 }
+
 #endif //CUDA_ENABLED
