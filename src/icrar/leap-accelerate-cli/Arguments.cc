@@ -37,9 +37,10 @@ namespace icrar
     CLIArguments GetDefaultArguments()
     {
         auto args = CLIArguments();
-        args.source = InputType::FILENAME;
+        args.sourceType = InputType::MEASUREMENT_SET;
         args.filePath = boost::none;
         args.configFilePath = boost::none;
+        args.streamOutType = "single";
         args.outputFilePath = boost::none;
 
         args.stations = boost::none;
@@ -56,7 +57,7 @@ namespace icrar
     }
 
     Arguments::Arguments(CLIArguments&& args)
-        : source(args.source)
+        : sourceType(args.sourceType)
         , filePath(std::move(args.filePath))
         , configFilePath(std::move(args.configFilePath))
         , outputFilePath(std::move(args.outputFilePath))
@@ -77,6 +78,15 @@ namespace icrar
             }
         }
 
+        if(args.streamOutType.is_initialized())
+        {
+            streamOutType.reset(StreamOutType());
+            if(!TryParseStreamOutType(args.streamOutType.get(), streamOutType.get()))
+            {
+                throw icrar::invalid_argument_exception("invalid stream out type argument", args.streamOutType.get(), __FILE__, __LINE__);
+            }
+        }
+
         if(args.directions.is_initialized())
         {
             directions = ParseDirections(args.directions.get());
@@ -94,14 +104,14 @@ namespace icrar
     }
 
     ArgumentsValidated::ArgumentsValidated(Arguments&& cliArgs)
-    : m_source(InputType::FILENAME)
+    : m_sourceType(InputType::MEASUREMENT_SET)
     , m_computeImplementation(ComputeImplementation::cpu)
     , m_solutionInterval()
     , m_minimumBaselineThreshold(0)
     , m_readAutocorrelations(false)
     , m_mwaSupport(false)
     , m_useFileSystemCache(false)
-    , m_verbosity(icrar::log::Verbosity::trace)
+    , m_verbosity(icrar::log::Verbosity::trace) //These values are overwritten
     {
         // Initialize default arguments first
         ApplyArguments(GetDefaultArguments());
@@ -119,12 +129,9 @@ namespace icrar
 
         // Load resources
         icrar::log::Initialize(GetVerbosity());
-        switch (m_source)
+        switch (m_sourceType)
         {
-        case InputType::STREAM:
-            m_inputStream = &std::cin;
-            break;
-        case InputType::FILENAME:
+        case InputType::MEASUREMENT_SET:
             if (m_filePath.is_initialized())
             {
                 m_measurementSet = std::make_unique<MeasurementSet>(
@@ -137,16 +144,17 @@ namespace icrar
                 throw std::invalid_argument("measurement set filename not provided");
             }
             break;
-        case InputType::APACHE_ARROW:
-            throw std::runtime_error("only stream in and file input are currently supported");
+        case InputType::STREAM:
+            throw std::runtime_error("only measurement set input is currently supported");
             break;
         default:
-            throw std::invalid_argument("only stream in and file input are currently supported");
+            throw std::runtime_error("only measurement set input is currently supported");
             break;
         }
 
-        if(m_outputFilePath.is_initialized())
+        if(m_outputFilePath.is_initialized() && m_streamOutType == StreamOutType::COLLECTION)
         {
+            std::lock_guard<std::mutex> lock(m_outputStreamMutex);
             m_outputFileStream = std::make_unique<std::ofstream>(m_outputFilePath.get());
             if(!m_outputFileStream->is_open())
             {
@@ -163,12 +171,11 @@ namespace icrar
         }
     }
 
-
     void ArgumentsValidated::ApplyArguments(Arguments&& args)
     {
-        if(args.source.is_initialized())
+        if(args.sourceType.is_initialized())
         {
-            m_source = std::move(args.source.get());
+            m_sourceType = std::move(args.sourceType.get());
         }
 
         if(args.filePath.is_initialized())
@@ -179,6 +186,11 @@ namespace icrar
         if(args.configFilePath.is_initialized())
         {
             m_configFilePath = std::move(args.configFilePath.get());
+        }
+
+        if(args.streamOutType.is_initialized())
+        {
+            m_streamOutType = std::move(args.streamOutType.get());
         }
 
         if(args.outputFilePath.is_initialized())
@@ -256,9 +268,58 @@ namespace icrar
         return m_outputFilePath;
     }
 
-    std::ostream& ArgumentsValidated::GetOutputStream()
+    std::pair<std::ostream&, std::mutex&> ArgumentsValidated::GetOutputStream(double startEpoch)
     {
-        return *m_outputStream;
+        if(!m_outputFilePath.is_initialized())
+        {
+            return std::make_pair(std::ref(*m_outputStream), std::ref(m_outputStreamMutex));
+        }
+        if(m_streamOutType == StreamOutType::COLLECTION)
+        {
+            return std::make_pair(std::ref(*m_outputStream), std::ref(m_outputStreamMutex));
+        }
+        else if(m_streamOutType == StreamOutType::SINGLE_FILE)
+        {
+            auto path = m_outputFilePath.get();
+            std::lock_guard<std::mutex> lock(m_outputStreamMutex);
+            m_outputFileStream = std::move(std::make_unique<std::ofstream>(path));
+            if(!m_outputFileStream->is_open())
+            {
+                std::stringstream ss;
+                ss << "failed to open file " << path << std::endl;
+                throw exception(ss.str(), __FILE__, __LINE__);
+            }
+            m_outputStream = m_outputFileStream.get();
+            return std::make_pair(std::ref(*m_outputStream), std::ref(m_outputStreamMutex));
+        }
+        else if(m_streamOutType == StreamOutType::MUTLIPLE_FILES)
+        {
+            auto path = m_outputFilePath.get() + "." + std::to_string(startEpoch) + ".json";
+            auto stream = std::make_unique<std::ofstream>(path);
+            if(!stream->is_open())
+            {
+                std::stringstream ss;
+                ss << "failed to open file " << path << std::endl;
+                throw exception(ss.str(), __FILE__, __LINE__);
+            }
+            std::lock_guard<std::mutex> lock(m_outputStreamMutex);
+            m_outputFileStreams.push_back(std::move(stream));
+            return std::make_pair(std::ref(*m_outputFileStreams.back()), std::ref(m_outputStreamMutex));
+        }
+        else
+        {
+            throw std::runtime_error("invalid output stream type");
+        }
+    }
+
+    synchronized_value<std::ostream&> ArgumentsValidated::GetSynchronizedOutputStream(double startEpoch)
+    {
+        return synchronized_value<std::ostream&>(std::move(GetOutputStream(startEpoch)));
+    }
+
+    StreamOutType ArgumentsValidated::GetStreamOutType() const
+    {
+        return m_streamOutType;
     }
 
     MeasurementSet& ArgumentsValidated::GetMeasurementSet()
@@ -328,9 +389,9 @@ namespace icrar
             else
             {
                 std::string key = it->name.GetString();
-                if(key == "source")
+                if(key == "sourceType")
                 {
-                    //args.source = it->value.GetInt(); //TODO: use string
+                    //args.sourceType = it->value.GetInt(); //TODO: use string
                 }
                 else if(key == "filePath")
                 {
@@ -347,6 +408,18 @@ namespace icrar
                 else if(key == "configFilePath")
                 {
                     throw json_exception("recursive config detected", __FILE__, __LINE__);
+                }
+                else if(key == "streamOutType")
+                {
+                    StreamOutType e;
+                    if(TryParseStreamOutType(it->value.GetString(), e))
+                    {
+                        args.streamOutType = e;
+                    }
+                    else
+                    {
+                        throw json_exception("invalid stream out type string", __FILE__, __LINE__);
+                    }
                 }
                 else if(key == "outputFilePath")
                 {

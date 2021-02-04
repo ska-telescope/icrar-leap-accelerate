@@ -51,6 +51,7 @@
 
 #include <boost/math/constants/constants.hpp>
 #include <boost/optional/optional_io.hpp>
+#include <boost/thread.hpp>
 
 #include <complex>
 #include <istream>
@@ -61,6 +62,7 @@
 #include <exception>
 #include <memory>
 #include <set>
+#include <future>
 
 using Radians = double;
 using namespace boost::math::constants;
@@ -91,7 +93,7 @@ namespace cuda
     }
 
     void CudaLeapCalibrator::AsyncCalibrate(
-            boost::coroutines::coroutine<cpu::Calibration&>::push_type& sink,
+            std::function<void(const cpu::Calibration&)> outFunc,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             const Slice& solutionInterval,
@@ -100,6 +102,11 @@ namespace cuda
             bool isFileSystemCacheEnabled)
     {
         LOG(info) << "Starting Calibration using cuda";
+
+        bool highGpuMemory = false;
+#ifdef HIGH_GPU_MEMORY
+        highGpuMemory = true;
+#endif
         LOG(info)
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
@@ -113,10 +120,11 @@ namespace cuda
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
-        << "timesteps: " << ms.GetNumTimesteps();
+        << "timesteps: " << ms.GetNumTimesteps() << ", "
+        << "high gpu memory enabled: " << highGpuMemory; 
 
         profiling::timer calibration_timer;
-        profiling::timer integration_read_timer;
+
         auto output_calibrations = std::vector<cpu::Calibration>();
         auto input_queue = std::vector<cuda::DeviceIntegration>();
 
@@ -150,8 +158,10 @@ namespace cuda
 
         size_t solutions = validatedSolutionInterval.GetSize();
         constexpr unsigned int integrationNumber = 0;
+        std::vector<std::future<void>> ioFutures;
         for(int solution = 0; solution < solutions; solution++)
         {
+            profiling::timer solution_timer;
             output_calibrations.emplace_back(
                 epochs[solution * validatedSolutionInterval.GetInterval()],
                 epochs[(solution+1) * validatedSolutionInterval.GetInterval() - 1]);
@@ -166,6 +176,7 @@ namespace cuda
                 throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
             }
         
+            profiling::timer integration_read_timer;
             auto integration = cuda::HostIntegration(
                 integrationNumber,
                 ms,
@@ -218,9 +229,15 @@ namespace cuda
                     output_calibrations[solution].GetBeamCalibrations());
             }
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
-            LOG(info) << "Finished calibration in " << calibration_timer;
-            sink(output_calibrations[solution]);
+            LOG(info) << "Calculated solution in " << solution_timer;
+
+            ioFutures.push_back(std::async(std::launch::async, [&, solution]
+            {
+                outFunc(output_calibrations[solution]);
+            }));
         }
+        LOG(info) << "Finished calibration in " << calibration_timer;
+        boost::wait_for_all(ioFutures.begin(), ioFutures.end());
     }
 
     void CudaLeapCalibrator::PhaseRotate(

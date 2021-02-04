@@ -65,6 +65,10 @@ namespace cpu
         {
         }
 
+        double GetStartEpoch() const { return m_startEpoch; }
+        
+        double GetEndEpoch() const { return m_endEpoch; }
+
         const std::vector<BeamCalibration>& GetBeamCalibrations() const
         {
             return m_beamCalibrations;
