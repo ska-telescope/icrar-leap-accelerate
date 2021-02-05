@@ -48,10 +48,10 @@ set(sources
 
     common/SphericalDirection.cc
     common/MVuvw.cc
-    
+    common/Slice.cc
+
     algorithm/LeapCalibratorFactory.cc
     algorithm/cpu/CpuLeapCalibrator.cc
-    algorithm/cpu/Calibrate.cc
     algorithm/cpu/PhaseMatrixFunction.cc
     )
     
@@ -112,6 +112,7 @@ if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
 #  )
 endif()
 
+#target_compile_definitions(${TARGET_NAME} PUBLIC PRETTY_WRITER)
 
 if(CUDA_ENABLED)
   if(HIGH_GPU_MEMORY)
@@ -140,7 +141,7 @@ if(CUDA_ENABLED)
 endif()
 
 # Legacy TODO(calgray): build support for xenial
-include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
+#include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 
 target_link_libraries(${TARGET_NAME} Threads::Threads)
 

@@ -51,7 +51,7 @@ namespace icrar
     {
         class Integration;
         class IntegrationResult;
-        class CalibrationResult;
+        class BeamCalibration;
         class MetaData;
     }
     namespace cuda
@@ -77,9 +77,10 @@ namespace cuda
         CudaLeapCalibrator();
         ~CudaLeapCalibrator() override;
 
-        virtual cpu::CalibrateResult Calibrate(
+        virtual cpu::CalibrationCollection Calibrate(
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
+            const Slice& solutionInterval,
             double minimumBaselineThreshold,
             boost::optional<unsigned int> referenceAntenna,
             bool isFileSystemCacheEnabled) override;
@@ -88,12 +89,11 @@ namespace cuda
          * Performs only visibilities rotation on the GPU
          */
         void PhaseRotate(
-            cpu::MetaData& hostMetadata,
+            const cpu::MetaData& hostMetadata,
             DeviceMetaData& deviceMetadata,
             const SphericalDirection& direction,
             std::vector<cuda::DeviceIntegration>& input,
-            std::vector<cpu::IntegrationResult>& output_integrations,
-            std::vector<cpu::CalibrationResult>& output_calibrations);
+            std::vector<cpu::BeamCalibration>& output_calibrations);
 
         /**
          * @brief Rotates oldUVW by dd into UVW

@@ -67,7 +67,8 @@ namespace cpu
             if(a1(n) != a2(n))
             {
                 // skip entry if data not flagged
-                if(!fg(n) && ((!refAnt.is_initialized()) || ((refAnt.is_initialized()) && ((boost::numeric_cast<uint32_t>(a1(n)) == refAnt.get()) || (boost::numeric_cast<uint32_t>(a2(n)) == refAnt.get())))))
+                if(!fg(n) && ((!refAnt.is_initialized())
+                || ((refAnt.is_initialized()) && ((static_cast<unsigned int>(a1(n)) == refAnt.get()) || (static_cast<unsigned int>(a2(n)) == refAnt.get())))))
                 {
                     A(k, a1(n)) = 1;
                     A(k, a2(n)) = -1;

@@ -182,8 +182,9 @@ endif()
 set(EIGEN3_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/eigen-3.3.90)
 find_package(Eigen3 REQUIRED)
 
-set(PC_RapidJSON_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external/rapidjson-1.1.0/include)
+#set(PC_RapidJSON_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 find_package(RapidJSON REQUIRED)
+message(STATUS "RapidJSON: ${RapidJSON_INCLUDE_DIRS}")
 
 # Local Targets
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

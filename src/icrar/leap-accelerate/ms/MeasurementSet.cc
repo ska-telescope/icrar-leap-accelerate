@@ -102,22 +102,39 @@ namespace icrar
         }
     }
 
-    unsigned int MeasurementSet::GetNumRows() const
+    uint32_t MeasurementSet::GetNumRows() const
     {
         return m_msmc->uvw().nrow();
     }
 
-    unsigned int MeasurementSet::GetTotalAntennas() const
+    uint32_t MeasurementSet::GetTotalAntennas() const
     {
         return m_measurementSet->antenna().nrow();
     }
 
-    unsigned int MeasurementSet::GetNumStations() const
+    uint32_t MeasurementSet::GetNumTimesteps() const
+    {
+        return (uint32_t)GetNumRows() / GetNumBaselines();
+    }
+
+    std::vector<double> MeasurementSet::GetEpochs() const
+    {
+        casacore::Vector<double> time = m_msmc->time().getColumn();
+        uint32_t timesteps = GetNumTimesteps();
+        std::vector<double> result;
+        for(uint32_t i = 0; i < timesteps; ++i)
+        {
+            result.push_back(time[i * GetNumBaselines()]);
+        }
+        return result;
+    }
+
+    uint32_t MeasurementSet::GetNumStations() const
     {
         return m_stations;
     }
 
-    unsigned int MeasurementSet::GetNumPols() const
+    uint32_t MeasurementSet::GetNumPols() const
     {
         if(m_measurementSet->polarization().nrow() > 0)
         {
@@ -129,12 +146,12 @@ namespace icrar
         }
     }
 
-    unsigned int MeasurementSet::GetNumBaselines() const
+    uint32_t MeasurementSet::GetNumBaselines() const
     {
         return GetNumBaselines(m_readAutocorrelations);
     }
 
-    unsigned int MeasurementSet::GetNumBaselines(bool useAutocorrelations) const
+    uint32_t MeasurementSet::GetNumBaselines(bool useAutocorrelations) const
     {
         //TODO(calgray): cache value
         if(useAutocorrelations)
@@ -149,7 +166,7 @@ namespace icrar
         }
     }
 
-    unsigned int MeasurementSet::GetNumChannels() const
+    uint32_t MeasurementSet::GetNumChannels() const
     {
         if(m_msc->spectralWindow().nrow() > 0)
         {
@@ -179,7 +196,7 @@ namespace icrar
         return ToVector(flags);
     }
 
-    unsigned int MeasurementSet::GetNumFlaggedBaselines() const
+    uint32_t MeasurementSet::GetNumFlaggedBaselines() const
     {
         auto flaggedBaselines = GetFlaggedBaselines();
         return boost::numeric_cast<uint32_t>(std::count(flaggedBaselines.cbegin(), flaggedBaselines.cend(), true));
@@ -198,7 +215,7 @@ namespace icrar
 
             // TODO(calgray): uv is of size baselines * timesteps, consider throwing a warning if flags change
             // in later timesteps
-            for(unsigned int i = 0; i < nBaselines; i++)
+            for(uint32_t i = 0; i < nBaselines; i++)
             {
                 if(std::sqrt(uv(i, 0) * uv(i, 0) + uv(i, 1) * uv(i, 1)) < minimumBaselineThreshold)
                 {
@@ -210,7 +227,7 @@ namespace icrar
         return baselineFlags;
     }
 
-    unsigned int MeasurementSet::GetNumShortBaselines(double minimumBaselineThreshold) const
+    uint32_t MeasurementSet::GetNumShortBaselines(double minimumBaselineThreshold) const
     {
         auto shortBaselines = GetShortBaselines(minimumBaselineThreshold);
         return boost::numeric_cast<uint32_t>(std::count(shortBaselines.cbegin(), shortBaselines.cend(), true));
@@ -222,7 +239,7 @@ namespace icrar
         return result;
     }
 
-    unsigned int MeasurementSet::GetNumFilteredBaselines(double minimumBaselineThreshold) const
+    uint32_t MeasurementSet::GetNumFilteredBaselines(double minimumBaselineThreshold) const
     {
         auto filteredBaselines = GetFilteredBaselines(minimumBaselineThreshold);
         return boost::numeric_cast<uint32_t>(std::count(filteredBaselines.cbegin(), filteredBaselines.cend(), true));
@@ -233,16 +250,16 @@ namespace icrar
         return GetCoords(0, GetNumBaselines());
     }
 
-    Eigen::MatrixX3d MeasurementSet::GetCoords(unsigned int start_row, unsigned int nBaselines) const
+    Eigen::MatrixX3d MeasurementSet::GetCoords(uint32_t start_row, uint32_t nBaselines) const
     {
         Eigen::MatrixX3d matrix = Eigen::MatrixX3d::Zero(nBaselines, 3);
         icrar::ms_read_coords(
             *m_measurementSet,
             start_row,
             nBaselines,
-            matrix(Eigen::all, 0).data(),
-            matrix(Eigen::all, 1).data(),
-            matrix(Eigen::all, 2).data());
+            matrix.col(0).data(),
+            matrix.col(1).data(),
+            matrix.col(2).data());
         return matrix;
     }
 

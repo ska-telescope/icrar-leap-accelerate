@@ -4,17 +4,10 @@ A generic library containing core functionality for leap calibration.
 
 Functionality in this project is split into three independant namespaces/implementations:
 
-* casalib
 * cpu
 * cuda
 
 ## Compute Implementations
-
-### casalib
-
-Provides computation using casa math libraries for minimum overhead when
-reading from casa::MeasurementSets. Casa math libraries may not contain suitable
-layout for raw access by acceleration libraries such cuda, blas, cycl, etc.
 
 ### cpu
 
