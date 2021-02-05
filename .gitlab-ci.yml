@@ -127,7 +127,7 @@ build_debug:
   script:
     - mkdir build
     - cd build
-    - cmake .. -DWCONVERSION=TRUE -DWERROR=TRUE -D -DCMAKE_BUILD_TYPE=Release
+    - cmake .. -DWCONVERSION=TRUE -DWERROR=TRUE -DCMAKE_BUILD_TYPE=Release
     - make -j2
   artifacts:
     when: always
