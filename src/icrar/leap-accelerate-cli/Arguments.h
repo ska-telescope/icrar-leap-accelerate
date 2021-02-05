@@ -156,6 +156,8 @@ namespace icrar
 
         boost::optional<std::string> GetOutputFilePath() const;
 
+        std::unique_ptr<std::ostream> CreateOutputStream(double startEpoch = 0.0) const;
+
         /**
          * @brief Gets the user defined output stream for results.
          * 

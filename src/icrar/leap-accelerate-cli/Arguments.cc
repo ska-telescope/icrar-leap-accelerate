@@ -268,58 +268,35 @@ namespace icrar
         return m_outputFilePath;
     }
 
-    std::pair<std::ostream&, std::mutex&> ArgumentsValidated::GetOutputStream(double startEpoch)
+    StreamOutType ArgumentsValidated::GetStreamOutType() const
+    {
+        return m_streamOutType;
+    }
+
+    std::unique_ptr<std::ostream> ArgumentsValidated::CreateOutputStream(double startEpoch) const
     {
         if(!m_outputFilePath.is_initialized())
         {
-            return std::make_pair(std::ref(*m_outputStream), std::ref(m_outputStreamMutex));
+            return std::make_unique<std::ostream>(std::cout.rdbuf());
         }
         if(m_streamOutType == StreamOutType::COLLECTION)
         {
-            return std::make_pair(std::ref(*m_outputStream), std::ref(m_outputStreamMutex));
+            return std::make_unique<std::ostream>(std::cout.rdbuf());
         }
         else if(m_streamOutType == StreamOutType::SINGLE_FILE)
         {
             auto path = m_outputFilePath.get();
-            std::lock_guard<std::mutex> lock(m_outputStreamMutex);
-            m_outputFileStream = std::move(std::make_unique<std::ofstream>(path));
-            if(!m_outputFileStream->is_open())
-            {
-                std::stringstream ss;
-                ss << "failed to open file " << path << std::endl;
-                throw exception(ss.str(), __FILE__, __LINE__);
-            }
-            m_outputStream = m_outputFileStream.get();
-            return std::make_pair(std::ref(*m_outputStream), std::ref(m_outputStreamMutex));
+            return std::make_unique<std::ofstream>(path);
         }
         else if(m_streamOutType == StreamOutType::MUTLIPLE_FILES)
         {
             auto path = m_outputFilePath.get() + "." + std::to_string(startEpoch) + ".json";
-            auto stream = std::make_unique<std::ofstream>(path);
-            if(!stream->is_open())
-            {
-                std::stringstream ss;
-                ss << "failed to open file " << path << std::endl;
-                throw exception(ss.str(), __FILE__, __LINE__);
-            }
-            std::lock_guard<std::mutex> lock(m_outputStreamMutex);
-            m_outputFileStreams.push_back(std::move(stream));
-            return std::make_pair(std::ref(*m_outputFileStreams.back()), std::ref(m_outputStreamMutex));
+            return std::make_unique<std::ofstream>(path);
         }
         else
         {
             throw std::runtime_error("invalid output stream type");
         }
-    }
-
-    synchronized_value<std::ostream&> ArgumentsValidated::GetSynchronizedOutputStream(double startEpoch)
-    {
-        return synchronized_value<std::ostream&>(std::move(GetOutputStream(startEpoch)));
-    }
-
-    StreamOutType ArgumentsValidated::GetStreamOutType() const
-    {
-        return m_streamOutType;
     }
 
     MeasurementSet& ArgumentsValidated::GetMeasurementSet()

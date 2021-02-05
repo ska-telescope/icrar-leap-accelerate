@@ -65,7 +65,7 @@ project(${SOLUTION_NAME} LANGUAGES CXX VERSION ${SOLUTION_VERSION})
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra") # TODO(calgray) -Wall -Wconversion
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
   if(WERROR)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
   endif()
@@ -145,7 +145,7 @@ set(CMAKE_CUDA_COMPILER ${CMAKE_CXX_COMPILER})
 endif()
 
 add_definitions(-DBOOST_ALL_DYN_LINK)
-find_package(Boost REQUIRED COMPONENTS log log_setup program_options coroutine)
+find_package(Boost REQUIRED COMPONENTS log log_setup program_options)
 
 set(CASACORE_FIND_QUIETLY ON)
 find_package(Casacore REQUIRED)
