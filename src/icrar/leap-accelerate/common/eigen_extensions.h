@@ -212,7 +212,7 @@ namespace icrar
 
         if(row.cols() < 7)
         {
-            for(long int c = 0; c < row.cols(); ++c)
+            for(int64_t c = 0; c < row.cols(); ++c)
             {
                 ss << std::setw(pretty_width) << row(c);
                 if(c != row.cols() - 1) { ss << " "; }
@@ -220,12 +220,12 @@ namespace icrar
         }
         else
         {
-            for(int c = 0; c < 3; ++c)
+            for(int64_t c = 0; c < 3; ++c)
             {
                 ss << std::setw(pretty_width) << row(c) << " ";
             }
             ss << std::setw(pretty_width) << "..." << " ";
-            for(long int c = row.cols() - 3; c < row.cols(); ++c)
+            for(int64_t c = row.cols() - 3; c < row.cols(); ++c)
             {
                 ss << std::setw(pretty_width) << row(c);
                 if(c != row.cols() - 1) { ss << " "; }
