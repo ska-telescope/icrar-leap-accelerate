@@ -34,7 +34,7 @@ namespace icrar
 {
     cpu::CalibrationCollection GetEachTimestepMWACalibration()
     {
-        auto calibration0 = cpu::Calibration(1.0, 2.0, std::vector<cpu::BeamCalibration>
+        auto calibration0 = cpu::Calibration(5020320156.0, 5020320156.0, std::vector<cpu::BeamCalibration>
         {
           cpu::BeamCalibration(
             SphericalDirection(-0.4606549305661674,-0.29719233792392513),
@@ -303,7 +303,7 @@ namespace icrar
                      1.19117497840134,
             }))
         });
-        auto calibration1 = cpu::Calibration(1.0, 2.0, std::vector<cpu::BeamCalibration>
+        auto calibration1 = cpu::Calibration(5020320164.0, 5020320164.0, std::vector<cpu::BeamCalibration>
         {
           cpu::BeamCalibration(
             SphericalDirection(-0.4606549305661674,-0.29719233792392513),
@@ -575,18 +575,18 @@ namespace icrar
         return cpu::CalibrationCollection(std::vector<cpu::Calibration>{
             calibration0,
             calibration1,
-            cpu::Calibration(0.0, 0.0, {}),
-            cpu::Calibration(0.0, 0.0, {}),
-            cpu::Calibration(0.0, 0.0, {}),
-            cpu::Calibration(0.0, 0.0, {}),
-            cpu::Calibration(0.0, 0.0, {}),
-            cpu::Calibration(0.0, 0.0, {}),
-            cpu::Calibration(0.0, 0.0, {}),
-            cpu::Calibration(0.0, 0.0, {}),
-            cpu::Calibration(0.0, 0.0, {}),
-            cpu::Calibration(0.0, 0.0, {}),
-            cpu::Calibration(0.0, 0.0, {}),
-            cpu::Calibration(0.0, 0.0, {}),
+            cpu::Calibration(5020320172.0, 5020320172.0, {}),
+            cpu::Calibration(5020320180.0, 5020320180.0, {}),
+            cpu::Calibration(5020320188.0, 5020320188.0, {}),
+            cpu::Calibration(5020320196.0, 5020320196.0, {}),
+            cpu::Calibration(5020320204.0, 5020320204.0, {}),
+            cpu::Calibration(5020320212.0, 5020320212.0, {}),
+            cpu::Calibration(5020320220.0, 5020320220.0, {}),
+            cpu::Calibration(5020320228.0, 5020320228.0, {}),
+            cpu::Calibration(5020320236.0, 5020320236.0, {}),
+            cpu::Calibration(5020320244.0, 5020320244.0, {}),
+            cpu::Calibration(5020320252.0, 5020320252.0, {}),
+            cpu::Calibration(5020320260.0, 5020320260.0, {}),
         });
     }
 
@@ -597,7 +597,7 @@ namespace icrar
      */
     cpu::CalibrationCollection GetAllTimestepsMWACalibration()
     {
-        auto calibration = cpu::Calibration(1.0, 2.0, std::vector<cpu::BeamCalibration>
+        auto calibration = cpu::Calibration(5020320156.0, 5020320260.0, std::vector<cpu::BeamCalibration>
         {
           cpu::BeamCalibration(
             SphericalDirection(-0.4606549305661674,-0.29719233792392513),
@@ -876,7 +876,7 @@ namespace icrar
      */
     cpu::CalibrationCollection GetFirstTimestepMWACalibration()
     {
-        auto calibration = cpu::Calibration(1.0, 2.0, std::vector<cpu::BeamCalibration>
+        auto calibration = cpu::Calibration(5020320156.0, 5020320156.0, std::vector<cpu::BeamCalibration>
         {
           cpu::BeamCalibration(
             SphericalDirection(-0.4606549305661674,-0.29719233792392513),
