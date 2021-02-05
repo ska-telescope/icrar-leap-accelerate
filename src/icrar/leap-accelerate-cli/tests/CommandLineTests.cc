@@ -71,7 +71,7 @@ namespace icrar
             command += " -s 102";
             command += " -i casa";
             command += " -d ["
-                "[-0.0]"
+                "[0.0,0.0]"
             "]";
             std::cout << command << std::endl;
             ASSERT_EQ(0, system(command.c_str()));
@@ -81,7 +81,7 @@ namespace icrar
             command += " -s 102";
             command += " -i eigen";
             command += " -d ["
-                "[-0.0]"
+                "[0.0,0.0]"
             "]";
             std::cout << command << std::endl;
             ASSERT_EQ(0, system(command.c_str()));
