@@ -36,10 +36,10 @@ namespace cpu
     Integration::Integration(
         int integrationNumber,
         const icrar::MeasurementSet& ms,
-        unsigned int startBaseline,
-        unsigned int channels,
-        unsigned int baselines,
-        unsigned int polarizations)
+        uint32_t startBaseline,
+        uint32_t channels,
+        uint32_t baselines,
+        uint32_t polarizations)
     : m_integrationNumber(integrationNumber)
     , index(startBaseline)
     , x(baselines)

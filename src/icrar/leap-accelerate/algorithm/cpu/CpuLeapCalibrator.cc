@@ -85,7 +85,7 @@ namespace cpu
 
         profiling::timer calibration_timer;
 
-        size_t timesteps = (size_t)ms.GetNumTimesteps();
+        int timesteps = boost::numeric_cast<int>(ms.GetNumTimesteps());
         Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
         std::vector<double> epochs = ms.GetEpochs();
 
@@ -116,7 +116,7 @@ namespace cpu
             const auto integration = Integration(
                     integrationNumber,
                     ms,
-                    solution * validatedSolutionInterval.interval * ms.GetNumBaselines(),
+                    boost::numeric_cast<int32_t>(solution * validatedSolutionInterval.interval * ms.GetNumBaselines()),
                     ms.GetNumChannels(),
                     validatedSolutionInterval.interval * ms.GetNumBaselines(),
                     ms.GetNumPols());
