@@ -63,7 +63,6 @@
 #include <exception>
 #include <memory>
 #include <set>
-#include <future>
 
 using Radians = double;
 using namespace boost::math::constants;
@@ -159,7 +158,6 @@ namespace cuda
 
         size_t solutions = validatedSolutionInterval.GetSize();
         constexpr unsigned int integrationNumber = 0;
-        std::vector<std::future<void>> ioFutures;
         for(int solution = 0; solution < solutions; solution++)
         {
             profiling::timer solution_timer;
@@ -231,14 +229,9 @@ namespace cuda
             }
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
             LOG(info) << "Calculated solution in " << solution_timer;
-
-            ioFutures.push_back(std::async(std::launch::async, [&, solution]
-            {
-                outFunc(output_calibrations[solution]);
-            }));
+            outFunc(output_calibrations[solution]);
         }
         LOG(info) << "Finished calibration in " << calibration_timer;
-        boost::wait_for_all(ioFutures.begin(), ioFutures.end());
     }
 
     void CudaLeapCalibrator::PhaseRotate(
