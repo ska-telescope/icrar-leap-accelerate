@@ -34,7 +34,6 @@
 #include <memory>
 #include <fstream>
 #include <iostream>
-#include <mutex>
 
 namespace icrar
 {
