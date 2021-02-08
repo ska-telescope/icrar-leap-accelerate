@@ -132,13 +132,13 @@ int main(int argc, char** argv)
             {
                 auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
 
-                auto outFunc = [&](const cpu::Calibration& cal)
+                auto outputCallback = [&](const cpu::Calibration& cal)
                 {
                     cal.Serialize(*args.CreateOutputStream(cal.GetStartEpoch()));
                 };
                 
                 calibrator->AsyncCalibrate(
-                    outFunc,
+                    outputCallback,
                     args.GetMeasurementSet(),
                     args.GetDirections(),
                     args.GetSolutionInterval(),
@@ -151,13 +151,13 @@ int main(int argc, char** argv)
                 auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
 
                 std::vector<cpu::Calibration> calibrations;
-                auto outFunc = [&](const cpu::Calibration& cal)
+                auto outputCallback = [&](const cpu::Calibration& cal)
                 {
                     calibrations.push_back(cal);
                 };
                 
                 calibrator->AsyncCalibrate(
-                    outFunc,
+                    outputCallback,
                     args.GetMeasurementSet(),
                     args.GetDirections(),
                     args.GetSolutionInterval(),

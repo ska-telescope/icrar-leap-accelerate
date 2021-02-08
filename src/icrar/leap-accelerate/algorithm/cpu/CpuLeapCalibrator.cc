@@ -60,7 +60,7 @@ namespace icrar
 namespace cpu
 {
     void CpuLeapCalibrator::AsyncCalibrate(
-        std::function<void(const cpu::Calibration&)> outFunc,
+        std::function<void(const cpu::Calibration&)> outputCallback,
         const icrar::MeasurementSet& ms,
         const std::vector<SphericalDirection>& directions,
         const Slice& solutionInterval,
@@ -148,7 +148,7 @@ namespace cpu
             LOG(info) << "Calculated solution in " << solution_timer;
 
             profiling::timer write_timer;
-            outFunc(output_calibrations[solution]);
+            outputCallback(output_calibrations[solution]);
             LOG(info) << "Write out in " << write_timer;
         }
         LOG(info) << "Finished calibration in " << calibration_timer;

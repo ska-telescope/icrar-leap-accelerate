@@ -107,14 +107,14 @@ namespace icrar
         
             std::vector<cpu::Calibration> calibrationsVector;
             std::mutex calibrationsMutex;
-            std::function<void(const cpu::Calibration&)> outFunc = [&](const cpu::Calibration& cal)
+            std::function<void(const cpu::Calibration&)> outputCallback = [&](const cpu::Calibration& cal)
             {
                 std::lock_guard<std::mutex> lock(calibrationsMutex);
                 calibrationsVector.push_back(cal);
             };
             
             LeapCalibratorFactory::Create(impl)->AsyncCalibrate(
-                outFunc,
+                outputCallback,
                 *ms,
                 directions,
                 solutionInterval,
