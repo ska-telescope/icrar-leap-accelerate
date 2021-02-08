@@ -40,5 +40,8 @@ namespace icrar
      */
     bool TryParseStreamOutType(const std::string& value, StreamOutType& out);
 
-    bool IsAsync(StreamOutType streamOutType);
+    /**
+     * @brief True if solutions should be written to IO as soon as they are computed.
+     */
+    bool IsImmediateMode(StreamOutType streamOutType);
 }

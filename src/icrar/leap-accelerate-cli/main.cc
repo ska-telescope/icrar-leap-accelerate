@@ -128,7 +128,7 @@ int main(int argc, char** argv)
             LOG(info) << version_information(argv[0]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             LOG(info) << arg_string(argc, argv);
 
-            if(IsAsync(args.GetStreamOutType()))
+            if(IsImmediateMode(args.GetStreamOutType()))
             {
                 auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
 
