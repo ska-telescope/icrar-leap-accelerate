@@ -105,10 +105,8 @@ namespace icrar
             ASSERT_LT(0, expected.GetCalibrations().size());
         
             std::vector<cpu::Calibration> calibrationsVector;
-            std::mutex calibrationsMutex;
             std::function<void(const cpu::Calibration&)> outputCallback = [&](const cpu::Calibration& cal)
             {
-                std::lock_guard<std::mutex> lock(calibrationsMutex);
                 calibrationsVector.push_back(cal);
             };
             
