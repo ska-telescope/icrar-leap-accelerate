@@ -99,8 +99,7 @@ namespace cpu
         {
             if(i < 0)
             {
-                long int newIndex = i + matrix.rows();
-                i += boost::numeric_cast<int>(newIndex);
+                i = boost::numeric_cast<int>(i + matrix.rows());
             }
         }
 
