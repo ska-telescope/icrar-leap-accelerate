@@ -22,7 +22,7 @@ copyright = '2021, Callan Gray'
 author = 'Callan Gray'
 
 # The full version, including alpha/beta/rc tags
-with open('../version.txt') as f:
+with open('../../version.txt') as f:
     version = f.read().strip()
 release = version
 
@@ -31,7 +31,23 @@ release = version
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['breathe']
+extensions = [
+    'breathe',
+    'sphinx.ext.autodoc',
+    'sphinxcontrib.autodoc_doxygen',
+    'sphinx.ext.autosummary',
+    'sphinx_autopackagesummary',
+    'recommonmark'
+]
+
+# Automatically generate autodoc_doxygen targets
+autodoc_default_flags = ['members']
+doxygen_xml = '/home/calgray/Code/icrar/leap-accelerate/build/Release/docs/doxygen/xml'
+
+# Automatically generate stub pages
+autosummary_generate = True
+
+breathe_default_project = "LeapAccelerate"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
