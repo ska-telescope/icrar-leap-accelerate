@@ -45,7 +45,7 @@ namespace icrar
         return false;
     }
 
-    bool IsAsync(StreamOutType streamOutType)
+    bool IsImmediateMode(StreamOutType streamOutType)
     {
         switch(streamOutType)
         {

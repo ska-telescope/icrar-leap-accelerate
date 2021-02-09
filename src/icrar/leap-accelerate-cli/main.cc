@@ -128,17 +128,17 @@ int main(int argc, char** argv)
             LOG(info) << version_information(argv[0]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             LOG(info) << arg_string(argc, argv);
 
-            if(IsAsync(args.GetStreamOutType()))
+            if(IsImmediateMode(args.GetStreamOutType()))
             {
                 auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
 
-                std::function<void(const cpu::Calibration&)> outFunc = [&](const cpu::Calibration& cal)
+                auto outputCallback = [&](const cpu::Calibration& cal)
                 {
-                    cal.Serialize(args.GetSynchronizedOutputStream(cal.GetStartEpoch()).get());
+                    cal.Serialize(*args.CreateOutputStream(cal.GetStartEpoch()));
                 };
                 
                 calibrator->AsyncCalibrate(
-                    outFunc,
+                    outputCallback,
                     args.GetMeasurementSet(),
                     args.GetDirections(),
                     args.GetSolutionInterval(),
@@ -151,15 +151,13 @@ int main(int argc, char** argv)
                 auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
 
                 std::vector<cpu::Calibration> calibrations;
-                std::mutex calibrationsMutex;
-                std::function<void(const cpu::Calibration&)> outFunc = [&](const cpu::Calibration& cal)
+                auto outputCallback = [&](const cpu::Calibration& cal)
                 {
-                    std::lock_guard<std::mutex> lock(calibrationsMutex);
                     calibrations.push_back(cal);
                 };
                 
                 calibrator->AsyncCalibrate(
-                    outFunc,
+                    outputCallback,
                     args.GetMeasurementSet(),
                     args.GetDirections(),
                     args.GetSolutionInterval(),
@@ -168,7 +166,7 @@ int main(int argc, char** argv)
                     args.IsFileSystemCacheEnabled());
                 
                 auto calibrationCollection = cpu::CalibrationCollection(std::move(calibrations));
-                calibrationCollection.Serialize(args.GetSynchronizedOutputStream().get());
+                calibrationCollection.Serialize(*args.CreateOutputStream());
             }
         }
     }

@@ -87,7 +87,7 @@ namespace detail {
             return os;
         }
 
-        float v = m._val / 1024.0f;
+        float v = static_cast<float>(m._val) / 1024.0f;
         const char *suffix = " [KiB]";
 
         if (v > BYTES_TO_KILOBYTES) {
@@ -137,7 +137,7 @@ namespace detail {
             return os;
         }
 
-        float ftime = time / static_cast<float>(KILO);
+        float ftime = static_cast<float>(time) / static_cast<float>(KILO);
         const char *prefix = " [s]";
         if (ftime > SECONDS_PER_MINUTE) {
             ftime /= SECONDS_PER_MINUTE;

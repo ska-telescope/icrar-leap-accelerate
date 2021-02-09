@@ -35,7 +35,6 @@
 #include <vector>
 #include <set>
 #include <unordered_map>
-#include <mutex>
 
 using namespace std::literals::complex_literals;
 
@@ -75,15 +74,13 @@ namespace icrar
             };
 
             std::vector<cpu::Calibration> calibrations;
-            std::mutex calibrationsMutex;
-            std::function<void(const cpu::Calibration&)> outFunc = [&](const cpu::Calibration& cal)
+            auto outputCallback = [&](const cpu::Calibration& cal)
             {
-                std::lock_guard<std::mutex> lock(calibrationsMutex);
                 calibrations.push_back(cal);
             };
 
             LeapCalibratorFactory::Create(impl)->AsyncCalibrate(
-                outFunc,
+                outputCallback,
                 *ms,
                 directions,
                 Slice(0,1,1), 0.0, 0, false); 

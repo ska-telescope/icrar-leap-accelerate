@@ -49,10 +49,10 @@ void assert_near_metadata(const icrar::cpu::MetaData& expected, const icrar::cpu
 
 
     ASSERT_MEQD(expected.GetA(), actual.GetA(), THRESHOLD);
-    ASSERT_MEQI(expected.GetI(), actual.GetI(), THRESHOLD);
+    ASSERT_MEQI(expected.GetI(), actual.GetI(), 0);
     ASSERT_MEQD(expected.GetAd(), actual.GetAd(), THRESHOLD);
     ASSERT_MEQD(expected.GetA1(), actual.GetA1(), THRESHOLD);
-    ASSERT_MEQI(expected.GetI1(), actual.GetI1(), THRESHOLD);
+    ASSERT_MEQI(expected.GetI1(), actual.GetI1(), 0);
     ASSERT_MEQD(expected.GetAd1(), actual.GetAd1(), THRESHOLD);
 
     ASSERT_MEQ3D(expected.GetDD(), actual.GetDD(), THRESHOLD);

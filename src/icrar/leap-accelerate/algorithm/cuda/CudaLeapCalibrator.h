@@ -83,7 +83,7 @@ namespace cuda
          * by splitting uvws into integration batches per timestep.
          */
         void AsyncCalibrate(
-            std::function<void(const cpu::Calibration&)> outFunc,
+            std::function<void(const cpu::Calibration&)> outputCallback,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             const Slice& solutionInterval,

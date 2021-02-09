@@ -27,16 +27,13 @@
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/stream_out_type.h>
-#include <icrar/leap-accelerate/core/synchronized_value.h>
 
-//#include <boost/thread/synchronized_value.hpp>
 #include <boost/optional.hpp>
 #include <vector>
 #include <string>
 #include <memory>
 #include <fstream>
 #include <iostream>
-#include <mutex>
 
 namespace icrar
 {
@@ -130,15 +127,7 @@ namespace icrar
          * Resources
          */
         std::unique_ptr<MeasurementSet> m_measurementSet;
-        std::istream* m_inputStream = nullptr; // Cached reference to the input stream
-        
-        //
-        std::unique_ptr<std::ofstream> m_outputFileStream;
-        std::mutex m_outputStreamMutex;
-        std::ostream* m_outputStream = nullptr;
 
-        //Multifile
-        std::vector<std::unique_ptr<std::ofstream>> m_outputFileStreams;
 
     public:
         ArgumentsValidated(Arguments&& cliArgs);
@@ -152,17 +141,9 @@ namespace icrar
 
         void Validate() const;
 
-        std::istream& GetInputStream();
-
         boost::optional<std::string> GetOutputFilePath() const;
 
-        /**
-         * @brief Gets the user defined output stream for results.
-         * 
-         * @return std::ostream& 
-         */
-        std::pair<std::ostream&, std::mutex&> GetOutputStream(double startEpoch = 0.0);
-        synchronized_value<std::ostream&> GetSynchronizedOutputStream(double startEpoch = 0.0);
+        std::unique_ptr<std::ostream> CreateOutputStream(double startEpoch = 0.0) const;
 
         /**
          * @brief Gets the configuration for output stream type

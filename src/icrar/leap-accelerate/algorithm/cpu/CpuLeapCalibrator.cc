@@ -51,7 +51,6 @@
 #include <exception>
 #include <memory>
 #include <sstream>
-#include <future>
 
 using Radians = double;
 using namespace boost::math::constants;
@@ -61,7 +60,7 @@ namespace icrar
 namespace cpu
 {
     void CpuLeapCalibrator::AsyncCalibrate(
-        std::function<void(const cpu::Calibration&)> outFunc,
+        std::function<void(const cpu::Calibration&)> outputCallback,
         const icrar::MeasurementSet& ms,
         const std::vector<SphericalDirection>& directions,
         const Slice& solutionInterval,
@@ -85,9 +84,8 @@ namespace cpu
         << "timesteps: " << ms.GetNumTimesteps();
 
         profiling::timer calibration_timer;
-        auto input_queues = std::vector<std::vector<cpu::Integration>>();
 
-        size_t timesteps = (size_t)ms.GetNumRows() / ms.GetNumBaselines();
+        int timesteps = boost::numeric_cast<int>(ms.GetNumTimesteps());
         Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
         std::vector<double> epochs = ms.GetEpochs();
 
@@ -105,14 +103,13 @@ namespace cpu
         output_calibrations.reserve(solutions);
 
         constexpr unsigned int integrationNumber = 0;
-        std::vector<std::future<void>> ioFutures;
         for(size_t solution = 0; solution < solutions; ++solution)
         {
+            auto input_queues = std::vector<std::vector<cpu::Integration>>();
             profiling::timer solution_timer;
             output_calibrations.emplace_back(
                 epochs[solution * validatedSolutionInterval.GetInterval()],
                 epochs[(solution+1) * validatedSolutionInterval.GetInterval() - 1]);
-            input_queues.clear();
 
             //Iterate solutions
             profiling::timer integration_read_timer;
@@ -150,13 +147,11 @@ namespace cpu
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
             LOG(info) << "Calculated solution in " << solution_timer;
 
-            ioFutures.push_back(std::async(std::launch::async, [&, solution]
-            {
-                outFunc(output_calibrations[solution]);
-            }));
+            profiling::timer write_timer;
+            outputCallback(output_calibrations[solution]);
+            LOG(info) << "Write out in " << write_timer;
         }
         LOG(info) << "Finished calibration in " << calibration_timer;
-        boost::wait_for_all(ioFutures.begin(), ioFutures.end());
     }
 
     void CpuLeapCalibrator::PhaseRotate(
