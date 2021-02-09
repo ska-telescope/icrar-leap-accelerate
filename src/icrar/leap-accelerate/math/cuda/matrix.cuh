@@ -23,4 +23,4 @@
 #pragma once
 
 #include <icrar/leap-accelerate/math/cuda/matrix_multiply.cuh>
-#include <icrar/leap-accelerate/math/cuda/matrix_transpose.cuh>
+
