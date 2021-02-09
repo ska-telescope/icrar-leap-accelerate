@@ -75,7 +75,8 @@ namespace cuda
      * @param C out matrix
      * @return __host__ 
      */
-    template<typename T, typename=std::enable_if_t<is_cublas_supported<T>::value>>
+    template<typename T,
+            std::enable_if_t<is_cublas_supported<T>::value, bool> = true>
     __host__ void mat_mul(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const T* A, const T* B, T* C)
     {
         const double alpha = 1.0;
@@ -117,7 +118,8 @@ namespace cuda
      * @param C offset + out matrix
      * @return __host__ 
      */
-    template<typename T, typename=std::enable_if_t<is_cublas_supported<T>::value>>
+    template<typename T,
+            std::enable_if_t<is_cublas_supported<T>::value, bool> = true>
     __host__ void mat_mul_add(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const T* A, const T* B, T* C)
     {
         const double alpha = 1.0;
@@ -159,7 +161,8 @@ namespace cuda
      * @param C offset + out matrix
      * @return __host__ 
      */
-    template<typename T, typename=std::enable_if_t<is_cublas_supported<T>::value>>
+    template<typename T,
+            std::enable_if_t<is_cublas_supported<T>::value, bool> = true>
     __host__ void mat_mul(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const T* A, const T* B, T* C)
     {
 #if CUBLAS_VER_MAJOR > 10
@@ -255,7 +258,8 @@ namespace cuda
      * @param D out matrix
      * @return __host__ 
      */
-    template<typename T, typename=std::enable_if_t<is_cublas_supported<T>::value>>
+    template<typename T,
+        std::enable_if_t<is_cublas_supported<T>::value, bool> = true>
     __host__ void mat_mul_add(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const T* A, const T* B, const T* C, T* D)
     {
 #if CUBLAS_VER_MAJOR > 10

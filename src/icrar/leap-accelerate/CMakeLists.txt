@@ -40,6 +40,7 @@ set(sources
     math/cpu/vector.cc
 
     core/compute_implementation.cc
+    core/stream_out_type.cc
     core/log/logging.cc
     core/log/Verbosity.cc
     core/profiling/resource_usage.cc
@@ -53,7 +54,7 @@ set(sources
     algorithm/LeapCalibratorFactory.cc
     algorithm/cpu/CpuLeapCalibrator.cc
     algorithm/cpu/PhaseMatrixFunction.cc
-    )
+)
     
     set(cuda_headers
     cuda/cuda_info.h
@@ -66,7 +67,7 @@ set(sources
     math/cuda/matrix.cuh
     math/cuda/matrix_multiply.cuh
     math/cuda/matrix_transpose.cuh
-    )
+)
     
     set(cuda_sources
     cuda/cuda_info.cu
@@ -77,7 +78,7 @@ set(sources
     model/cuda/DeviceMetaData.cu
     model/cuda/DeviceIntegration.cu
     algorithm/cuda/CudaLeapCalibrator.cu
-    )
+)
 
 # Libraries
 option(CASA_ENABLED "Casa Enabled" TRUE)

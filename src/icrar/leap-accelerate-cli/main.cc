@@ -23,11 +23,13 @@
 #include <icrar/leap-accelerate-cli/Arguments.h>
 
 #include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
-#include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
+#include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
+#include <icrar/leap-accelerate/algorithm/cpu/CpuLeapCalibrator.h>
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
+// #include <icrar/leap-accelerate/core/stream_out_type.h>
 #include <icrar/leap-accelerate/core/git_revision.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/UsageReporter.h>
@@ -37,11 +39,14 @@
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/thread.hpp>
 
 #include <iostream>
 #include <queue>
 #include <string>
 #include <exception>
+
+#include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 
 using namespace icrar;
 namespace po = boost::program_options;
@@ -80,7 +85,7 @@ int main(int argc, char** argv)
     auto appName = "LeapAccelerateCLI";
 
     po::options_description desc(appName);
-     
+
     CLIArguments rawArgs;
     desc.add_options()
         ("help,h", "display help message")
@@ -88,6 +93,7 @@ int main(int argc, char** argv)
         ("config,c", po::value<boost::optional<std::string>>(&rawArgs.configFilePath), "Configuration file relative path")
         // TODO(calgray): app.add_option("-i,--input-type", rawArgs.source, "Input source type");
         ("filepath,f", po::value<boost::optional<std::string>>(&rawArgs.filePath), "Measurement set file path")
+        ("streamOut", po::value<boost::optional<std::string>>(&rawArgs.streamOutType), "Stream out setting (c=collection, s=singlefile, m=multiplefile)")
         ("output,o", po::value<boost::optional<std::string>>(&rawArgs.outputFilePath), "Calibration output file path")
         ("directions,d", po::value<boost::optional<std::string>>(&rawArgs.directions), "Directions to calibrations")
         ("stations,s", po::value<boost::optional<int>>(&rawArgs.stations), "Overrides number of stations in measurement set")
@@ -122,20 +128,51 @@ int main(int argc, char** argv)
             LOG(info) << version_information(argv[0]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             LOG(info) << arg_string(argc, argv);
 
-            auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
-            auto result = calibrator->Calibrate(
-                args.GetMeasurementSet(),
-                args.GetDirections(),
-                args.GetSolutionInterval(),
-                args.GetMinimumBaselineThreshold(),
-                args.GetReferenceAntenna(),
-                args.IsFileSystemCacheEnabled());
-            cpu::PrintResult(result, args.GetOutputStream());
+            if(IsImmediateMode(args.GetStreamOutType()))
+            {
+                auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
+
+                auto outputCallback = [&](const cpu::Calibration& cal)
+                {
+                    cal.Serialize(*args.CreateOutputStream(cal.GetStartEpoch()));
+                };
+                
+                calibrator->AsyncCalibrate(
+                    outputCallback,
+                    args.GetMeasurementSet(),
+                    args.GetDirections(),
+                    args.GetSolutionInterval(),
+                    args.GetMinimumBaselineThreshold(),
+                    args.GetReferenceAntenna(),
+                    args.IsFileSystemCacheEnabled());
+            }
+            else
+            {
+                auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
+
+                std::vector<cpu::Calibration> calibrations;
+                auto outputCallback = [&](const cpu::Calibration& cal)
+                {
+                    calibrations.push_back(cal);
+                };
+                
+                calibrator->AsyncCalibrate(
+                    outputCallback,
+                    args.GetMeasurementSet(),
+                    args.GetDirections(),
+                    args.GetSolutionInterval(),
+                    args.GetMinimumBaselineThreshold(),
+                    args.GetReferenceAntenna(),
+                    args.IsFileSystemCacheEnabled());
+                
+                auto calibrationCollection = cpu::CalibrationCollection(std::move(calibrations));
+                calibrationCollection.Serialize(*args.CreateOutputStream());
+            }
         }
     }
     catch(const std::exception& e)
     {
-        std::cerr << e.what() << '\n';
+        std::cerr << "error: " << e.what() << '\n';
         return -1;
     }
 }
