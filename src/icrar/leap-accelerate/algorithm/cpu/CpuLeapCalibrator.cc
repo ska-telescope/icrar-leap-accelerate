@@ -30,11 +30,11 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/math/vector_extensions.h>
-#include <icrar/leap-accelerate/math/cpu/vector.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
-#include <icrar/leap-accelerate/common/eigen_extensions.h>
+#include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/timer.h>
+#include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/ms/MeasurementSets/MSAntenna.h>
@@ -73,7 +73,7 @@ namespace cpu
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
-        << "solutionInterval: [" << solutionInterval.start << "," << solutionInterval.interval << "," << solutionInterval.end << "], "
+        << "solutionInterval: [" << solutionInterval.GetStart() << "," << solutionInterval.GetInterval() << "," << solutionInterval.GetEnd() << "], "
         << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
         << "baseline threshold: " << minimumBaselineThreshold << "m, "
         << "short baselines: " << ms.GetNumShortBaselines(minimumBaselineThreshold) << ", "
@@ -84,7 +84,6 @@ namespace cpu
         << "timesteps: " << ms.GetNumTimesteps();
 
         profiling::timer calibration_timer;
-
         int timesteps = boost::numeric_cast<int>(ms.GetNumTimesteps());
         Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
         std::vector<double> epochs = ms.GetEpochs();
@@ -108,17 +107,17 @@ namespace cpu
             auto input_queues = std::vector<std::vector<cpu::Integration>>();
             profiling::timer solution_timer;
             output_calibrations.emplace_back(
-                epochs[solution * validatedSolutionInterval.interval],
-                epochs[(solution+1) * validatedSolutionInterval.interval - 1]);
+                epochs[solution * validatedSolutionInterval.GetInterval()],
+                epochs[(solution+1) * validatedSolutionInterval.GetInterval() - 1]);
 
             //Iterate solutions
             profiling::timer integration_read_timer;
             const auto integration = Integration(
                     integrationNumber,
                     ms,
-                    boost::numeric_cast<int32_t>(solution * validatedSolutionInterval.interval * ms.GetNumBaselines()),
+                    boost::numeric_cast<int32_t>(solution * validatedSolutionInterval.GetInterval() * ms.GetNumBaselines()),
                     ms.GetNumChannels(),
-                    validatedSolutionInterval.interval * ms.GetNumBaselines(),
+                    validatedSolutionInterval.GetInterval() * ms.GetNumBaselines(),
                     ms.GetNumPols());
             LOG(info) << "Read integration data in " << integration_read_timer;
 
@@ -168,7 +167,7 @@ namespace cpu
 
         LOG(info) << "Calculating Calibration";
         // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
-        Eigen::VectorXd phaseAnglesI1 = icrar::arg(icrar::cpu::VectorRangeSelect(metadata.GetAvgData(), metadata.GetI1(), 0)); // 1st pol only
+        Eigen::VectorXd phaseAnglesI1 = icrar::cpu::arg(icrar::cpu::VectorRangeSelect(metadata.GetAvgData(), metadata.GetI1(), 0)); // 1st pol only
         phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
         phaseAnglesI1(phaseAnglesI1.rows() - 1) = 0;
 
@@ -178,7 +177,7 @@ namespace cpu
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
-            dInt.row(n) = icrar::arg(std::exp(std::complex<double>(0, -two_pi<double>() * ACal1(n))) * metadata.GetAvgData().row(n));
+            dInt.row(n) = icrar::cpu::arg(std::exp(std::complex<double>(0, -two_pi<double>() * ACal1(n))) * metadata.GetAvgData().row(n));
         }
 
         Eigen::VectorXd deltaPhaseColumn = dInt.col(0); // 1st pol only
