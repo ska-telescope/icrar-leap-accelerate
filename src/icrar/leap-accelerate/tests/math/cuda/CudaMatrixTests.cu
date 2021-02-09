@@ -22,7 +22,6 @@
 
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
-#include <icrar/leap-accelerate/math/cuda/vector.cuh>
 #include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 
 #include <cuda_runtime.h>
@@ -54,25 +53,6 @@ namespace icrar
         {
             checkCudaErrors(cublasCreate(&m_cublasContext));
             checkCudaErrors(cudaDeviceReset());
-        }
-
-        template<typename T>
-        void TestMatrixAdd()
-        {
-            using MatrixXT = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
-
-            auto a = MatrixXT(3,3);
-            a << 1, 2, 3,
-                4, 5, 6,
-                7, 8, 9;
-
-            auto b = a;
-            auto c = MatrixXT(3,3); 
-
-            icrar::cuda::h_add<T, -1, -1>(a, b, c);
-
-            MatrixXT expected = a + b;
-            ASSERT_EQ(c, expected);
         }
 
         template<typename T>
@@ -172,7 +152,6 @@ namespace icrar
         }
     };
 
-    TEST_F(CudaMatrixTests, DISABLED_TestMatrixAdd) { TestMatrixAdd<double>(); }
     TEST_F(CudaMatrixTests, TestMatrixMatrixMultiply) { TestMatrixMatrixMultiply<double>(); }
     TEST_F(CudaMatrixTests, TestMatrixMatrixMultiplyAdd) { TestMatrixMatrixMultiplyAdd<double>(); }
     TEST_F(CudaMatrixTests, TestMatrixMatrixMultiply32) { TestMatrixMatrixMultiply32<double>(); }
