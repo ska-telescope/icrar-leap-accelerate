@@ -26,6 +26,7 @@
 #include <icrar/leap-accelerate/common/Slice.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
+#include <icrar/leap-accelerate/core/stream_out_type.h>
 
 #include <boost/optional.hpp>
 #include <vector>
@@ -38,15 +39,11 @@ namespace icrar
 {
     class MeasurementSet;
 
-    /**
-     * @brief 
-     * 
-     */
     enum class InputType
     {
+        MEASUREMENT_SET,
         STREAM,
-        FILENAME,
-        APACHE_ARROW
+        //APACHE_ARROW
     };
 
     /**
@@ -55,9 +52,10 @@ namespace icrar
      */
     struct CLIArguments
     {
-        boost::optional<InputType> source;
+        boost::optional<InputType> sourceType;
         boost::optional<std::string> filePath;
         boost::optional<std::string> configFilePath;
+        boost::optional<std::string> streamOutType;
         boost::optional<std::string> outputFilePath;
 
         boost::optional<int> stations;
@@ -70,6 +68,7 @@ namespace icrar
         boost::optional<bool> mwaSupport;
         boost::optional<bool> readAutocorrelations;
         boost::optional<int> verbosity;
+
     };
 
     /**
@@ -81,9 +80,10 @@ namespace icrar
         Arguments() = default;
         Arguments(CLIArguments&& args);
 
-        boost::optional<InputType> source; // MeasurementSet source type
+        boost::optional<InputType> sourceType; // MeasurementSet source type
         boost::optional<std::string> filePath; // MeasurementSet filepath
         boost::optional<std::string> configFilePath; // Optional config filepath
+        boost::optional<StreamOutType> streamOutType;
         boost::optional<std::string> outputFilePath; // Calibration output file, print to terminal if empty
 
         boost::optional<int> stations;
@@ -106,9 +106,10 @@ namespace icrar
         /**
          * Constants
          */
-        InputType m_source;
+        InputType m_sourceType;
         boost::optional<std::string> m_filePath; // MeasurementSet filepath
         boost::optional<std::string> m_configFilePath; // Config filepath
+        StreamOutType m_streamOutType;
         boost::optional<std::string> m_outputFilePath; // Calibration output filepath
 
         boost::optional<int> m_stations; // Overriden number of stations (will be removed in a later release)
@@ -126,10 +127,7 @@ namespace icrar
          * Resources
          */
         std::unique_ptr<MeasurementSet> m_measurementSet;
-        std::istream* m_inputStream = nullptr; // Cached reference to the input stream
-        
-        std::unique_ptr<std::ofstream> m_outputFileStream;
-        std::ostream* m_outputStream = nullptr;
+
 
     public:
         ArgumentsValidated(Arguments&& cliArgs);
@@ -143,16 +141,16 @@ namespace icrar
 
         void Validate() const;
 
-        std::istream& GetInputStream();
-
         boost::optional<std::string> GetOutputFilePath() const;
 
+        std::unique_ptr<std::ostream> CreateOutputStream(double startEpoch = 0.0) const;
+
         /**
-         * @brief Gets the user defined output stream for results
+         * @brief Gets the configuration for output stream type
          * 
-         * @return std::ostream& 
+         * @return StreamOutType 
          */
-        std::ostream& GetOutputStream();
+        StreamOutType GetStreamOutType() const;
 
         /**
          * @brief Gets the user specifified measurement set

@@ -32,6 +32,7 @@ set(sources
     ms/MeasurementSet.cc
 
     core/compute_implementation.cc
+    core/stream_out_type.cc
     core/log/logging.cc
     core/log/Verbosity.cc
     core/profiling/resource_usage.cc
@@ -42,8 +43,8 @@ set(sources
     common/MVuvw.cc
     common/Slice.cc
 
-    math/vector_extensions.cc
     math/math_conversion.cc
+    math/cpu/eigen_extensions.cc
     math/cuda/matrix.h
     math/cuda/matrix.cuh
     math/cuda/matrix_multiply.cuh

@@ -37,9 +37,4 @@ namespace icrar
         }
         return res;
     }
-
-    Eigen::MatrixXd ToDynamicMatrix(const std::vector<MVuvw>& uvws)
-    {
-        return ToMatrix(uvws);
-    }
 } // namespace icrar

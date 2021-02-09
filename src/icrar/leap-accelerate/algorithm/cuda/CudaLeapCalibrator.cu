@@ -31,11 +31,10 @@
 
 #include <icrar/leap-accelerate/math/cuda/math.cuh>
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
-#include <icrar/leap-accelerate/math/cpu/vector.h>
 
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
-#include <icrar/leap-accelerate/common/eigen_extensions.h>
+#include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/timer.h>
 
@@ -50,6 +49,7 @@
 
 #include <boost/math/constants/constants.hpp>
 #include <boost/optional/optional_io.hpp>
+#include <boost/thread.hpp>
 
 #include <complex>
 #include <istream>
@@ -89,13 +89,14 @@ namespace cuda
         //checkCudaErrors(cudaDeviceReset());
     }
 
-    cpu::CalibrationCollection CudaLeapCalibrator::Calibrate(
-        const icrar::MeasurementSet& ms,
-        const std::vector<SphericalDirection>& directions,
-        const Slice& solutionInterval,
-        double minimumBaselineThreshold,
-        boost::optional<unsigned int> referenceAntenna,
-        bool isFileSystemCacheEnabled)
+    void CudaLeapCalibrator::AsyncCalibrate(
+            std::function<void(const cpu::Calibration&)> outputCallback,
+            const icrar::MeasurementSet& ms,
+            const std::vector<SphericalDirection>& directions,
+            const Slice& solutionInterval,
+            double minimumBaselineThreshold,
+            boost::optional<unsigned int> referenceAntenna,
+            bool isFileSystemCacheEnabled)
     {
         LOG(info) << "Starting Calibration using cuda";
 
@@ -108,7 +109,7 @@ namespace cuda
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
-        << "solutionInterval: " << "[" << solutionInterval.start << "," << solutionInterval.interval << "," << solutionInterval.end << "], "
+        << "solutionInterval: " << "[" << solutionInterval.GetStart() << "," << solutionInterval.GetInterval() << "," << solutionInterval.GetEnd() << "], "
         << "reference antenna: " << referenceAntenna << ", "
         << "baseline threshold: " << minimumBaselineThreshold << ", "
         << "short baselines: " << ms.GetNumShortBaselines(minimumBaselineThreshold) << ", "
@@ -144,9 +145,9 @@ namespace cuda
             metadata.GetI1(),
             metadata.GetAd1()
         );
-        auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetConstants().nbaselines * validatedSolutionInterval.interval);
+        auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetConstants().nbaselines * validatedSolutionInterval.GetInterval());
         auto directionBuffer = std::make_shared<DirectionBuffer>(
-                metadata.GetConstants().nbaselines * validatedSolutionInterval.interval,
+                metadata.GetConstants().nbaselines * validatedSolutionInterval.GetInterval(),
                 metadata.GetAvgData().rows(),
                 metadata.GetAvgData().cols());
         auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
@@ -158,8 +159,8 @@ namespace cuda
         {
             profiling::timer solution_timer;
             output_calibrations.emplace_back(
-                epochs[solution * validatedSolutionInterval.interval],
-                epochs[(solution+1) * validatedSolutionInterval.interval - 1]);
+                epochs[solution * validatedSolutionInterval.GetInterval()],
+                epochs[(solution+1) * validatedSolutionInterval.GetInterval() - 1]);
             input_queue.clear();
 
             // Flooring to remove incomplete measurements
@@ -175,9 +176,9 @@ namespace cuda
             auto integration = cuda::HostIntegration(
                 integrationNumber,
                 ms,
-                solution * validatedSolutionInterval.interval * ms.GetNumBaselines(),
+                solution * validatedSolutionInterval.GetInterval() * ms.GetNumBaselines(),
                 ms.GetNumChannels(),
-                validatedSolutionInterval.interval * ms.GetNumBaselines(),
+                validatedSolutionInterval.GetInterval() * ms.GetNumBaselines(),
                 ms.GetNumPols());
             LOG(info) << "Read integration data in " << integration_read_timer;
 
@@ -224,10 +225,10 @@ namespace cuda
                     output_calibrations[solution].GetBeamCalibrations());
             }
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
-            LOG(info) << "Finished solution in " << solution_timer;
+            LOG(info) << "Calculated solution in " << solution_timer;
+            outputCallback(output_calibrations[solution]);
         }
         LOG(info) << "Finished calibration in " << calibration_timer;
-        return cpu::CalibrationCollection(std::move(output_calibrations));
     }
 
     void CudaLeapCalibrator::PhaseRotate(

@@ -20,15 +20,15 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
-
-#include <Eigen/Core>
-
-#include <vector>
+#include "eigen_extensions.h"
 
 namespace icrar
 {
-    using MVuvw = Eigen::Vector3d;
-
-    Eigen::Matrix<double, Eigen::Dynamic, 3> ToMatrix(const std::vector<MVuvw>& uvws);
-} // namespace icrar
+    namespace cpu
+    {
+        Eigen::MatrixXd arg(const Eigen::Ref<const Eigen::MatrixXcd>& a)
+        {
+            return a.unaryExpr([](std::complex<double> v){ return std::arg(v); });
+        }
+    }
+}

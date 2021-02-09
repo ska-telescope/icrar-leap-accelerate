@@ -30,7 +30,7 @@
 
 #include <icrar/leap-accelerate/tests/test_helper.h>
 #include <icrar/leap-accelerate/tests/math/eigen_helper.h>
-#include <icrar/leap-accelerate/common/eigen_extensions.h>
+#include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 
 #include <casacore/ms/MeasurementSets.h>
 #include <casacore/ms/MeasurementSets/MSColumns.h>

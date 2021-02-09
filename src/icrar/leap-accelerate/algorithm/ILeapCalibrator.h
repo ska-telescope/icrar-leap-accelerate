@@ -27,6 +27,7 @@
 #include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
 #include <boost/noncopyable.hpp>
 #include <vector>
+#include <functional>
 
 namespace icrar
 {
@@ -49,7 +50,7 @@ namespace icrar
         virtual ~ILeapCalibrator() = default;
 
         /**
-         * @brief Performs Leap calibration using a specialized implementation.
+         * @brief Performs Leap calibration for single or multiple solutions.
          * 
          * @param ms the mesurement set containing all input measurements
          * @param directions the directions to calibrate for
@@ -59,7 +60,8 @@ namespace icrar
          * @param isFileSystemCacheEnabled enable to use the filesystem to cache data between calibration calls
          * @return CalibrationCollection the calibrationn result
          */
-        virtual cpu::CalibrationCollection Calibrate(
+        virtual void AsyncCalibrate(
+            std::function<void(const cpu::Calibration&)> outputCallback,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             const Slice& solutionInterval,

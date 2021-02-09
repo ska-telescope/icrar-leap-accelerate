@@ -112,7 +112,6 @@ if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/gtest-1.8.1/CMakeLists.txt")
 endif()
 
 # Global Libraries
-
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
     # set input and output files
@@ -148,7 +147,6 @@ set(CMAKE_CUDA_COMPILER ${CMAKE_CXX_COMPILER})
 endif()
 
 add_definitions(-DBOOST_ALL_DYN_LINK)
-
 find_package(Boost REQUIRED COMPONENTS log log_setup program_options)
 
 set(CASACORE_FIND_QUIETLY ON)

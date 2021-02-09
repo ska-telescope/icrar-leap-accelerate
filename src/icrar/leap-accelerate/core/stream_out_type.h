@@ -20,9 +20,28 @@
  * MA 02111 - 1307  USA
  */
 
-#include <Eigen/Core>
+#pragma once
+#include <string>
 
 namespace icrar
 {
-    using MVDirection = Eigen::Vector2d;
-} // namespace icrar
+    /**
+     * @brief Specifies how results are streamed out
+     */
+    enum class StreamOutType
+    {
+        COLLECTION, // Results are written to a collection in a single file
+        SINGLE_FILE, // Results are continously rewritten to a single file as computed
+        MUTLIPLE_FILES // Results are continously written to multiple files as computed
+    };
+
+    /**
+     * @return true if value was converted succesfully, false otherwise
+     */
+    bool TryParseStreamOutType(const std::string& value, StreamOutType& out);
+
+    /**
+     * @brief True if solutions should be written to IO as soon as they are computed.
+     */
+    bool IsImmediateMode(StreamOutType streamOutType);
+}

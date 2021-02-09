@@ -1,4 +1,3 @@
-
 /**
  * ICRAR - International Centre for Radio Astronomy Research
  * (c) UWA - The University of Western Australia
@@ -21,12 +20,28 @@
  * MA 02111 - 1307  USA
  */
 
-#include "vector_extensions.h"
+#include <gtest/gtest.h>
+
+#include <icrar/leap-accelerate/core/log/Verbosity.h>
 
 namespace icrar
 {
-    Eigen::MatrixXd arg(const Eigen::Ref<const Eigen::MatrixXcd>& a)
+    class VerbosityTests : public testing::Test
     {
-        return a.unaryExpr([](std::complex<double> v){ return std::arg(v); });
-    }
+    public:
+        void TestParseVerbosity()
+        {
+            using namespace log;
+            ASSERT_EQ(Verbosity::fatal, ParseVerbosity("fatal"));
+            ASSERT_EQ(Verbosity::error, ParseVerbosity("error"));
+            ASSERT_EQ(Verbosity::warn, ParseVerbosity("warn"));
+            ASSERT_EQ(Verbosity::info, ParseVerbosity("info"));
+            ASSERT_EQ(Verbosity::debug, ParseVerbosity("debug"));
+            ASSERT_EQ(Verbosity::trace, ParseVerbosity("trace"));
+            ASSERT_EQ(Verbosity::trace, ParseVerbosity("Trace"));
+            ASSERT_EQ(Verbosity::trace, ParseVerbosity("TRACE"));
+        }
+    };
+
+    TEST_F(VerbosityTests, TestParseVerbosity) { TestParseVerbosity(); }
 } // namespace icrar

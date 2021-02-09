@@ -20,15 +20,26 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
+#include <gtest/gtest.h>
 
-#include <Eigen/Core>
-
-#include <vector>
+#include <icrar/leap-accelerate/common/SphericalDirection.h>
+#include <icrar/leap-accelerate/exception/exception.h>
 
 namespace icrar
 {
-    using MVuvw = Eigen::Vector3d;
+    class SphericalDirectionTests : public testing::Test
+    {
+    public:
+        void TestParseDirections()
+        { 
+            ASSERT_NO_THROW(ParseDirections("[]"));
+            ASSERT_THROW(ParseDirections("[[]]"), icrar::exception);
+            ASSERT_THROW(ParseDirections("[0,0]"), icrar::exception);
+            ASSERT_NO_THROW(ParseDirections("[[0,0]]"));
+            ASSERT_THROW(ParseDirections("[[true,true]]"), icrar::exception);
+            ASSERT_NO_THROW(ParseDirections("[[0,0],[0,0]]"));
+        }
+    };
 
-    Eigen::Matrix<double, Eigen::Dynamic, 3> ToMatrix(const std::vector<MVuvw>& uvws);
+    TEST_F(SphericalDirectionTests, TestParseDirections) { TestParseDirections(); }
 } // namespace icrar

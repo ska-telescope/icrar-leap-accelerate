@@ -64,24 +64,25 @@ namespace icrar
             ASSERT_EQ(0, system(command.c_str()));
         }
 
-        void TestMultipleCasa()
+        void TestDeprecated()
         {
             std::string command = m_binDir + "LeapAccelerateCLI";
             command += " -f " + m_srcDir + "testdata/mwa/1197638568-split.ms";
             command += " -s 102";
             command += " -i casa";
             command += " -d ["
-                "[-0.4606549305661674,-0.29719233792392513],"
-                "[-0.753231018062671,-0.44387635324622354],"
-                "[-0.6207547100721282,-0.2539086572881469],"
-                "[-0.41958660604621867,-0.03677626900108552],"
-                "[-0.41108685258900596,-0.08638012622791202],"
-                "[-0.7782459495668798,-0.4887860989684432],"
-                "[-0.17001324965728973,-0.28595644149463484],"
-                "[-0.7129444556035118,-0.365286407171852],"
-                "[-0.1512764129166089,-0.21161026349648748]"
+                "[0.0,0.0]"
             "]";
+            std::cout << command << std::endl;
+            ASSERT_EQ(0, system(command.c_str()));
 
+            command = m_binDir + "LeapAccelerateCLI";
+            command += " -f " + m_srcDir + "testdata/mwa/1197638568-split.ms";
+            command += " -s 102";
+            command += " -i eigen";
+            command += " -d ["
+                "[0.0,0.0]"
+            "]";
             std::cout << command << std::endl;
             ASSERT_EQ(0, system(command.c_str()));
         }
@@ -91,7 +92,7 @@ namespace icrar
             std::string command = m_binDir + "LeapAccelerateCLI";
             command += " -f " + m_srcDir + "testdata/mwa/1197638568-split.ms";
             command += " -s 102";
-            command += " -i eigen";
+            command += " -i cpu";
             command += " -d ["
                 "[-0.4606549305661674,-0.29719233792392513],"
                 "[-0.753231018062671,-0.44387635324622354],"
@@ -155,8 +156,8 @@ namespace icrar
 
     TEST_F(CommandLineTests, TestHelp) { TestHelp(); }
     TEST_F(CommandLineTests, TestSimpleRun) { TestSimpleRun(); }
+    TEST_F(CommandLineTests, TestDeprecated) { TestDeprecated(); }
     TEST_F(CommandLineTests, TestReferenceAntenna) {TestReferenceAntenna(); }
-    TEST_F(CommandLineTests, TestMultipleCasa) { TestMultipleCasa(); }
     TEST_F(CommandLineTests, TestMultipleCpu) { TestMultipleCpu(); }
 
 #ifdef CUDA_ENABLED

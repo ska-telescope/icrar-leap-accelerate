@@ -45,7 +45,6 @@
 #include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 
 #include <icrar/leap-accelerate/core/compute_implementation.h>
-#include <casacore/casa/Quanta/MVDirection.h>
 
 #include <gtest/gtest.h>
 
@@ -83,9 +82,7 @@ namespace icrar
 
         void TearDown() override
         {
-#if CUDA_ENABLED
-            checkCudaErrors(cudaDeviceReset());
-#endif
+
         }
 
         void PhaseRotateTest(ComputeImplementation impl, const Slice solutionInterval, std::function<cpu::CalibrationCollection()> getExpected)
@@ -93,7 +90,7 @@ namespace icrar
             const double THRESHOLD = 1e-11;
 
             auto metadata = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())));
-            std::vector<casacore::MVDirection> directions = //TODO: use icrar Direction
+            std::vector<icrar::SphericalDirection> directions =
             {
                 { -0.4606549305661674,-0.29719233792392513 },
                 { -0.753231018062671,-0.44387635324622354 },
@@ -103,14 +100,22 @@ namespace icrar
 
             const auto& expected = getExpected();
             ASSERT_LT(0, expected.GetCalibrations().size());
+        
+            std::vector<cpu::Calibration> calibrationsVector;
+            std::function<void(const cpu::Calibration&)> outputCallback = [&](const cpu::Calibration& cal)
+            {
+                calibrationsVector.push_back(cal);
+            };
             
-            auto calibrations = LeapCalibratorFactory::Create(impl)->Calibrate(
+            LeapCalibratorFactory::Create(impl)->AsyncCalibrate(
+                outputCallback,
                 *ms,
-                ToDirectionVector(directions),
+                directions,
                 solutionInterval,
                 0.0,
                 0,
                 false);
+            auto calibrations = cpu::CalibrationCollection(std::move(calibrationsVector));
 
             ASSERT_LT(0, calibrations.GetCalibrations().size());
             ASSERT_EQ(expected.GetCalibrations().size(), calibrations.GetCalibrations().size());
@@ -119,6 +124,9 @@ namespace icrar
             {
                 const auto& calibration = calibrations.GetCalibrations()[calibrationIndex];
                 const auto& expectedCalibration = expected.GetCalibrations()[calibrationIndex];
+
+                ASSERT_DOUBLE_EQ(expectedCalibration.GetStartEpoch(), calibration.GetStartEpoch());
+                ASSERT_DOUBLE_EQ(expectedCalibration.GetEndEpoch(), calibration.GetEndEpoch());
 
                 ASSERT_EQ(directions.size(), calibration.GetBeamCalibrations().size());
                 // This supports expected calibrations to be an incomplete collection

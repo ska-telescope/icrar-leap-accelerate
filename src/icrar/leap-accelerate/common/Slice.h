@@ -30,28 +30,37 @@
 namespace icrar
 {
     /**
-     * @brief Represents a linear sequence of indexes for some arbitrary collection
+     * @brief Represents a forwards linear sequence of indexes for some arbitrary collection
      * 
      */
-    struct Slice
+    class Slice
     {
-        std::int32_t start;
-        std::int32_t interval;
-        std::int32_t end;
+        std::int32_t m_start;
+        std::int32_t m_interval;
+        std::int32_t m_end;
 
+    public:
         Slice() = default;
         Slice(int interval);
         Slice(int start, int end);
         Slice(int start, int interval, int end);
         
-        Range Evaluate(int collectionSize) const
-        {
-            return Range(
-                (start == -1) ? collectionSize : start,
-                (interval == -1) ? collectionSize : interval,
-                (end == -1) ? collectionSize : end
-            );
-        }
+        /**
+         * @brief Gets the starting index of an arbitrary collection slice. -1 represents the end of the collection.
+         */
+        int32_t GetStart() const { return m_start; }
+
+        /**
+         * @brief Gets the interval betweeen indices of an arbitrary collection slice. -1 represents the end of the collection. 
+         */
+        int32_t GetInterval() const { return m_interval; }
+
+        /**
+         * @brief Gets the end index of an arbitrary collection slice. -1 represents the end of the collection.
+         */
+        int32_t GetEnd() const { return m_end; }
+
+        Range Evaluate(int collectionSize) const;
     };
 
     Slice ParseSlice(const std::string& json);

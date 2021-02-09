@@ -20,15 +20,23 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
+#include <gtest/gtest.h>
 
-#include <Eigen/Core>
-
-#include <vector>
+#include <icrar/leap-accelerate/common/MVuvw.h>
 
 namespace icrar
 {
-    using MVuvw = Eigen::Vector3d;
+    class MVuvwTests : public testing::Test
+    {
+    public:
+        void TestToMatrix()
+        {
+            auto empty = std::vector<MVuvw>(); 
+            Eigen::Matrix<double, -1, 3> emptyMatrix = Eigen::Matrix<double, -1, 3>::Zero(0, 3);
 
-    Eigen::Matrix<double, Eigen::Dynamic, 3> ToMatrix(const std::vector<MVuvw>& uvws);
+            ASSERT_TRUE(emptyMatrix.isApprox(ToMatrix(empty)));
+        }
+    };
+
+    TEST_F(MVuvwTests, TestToMatrix) { TestToMatrix(); }
 } // namespace icrar
