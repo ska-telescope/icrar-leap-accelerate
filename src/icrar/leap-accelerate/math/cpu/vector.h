@@ -25,6 +25,7 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
+#include <boost/numeric/conversion/cast.hpp>
 #include <array>
 #include <vector>
 #include <stdexcept>
@@ -98,7 +99,7 @@ namespace cpu
         {
             if(i < 0)
             {
-                i += matrix.rows();
+                i = boost::numeric_cast<int>(i + matrix.rows());
             }
         }
 

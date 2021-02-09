@@ -23,6 +23,7 @@
 
 #include "PhaseMatrixFunction.h"
 
+#include <boost/numeric/conversion/cast.hpp>
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <sstream>
 #include <set>
@@ -35,7 +36,7 @@ namespace cpu
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
         const Eigen::Matrix<bool, Eigen::Dynamic, 1>& fg,
-        boost::optional<unsigned int> refAnt)
+        boost::optional<uint32_t> refAnt)
     {
         if(a1.size() != a2.size() && a1.size() != fg.size())
         {

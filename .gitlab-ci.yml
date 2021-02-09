@@ -58,7 +58,7 @@ variables:
   before_script:
     - apt update 
     - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck
-    - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev
+    - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev rapidjson-dev
 
 .cuda_dependencies:
   extends: .common
@@ -69,7 +69,7 @@ variables:
   before_script:
     - apt update 
     - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck
-    - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev
+    - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev rapidjson-dev
     - apt install -y gnupg2 software-properties-common
     - source ./.gitlab-ci/cuda_install_debian.sh
 
@@ -127,7 +127,7 @@ build_debug:
   script:
     - mkdir build
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Release
+    - cmake .. -DWCONVERSION=TRUE -DWERROR=TRUE -DCMAKE_BUILD_TYPE=Release
     - make -j2
   artifacts:
     when: always
