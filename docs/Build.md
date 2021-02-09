@@ -76,17 +76,17 @@ using tools other than git the folder `exteral/` will need to be copied manually
 
 `mkdir -p build/Debug && cd build/Debug`
 
-`cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_BUILD_TYPE=Debug`
+`cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCUDA_ENABLED=TRUE -DCMAKE_BUILD_TYPE=Debug`
 
 With tracing to file:
 
-`cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DTRACE=ON -DCMAKE_BUILD_TYPE=Debug`
+`cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCUDA_ENABLED=TRUE -DTRACE=ON -DCMAKE_BUILD_TYPE=Debug`
 
 #### Release
 
 `mkdir -p build/Release && cd build/Release`
 
-`cmake ../../ -DCMAKE_BUILD_TYPE=Release`
+`cmake ../../ -DCUDA_ENABLED=TRUE -DCMAKE_BUILD_TYPE=Release`
 
 ### Linux Cluster
 
@@ -104,7 +104,7 @@ With tracing to file:
 
 `mkdir -p build && cd build`
 
-`cmake .. -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_ENABLED=1 -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release`
+`cmake .. -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_ENABLED=TRUE -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release`
 
 #### Deploy
 

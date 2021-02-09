@@ -35,9 +35,8 @@ set(sources
     model/cpu/MetaData.cc
     model/cpu/CalibrateResult.cc
     
-    math/vector_extensions.cc
     math/math_conversion.cc
-    math/cpu/vector.cc
+    math/cpu/eigen_extensions.cc
 
     core/compute_implementation.cc
     core/stream_out_type.cc

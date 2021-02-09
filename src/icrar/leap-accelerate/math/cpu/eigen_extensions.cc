@@ -20,9 +20,15 @@
  * MA 02111 - 1307  USA
  */
 
-#include <Eigen/Core>
+#include "eigen_extensions.h"
 
 namespace icrar
 {
-    using MVDirection = Eigen::Vector2d;
-} // namespace icrar
+    namespace cpu
+    {
+        Eigen::MatrixXd arg(const Eigen::Ref<const Eigen::MatrixXcd>& a)
+        {
+            return a.unaryExpr([](std::complex<double> v){ return std::arg(v); });
+        }
+    }
+}

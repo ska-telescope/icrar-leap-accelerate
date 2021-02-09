@@ -83,9 +83,7 @@ namespace icrar
 
         void TearDown() override
         {
-#if CUDA_ENABLED
-            checkCudaErrors(cudaDeviceReset());
-#endif
+
         }
 
         void PhaseRotateTest(ComputeImplementation impl, const Slice solutionInterval, std::function<cpu::CalibrationCollection()> getExpected)
@@ -127,6 +125,9 @@ namespace icrar
             {
                 const auto& calibration = calibrations.GetCalibrations()[calibrationIndex];
                 const auto& expectedCalibration = expected.GetCalibrations()[calibrationIndex];
+
+                ASSERT_DOUBLE_EQ(expectedCalibration.GetStartEpoch(), calibration.GetStartEpoch());
+                ASSERT_DOUBLE_EQ(expectedCalibration.GetEndEpoch(), calibration.GetEndEpoch());
 
                 ASSERT_EQ(directions.size(), calibration.GetBeamCalibrations().size());
                 // This supports expected calibrations to be an incomplete collection
