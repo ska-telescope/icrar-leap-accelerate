@@ -30,8 +30,6 @@
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 
-#include <casacore/casa/Quanta/MVDirection.h>
-
 #include <gtest/gtest.h>
 
 #include <vector>
@@ -62,20 +60,30 @@ namespace icrar
             std::string filepath = std::string(TEST_DATA_DIR) + msname;
             ms = std::make_unique<icrar::MeasurementSet>(filepath, stations_override, readAutocorrelations);
 
-            std::vector<casacore::MVDirection> directions =
+            std::vector<SphericalDirection> directions =
             {
-                casacore::MVDirection(-0.4606549305661674,-0.29719233792392513),
-                casacore::MVDirection(-0.753231018062671,-0.44387635324622354),
-                casacore::MVDirection(-0.6207547100721282,-0.2539086572881469),
-                casacore::MVDirection(-0.41958660604621867,-0.03677626900108552),
-                casacore::MVDirection(-0.41108685258900596,-0.08638012622791202),
-                casacore::MVDirection(-0.7782459495668798,-0.4887860989684432),
-                casacore::MVDirection(-0.17001324965728973,-0.28595644149463484),
-                casacore::MVDirection(-0.7129444556035118,-0.365286407171852),
-                casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
+                SphericalDirection(-0.4606549305661674,-0.29719233792392513),
+                SphericalDirection(-0.753231018062671,-0.44387635324622354),
+                SphericalDirection(-0.6207547100721282,-0.2539086572881469),
+                SphericalDirection(-0.41958660604621867,-0.03677626900108552),
+                SphericalDirection(-0.41108685258900596,-0.08638012622791202),
+                SphericalDirection(-0.7782459495668798,-0.4887860989684432),
+                SphericalDirection(-0.17001324965728973,-0.28595644149463484),
+                SphericalDirection(-0.7129444556035118,-0.365286407171852),
+                SphericalDirection(-0.1512764129166089,-0.21161026349648748)
             };
 
-            auto output = LeapCalibratorFactory::Create(impl)->Calibrate(*ms, ToDirectionVector(directions), Slice(0,1,1), 0.0, 0, false);
+            std::vector<cpu::Calibration> calibrations;
+            auto outputCallback = [&](const cpu::Calibration& cal)
+            {
+                calibrations.push_back(cal);
+            };
+
+            LeapCalibratorFactory::Create(impl)->AsyncCalibrate(
+                outputCallback,
+                *ms,
+                directions,
+                Slice(0,1,1), 0.0, 0, false); 
         }
     };
 

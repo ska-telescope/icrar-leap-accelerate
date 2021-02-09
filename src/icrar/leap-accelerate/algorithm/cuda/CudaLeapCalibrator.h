@@ -76,8 +76,14 @@ namespace cuda
     public:
         CudaLeapCalibrator();
         ~CudaLeapCalibrator() override;
-
-        virtual cpu::CalibrationCollection Calibrate(
+        
+        /**
+         * @copydoc ILeapCalibrator
+         * Calibrates by performing phase rotation for each direction in @p directions
+         * by splitting uvws into integration batches per timestep.
+         */
+        void AsyncCalibrate(
+            std::function<void(const cpu::Calibration&)> outputCallback,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             const Slice& solutionInterval,

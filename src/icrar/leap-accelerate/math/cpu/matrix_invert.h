@@ -25,6 +25,7 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/LU>
+#include <Eigen/SVD>
 
 #include <boost/numeric/conversion/cast.hpp>
 #include <iostream>

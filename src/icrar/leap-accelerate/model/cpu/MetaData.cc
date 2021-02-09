@@ -102,6 +102,7 @@ namespace cpu
             LOG(info) << "Inverting PhaseMatrix A1";
             return icrar::cpu::PseudoInverse(a);
         };
+
         auto invertA = [](const Eigen::MatrixXd& a)
         {
             LOG(info) << "Inverting PhaseMatrix A";

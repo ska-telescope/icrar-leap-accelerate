@@ -41,6 +41,7 @@
 
 #include <boost/math/constants/constants.hpp>
 #include <boost/optional.hpp>
+#include <boost/thread.hpp>
 
 #include <istream>
 #include <iostream>
@@ -58,7 +59,8 @@ namespace icrar
 {
 namespace cpu
 {
-    cpu::CalibrationCollection CpuLeapCalibrator::Calibrate(
+    void CpuLeapCalibrator::AsyncCalibrate(
+        std::function<void(const cpu::Calibration&)> outputCallback,
         const icrar::MeasurementSet& ms,
         const std::vector<SphericalDirection>& directions,
         const Slice& solutionInterval,
@@ -83,9 +85,6 @@ namespace cpu
 
         profiling::timer calibration_timer;
 
-        auto output_calibrations = std::vector<cpu::Calibration>();
-        auto input_queues = std::vector<std::vector<cpu::Integration>>();
-
         int timesteps = boost::numeric_cast<int>(ms.GetNumTimesteps());
         Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
         std::vector<double> epochs = ms.GetEpochs();
@@ -100,32 +99,35 @@ namespace cpu
         LOG(info) << "Read metadata in " << metadata_read_timer;
 
         size_t solutions = validatedSolutionInterval.GetSize();
+        auto output_calibrations = std::vector<cpu::Calibration>(); // Reserve memory
+        output_calibrations.reserve(solutions);
+
         constexpr unsigned int integrationNumber = 0;
         for(size_t solution = 0; solution < solutions; ++solution)
         {
+            auto input_queues = std::vector<std::vector<cpu::Integration>>();
             profiling::timer solution_timer;
             output_calibrations.emplace_back(
                 epochs[solution * validatedSolutionInterval.interval],
                 epochs[(solution+1) * validatedSolutionInterval.interval - 1]);
-            input_queues.clear();
 
+            //Iterate solutions
             profiling::timer integration_read_timer;
-            const Integration integration = Integration(
+            const auto integration = Integration(
                     integrationNumber,
                     ms,
                     boost::numeric_cast<int32_t>(solution * validatedSolutionInterval.interval * ms.GetNumBaselines()),
                     ms.GetNumChannels(),
                     validatedSolutionInterval.interval * ms.GetNumBaselines(),
                     ms.GetNumPols());
+            LOG(info) << "Read integration data in " << integration_read_timer;
 
             for(size_t direction = 0; direction < directions.size(); ++direction)
             {
                 auto queue = std::vector<cpu::Integration>();
                 queue.push_back(integration);
-                input_queues.push_back(queue);
+                input_queues.push_back(std::move(queue));
             }
-            LOG(info) << "Read integration data in " << integration_read_timer;
-
 
             profiling::timer phase_rotate_timer;
             metadata.SetUVW(integration.GetUVW());
@@ -135,13 +137,21 @@ namespace cpu
                 metadata.SetDirection(directions[i]);
                 metadata.CalcUVW();
                 metadata.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
-                PhaseRotate(metadata, directions[i], input_queues[i], output_calibrations[solution].GetBeamCalibrations());
-            }        
+                PhaseRotate(
+                    metadata,
+                    directions[i],
+                    input_queues[i],
+                    output_calibrations[solution].GetBeamCalibrations());
+            }
+
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
-            LOG(info) << "Finished solution in " << solution_timer;
+            LOG(info) << "Calculated solution in " << solution_timer;
+
+            profiling::timer write_timer;
+            outputCallback(output_calibrations[solution]);
+            LOG(info) << "Write out in " << write_timer;
         }
         LOG(info) << "Finished calibration in " << calibration_timer;
-        return CalibrationCollection(std::move(output_calibrations));
     }
 
     void CpuLeapCalibrator::PhaseRotate(

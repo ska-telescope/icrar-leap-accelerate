@@ -52,6 +52,7 @@
 
 #include <boost/math/constants/constants.hpp>
 #include <boost/optional/optional_io.hpp>
+#include <boost/thread.hpp>
 
 #include <complex>
 #include <istream>
@@ -91,13 +92,14 @@ namespace cuda
         //checkCudaErrors(cudaDeviceReset());
     }
 
-    cpu::CalibrationCollection CudaLeapCalibrator::Calibrate(
-        const icrar::MeasurementSet& ms,
-        const std::vector<SphericalDirection>& directions,
-        const Slice& solutionInterval,
-        double minimumBaselineThreshold,
-        boost::optional<unsigned int> referenceAntenna,
-        bool isFileSystemCacheEnabled)
+    void CudaLeapCalibrator::AsyncCalibrate(
+            std::function<void(const cpu::Calibration&)> outputCallback,
+            const icrar::MeasurementSet& ms,
+            const std::vector<SphericalDirection>& directions,
+            const Slice& solutionInterval,
+            double minimumBaselineThreshold,
+            boost::optional<unsigned int> referenceAntenna,
+            bool isFileSystemCacheEnabled)
     {
         LOG(info) << "Starting Calibration using cuda";
 
@@ -226,10 +228,10 @@ namespace cuda
                     output_calibrations[solution].GetBeamCalibrations());
             }
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
-            LOG(info) << "Finished solution in " << solution_timer;
+            LOG(info) << "Calculated solution in " << solution_timer;
+            outputCallback(output_calibrations[solution]);
         }
         LOG(info) << "Finished calibration in " << calibration_timer;
-        return cpu::CalibrationCollection(std::move(output_calibrations));
     }
 
     void CudaLeapCalibrator::PhaseRotate(
