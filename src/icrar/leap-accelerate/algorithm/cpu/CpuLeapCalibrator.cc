@@ -116,7 +116,7 @@ namespace cpu
             const auto integration = Integration(
                     integrationNumber,
                     ms,
-                    solution * validatedSolutionInterval.GetInterval() * ms.GetNumBaselines(),
+                    boost::numeric_cast<int32_t>(solution * validatedSolutionInterval.GetInterval() * ms.GetNumBaselines()),
                     ms.GetNumChannels(),
                     validatedSolutionInterval.GetInterval() * ms.GetNumBaselines(),
                     ms.GetNumPols());
