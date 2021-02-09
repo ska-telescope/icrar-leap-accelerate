@@ -84,7 +84,6 @@ namespace cpu
         << "timesteps: " << ms.GetNumTimesteps();
 
         profiling::timer calibration_timer;
-
         int timesteps = boost::numeric_cast<int>(ms.GetNumTimesteps());
         Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
         std::vector<double> epochs = ms.GetEpochs();
