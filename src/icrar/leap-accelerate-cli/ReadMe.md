@@ -62,7 +62,7 @@ computeImplementation: string?
 
 verbosity: integer|string?
 
-### JSON Example
+### Config File Example
 
 ```
 {
