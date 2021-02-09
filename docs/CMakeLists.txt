@@ -52,6 +52,7 @@ add_custom_command(OUTPUT ${SPHINX_INDEX_FILE}
                    DEPENDS
                    # Other docs files you want to track should go here (or in some variable)
                    ${SPHINX_SOURCE}/index.rst
+                   ${SPHINX_SOURCE}/leap-accelerate/algorithm.rst
                    ${DOXYGEN_INDEX_FILE}
                    MAIN_DEPENDENCY ${SPHINX_SOURCE}/conf.py
                    COMMENT "Generating documentation with Sphinx")

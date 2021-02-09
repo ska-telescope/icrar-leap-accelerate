@@ -45,7 +45,7 @@ autodoc_default_flags = ['members']
 doxygen_xml = '/home/calgray/Code/icrar/leap-accelerate/build/Release/docs/doxygen/xml'
 
 # Automatically generate stub pages
-autosummary_generate = True
+# autosummary_generate = True
 
 breathe_default_project = "LeapAccelerate"
 

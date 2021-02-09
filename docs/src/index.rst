@@ -31,7 +31,7 @@ Indices and tables
 Installation
 ============
 
-See the [build](docs/src/Build.md) documentation for instructions on platform specific compilation.
+.. See the [build](docs/src/Build.md) documentation for instructions on platform specific compilation.
 
 Usage
 =====
@@ -49,8 +49,8 @@ Contributions
 
 Refer to the following style guides for making repository contributions
 
-* [CMake Style Guide](docs/src/CMakeStyleGuide.md)
-* [C++ Style Guide](docs/src/CPlusPlusStyleGuide.md)
+.. * [CMake Style Guide](docs/src/CMakeStyleGuide.md)
+.. * [C++ Style Guide](docs/src/CPlusPlusStyleGuide.md)
 
 
 Docs
