@@ -39,7 +39,7 @@ void assert_near_cd(const std::complex<double>& expected, const std::complex<dou
 }
 
 template<typename T>
-void assert_near_matrix(const Eigen::Matrix<T, -1, -1>& expected, const Eigen::Matrix<T, -1, -1>& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
+void assert_near_matrix(const Eigen::Matrix<T, -1, -1>& expected, const Eigen::Matrix<T, -1, -1>& actual, T tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {
     ASSERT_EQ(expected.rows(), actual.rows());
     ASSERT_EQ(expected.cols(), actual.cols());
@@ -64,7 +64,33 @@ void assert_near_matrix(const Eigen::Matrix<T, -1, -1>& expected, const Eigen::M
     ASSERT_TRUE(actual.isApprox(expected, tolerance));
 }
 
-void assert_near_matrix_i(const Eigen::MatrixXi& expected, const Eigen::MatrixXi& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
+template<>
+void assert_near_matrix(const Eigen::MatrixXcd& expected, const Eigen::MatrixXcd& actual, std::complex<double> tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
+{
+    ASSERT_EQ(expected.rows(), actual.rows());
+    ASSERT_EQ(expected.cols(), actual.cols());
+    if(!actual.isApprox(expected, tolerance.real()))
+    {
+        std::cerr << ln << " != " << rn << "\n";
+        std::cerr << file << ":" << line << " Matrix elements differ at:\n";
+        
+        for(int col = 0; col < actual.cols(); ++col)
+        {
+            for(int row = 0; row < actual.rows(); ++row)
+            {
+                if(std::abs(expected(row, col) - actual(row, col)) > tolerance.real())
+                {
+                    std::cerr << "expected(" << row << ", " << col << ") == " << expected(row, col) << "\n";
+                    std::cerr << "actual(" << row << ", " << col << ") == " << actual(row, col) << "\n";
+                }
+            }
+        }
+        std::cerr << std::endl;
+    }
+    ASSERT_TRUE(actual.isApprox(expected, tolerance.real()));
+}
+
+void assert_near_matrix_i(const Eigen::MatrixXi& expected, const Eigen::MatrixXi& actual, int tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {
     assert_near_matrix<int>(expected, actual, tolerance, ln, rn, file, line);
 }
@@ -105,7 +131,7 @@ void assert_near_matrix_cd(const Eigen::MatrixXcd& expected, const Eigen::Matrix
 }
 
 template<typename T>
-void assert_near_vector(const Eigen::Matrix<T, -1, 1>& expected, const Eigen::Matrix<T, -1, 1>& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
+void assert_near_vector(const Eigen::Matrix<T, -1, 1>& expected, const Eigen::Matrix<T, -1, 1>& actual, T tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {
     ASSERT_EQ(expected.rows(), actual.rows());
     ASSERT_EQ(expected.cols(), actual.cols());
@@ -127,7 +153,7 @@ void assert_near_vector(const Eigen::Matrix<T, -1, 1>& expected, const Eigen::Ma
     ASSERT_TRUE(actual.isApprox(expected, tolerance));
 }
 
-void assert_near_vector_i(const Eigen::VectorXi& expected, const Eigen::VectorXi& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
+void assert_near_vector_i(const Eigen::VectorXi& expected, const Eigen::VectorXi& actual, int tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {
     assert_near_vector<int>(expected, actual, tolerance, ln, rn, file, line);
 }
@@ -138,7 +164,7 @@ void assert_near_vector_d(const Eigen::VectorXd& expected, const Eigen::VectorXd
 }
 
 template<typename T>
-void assert_near_vector(const std::vector<T>& expected, const std::vector<T>& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
+void assert_near_vector(const std::vector<T>& expected, const std::vector<T>& actual, T tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {
     ASSERT_EQ(expected.size(), actual.size());
     if(!icrar::isApprox(expected, actual, tolerance))

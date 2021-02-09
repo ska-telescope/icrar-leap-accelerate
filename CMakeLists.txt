@@ -10,10 +10,11 @@ message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(CUDA_ENABLED "Build with cuda support" OFF)
+option(HIGH_GPU_MEMORY "Improves device performance at the cost of extra device memory" OFF)
 option(WERROR "Warnings as Errors" OFF)
+option(WCONVERSION "Conversion warnings" OFF)
 option(TRACE "Trace Data Values" OFF)
 option(CMAKE_RUN_CLANG_TIDY "Run clang-tidy with the compiler." OFF)
-option(HIGH_GPU_MEMORY "Improves device performance at the cost of extra device memory" OFF)
 
 # Override config via environment variables
 if(DEFINED ENV{CUDA_ENABLED})
@@ -64,10 +65,14 @@ configure_file(.clang-tidy .clang-tidy COPYONLY)
 project(${SOLUTION_NAME} LANGUAGES CXX VERSION ${SOLUTION_VERSION})
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra") # TODO(calgray) -Wconversion
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
   if(WERROR)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+  endif()
+  if(WCONVERSION)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wconversion")
   endif()
 endif()
 
@@ -104,9 +109,6 @@ if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/eigen-3.3.90/CMakeLists.txt")
 endif()
 if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/gtest-1.8.1/CMakeLists.txt")
   message(FATAL_ERROR "Submodule gtest-1.8.1 was not downloaded! Please update submodules and try again.")
-endif()
-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/rapidjson-1.1.0/CMakeLists.txt")
-  message(FATAL_ERROR "Submodule rapidjson-1.1.0 was not downloaded! Please update submodules and try again.")
 endif()
 
 # Global Libraries
@@ -177,8 +179,8 @@ endif()
 set(EIGEN3_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/eigen-3.3.90)
 find_package(Eigen3 REQUIRED)
 
-set(PC_RapidJSON_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 find_package(RapidJSON REQUIRED)
+message(STATUS "RapidJSON: ${RapidJSON_INCLUDE_DIRS}")
 
 # Local Targets
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

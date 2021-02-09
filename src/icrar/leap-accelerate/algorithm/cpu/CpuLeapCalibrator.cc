@@ -79,14 +79,14 @@ namespace cpu
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
-        << "timesteps: " << ms.GetNumRows() / (float)ms.GetNumBaselines();
+        << "timesteps: " << ms.GetNumTimesteps();
 
         profiling::timer calibration_timer;
 
         auto output_calibrations = std::vector<cpu::Calibration>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
 
-        size_t timesteps = (size_t)ms.GetNumRows() / ms.GetNumBaselines();
+        int timesteps = boost::numeric_cast<int>(ms.GetNumTimesteps());
         Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
         std::vector<double> epochs = ms.GetEpochs();
 
@@ -113,7 +113,7 @@ namespace cpu
             const Integration integration = Integration(
                     integrationNumber,
                     ms,
-                    solution * validatedSolutionInterval.interval * ms.GetNumBaselines(),
+                    boost::numeric_cast<int32_t>(solution * validatedSolutionInterval.interval * ms.GetNumBaselines()),
                     ms.GetNumChannels(),
                     validatedSolutionInterval.interval * ms.GetNumBaselines(),
                     ms.GetNumPols());

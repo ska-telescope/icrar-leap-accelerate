@@ -37,8 +37,6 @@ set(sources
     
     math/vector_extensions.cc
     math/math_conversion.cc
-    math/casa/matrix.cc
-    math/casa/matrix_invert.cc
     math/cpu/vector.cc
 
     core/compute_implementation.cc
@@ -143,7 +141,7 @@ if(CUDA_ENABLED)
 endif()
 
 # Legacy TODO(calgray): build support for xenial
-include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
+#include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 
 target_link_libraries(${TARGET_NAME} Threads::Threads)
 

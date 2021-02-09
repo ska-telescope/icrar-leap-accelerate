@@ -189,24 +189,24 @@ namespace icrar
         void TestReferenceAntenna()
         {
             auto meta = icrar::cpu::MetaData(*ms, SphericalDirection(), std::vector<icrar::MVuvw>(), boost::none);
-            int k = meta.GetA1().rows() - 1;
-            int n = meta.GetA1().cols() - 1;
+            uint32_t k = boost::numeric_cast<uint32_t>(meta.GetA1().rows() - 1);
+            uint32_t n = boost::numeric_cast<uint32_t>(meta.GetA1().cols() - 1);
             ASSERT_EQ(0, meta.GetA1()(k, 0));
             ASSERT_EQ(1, meta.GetA1()(k, n));
 
             meta = icrar::cpu::MetaData(*ms, SphericalDirection(), std::vector<icrar::MVuvw>(), n);
-            k = meta.GetA1().rows() - 1;
-            n = meta.GetA1().cols() - 1;
+            k = boost::numeric_cast<uint32_t>(meta.GetA1().rows() - 1);
+            n = boost::numeric_cast<uint32_t>(meta.GetA1().cols() - 1);
             ASSERT_EQ(0, meta.GetA1()(k, 0));
             ASSERT_EQ(1, meta.GetA1()(k, n));
 
             meta = icrar::cpu::MetaData(*ms, SphericalDirection(), std::vector<icrar::MVuvw>(), 0);
-            k = meta.GetA1().rows() - 1;
+            k = boost::numeric_cast<uint32_t>(meta.GetA1().rows() - 1);
             ASSERT_EQ(1, meta.GetA1()(k, 0));
             ASSERT_EQ(0, meta.GetA1()(k, 1));
 
             meta = icrar::cpu::MetaData(*ms, SphericalDirection(), std::vector<icrar::MVuvw>(), 1);
-            k = meta.GetA1().rows() - 1;
+            k = boost::numeric_cast<uint32_t>(meta.GetA1().rows() - 1);
             ASSERT_EQ(0, meta.GetA1()(k, 0));
             ASSERT_EQ(1, meta.GetA1()(k, 1));
         }

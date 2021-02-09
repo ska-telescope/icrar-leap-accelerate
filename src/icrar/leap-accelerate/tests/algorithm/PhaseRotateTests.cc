@@ -327,10 +327,10 @@ namespace icrar
             double TOLERANCE = 0.00001;
 
             // A
-            const int aRows = 4754; 
+            const int aRows = 4754;
             const int aCols = 128;
-            ASSERT_DOUBLE_EQ(aRows, A.rows());
-            ASSERT_DOUBLE_EQ(aCols, A.cols());
+            ASSERT_EQ(aRows, A.rows());
+            ASSERT_EQ(aCols, A.cols());
             EXPECT_EQ(1.00, A(0,0));
             EXPECT_EQ(-1.00, A(0,1));
             EXPECT_EQ(0.00, A(0,2));
@@ -354,8 +354,8 @@ namespace icrar
             EXPECT_EQ(5251, I(nBaselines-1));
 
             // Ad
-            ASSERT_DOUBLE_EQ(aCols, Ad.rows());
-            ASSERT_DOUBLE_EQ(aRows, Ad.cols());
+            ASSERT_EQ(aCols, Ad.rows());
+            ASSERT_EQ(aRows, Ad.cols());
             // EXPECT_NEAR(2.62531368e-15, Ad(0,0), TOLERANCE); // TODO(calgray): emergent
             // EXPECT_NEAR(2.04033520e-15, Ad(0,1), TOLERANCE); // TODO(calgray): emergent
             // EXPECT_NEAR(3.25648083e-16, Ad(0,2), TOLERANCE); // TODO(calgray): emergent
@@ -370,8 +370,8 @@ namespace icrar
             //A1
             const int a1Rows = 98;
             const int a1Cols = 128;
-            ASSERT_DOUBLE_EQ(a1Rows, A1.rows());
-            ASSERT_DOUBLE_EQ(a1Cols, A1.cols());
+            ASSERT_EQ(a1Rows, A1.rows());
+            ASSERT_EQ(a1Cols, A1.cols());
             EXPECT_DOUBLE_EQ(1.0, A1(0,0));
             EXPECT_DOUBLE_EQ(-1.0, A1(0,1));
             EXPECT_DOUBLE_EQ(0.0, A1(0,2));
@@ -384,7 +384,7 @@ namespace icrar
             EXPECT_NEAR(0.00, A1(a1Rows-1,127), TOLERANCE);
 
             //I1
-            ASSERT_DOUBLE_EQ(a1Rows-1, I1.size());
+            ASSERT_EQ(a1Rows-1, I1.size());
             EXPECT_DOUBLE_EQ(1.00, I1(0));
             EXPECT_DOUBLE_EQ(3.00, I1(1));
             EXPECT_DOUBLE_EQ(4.00, I1(2));
@@ -394,8 +394,8 @@ namespace icrar
             EXPECT_DOUBLE_EQ(101.00, I1(a1Rows-2));
 
             //Ad1
-            ASSERT_DOUBLE_EQ(a1Rows, Ad1.cols());
-            ASSERT_DOUBLE_EQ(a1Cols, Ad1.rows());
+            ASSERT_EQ(a1Rows, Ad1.cols());
+            ASSERT_EQ(a1Cols, Ad1.rows());
 
             // EXPECT_DOUBLE_EQ(-9.8130778667735933e-18, Ad1(0,0)); // TODO: emergent
             // EXPECT_DOUBLE_EQ(6.3742385976163974e-17, Ad1(0,1)); // TODO: emergent
