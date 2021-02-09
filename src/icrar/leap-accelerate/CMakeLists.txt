@@ -42,6 +42,7 @@ set(sources
     common/SphericalDirection.cc
     common/MVuvw.cc
     common/Slice.cc
+    common/config/Arguments.cc
 
     math/math_conversion.cc
     math/cpu/eigen_extensions.cc
@@ -52,7 +53,6 @@ set(sources
 
     model/cpu/Integration.cc
     model/cpu/MetaData.cc
-    model/cpu/CalibrateResult.cc
 
     algorithm/LeapCalibratorFactory.cc
     algorithm/cpu/CpuLeapCalibrator.cc

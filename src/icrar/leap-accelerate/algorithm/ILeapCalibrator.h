@@ -24,7 +24,7 @@
 
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/common/Slice.h>
-#include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
+#include <icrar/leap-accelerate/model/cpu/calibration/Calibration.h>
 #include <boost/noncopyable.hpp>
 #include <vector>
 #include <functional>
@@ -60,7 +60,7 @@ namespace icrar
          * @param isFileSystemCacheEnabled enable to use the filesystem to cache data between calibration calls
          * @return CalibrationCollection the calibrationn result
          */
-        virtual void AsyncCalibrate(
+        virtual void Calibrate(
             std::function<void(const cpu::Calibration&)> outputCallback,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,

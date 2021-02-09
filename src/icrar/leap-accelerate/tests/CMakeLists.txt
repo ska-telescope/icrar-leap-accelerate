@@ -25,6 +25,7 @@ set(sources
   model/IntegrationTests.cc
   
   algorithm/PhaseRotateTests.cc
+  system/ConfigTests.cc
 )
 
 set(cuda_sources
@@ -61,6 +62,19 @@ if(CUDA_ENABLED)
 endif()
 
 target_link_libraries(${TEST_TARGET_NAME} LeapAccelerate gtest)
+
+set(test_data
+  testdata/TestSolutionIntervalConfig.json
+  testdata/TestSolutionIntervalOutput.json
+)
+
+add_custom_target(${TEST_TARGET_NAME}.Data ALL
+  COMMAND ${CMAKE_COMMAND}
+  -Dsrc_dir=${CMAKE_CURRENT_SOURCE_DIR}/testdata
+  -Ddst_dir=${CMAKE_CURRENT_BINARY_DIR}/testdata
+  -P ${PROJECT_SOURCE_DIR}/cmake/update_directory.cmake
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 add_test(
   NAME ${TEST_TARGET_NAME}

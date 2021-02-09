@@ -69,6 +69,7 @@ namespace icrar
         boost::optional<bool> readAutocorrelations;
         boost::optional<int> verbosity;
 
+        static CLIArguments GetDefaultArguments();
     };
 
     /**
