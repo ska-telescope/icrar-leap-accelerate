@@ -154,7 +154,7 @@ find_package(Casacore REQUIRED)
 
 # Eigen Acceleration
 find_package(LAPACK REQUIRED)
-find_package(BLAS)
+#find_package(BLAS)
 
 # Testing Libraries
 if (BUILD_TESTING)
