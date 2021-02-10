@@ -152,7 +152,9 @@ find_package(Boost REQUIRED COMPONENTS log log_setup program_options)
 set(CASACORE_FIND_QUIETLY ON)
 find_package(Casacore REQUIRED)
 
-find_package(LAPACK)
+# Eigen Acceleration
+find_package(LAPACK REQUIRED)
+find_package(BLAS)
 
 # Testing Libraries
 if (BUILD_TESTING)
@@ -175,6 +177,7 @@ endif()
 # Local Libraries
 #add_subdirectory(external/eigen-3.3.90) # builds eigen3 tests
 set(EIGEN3_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/eigen-3.3.90)
+add_definitions(-DEIGEN_USE_LAPACK)
 find_package(Eigen3 REQUIRED)
 
 find_package(RapidJSON REQUIRED)
