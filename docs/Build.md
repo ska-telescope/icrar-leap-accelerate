@@ -129,6 +129,12 @@ To test using the google test runner, the test binaries can be executed directly
 `./src/icrar/leap-accelerate/tests/LeapAccelerate.Tests`
 `./src/icrar/leap-accelerate-cli/tests/LeapAccelerateCLI.Tests`
 
+## Test Coverage (Debug Only)
+
+`cmake ../.. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"`
+
+`make gcovr`
+
 ## Doxygen
 
 Doxygen is generated with the following target:

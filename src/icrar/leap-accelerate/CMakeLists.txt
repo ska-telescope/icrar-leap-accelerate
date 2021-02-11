@@ -124,7 +124,6 @@ if(CUDA_ENABLED)
   #Set Cuda Stream Setting
   #set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -lineinfo --default-stream per-thread)
   #message("CUDA_NVCC_FLAGS = ${CUDA_NVCC_FLAGS}")
-
   target_include_directories(${TARGET_NAME} SYSTEM PUBLIC ${CUDA_INCLUDE_DIRS})
   target_link_libraries(${TARGET_NAME} ${CUDA_LIBRARIES})
   target_link_libraries(${TARGET_NAME} cublas)
@@ -134,12 +133,10 @@ if(CUDA_ENABLED)
   endif()
 endif()
 
-# Legacy TODO(calgray): build support for xenial
-#include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
-
 target_link_libraries(${TARGET_NAME} Threads::Threads)
-
 target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
+#target_link_libraries(${TARGET_NAME} ${BLAS_LIBRARIES})
+target_link_libraries(${TARGET_NAME} ${LAPACK_LIBRARIES})
 target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
 target_link_libraries(${TARGET_NAME} RapidJSON::RapidJSON)
 

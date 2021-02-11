@@ -20,36 +20,25 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
-#include <string>
+#include <gtest/gtest.h>
+
+#include <icrar/leap-accelerate/core/stream_out_type.h>
 
 namespace icrar
 {
-    /**
-     * @brief Specifies how results are streamed out
-     */
-    enum class StreamOutType
+    class StreamOutTypeTests : public testing::Test
     {
-        COLLECTION, // Results are written to a collection in a single file
-        SINGLE_FILE, // Results are continously rewritten to a single file as computed
-        MUTLIPLE_FILES // Results are continously written to multiple files as computed
+    public:
+        void TestParseStreamOutType()
+        {
+            ASSERT_EQ(StreamOutType::COLLECTION, ParseStreamOutType("c"));
+            ASSERT_EQ(StreamOutType::COLLECTION, ParseStreamOutType("collection"));
+            ASSERT_EQ(StreamOutType::SINGLE_FILE, ParseStreamOutType("s"));
+            ASSERT_EQ(StreamOutType::SINGLE_FILE, ParseStreamOutType("single"));
+            ASSERT_EQ(StreamOutType::MUTLIPLE_FILES, ParseStreamOutType("m"));
+            ASSERT_EQ(StreamOutType::MUTLIPLE_FILES, ParseStreamOutType("multiple"));
+        }
     };
 
-    /**
-     * @brief Parses string argument into an enum, throws an exception otherwise.
-     * 
-     * @param value 
-     * @return StreamOutType 
-     */
-    StreamOutType ParseStreamOutType(const std::string& value);
-
-    /**
-     * @return true if value was converted succesfully, false otherwise
-     */
-    bool TryParseStreamOutType(const std::string& value, StreamOutType& out);
-
-    /**
-     * @brief True if solutions should be written to IO as soon as they are computed.
-     */
-    bool IsImmediateMode(StreamOutType streamOutType);
-}
+    TEST_F(StreamOutTypeTests, TestParseStreamOutType) { TestParseStreamOutType(); }
+} // namespace icrar

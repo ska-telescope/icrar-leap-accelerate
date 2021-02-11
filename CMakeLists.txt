@@ -152,7 +152,11 @@ find_package(Boost REQUIRED COMPONENTS log log_setup program_options)
 set(CASACORE_FIND_QUIETLY ON)
 find_package(Casacore REQUIRED)
 
-find_package(LAPACK)
+# Eigen Acceleration
+find_package(BLAS REQUIRED)
+#add_definitions(-DEIGEN_USE_BLAS)
+find_package(LAPACK REQUIRED)
+#add_definitions(-DEIGEN_USE_LAPACKE)
 
 # Testing Libraries
 if (BUILD_TESTING)
@@ -184,6 +188,16 @@ message(STATUS "RapidJSON: ${RapidJSON_INCLUDE_DIRS}")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-cli)
+
+#Code Coverage
+#TODO: run make LeapAccelerate.Tests before this
+add_custom_target(coverage
+            COMMAND ${CMAKE_CTEST_COMMAND} -T test --no-compress-output --verbose
+            COMMAND mkdir -p coverage
+            COMMAND gcovr -r ${PROJECT_SOURCE_DIR} -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o coverage/index.html
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+)
+add_dependencies(coverage LeapAccelerate.Tests)
 
 # Install cmake config + version + target files
 include(CMakePackageConfigHelpers)
