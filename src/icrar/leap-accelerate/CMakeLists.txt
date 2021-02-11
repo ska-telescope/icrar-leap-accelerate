@@ -141,8 +141,8 @@ endif()
 
 target_link_libraries(${TARGET_NAME} Threads::Threads)
 target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
-target_link_libraries(${TARGET_NAME} ${LAPACK_LIBRARIES})
 #target_link_libraries(${TARGET_NAME} ${BLAS_LIBRARIES})
+target_link_libraries(${TARGET_NAME} ${LAPACK_LIBRARIES})
 target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
 target_link_libraries(${TARGET_NAME} RapidJSON::RapidJSON)
 

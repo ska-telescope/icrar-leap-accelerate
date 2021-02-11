@@ -129,6 +129,16 @@ To test using the google test runner, the test binaries can be executed directly
 `./src/icrar/leap-accelerate/tests/LeapAccelerate.Tests`
 `./src/icrar/leap-accelerate-cli/tests/LeapAccelerateCLI.Tests`
 
+## Test Coverage
+
+`cmake ../.. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"`
+
+`ctest -T test --no-compress-output --verbose`
+
+`ctest2junit > ctest.xml`
+
+`gcovr -r . -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o index.html`
+
 ## Doxygen
 
 Doxygen is generated with the following target:

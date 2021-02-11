@@ -153,8 +153,10 @@ set(CASACORE_FIND_QUIETLY ON)
 find_package(Casacore REQUIRED)
 
 # Eigen Acceleration
+find_package(BLAS REQUIRED)
+#add_definitions(-DEIGEN_USE_BLAS)
 find_package(LAPACK REQUIRED)
-#find_package(BLAS)
+#add_definitions(-DEIGEN_USE_LAPACKE)
 
 # Testing Libraries
 if (BUILD_TESTING)
@@ -177,7 +179,6 @@ endif()
 # Local Libraries
 #add_subdirectory(external/eigen-3.3.90) # builds eigen3 tests
 set(EIGEN3_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/eigen-3.3.90)
-add_definitions(-DEIGEN_USE_LAPACK)
 find_package(Eigen3 REQUIRED)
 
 find_package(RapidJSON REQUIRED)
@@ -187,6 +188,14 @@ message(STATUS "RapidJSON: ${RapidJSON_INCLUDE_DIRS}")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-cli)
+
+#Code Coverage
+add_custom_target(gcov
+            COMMAND ${CMAKE_CTEST_COMMAND} -T test --no-compress-output --verbose 
+            COMMAND gcovr -r ../.. -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o index.html .
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+)
+add_dependencies(gcov LeapAccelerate)
 
 # Install cmake config + version + target files
 include(CMakePackageConfigHelpers)
