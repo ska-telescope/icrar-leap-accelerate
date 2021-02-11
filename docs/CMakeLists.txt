@@ -8,9 +8,7 @@ find_package(Sphinx REQUIRED)
 # message(${PUBLIC_HEADERS})
 
 get_target_property(PUBLIC_HEADER_DIR LeapAccelerate INTERFACE_INCLUDE_DIRECTORIES)
-message(${PUBLIC_HEADER_DIR})
 file(GLOB_RECURSE PUBLIC_HEADERS "/home/calgray/Code/icrar/leap-accelerate/src/*.h")
-message(${PUBLIC_HEADERS})
 
 set(DOXYGEN_INPUT_DIR ${PROJECT_SOURCE_DIR}/src)
 set(DOXYGEN_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/doxygen)
@@ -38,6 +36,8 @@ set(SPHINX_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/sphinx)
 set(SPHINX_INDEX_FILE ${SPHINX_BUILD}/index.html)
 
+file(GLOB_RECURSE DOC_FILES "/home/calgray/Code/icrar/leap-accelerate/docs/*.rst")
+
 # Only regenerate Sphinx when:
 # - Doxygen has rerun
 # - Our doc files have been updated
@@ -51,8 +51,7 @@ add_custom_command(OUTPUT ${SPHINX_INDEX_FILE}
                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                    DEPENDS
                    # Other docs files you want to track should go here (or in some variable)
-                   ${SPHINX_SOURCE}/index.rst
-                   ${SPHINX_SOURCE}/leap-accelerate/algorithm.rst
+                   ${DOC_FILES}
                    ${DOXYGEN_INDEX_FILE}
                    MAIN_DEPENDENCY ${SPHINX_SOURCE}/conf.py
                    COMMENT "Generating documentation with Sphinx")
