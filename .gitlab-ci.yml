@@ -55,9 +55,10 @@ variables:
   image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
   variables:
     DEBIAN_FRONTEND: "noninteractive"
+    CUDA_ENABLED: "OFF"
   before_script:
     - apt update
-    - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck
+    - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck python3-pip
     - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev
     - pip3 install -U sphinx breathe sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary
 
@@ -69,7 +70,7 @@ variables:
     CUDA_ENABLED: "ON"
   before_script:
     - apt update 
-    - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck
+    - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck python3-pip
     - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev
     - pip3 install -U sphinx breathe sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary
     - apt install -y gnupg2 software-properties-common
