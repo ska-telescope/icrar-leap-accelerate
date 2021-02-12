@@ -60,7 +60,7 @@ variables:
     - apt update
     - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck python3-pip
     - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev
-    - pip3 install -U sphinx breathe sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary
+    - pip3 install -U sphinx breathe sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary recommonmark
 
 .cuda_dependencies:
   extends: .common
@@ -72,7 +72,7 @@ variables:
     - apt update 
     - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck python3-pip
     - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev
-    - pip3 install -U sphinx breathe sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary
+    - pip3 install -U sphinx breathe sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary recommonmark
     - apt install -y gnupg2 software-properties-common
     - source ./.gitlab-ci/cuda_install_debian.sh
 
