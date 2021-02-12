@@ -27,7 +27,7 @@ add_custom_command(OUTPUT ${DOXYGEN_INDEX_FILE}
                    DEPENDS ${PUBLIC_HEADERS}
                    COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
                    MAIN_DEPENDENCY ${DOXYFILE_OUT} ${DOXYFILE_IN}
-                   COMMENT "Generating docs")
+                   COMMENT "Generating doxygen")
 
 # Nice named target so we can run the job easily
 add_custom_target(doxygen ALL DEPENDS ${DOXYGEN_INDEX_FILE})
@@ -54,10 +54,11 @@ add_custom_command(OUTPUT ${SPHINX_INDEX_FILE}
                    ${DOC_FILES}
                    ${DOXYGEN_INDEX_FILE}
                    MAIN_DEPENDENCY ${SPHINX_SOURCE}/conf.py
-                   COMMENT "Generating documentation with Sphinx")
+                   COMMENT "Generating documentation with sphinx")
 
 # Nice named target so we can run the job easily
 add_custom_target(sphinx ALL DEPENDS ${SPHINX_INDEX_FILE})
+add_dependencies(sphinx doxygen)
 
 # Add an install target to install the docs
 include(GNUInstallDirs)
