@@ -59,6 +59,7 @@ variables:
     - apt update 
     - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck
     - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev
+    - pip3 install sphinx breathe sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary
 
 .cuda_dependencies:
   extends: .common
