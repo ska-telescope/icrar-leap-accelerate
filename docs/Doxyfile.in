@@ -23,7 +23,7 @@
 # The default value is: My Project.
 
 PROJECT_NAME           = LEAP Accelerate 
-USE_MDFILE_AS_MAINPAGE = ReadMe.md
+USE_MDFILE_AS_MAINPAGE = README.md
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. This
 # could be handy for archiving the generated documentation or if some version

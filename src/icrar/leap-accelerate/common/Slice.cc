@@ -35,18 +35,21 @@ namespace icrar
 
     Slice::Slice(int start, int interval, int end)
     {
-        if(start < 0) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
-        if(interval < -1) throw icrar::exception("expected a positive integer or -1", __FILE__, __LINE__);
-        if(interval == 0) throw icrar::exception("expected a non zero integer", __FILE__, __LINE__);
-        if(end < -1) throw icrar::exception("expected a positive integer or -1", __FILE__, __LINE__);
+        if(start < -1) throw icrar::exception("expected a positive integer start", __FILE__, __LINE__);
+        if(interval < -1) throw icrar::exception("expected a positive integer or -1 interval", __FILE__, __LINE__);
+        if(end < -1) throw icrar::exception("expected a positive or -1 integer end", __FILE__, __LINE__);
 
         //forward sequences only
-        if(end != -1 && start >= end)
-        {
-            throw icrar::exception("range start must be greater than end", __FILE__, __LINE__);
-        }
         if(end != -1)
         {
+            if(start == -1)
+            {
+                throw icrar::exception("range start must be greater than end", __FILE__, __LINE__);
+            }
+            if(start > end)
+            {
+                throw icrar::exception("range start must be greater than end", __FILE__, __LINE__);
+            }
             if(interval == -1)
             {
                 interval = end - start;
@@ -56,10 +59,20 @@ namespace icrar
                 throw icrar::exception("range increment out of bounds", __FILE__, __LINE__);
             }
         }
+        if(interval == 0) throw icrar::exception("expected a non zero integer interval", __FILE__, __LINE__);
 
-        this->start = start;
-        this->interval = interval;
-        this->end = end;
+        m_start = start;
+        m_interval = interval;
+        m_end = end;
+    }
+
+    Range Slice::Evaluate(int collectionSize) const
+    {
+        return Range(
+            (m_start == -1) ? collectionSize : m_start,
+            (m_interval == -1) ? collectionSize : m_interval,
+            (m_end == -1) ? collectionSize : m_end
+        );
     }
 
     Slice ParseSlice(const std::string& json)

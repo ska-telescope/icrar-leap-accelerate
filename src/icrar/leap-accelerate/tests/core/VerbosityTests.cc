@@ -20,28 +20,28 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
+#include <gtest/gtest.h>
 
-#ifdef CUDA_ENABLED
+#include <icrar/leap-accelerate/core/log/Verbosity.h>
 
-#include <Eigen/Core>
-#include <unsupported/Eigen/CXX11/Tensor>
-#include <cuda_runtime.h>
-#include <vector>
-
-template<typename Tensor>
-class cuda_mapped_tensor : public Tensor
+namespace icrar
 {
-public:
-    cuda_mapped_tensor(const Tensor& ref) : Tensor(ref)
+    class VerbosityTests : public testing::Test
     {
-        cudaHostRegister(this->data(), this->size() * sizeof(decltype(*(this->data()))), cudaHostRegisterPortable);
-    }
+    public:
+        void TestParseVerbosity()
+        {
+            using namespace log;
+            ASSERT_EQ(Verbosity::fatal, ParseVerbosity("fatal"));
+            ASSERT_EQ(Verbosity::error, ParseVerbosity("error"));
+            ASSERT_EQ(Verbosity::warn, ParseVerbosity("warn"));
+            ASSERT_EQ(Verbosity::info, ParseVerbosity("info"));
+            ASSERT_EQ(Verbosity::debug, ParseVerbosity("debug"));
+            ASSERT_EQ(Verbosity::trace, ParseVerbosity("trace"));
+            ASSERT_EQ(Verbosity::trace, ParseVerbosity("Trace"));
+            ASSERT_EQ(Verbosity::trace, ParseVerbosity("TRACE"));
+        }
+    };
 
-    virtual ~cuda_mapped_tensor()
-    {
-        cudaHostUnregister(this->data());
-    }
-};
-
-#endif // CUDA_ENABLED
+    TEST_F(VerbosityTests, TestParseVerbosity) { TestParseVerbosity(); }
+} // namespace icrar

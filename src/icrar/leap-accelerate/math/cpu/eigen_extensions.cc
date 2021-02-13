@@ -20,37 +20,15 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
-
-#include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
-#include <casacore/casa/Arrays/Matrix.h>
-
-#include <Eigen/Core>
-#include <Eigen/Dense>
-#include <Eigen/LU>
-
-#include <iostream>
-#include <string>
-#include <memory>
-#include <vector>
-#include <complex>
-#include <queue>
-#include <limits>
+#include "eigen_extensions.h"
 
 namespace icrar
 {
-namespace casalib
-{
-    /**
-     * @see PseudoInverse
-     */
-    casacore::Matrix<double> PseudoInverse(const casacore::Matrix<double>& a);
-
-    /**
-     * @see SVDPseudoInverse
-     */
-    casacore::Matrix<double> SVDPseudoInverse(
-        const casacore::Matrix<double>& a,
-        double epsilon = std::numeric_limits<Eigen::MatrixXd::Scalar>::epsilon());
-} // namespace casalib
-} // namespace icrar
+    namespace cpu
+    {
+        Eigen::MatrixXd arg(const Eigen::Ref<const Eigen::MatrixXcd>& a)
+        {
+            return a.unaryExpr([](std::complex<double> v){ return std::arg(v); });
+        }
+    }
+}

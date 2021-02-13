@@ -6,11 +6,18 @@ set(sources
   
   test_helper.cc
 
+  core/VerbosityTests.cc
+
+  common/SliceTests.cc
+  common/RangeTests.cc
+  common/SphericalDirectionTests.cc
+  common/MVuvwTests.cc
+  
   math/eigen_helper.cc
   math/MatrixTests.cc
-  math/VectorTests.cc
-  math/MatrixTests.cc
+
   math/MathConversionTests.cc
+  math/EigenExtensionsTests.cc
 
   ms/MSUtilsTests.cc
 
@@ -21,7 +28,6 @@ set(sources
 )
 
 set(cuda_sources
-  math/cuda/CudaVectorTests.cu
   math/cuda/CudaMatrixTests.cu
   math/cuda/CudaMatrixEigenTests.cu
 )

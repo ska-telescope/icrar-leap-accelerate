@@ -92,50 +92,50 @@ namespace icrar
          * @brief Gets the total number of antennas including flagged antennas.
          * 
          */
-        unsigned int GetTotalAntennas() const;
+        uint32_t GetTotalAntennas() const;
 
         /**
          * @brief Gets the number of stations excluding flagged stations. Overridable at construction.
          * 
-         * @return unsigned int 
+         * @return uint32_t 
          */
-        unsigned int GetNumStations() const;
+        uint32_t GetNumStations() const;
 
         /**
          * @brief Get the number of baselines in the measurement set using the current autocorrelations setting
          * and including stations not recording rows.
          * @note TODO: baselines should always be n*(n-1) / 2 and without autocorrelations
-         * @return unsigned int 
+         * @return uint32_t 
          */
-        unsigned int GetNumBaselines() const;
+        uint32_t GetNumBaselines() const;
 
         /**
          * @brief Get the number of polarizations in the measurement set
          * 
-         * @return unsigned int 
+         * @return uint32_t 
          */
-        unsigned int GetNumPols() const;
+        uint32_t GetNumPols() const;
 
         /**
          * @brief Gets the number of channels in the measurement set
          * 
-         * @return unsigned int 
+         * @return uint32_t 
          */
-        unsigned int GetNumChannels() const;
+        uint32_t GetNumChannels() const;
 
         /**
          * @brief Gets the number of rows in the measurement set (non-flagged baselines * timesteps).
          * 
-         * @return unsigned int
+         * @return uint32_t
          */
-        unsigned int GetNumRows() const;
+        uint32_t GetNumRows() const;
 
         /**
          * @brief Gets the total number of timesteps in the measurement set
          * 
-         * @return unsigned int 
+         * @return uint32_t 
          */
-        unsigned int GetNumTimesteps() const;
+        uint32_t GetNumTimesteps() const;
 
         /**
          * @brief Get the Epochs object
@@ -155,9 +155,9 @@ namespace icrar
         /**
          * @brief Get the number of baselines that are flagged by the measurement set
          * 
-         * @return unsigned int 
+         * @return uint32_t 
          */
-        unsigned int GetNumFlaggedBaselines() const;
+        uint32_t GetNumFlaggedBaselines() const;
 
         /**
          * @brief Gets a flag vector of short baselines
@@ -171,9 +171,9 @@ namespace icrar
          * @brief Get the number of baselines that below the @p minimumBaselineThreshold
          * 
          * @param minimumBaselineThreshold 
-         * @return unsigned int 
+         * @return uint32_t 
          */
-        unsigned int GetNumShortBaselines(double minimumBaselineThreshold = 0.0) const;
+        uint32_t GetNumShortBaselines(double minimumBaselineThreshold = 0.0) const;
 
         /**
          * @brief Gets flag vector of filtered baselines that are either flagged or short
@@ -187,13 +187,13 @@ namespace icrar
          * @brief Gets the number of baselines that are flagged baselines or short baselines
          * 
          * @param minimumBaselineThreshold 
-         * @return unsigned int 
+         * @return uint32_t 
          */
-        unsigned int GetNumFilteredBaselines(double minimumBaselineThreshold = 0.0) const;
+        uint32_t GetNumFilteredBaselines(double minimumBaselineThreshold = 0.0) const;
 
-        //std::vector<casacore::MVuvw> MeasurementSet::GetCoordsCasa(unsigned int start_row) const;
+        //std::vector<casacore::MVuvw> MeasurementSet::GetCoordsCasa(uint32_t start_row) const;
         Eigen::MatrixX3d GetCoords() const;
-        Eigen::MatrixX3d GetCoords(unsigned int start_row, unsigned int nBaselines) const;
+        Eigen::MatrixX3d GetCoords(uint32_t start_row, uint32_t nBaselines) const;
 
         Eigen::Tensor<std::complex<double>, 3> GetVis(
             std::uint32_t startBaseline,
@@ -210,14 +210,14 @@ namespace icrar
         /**
          * @brief Get the number of baselines in the measurement set (e.g. (0,0), (1,1), (2,2))
          * 
-         * @return unsigned int 
+         * @return uint32_t 
          */
-        unsigned int GetNumBaselines(bool useAutocorrelations) const;
+        uint32_t GetNumBaselines(bool useAutocorrelations) const;
 
         /**
          * @brief Calculates the set of unique antenna indices used in baseline pairs
          * 
-         * @return unsigned int 
+         * @return uint32_t 
          */
         std::set<int32_t> CalculateUniqueAntennas() const;
 

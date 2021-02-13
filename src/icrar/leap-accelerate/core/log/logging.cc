@@ -20,6 +20,8 @@
  * MA 02111 - 1307  USA
  */
 
+#include <icrar/leap-accelerate/core/log/logging.h>
+
 #include <boost/log/attributes/mutable_constant.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
@@ -33,8 +35,6 @@
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/utility/setup/console.hpp>
 #include <boost/log/utility/setup/file.hpp>
-
-#include "icrar/leap-accelerate/core/log/logging.h"
 
 namespace icrar
 {

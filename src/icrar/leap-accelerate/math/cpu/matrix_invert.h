@@ -22,12 +22,12 @@
 
 #pragma once
 
-#include <casacore/casa/Arrays/Matrix.h>
-
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/LU>
+#include <Eigen/SVD>
 
+#include <boost/numeric/conversion/cast.hpp>
 #include <iostream>
 #include <string>
 #include <memory>
@@ -52,7 +52,7 @@ namespace cpu
     {
         // See https://eigen.tuxfamily.org/bz/show_bug.cgi?id=257
         Eigen::BDCSVD<Matrix_T> svd(a, Eigen::ComputeThinU | Eigen::ComputeThinV);
-        double tolerance = epsilon * std::max(a.cols(), a.rows()) * svd.singularValues().array().abs()(0);
+        double tolerance = static_cast<double>(std::max(a.cols(), a.rows())) * epsilon * svd.singularValues().array().abs()(0);
         return svd.matrixV() * (svd.singularValues().array().abs() > tolerance).select(svd.singularValues().array().inverse(), 0).matrix().asDiagonal() * svd.matrixU().adjoint();
     }
 

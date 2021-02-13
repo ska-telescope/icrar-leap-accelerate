@@ -27,7 +27,7 @@
  */
 
 #include "version.h"
-#include "icrar/leap-accelerate/config.h"
+#include <icrar/leap-accelerate/config.h>
 
 #include <string>
 

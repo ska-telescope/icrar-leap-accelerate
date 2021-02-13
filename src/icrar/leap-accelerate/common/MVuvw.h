@@ -31,6 +31,4 @@ namespace icrar
     using MVuvw = Eigen::Vector3d;
 
     Eigen::Matrix<double, Eigen::Dynamic, 3> ToMatrix(const std::vector<MVuvw>& uvws);
-    
-    Eigen::MatrixXd ToDynamicMatrix(const std::vector<MVuvw>& uvws);
 } // namespace icrar

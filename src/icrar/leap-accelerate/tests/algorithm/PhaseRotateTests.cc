@@ -42,11 +42,9 @@
 
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
-#include <icrar/leap-accelerate/math/cuda/vector.h>
 #include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 
 #include <icrar/leap-accelerate/core/compute_implementation.h>
-#include <casacore/casa/Quanta/MVDirection.h>
 
 #include <gtest/gtest.h>
 
@@ -84,9 +82,7 @@ namespace icrar
 
         void TearDown() override
         {
-#if CUDA_ENABLED
-            checkCudaErrors(cudaDeviceReset());
-#endif
+
         }
 
         void PhaseRotateTest(ComputeImplementation impl, const Slice solutionInterval, std::function<cpu::CalibrationCollection()> getExpected)
@@ -94,7 +90,7 @@ namespace icrar
             const double THRESHOLD = 1e-11;
 
             auto metadata = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())));
-            std::vector<casacore::MVDirection> directions = //TODO: use icrar Direction
+            std::vector<icrar::SphericalDirection> directions =
             {
                 { -0.4606549305661674,-0.29719233792392513 },
                 { -0.753231018062671,-0.44387635324622354 },
@@ -104,14 +100,22 @@ namespace icrar
 
             const auto& expected = getExpected();
             ASSERT_LT(0, expected.GetCalibrations().size());
+        
+            std::vector<cpu::Calibration> calibrationsVector;
+            std::function<void(const cpu::Calibration&)> outputCallback = [&](const cpu::Calibration& cal)
+            {
+                calibrationsVector.push_back(cal);
+            };
             
-            auto calibrations = LeapCalibratorFactory::Create(impl)->Calibrate(
+            LeapCalibratorFactory::Create(impl)->AsyncCalibrate(
+                outputCallback,
                 *ms,
-                ToDirectionVector(directions),
+                directions,
                 solutionInterval,
                 0.0,
                 0,
                 false);
+            auto calibrations = cpu::CalibrationCollection(std::move(calibrationsVector));
 
             ASSERT_LT(0, calibrations.GetCalibrations().size());
             ASSERT_EQ(expected.GetCalibrations().size(), calibrations.GetCalibrations().size());
@@ -120,6 +124,9 @@ namespace icrar
             {
                 const auto& calibration = calibrations.GetCalibrations()[calibrationIndex];
                 const auto& expectedCalibration = expected.GetCalibrations()[calibrationIndex];
+
+                ASSERT_DOUBLE_EQ(expectedCalibration.GetStartEpoch(), calibration.GetStartEpoch());
+                ASSERT_DOUBLE_EQ(expectedCalibration.GetEndEpoch(), calibration.GetEndEpoch());
 
                 ASSERT_EQ(directions.size(), calibration.GetBeamCalibrations().size());
                 // This supports expected calibrations to be an incomplete collection
@@ -327,10 +334,10 @@ namespace icrar
             double TOLERANCE = 0.00001;
 
             // A
-            const int aRows = 4754; 
+            const int aRows = 4754;
             const int aCols = 128;
-            ASSERT_DOUBLE_EQ(aRows, A.rows());
-            ASSERT_DOUBLE_EQ(aCols, A.cols());
+            ASSERT_EQ(aRows, A.rows());
+            ASSERT_EQ(aCols, A.cols());
             EXPECT_EQ(1.00, A(0,0));
             EXPECT_EQ(-1.00, A(0,1));
             EXPECT_EQ(0.00, A(0,2));
@@ -354,8 +361,8 @@ namespace icrar
             EXPECT_EQ(5251, I(nBaselines-1));
 
             // Ad
-            ASSERT_DOUBLE_EQ(aCols, Ad.rows());
-            ASSERT_DOUBLE_EQ(aRows, Ad.cols());
+            ASSERT_EQ(aCols, Ad.rows());
+            ASSERT_EQ(aRows, Ad.cols());
             // EXPECT_NEAR(2.62531368e-15, Ad(0,0), TOLERANCE); // TODO(calgray): emergent
             // EXPECT_NEAR(2.04033520e-15, Ad(0,1), TOLERANCE); // TODO(calgray): emergent
             // EXPECT_NEAR(3.25648083e-16, Ad(0,2), TOLERANCE); // TODO(calgray): emergent
@@ -370,8 +377,8 @@ namespace icrar
             //A1
             const int a1Rows = 98;
             const int a1Cols = 128;
-            ASSERT_DOUBLE_EQ(a1Rows, A1.rows());
-            ASSERT_DOUBLE_EQ(a1Cols, A1.cols());
+            ASSERT_EQ(a1Rows, A1.rows());
+            ASSERT_EQ(a1Cols, A1.cols());
             EXPECT_DOUBLE_EQ(1.0, A1(0,0));
             EXPECT_DOUBLE_EQ(-1.0, A1(0,1));
             EXPECT_DOUBLE_EQ(0.0, A1(0,2));
@@ -384,7 +391,7 @@ namespace icrar
             EXPECT_NEAR(0.00, A1(a1Rows-1,127), TOLERANCE);
 
             //I1
-            ASSERT_DOUBLE_EQ(a1Rows-1, I1.size());
+            ASSERT_EQ(a1Rows-1, I1.size());
             EXPECT_DOUBLE_EQ(1.00, I1(0));
             EXPECT_DOUBLE_EQ(3.00, I1(1));
             EXPECT_DOUBLE_EQ(4.00, I1(2));
@@ -394,8 +401,8 @@ namespace icrar
             EXPECT_DOUBLE_EQ(101.00, I1(a1Rows-2));
 
             //Ad1
-            ASSERT_DOUBLE_EQ(a1Rows, Ad1.cols());
-            ASSERT_DOUBLE_EQ(a1Cols, Ad1.rows());
+            ASSERT_EQ(a1Rows, Ad1.cols());
+            ASSERT_EQ(a1Cols, Ad1.rows());
 
             // EXPECT_DOUBLE_EQ(-9.8130778667735933e-18, Ad1(0,0)); // TODO: emergent
             // EXPECT_DOUBLE_EQ(6.3742385976163974e-17, Ad1(0,1)); // TODO: emergent

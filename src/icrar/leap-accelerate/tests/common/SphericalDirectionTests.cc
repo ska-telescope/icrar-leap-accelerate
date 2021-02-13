@@ -20,23 +20,26 @@
  * MA 02111 - 1307  USA
  */
 
-#include "matrix_invert.h"
-#include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
+#include <gtest/gtest.h>
 
-#include <icrar/leap-accelerate/math/math_conversion.h>
+#include <icrar/leap-accelerate/common/SphericalDirection.h>
+#include <icrar/leap-accelerate/exception/exception.h>
 
 namespace icrar
 {
-namespace casalib
-{
-    casacore::Matrix<double> PseudoInverse(const casacore::Matrix<double>& a)
+    class SphericalDirectionTests : public testing::Test
     {
-        return ConvertMatrix(cpu::PseudoInverse(ToMatrix(a)));
-    }
+    public:
+        void TestParseDirections()
+        { 
+            ASSERT_NO_THROW(ParseDirections("[]"));
+            ASSERT_THROW(ParseDirections("[[]]"), icrar::exception);
+            ASSERT_THROW(ParseDirections("[0,0]"), icrar::exception);
+            ASSERT_NO_THROW(ParseDirections("[[0,0]]"));
+            ASSERT_THROW(ParseDirections("[[true,true]]"), icrar::exception);
+            ASSERT_NO_THROW(ParseDirections("[[0,0],[0,0]]"));
+        }
+    };
 
-    casacore::Matrix<double> SVDPseudoInverse(const casacore::Matrix<double>& a, double epsilon)
-    {
-        return ConvertMatrix(cpu::SVDPseudoInverse(ToMatrix(a), epsilon));
-    }
-} // namespace casalib
+    TEST_F(SphericalDirectionTests, TestParseDirections) { TestParseDirections(); }
 } // namespace icrar

@@ -31,17 +31,8 @@ set(sources
     ms/utils.cc
     ms/MeasurementSet.cc
 
-    model/cpu/Integration.cc
-    model/cpu/MetaData.cc
-    model/cpu/CalibrateResult.cc
-    
-    math/vector_extensions.cc
-    math/math_conversion.cc
-    math/casa/matrix.cc
-    math/casa/matrix_invert.cc
-    math/cpu/vector.cc
-
     core/compute_implementation.cc
+    core/stream_out_type.cc
     core/log/logging.cc
     core/log/Verbosity.cc
     core/profiling/resource_usage.cc
@@ -52,34 +43,34 @@ set(sources
     common/MVuvw.cc
     common/Slice.cc
 
+    math/math_conversion.cc
+    math/cpu/eigen_extensions.cc
+    math/cuda/matrix.h
+    math/cuda/matrix.cuh
+    math/cuda/matrix_multiply.cuh
+    math/cuda/matrix_multiply.cu
+
+    model/cpu/Integration.cc
+    model/cpu/MetaData.cc
+
     algorithm/LeapCalibratorFactory.cc
     algorithm/cpu/CpuLeapCalibrator.cc
     algorithm/cpu/PhaseMatrixFunction.cc
-    )
+)
     
     set(cuda_headers
     cuda/cuda_info.h
     cuda/helper_cuda.cuh
     cuda/helper_string.cuh
-    
-    math/cuda/vector.h
-    math/cuda/vector.cuh
-    math/cuda/matrix.h
-    math/cuda/matrix.cuh
-    math/cuda/matrix_multiply.cuh
-    math/cuda/matrix_transpose.cuh
-    )
+)
     
     set(cuda_sources
     cuda/cuda_info.cu
-    math/cuda/vector.cu
-    math/cuda/matrix.cu
-    math/cuda/matrix_multiply.cu
     
     model/cuda/DeviceMetaData.cu
     model/cuda/DeviceIntegration.cu
     algorithm/cuda/CudaLeapCalibrator.cu
-    )
+)
 
 # Libraries
 option(CASA_ENABLED "Casa Enabled" TRUE)
@@ -143,7 +134,7 @@ if(CUDA_ENABLED)
 endif()
 
 # Legacy TODO(calgray): build support for xenial
-include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
+#include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 
 target_link_libraries(${TARGET_NAME} Threads::Threads)
 

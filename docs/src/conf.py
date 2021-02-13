@@ -49,6 +49,10 @@ doxygen_xml = '/home/calgray/Code/icrar/leap-accelerate/build/Release/docs/doxyg
 
 breathe_default_project = "LeapAccelerate"
 
+# breath_projects_source = {
+#     "auto": ("../../../../src/icrar/leap-accelerate/core", ["stream_out_type.h"])
+# }
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 

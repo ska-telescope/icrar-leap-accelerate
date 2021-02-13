@@ -19,8 +19,14 @@ Leap Accelerate API consists of the following components:
 core
 ====
 
-.. doxygenenum:: icrar::log::Verbosity
+.. doxygenenum:: icrar::ComputeImplementation
     :project: LeapAccelerate
+
+.. doxygenenum:: icrar::StreamOutType
+    :project: LeapAccelerate
+
+.. .. autodoxygenfile:: stream_out_type.h
+..     :project: auto
 
 .. _common:
 
@@ -37,11 +43,18 @@ log
 .. doxygenenum:: icrar::log::Verbosity
     :project: LeapAccelerate
 
-
 model
 =====
 
 .. doxygenclass:: icrar::cpu::MetaData
+    :project: LeapAccelerate
+    :members:
+
+.. doxygenclass:: icrar::cpu::Integration
+    :project: LeapAccelerate
+    :members:
+
+.. doxygenclass:: icrar::cpu::
     :project: LeapAccelerate
     :members:
 
