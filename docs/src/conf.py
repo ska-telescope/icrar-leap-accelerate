@@ -48,10 +48,26 @@ doxygen_xml = '/home/calgray/Code/icrar/leap-accelerate/build/Release/docs/doxyg
 # autosummary_generate = True
 
 breathe_default_project = "LeapAccelerate"
+breathe_default_members = ("members", "undoc-members")
+breathe_separate_member_pages = True
 
-# breath_projects_source = {
-#     "auto": ("../../../../src/icrar/leap-accelerate/core", ["stream_out_type.h"])
-# }
+breathe_projects_source = {
+    "LeapAccelerate": ("../../src/icrar", [
+        "leap-accelerate/core/stream_out_type.h",
+        "leap-accelerate/core/compute_implementation.h",
+        "leap-accelerate/algorithm/ILeapCalibrator.h",
+        "leap-accelerate/algorithm/cpu/CpuILeapCalibrator.h",
+        "leap-accelerate/algorithm/cuda/CudaILeapCalibrator.h"
+    ])
+}
+
+breathe_doxygen_config_options = { '__host__': '' }
+
+breathe_domain_extension = {
+    "h": "cpp",
+    "cc": "cpp",
+    "cu": "cpp"
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

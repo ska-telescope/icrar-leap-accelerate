@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/common/MVuvw.h>
+#include <icrar/leap-accelerate/model/cpu/MVuvw.h>
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
 
 #include <casacore/casa/Arrays/Matrix.h>

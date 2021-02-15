@@ -36,7 +36,7 @@ set(SPHINX_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/sphinx)
 set(SPHINX_INDEX_FILE ${SPHINX_BUILD}/index.html)
 
-file(GLOB_RECURSE DOC_FILES "/home/calgray/Code/icrar/leap-accelerate/docs/*.rst")
+file(GLOB_RECURSE DOC_FILES "*.rst")
 
 # Only regenerate Sphinx when:
 # - Doxygen has rerun

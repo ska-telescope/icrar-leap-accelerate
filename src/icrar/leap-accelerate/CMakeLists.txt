@@ -40,7 +40,7 @@ set(sources
     core/version.cc
 
     common/SphericalDirection.cc
-    common/MVuvw.cc
+    model/cpu/MVuvw.cc
     common/Slice.cc
 
     math/math_conversion.cc

@@ -3,7 +3,12 @@
 Leap Accelerate API
 ===================
 
-Leap Accelerate API consists of the following components:
+Leap Accelerate API is a library of components available for use by calibration applications such
+as Leap Accelerate CLI.
+
+
+Components
+==========
 
 * :ref:`core`
 * :ref:`log`
@@ -14,80 +19,15 @@ Leap Accelerate API consists of the following components:
 * :ref:`cuda`
 * :ref:`ms`
 
-.. _core:
+Getting Started
+===============
 
-core
-====
+import the leap-accelerate cmake target and add the following include:
 
-.. doxygenenum:: icrar::ComputeImplementation
-    :project: LeapAccelerate
+`#include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>`
 
-.. doxygenenum:: icrar::StreamOutType
-    :project: LeapAccelerate
-
-.. .. autodoxygenfile:: stream_out_type.h
-..     :project: auto
-
-.. _common:
-
-common
-======
-
-.. _model:
-
-.. _log:
-
-log
-====
-
-.. doxygenenum:: icrar::log::Verbosity
-    :project: LeapAccelerate
-
-model
-=====
-
-.. doxygenclass:: icrar::cpu::MetaData
-    :project: LeapAccelerate
-    :members:
-
-.. doxygenclass:: icrar::cpu::Integration
-    :project: LeapAccelerate
-    :members:
-
-.. doxygenclass:: icrar::cpu::
-    :project: LeapAccelerate
-    :members:
-
-.. _algorithm:
-
-algorithm
-=========
-
-index
------
-
-TODO
-
-classes
--------
-
-.. doxygenclass:: icrar::ILeapCalibrator
-    :project: LeapAccelerate
-    :members:
-
-.. doxygenclass:: icrar::cpu::CpuLeapCalibrator
-    :project: LeapAccelerate
-    :members:
-
-.. doxygenclass:: icrar::cuda::CudaLeapCalibrator
-    :project: LeapAccelerate
-    :members:
-
-.. _cuda:
-
-cuda
-====
-
+.. .. doxygenindex::
+..    :project: LeapAccelerate
 
 .. toctree::
     :maxdepth: 4
