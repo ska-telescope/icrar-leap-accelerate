@@ -1,6 +1,8 @@
 build/
 .public/
 Testing/
+docs/Doxyfile
+docs/build
 testdata/*
 !testdata/README.md
 !testdata/install.sh
