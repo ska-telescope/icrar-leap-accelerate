@@ -1,1 +1,3 @@
 breathe
+Sphinx
+sphinx-rtd-theme

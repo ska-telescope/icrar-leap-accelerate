@@ -66,6 +66,8 @@ extensions = [
     'breathe'
 ]
 
+source_suffix = ".rst"
+
 # Automatically generate autodoc_doxygen targets
 autodoc_default_flags = ['members']
 
