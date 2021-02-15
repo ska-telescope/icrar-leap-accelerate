@@ -32,6 +32,19 @@ def configureDoxyfile(input_dir: str, output_dir: str):
     with open('../Doxyfile', 'w') as file:
         file.write(file_data)
 
+# -- Project information -----------------------------------------------------
+
+project = 'LeapAccelerate'
+copyright = '2021, Callan Gray'
+author = 'Callan Gray'
+
+# The full version, including alpha/beta/rc tags
+with open('../../version.txt') as f:
+    version = f.read().strip()
+release = version
+
+# -- General configuration ---------------------------------------------------
+
 # Check if we're running on Read the Docs' servers
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
@@ -45,19 +58,6 @@ if read_the_docs_build:
     subprocess.call('doxygen', shell=True, cwd="..")
     breathe_projects['LeapAccelerate'] = output_dir + '/doxygen/xml'
     doxygen_xml = output_dir + '/doxygen/xml'
-
-# -- Project information -----------------------------------------------------
-
-project = 'LeapAccelerate'
-copyright = '2021, Callan Gray'
-author = 'Callan Gray'
-
-# The full version, including alpha/beta/rc tags
-with open('../version.txt') as f:
-    version = f.read().strip()
-release = version
-
-# -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
