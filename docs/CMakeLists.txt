@@ -32,8 +32,8 @@ COMMENT "Generating doxygen")
 # Nice named target so we can run the job easily
 add_custom_target(doxygen ALL DEPENDS ${DOXYGEN_INDEX_FILE})
 
-set(SPHINX_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/sphinx)
+set(SPHINX_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(SPHINX_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/sphinx)
 set(SPHINX_INDEX_FILE ${SPHINX_BUILD}/index.html)
 
 file(GLOB_RECURSE DOC_FILES "*.rst")
@@ -47,13 +47,14 @@ add_custom_command(OUTPUT ${SPHINX_INDEX_FILE}
                      ${SPHINX_EXECUTABLE} -b html
                      # Tell Breathe where to find the Doxygen output
                      -Dbreathe_projects.LeapAccelerate=${DOXYGEN_OUTPUT_DIR}/xml
-                   ${SPHINX_SOURCE} ${SPHINX_BUILD}
+                     -Ddoxygen_xml=${DOXYGEN_OUTPUT_DIR}/xml
+                   ${SPHINX_SOURCE_DIR} ${SPHINX_BUILD_DIR}
                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                    DEPENDS
                    # Other docs files you want to track should go here (or in some variable)
                    ${DOC_FILES}
                    ${DOXYGEN_INDEX_FILE}
-                   MAIN_DEPENDENCY ${SPHINX_SOURCE}/conf.py
+                   MAIN_DEPENDENCY ${SPHINX_SOURCE_DIR}/conf.py
                    COMMENT "Generating documentation with sphinx")
 
 # Nice named target so we can run the job easily
@@ -62,5 +63,5 @@ add_dependencies(sphinx doxygen)
 
 # Add an install target to install the docs
 include(GNUInstallDirs)
-install(DIRECTORY ${SPHINX_BUILD}
+install(DIRECTORY ${SPHINX_BUILD_DIR}
 DESTINATION ${CMAKE_INSTALL_DOCDIR})

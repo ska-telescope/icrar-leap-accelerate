@@ -15,9 +15,10 @@
 # sys.path.insert(0, os.path.abspath('.'))
 
 
-# -- Doxygen generate --------------------------------------------------------
+# -- Doxygen Generate --------------------------------------------------------
 
 import os
+import sys
 import subprocess
 import shutil
 
@@ -35,7 +36,6 @@ def configureDoxyfile(input_dir: str, output_dir: str):
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
 breathe_projects = {}
-doxygen_xml = ""
 
 if read_the_docs_build:
     input_dir = '../LeapAccelerate'
@@ -44,8 +44,6 @@ if read_the_docs_build:
     subprocess.call('doxygen', shell=True)
     breathe_projects['LeapAccelerate'] = output_dir + '/doxygen/xml'
     doxygen_xml = output_dir + '/doxygen/xml'
-else:
-    doxygen_xml = "@CMAKE_BINARY_DIR@/docs/doxygen/xml"
 
 # -- Project information -----------------------------------------------------
 
