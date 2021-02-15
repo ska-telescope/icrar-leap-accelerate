@@ -1,6 +1,7 @@
 build/
 .public/
 Testing/
+docs/src/conf.py
 testdata/*
 !testdata/README.md
 !testdata/install.sh

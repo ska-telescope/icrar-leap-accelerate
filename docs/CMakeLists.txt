@@ -2,13 +2,15 @@
 find_package(Doxygen REQUIRED)
 find_package(Sphinx REQUIRED)
 
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/conf.py.in" "${CMAKE_CURRENT_SOURCE_DIR}/src/conf.py")
+
 # Find all the public headers
 # get_target_property(PUBLIC_HEADER_DIR LeapAccelerate INTERFACE_INCLUDE_DIRECTORIES)
 # file(GLOB_RECURSE PUBLIC_HEADERS ${PUBLIC_HEADER_DIR} *.h)
 # message(${PUBLIC_HEADERS})
 
 get_target_property(PUBLIC_HEADER_DIR LeapAccelerate INTERFACE_INCLUDE_DIRECTORIES)
-file(GLOB_RECURSE PUBLIC_HEADERS "/home/calgray/Code/icrar/leap-accelerate/src/*.h")
+file(GLOB_RECURSE PUBLIC_HEADERS "${PROJECT_SOURCE_DIR}/src/*.h")
 
 set(DOXYGEN_INPUT_DIR ${PROJECT_SOURCE_DIR}/src)
 set(DOXYGEN_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/doxygen)
@@ -22,10 +24,10 @@ configure_file(${DOXYFILE_IN} ${DOXYFILE_OUT} @ONLY)
 
 file(MAKE_DIRECTORY ${DOXYGEN_OUTPUT_DIR}) #Doxygen won't create this for us
 add_custom_command(OUTPUT ${DOXYGEN_INDEX_FILE}
-                   DEPENDS ${PUBLIC_HEADERS}
-                   COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
-                   MAIN_DEPENDENCY ${DOXYFILE_OUT} ${DOXYFILE_IN}
-                   COMMENT "Generating doxygen")
+DEPENDS ${PUBLIC_HEADERS}
+COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
+MAIN_DEPENDENCY ${DOXYFILE_OUT} ${DOXYFILE_IN}
+COMMENT "Generating doxygen")
 
 # Nice named target so we can run the job easily
 add_custom_target(doxygen ALL DEPENDS ${DOXYGEN_INDEX_FILE})
