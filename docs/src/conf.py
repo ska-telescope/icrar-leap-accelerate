@@ -42,7 +42,7 @@ if read_the_docs_build:
     input_dir = '../LeapAccelerate'
     output_dir = 'build'
     configureDoxyfile(input_dir, output_dir)
-    subprocess.call('doxygen', shell=True)
+    subprocess.call('doxygen', shell=True, cwd="..")
     breathe_projects['LeapAccelerate'] = output_dir + '/doxygen/xml'
     doxygen_xml = output_dir + '/doxygen/xml'
 
@@ -53,7 +53,7 @@ copyright = '2021, Callan Gray'
 author = 'Callan Gray'
 
 # The full version, including alpha/beta/rc tags
-with open('../../version.txt') as f:
+with open('../version.txt') as f:
     version = f.read().strip()
 release = version
 
@@ -79,7 +79,7 @@ breathe_default_members = ("members", "undoc-members")
 breathe_separate_member_pages = True
 
 breathe_projects_source = {
-    "LeapAccelerate": ("../../src/icrar", [
+    "LeapAccelerate": ("../src/icrar", [
         "leap-accelerate/core/stream_out_type.h",
         "leap-accelerate/core/compute_implementation.h",
         "leap-accelerate/algorithm/ILeapCalibrator.h",
