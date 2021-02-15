@@ -23,13 +23,13 @@ import subprocess
 import shutil
 
 def configureDoxyfile(input_dir: str, output_dir: str):
-    with open('Doxyfile.in', 'r') as file:
+    with open('../Doxyfile.in', 'r') as file:
         file_data = file.read()
 
     file_data = file_data.replace('@DOXYGEN_INPUT_DIR@', input_dir)
     file_data = file_data.replace('@DOXYGEN_OUTPUT_DIR@', output_dir)
 
-    with open('Doxyfile', 'w') as file:
+    with open('../Doxyfile', 'w') as file:
         file.write(file_data)
 
 # Check if we're running on Read the Docs' servers
