@@ -63,6 +63,8 @@ release = version
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'readthedocs_ext.readthedocs',
+    'readthedocs_ext.external_version_warning',
     'breathe',
     'sphinx.ext.autodoc',
     'sphinxcontrib.autodoc_doxygen',

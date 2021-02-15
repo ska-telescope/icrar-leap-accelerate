@@ -1,5 +1,3 @@
-readthedocs_ext.readthedocs
-readthedocs_ext.external_version_warning
 breathe
 sphinx_rtd_theme
 sphinxcontrib-autodoc-doxygen
