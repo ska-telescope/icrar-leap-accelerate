@@ -15,6 +15,37 @@
 # sys.path.insert(0, os.path.abspath('.'))
 
 
+# -- Doxygen generate --------------------------------------------------------
+
+import os
+import subprocess
+
+def configureDoxyfile(input_dir: str, output_dir: str):
+    with open('Doxyfile.in', 'r') as file:
+        file_data = file.read()
+
+    file_data = file_data.replace('@DOXYGEN_INPUT_DIR@', input_dir)
+    file_data = file_data.replace('@DOXYGEN_OUTPUT_DIR@', output_dir)
+
+    with open('Doxyfile', 'w') as file:
+        file.write(file_data)
+
+# Check if we're running on Read the Docs' servers
+read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
+
+breathe_projects = {}
+doxygen_xml = ""
+
+if read_the_docs_build:
+    input_dir = '../LeapAccelerate'
+    output_dir = 'build'
+    configureDoxyfile(input_dir, output_dir)
+    subprocess.call('doxygen', shell=True)
+    breathe_projects['LeapAccelerate'] = output_dir + '/doxygen/xml'
+    doxygen_xml = output_dir + '/doxygen/xml'
+else:
+    doxygen_xml = "@CMAKE_BINARY_DIR@/docs/doxygen/xml"
+
 # -- Project information -----------------------------------------------------
 
 project = 'Leap Accelerate'
@@ -42,7 +73,6 @@ extensions = [
 
 # Automatically generate autodoc_doxygen targets
 autodoc_default_flags = ['members']
-doxygen_xml = "@CMAKE_BINARY_DIR@/docs/doxygen/xml"
 
 # Automatically generate stub pages
 # autosummary_generate = True
