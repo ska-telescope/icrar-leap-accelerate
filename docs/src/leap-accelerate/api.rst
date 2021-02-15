@@ -24,7 +24,29 @@ Getting Started
 
 import the leap-accelerate cmake target and add the following include:
 
-`#include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>`
+.. code-block:: cpp
+
+    #include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
+
+create a calibrator object using the factory method and an output callback:
+
+.. code-block:: cpp
+
+    std::vector<cpu::Calibration> calibrations;
+    auto outputCallback = [&](const cpu::Calibration& calibration)
+    {
+        calibrations.push_back(calibration);
+    };
+    
+    LeapCalibratorFactory::Create(args.GetComputeImplementation())->Calibrate(
+        outputCallback,
+        args.GetMeasurementSet(),
+        args.GetDirections(),
+        args.GetSolutionInterval(),
+        args.GetMinimumBaselineThreshold(),
+        args.GetReferenceAntenna(),
+        args.IsFileSystemCacheEnabled());
+
 
 .. .. doxygenindex::
 ..    :project: LeapAccelerate
