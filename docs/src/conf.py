@@ -56,8 +56,11 @@ breathe_projects_source = {
         "leap-accelerate/core/stream_out_type.h",
         "leap-accelerate/core/compute_implementation.h",
         "leap-accelerate/algorithm/ILeapCalibrator.h",
-        "leap-accelerate/algorithm/cpu/CpuILeapCalibrator.h",
-        "leap-accelerate/algorithm/cuda/CudaILeapCalibrator.h"
+        "leap-accelerate/algorithm/cpu/CpuLeapCalibrator.h",
+        "leap-accelerate/algorithm/cuda/CudaLeapCalibrator.h",
+        "leap-accelerate/math/math_conversion.h",
+        "leap-accelerate/math/complex_extensions.h",
+        "leap-accelerate/math/vector_extensions.h"
     ])
 }
 

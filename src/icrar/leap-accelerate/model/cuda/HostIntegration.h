@@ -33,8 +33,8 @@ namespace icrar
 namespace cuda
 {
     /**
-     * @brief A container for storing a visibilities tensor for accumulation during phase rotating.
-     * 
+     * @brief A decorated container for storing a visibilities tensor for accumulation during phase rotating.
+     * This class stores data on the host using pinned memory to allow for asyncronous read and write with cuda.
      */
     class HostIntegration : public cpu::Integration
     {

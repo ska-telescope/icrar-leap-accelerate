@@ -19,8 +19,6 @@ set(DOXYGEN_INDEX_FILE ${DOXYGEN_OUTPUT_DIR}/html/index.html)
 
 #Replace variables inside @@ with the current values
 configure_file(${DOXYFILE_IN} ${DOXYFILE_OUT} @ONLY)
-message("DOXYGEN_INPUT_DIR: ${DOXYGEN_INPUT_DIR}")
-message("DOXYGEN_OUTPUT_DIR: ${DOXYGEN_OUTPUT_DIR}")
 
 file(MAKE_DIRECTORY ${DOXYGEN_OUTPUT_DIR}) #Doxygen won't create this for us
 add_custom_command(OUTPUT ${DOXYGEN_INDEX_FILE}

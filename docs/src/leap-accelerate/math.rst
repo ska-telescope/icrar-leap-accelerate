@@ -3,15 +3,15 @@
 math
 ====
 
-.. doxygenfile:: leap-accelerate/math/cpu/math_conversion.h
+.. autodoxygenfile:: leap-accelerate/math/math_conversion.h
     :project: LeapAccelerate
     :sections: innernamespace innerclass enum function briefdescription
 
-.. doxygenfile:: leap-accelerate/math/cpu/complex_extensions.h
+.. autodoxygenfile:: leap-accelerate/math/complex_extensions.h
     :project: LeapAccelerate
     :sections: innernamespace innerclass enum function briefdescription
 
-.. doxygenfile:: leap-accelerate/math/cpu/vector_extensions.h
+.. doxygenfile:: leap-accelerate/math/vector_extensions.h
     :project: LeapAccelerate
     :sections: innernamespace innerclass enum function briefdescription
 

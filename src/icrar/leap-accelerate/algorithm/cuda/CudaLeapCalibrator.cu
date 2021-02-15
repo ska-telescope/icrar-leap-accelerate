@@ -25,6 +25,7 @@
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 
+#include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
 #include <icrar/leap-accelerate/model/cuda/HostIntegration.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>

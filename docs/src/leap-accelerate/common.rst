@@ -5,7 +5,7 @@ common
 
 Module containing core classes and functions of leap accelerate used by other modules
 
-.. constaints
+.. constants
 .. eigen_cache
 .. mvuvw
 ,, range
