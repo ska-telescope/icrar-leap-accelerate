@@ -3,22 +3,6 @@
 .. You can adapt this file completely to your liking, but it should at least
 .. contain the root `toctree` directive.
 
-.. toctree::
-    :maxdepth: 3
-    :caption: Contents:
-
-    docmap.rst
-    leap-accelerate/api.rst
-    leap-accelerate/core.rst
-    leap-accelerate/log.rst
-    leap-accelerate/common.rst
-    leap-accelerate/model.rst
-    leap-accelerate/algorithm.rst
-    leap-accelerate/math.rst
-    leap-accelerate/ms.rst
-    leap-accelerate/cuda.rst
-    leap-accelerate-cli/cli.rst
-
 ###############
 Leap Accelerate
 ###############
@@ -32,6 +16,21 @@ Leap Accelerate consists of:
 * :ref:`api`: a shared library for accelerated direction centering and phase calibration.
 * :ref:`cli`: a CLI interface for I/O datastream or plasma data access.
 
+.. toctree::
+    :maxdepth: 7
+    :caption: Contents
+
+    docmap.rst
+    leap-accelerate/api.rst
+    leap-accelerate/core.rst
+    leap-accelerate/log.rst
+    leap-accelerate/common.rst
+    leap-accelerate/model.rst
+    leap-accelerate/algorithm.rst
+    leap-accelerate/math.rst
+    leap-accelerate/ms.rst
+    leap-accelerate/cuda.rst
+    leap-accelerate-cli/cli.rst
 
 Indices and tables
 ==================

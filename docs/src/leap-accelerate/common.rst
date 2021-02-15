@@ -1,8 +1,7 @@
 .. _common:
 
-######
 common
-######
+======
 
 Module containing core classes and functions of leap accelerate used by other modules
 

@@ -51,7 +51,7 @@ read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 doxygen_xml = ""
 breathe_projects = {}
 
-if True: #read_the_docs_build:
+if read_the_docs_build:
     # build doxygen in docs folder
     input_dir = '../src'
     output_dir = 'build/doxygen'
