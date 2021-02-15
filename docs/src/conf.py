@@ -19,13 +19,14 @@
 
 import os
 import subprocess
+import shutil
 
 def configureDoxyfile(input_dir: str, output_dir: str):
     with open('Doxyfile.in', 'r') as file:
         file_data = file.read()
 
-    file_data = file_data.replace('', input_dir)
-    file_data = file_data.replace('', output_dir)
+    file_data = file_data.replace('@DOXYGEN_INPUT_DIR@', input_dir)
+    file_data = file_data.replace('@DOXYGEN_OUTPUT_DIR@', output_dir)
 
     with open('Doxyfile', 'w') as file:
         file.write(file_data)
@@ -44,7 +45,7 @@ if read_the_docs_build:
     breathe_projects['LeapAccelerate'] = output_dir + '/doxygen/xml'
     doxygen_xml = output_dir + '/doxygen/xml'
 else:
-    doxygen_xml = "/home/calgray/Code/icrar/leap-accelerate/build/Release/docs/doxygen/xml"
+    doxygen_xml = "@CMAKE_BINARY_DIR@/docs/doxygen/xml"
 
 # -- Project information -----------------------------------------------------
 
