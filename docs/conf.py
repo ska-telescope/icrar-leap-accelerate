@@ -19,15 +19,14 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'Breathe Sample'
-copyright = '2019, Eevee'
-author = 'Eevee'
+project = 'LeapAccelerate'
+copyright = '2021, Callan Gray'
+author = 'Callan Gray'
 
-# The short X.Y version
-version = '1.0.0'
 # The full version, including alpha/beta/rc tags
-release = '{}'.format(version)
-
+with open('../../version.txt') as f:
+    version = f.read().strip()
+release = version
 
 # -- General configuration ---------------------------------------------------
 
