@@ -35,6 +35,7 @@ def configureDoxyfile(input_dir: str, output_dir: str):
 # Check if we're running on Read the Docs' servers
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
+doxygen_xml = ""
 breathe_projects = {}
 
 if read_the_docs_build:

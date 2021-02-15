@@ -1,7 +1,8 @@
 .. _algorithm:
 
+#########
 algorithm
-=========
+#########
 
 Consists of classes relating directly to the leap calibration algorithm.
 

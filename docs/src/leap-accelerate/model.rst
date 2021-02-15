@@ -1,7 +1,8 @@
 .. _model:
 
+#####
 model
-=====
+#####
 
 .. doxygenclass:: icrar::cpu::MetaData
     :project: LeapAccelerate

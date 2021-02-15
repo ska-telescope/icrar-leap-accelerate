@@ -1,7 +1,8 @@
 .. _api:
 
+###################
 Leap Accelerate API
-===================
+###################
 
 Leap Accelerate API is a library of components available for use by calibration applications such
 as Leap Accelerate CLI.
@@ -16,8 +17,9 @@ Components
 * :ref:`model`
 * :ref:`algorithm`
 * :ref:`math`
-* :ref:`cuda`
 * :ref:`ms`
+* :ref:`cuda`
+
 
 Getting Started
 ===============
@@ -50,8 +52,3 @@ create a calibrator object using the factory method and an output callback:
 
 .. .. doxygenindex::
 ..    :project: LeapAccelerate
-
-.. toctree::
-    :maxdepth: 4
-    :caption: Contents:
-
