@@ -1,2 +1,6 @@
 breathe
-autosummary
+sphinx.ext.autodoc
+sphinxcontrib.autodoc_doxygen
+sphinx.ext.autosummary
+sphinx_autopackagesummary
+recommonmark
