@@ -306,8 +306,8 @@ pages:
     - pip3 install yq
     - mkdir -p .public/build/reports
     - cd .public
-    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o index.html &> gcovr-index.log
-    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml &> gcovr-code-coverage.log
+    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o build/reports/code-coverage/index.html &> gcovr-html.log
+    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml &> gcovr-xml.log
     - cp ../build/ctest.xml build/reports/unit-tests.xml
     - cp ../build/cppcheck-junit.xml build/reports/cppcheck-junit.xml
     - cp ../build/clang-tidy-junit.xml build/reports/clang-tidy-junit.xml

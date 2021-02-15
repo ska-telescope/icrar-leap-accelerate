@@ -12,7 +12,7 @@ testdata/*
 .cproject
 /bin/
 
-#VSCode Files
+# VSCode Files
 .vs/
 .vscode/
 clang-tidy-settings.json

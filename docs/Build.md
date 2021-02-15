@@ -82,6 +82,10 @@ With tracing to file:
 
 `cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCUDA_ENABLED=TRUE -DTRACE=ON -DCMAKE_BUILD_TYPE=Debug`
 
+With gcovr analysis:
+
+`cmake ../.. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"`
+
 #### Release
 
 `mkdir -p build/Release && cd build/Release`
@@ -90,21 +94,16 @@ With tracing to file:
 
 ### Linux Cluster
 
-`module load cmake/3.15.1 gcc/6.3.0 boost/1.66.0 casacore/3.1.2`
-
-`module unload gfortran/default`
-
-`module load isl/default`
-
-`export CUDA_HOME=/usr/local/cuda`
-
-`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64`
-
-`export PATH=$PATH:$CUDA_HOME/bin`
-
-`mkdir -p build && cd build`
-
-`cmake .. -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_ENABLED=TRUE -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release`
+```
+module load cmake/3.15.1 gcc/6.3.0 boost/1.66.0 casacore/3.1.2
+module unload gfortran/default
+module load isl/default
+export CUDA_HOME=/usr/local/cuda
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
+export PATH=$PATH:$CUDA_HOME/bin
+mkdir -p build && cd build
+cmake .. -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_ENABLED=TRUE -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release
+```
 
 #### Deploy
 
@@ -133,7 +132,7 @@ To test using the google test runner, the test binaries can be executed directly
 
 `cmake ../.. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"`
 
-`make gcovr`
+`make coverage`
 
 ## Doxygen
 
