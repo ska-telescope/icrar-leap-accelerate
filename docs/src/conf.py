@@ -48,7 +48,7 @@ if read_the_docs_build:
 
 # -- Project information -----------------------------------------------------
 
-project = 'Leap Accelerate'
+project = 'LeapAccelerate'
 copyright = '2021, Callan Gray'
 author = 'Callan Gray'
 
@@ -63,14 +63,7 @@ release = version
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'readthedocs_ext.readthedocs',
-    'readthedocs_ext.external_version_warning',
-    'breathe',
-    'sphinx.ext.autodoc',
-    'sphinxcontrib.autodoc_doxygen',
-    'sphinx.ext.autosummary',
-    'sphinx_autopackagesummary',
-    'recommonmark'
+    'breathe'
 ]
 
 # Automatically generate autodoc_doxygen targets
