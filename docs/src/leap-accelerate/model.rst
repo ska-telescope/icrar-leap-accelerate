@@ -12,14 +12,14 @@ model
     :project: LeapAccelerate
     :members:
 
-.. doxygenclass:: icrar::cpu::calibration::CalibationCollection
+.. doxygenclass:: icrar::cpu::CalibrationCollection
     :project: LeapAccelerate
     :members:
 
-.. doxygenclass:: icrar::cpu::calibration::Calibation
+.. doxygenclass:: icrar::cpu::Calibration
     :project: LeapAccelerate
     :members:
 
-.. doxygenclass:: icrar::cpu::calibration::BeamCalibation
+.. doxygenclass:: icrar::cpu::BeamCalibration
     :project: LeapAccelerate
     :members:

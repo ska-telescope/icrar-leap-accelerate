@@ -11,6 +11,8 @@ LEAP-Accelerate includes:
 <!---* leap-accelerate-client: a socket client interface for processing data from a LEAP-Cal server--->
 <!---* leap-accelerate-server: a socket server interface for dispatching data processing to LEAP-Cal clients--->
 
+See the [online documentation](https://icrar-leap-accelerate.readthedocs.io/en/master/index.html) for more information.
+
 ## Installation
 
 See the [build](docs/src/Build.md) documentation for instructions on platform specific compilation.

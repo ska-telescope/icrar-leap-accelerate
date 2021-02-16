@@ -34,7 +34,7 @@ def configureDoxyfile(input_dir: str, output_dir: str):
 
 # -- Project information -----------------------------------------------------
 
-project = 'LeapAccelerate'
+project = 'Leap Accelerate'
 copyright = '2021, Callan Gray'
 author = 'Callan Gray'
 
@@ -44,13 +44,16 @@ with open('../../version.txt') as f:
 release = version
 
 # -- General configuration ---------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 # Check if we're running on Read the Docs' servers
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
-doxygen_xml = ""
 breathe_projects = {}
+doxygen_xml = ""
+source_dir = "../../src/icrar"
 
+# relative to conf.py
 if read_the_docs_build:
     # build doxygen in docs folder
     input_dir = '../src'
@@ -60,12 +63,17 @@ if read_the_docs_build:
     subprocess.call('doxygen', cwd="..", shell=True)
     breathe_projects['LeapAccelerate'] = '../' + output_dir + '/xml'
     doxygen_xml = '../' + output_dir + '/xml'
+else:
+    doxygen_xml = "/home/calgray/Code/icrar/leap-accelerate/build/Release/docs/doxygen/xml"
+    breathe_projects['LeapAccelerate'] = doxygen_xml
+
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'breathe'
+    'breathe',
+    'exhale'
 ]
 
 source_suffix = ".rst"
@@ -76,12 +84,17 @@ autodoc_default_flags = ['members']
 # Automatically generate stub pages
 # autosummary_generate = True
 
+cpp_id_attributes = ["__host__", "__device__"]
+
+# Breathe Config
+
 breathe_default_project = "LeapAccelerate"
 breathe_default_members = ("members", "undoc-members")
 breathe_separate_member_pages = True
 
+
 breathe_projects_source = {
-    "LeapAccelerate": ("../../src/icrar", [
+    "LeapAccelerate": (source_dir, [
         "leap-accelerate/core/stream_out_type.h",
         "leap-accelerate/core/compute_implementation.h",
         "leap-accelerate/algorithm/ILeapCalibrator.h",
@@ -100,6 +113,36 @@ breathe_domain_extension = {
     "cc": "cpp",
     "cu": "cpp"
 }
+
+# Exhale Config
+
+exhale_args = {
+    "containmentFolder":     "./api",
+    "rootFileName":          "library_root.rst",
+    "rootFileTitle":         "Leap Accelerate API Reference",
+    "doxygenStripFromPath":  "/home/calgray/Code/icrar/leap-accelerate/src/",
+    # Suggested optional arguments
+    "createTreeView":        True,
+    # TIP: if using the sphinx-bootstrap-theme, you need
+    # "treeViewIsBootstrap": True,
+    "exhaleExecutesDoxygen": False,
+    #"exhaleDoxygenStdin":    "INPUT = ../../src",
+    "lexerMapping": {
+        r".*\.h": "cpp",
+        r".*\.cc": "cpp",
+        r".*\.cuh": "cuda",
+        r".*\.cu": "cuda",
+        r".*\.txt": "cmake"
+    },
+    "verboseBuild": True,
+    "generateBreatheFileDirectives": False
+}
+
+# primary_domain = 'cpp'
+
+# higligh_language = 'cpp'
+
+# Extra Config
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

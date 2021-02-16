@@ -1,6 +1,6 @@
 # Configure a header file to pass some of the CMake settings
 # to the source code
-configure_file(config.h.in config.h)
+# configure_file(config.h.in config.h)
 
 include("${PROJECT_SOURCE_DIR}/cmake/CUDAConfig.cmake")
 
@@ -13,8 +13,6 @@ configure_file("core/git_revision.cc.in" "${git_revision_cc}" @ONLY)
 set(TARGET_NAME LeapAccelerate)
 
 set(public_headers
-    ${CMAKE_CURRENT_BINARY_DIR}/config.h
-    
     model/visibility.h
     model/band_data.h
 )
