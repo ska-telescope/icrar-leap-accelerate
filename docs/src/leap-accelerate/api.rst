@@ -29,11 +29,13 @@ import the leap-accelerate cmake target and add the following include:
 .. code-block:: cpp
 
     #include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
+    #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
 
 create a calibrator object using the factory method and an output callback:
 
 .. code-block:: cpp
 
+    ArgumentValidated args;
     std::vector<cpu::Calibration> calibrations;
     auto outputCallback = [&](const cpu::Calibration& calibration)
     {
@@ -48,7 +50,6 @@ create a calibrator object using the factory method and an output callback:
         args.GetMinimumBaselineThreshold(),
         args.GetReferenceAntenna(),
         args.IsFileSystemCacheEnabled());
-
 
 .. .. doxygenindex::
 ..    :project: LeapAccelerate

@@ -120,7 +120,7 @@ exhale_args = {
     "containmentFolder":     "./api",
     "rootFileName":          "library_root.rst",
     "rootFileTitle":         "Leap Accelerate API Reference",
-    #"doxygenStripFromPath":  "/home/calgray/Code/icrar/leap-accelerate/src", # use src dir
+    "doxygenStripFromPath":  "../" #"/home/calgray/Code/icrar/leap-accelerate/src", # use src dir
     # Suggested optional arguments
     "createTreeView":        True,
     # TIP: if using the sphinx-bootstrap-theme, you need
