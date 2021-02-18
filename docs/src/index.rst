@@ -21,11 +21,6 @@ Leap Accelerate consists of:
 * :ref:`cli`: a CLI interface for I/O datastream or plasma data access.
 
 .. toctree::
-    :caption: Leap Accelerate
-
-    index
-
-.. toctree::
     :caption: Library Documentation
     :maxdepth: 2
 
@@ -46,6 +41,9 @@ Leap Accelerate consists of:
     :glob:
 
     md/LeapAccelerateCLI
+
+.. toctree::
+    :caption: DocMap
 
 .. about.rst
 
