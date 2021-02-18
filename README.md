@@ -19,7 +19,7 @@ See the [build](docs/src/Build.md) documentation for instructions on platform sp
 
 ## Usage
 
-See [leap-accelerate-cli](src/icrar/leap-accelerate-cli/ReadMe.md) for instructions on command line arguments and configuration files.
+See [leap-accelerate-cli](docs/src/md/LeapAccelerateCLI.md) for instructions on command line arguments and configuration files.
 
 Examples:
 
@@ -31,5 +31,5 @@ Examples:
 
 Refer to the following style guides for making repository contributions
 
-* [CMake Style Guide](docs/src/CMakeStyleGuide.md)
-* [C++ Style Guide](docs/src/CPlusPlusStyleGuide.md)
+* [CMake Style Guide](docs/src/md/specs/CMakeStyleGuide.md)
+* [C++ Style Guide](docs/src/md/specs/CPlusPlusStyleGuide.md)
