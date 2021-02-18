@@ -183,6 +183,7 @@ if(RapidJSON_FOUND)
   message(STATUS "RapidJSON: ${RapidJSON_INCLUDE_DIRS}")
 else()
   # this is required for building on hyades
+  message("Loading included rapidjson")
   set(PC_RapidJSON_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external/rapidjson-1.1.0/include)
   find_package(RapidJSON REQUIRED)
 endif()
