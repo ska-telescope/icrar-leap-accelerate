@@ -2,8 +2,6 @@
 find_package(Doxygen REQUIRED)
 find_package(Sphinx REQUIRED)
 
-#configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/conf.py.in" "${CMAKE_CURRENT_SOURCE_DIR}/src/conf.py")
-
 # Find all the public headers
 # get_target_property(PUBLIC_HEADER_DIR LeapAccelerate INTERFACE_INCLUDE_DIRECTORIES)
 # file(GLOB_RECURSE PUBLIC_HEADERS ${PUBLIC_HEADER_DIR} *.h)

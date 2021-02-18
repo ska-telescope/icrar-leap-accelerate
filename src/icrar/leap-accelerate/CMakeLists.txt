@@ -1,6 +1,6 @@
 # Configure a header file to pass some of the CMake settings
 # to the source code
-# configure_file(config.h.in config.h)
+configure_file(config.h.in config.h)
 
 include("${PROJECT_SOURCE_DIR}/cmake/CUDAConfig.cmake")
 
