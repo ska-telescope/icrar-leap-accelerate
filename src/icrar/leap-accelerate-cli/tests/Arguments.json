@@ -16,8 +16,7 @@
             "maxItems": 3
         },
         "referenceAntenna": { "type": "integer" },
-        "computeImplementation":
-        {
+        "computeImplementation": {
             "type": "string",
             "enum": ["cpu", "cuda"]
         },
