@@ -69,7 +69,7 @@ prefix=$HOME/leap
 system="local"
 
 make_jobs=1
-make_targets="doxygen"
+make_targets="LeapAccelerate LeapAccelerateCLI"
 
 while getopts "h?b:c:dD:p:s:" opt
 do
