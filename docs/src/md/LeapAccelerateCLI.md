@@ -10,7 +10,7 @@ leap-accelerate-cli is a command line interface to performing leap calibration.
 
 * --output - Calibration output file path
 
-* --directions - directions for calibration in polar coordinates, e.g. "[[1.2,0.8],[0.5,0.7]]"
+* --directions - directions for calibration in polar coordinates, e.g. `"[[1.2,0.8],[0.5,0.7]]"`
 
 * --stations - Overrides number of stations to use in the specified measurement set
 
@@ -28,8 +28,6 @@ leap-accelerate-cli is a command line interface to performing leap calibration.
 
 * --verbosity (true, false) - Verbosity (0=fatal, 1=error, 2=warn, 3=info, 4=debug, 5=trace), defaults to info
 
-* (unsupported)--mwa-support (true, false) - negates baseline readings
-
 ## Logging
 
 Log files are produced in the current working directory at ./log/leap_YYYY_MM_dd_{number}.log Log files rotate per day and store a maximum of 10MiB.
@@ -42,25 +40,43 @@ Config files currently must be written in coformant JSON format.
 
 ### Schema
 
-filePath: string
+```
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Arguments",
+    "definitions": {},
+    "type": "object",
+    "properties": {
+        "filePath": { "type": "string" },
+        "outputFilePath": { "type": "string" },
+        "autoCorrelations": { "type": "boolean" },
+        "useFileSystemCache": { "type": "boolean" },
+        "minimumBaselineTheshold": { "type": "integer" },
+        "solutionInterval": {
+            "type": ["integer", "array"],
+            "items": { "type": "number" },
+            "minItems": 3,
+            "maxItems": 3
+        },
+        "referenceAntenna": { "type": "integer" },
+        "computeImplementation": {
+            "type": "string",
+            "enum": ["cpu", "cuda"]
+        },
+        "verbosity": { "type": "string" },
+        "directions": {
+            "type": "array",
+            "items": {
+                "type": "array",
+                "items": { "type": "number" }
+            }
+        }
+    },
+    "required": [ "filePath", "directions" ]
+}
+```
 
-outputFilePath: string?
-
-autoCorrelations: boolean?
-
-useFileSystemCache: boolean?
-
-minimumBaselineThreshold: number?
-
-solutionInterval: integer|[integer,integer,integer]?
-
-referenceAntenna: integer?
-
-directions: [[number, number]]?
-
-computeImplementation: string?
-
-verbosity: integer|string?
+Note: Properties are not required when specified in as CLI arguments with a config file.
 
 ### Config File Example
 
