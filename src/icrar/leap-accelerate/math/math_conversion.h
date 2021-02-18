@@ -49,7 +49,7 @@ namespace icrar
     }
 
     template<typename T, int R, int C>
-    Eigen::Matrix<T, R, C> ToMatrix(const casacore::Matrix<T>& value)
+    Eigen::Matrix<T, R, C> ToFixedMatrix(const casacore::Matrix<T>& value)
     {
         auto shape = value.shape();
         if(shape[0] != R || shape[1] != C)
