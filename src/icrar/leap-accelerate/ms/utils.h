@@ -33,6 +33,7 @@
 #include <casacore/casa/Arrays.h>
 
 #include <iterator>
+#include <sstream>
 #include <string>
 #include <exception>
 #include <memory>
@@ -53,10 +54,12 @@ namespace icrar
         auto rms = casacore::MeasurementSet(ms);
         auto msmc = std::make_unique<casacore::MSMainColumns>(rms);
 
-        unsigned int total_rows = ms.nrow();
+        size_t total_rows = ms.nrow();
         if(start_row >= total_rows)
         {
-            throw icrar::exception("ms out of range", __FILE__, __LINE__);
+            std::stringstream ss;
+            ss << "ms out of range " << start_row << " >= " << total_rows; 
+            throw icrar::exception(ss.str(), __FILE__, __LINE__);
         }
 
         if(start_row + num_baselines > total_rows)
@@ -101,10 +104,12 @@ namespace icrar
             throw icrar::exception("ms column not found", __FILE__, __LINE__);
         }
 
-        unsigned int total_rows = ms.nrow();
+        size_t total_rows = ms.nrow();
         if (start_baseline >= total_rows)
         {
-            throw icrar::exception("ms out of range", __FILE__, __LINE__);
+            std::stringstream ss;
+            ss << "ms out of range " << start_baseline << " >= " << total_rows; 
+            throw icrar::exception(ss.str(), __FILE__, __LINE__);
         }
 
         // clamp num_baselines

@@ -152,8 +152,6 @@ find_package(Boost REQUIRED COMPONENTS log log_setup program_options)
 set(CASACORE_FIND_QUIETLY ON)
 find_package(Casacore REQUIRED)
 
-find_package(LAPACK)
-
 # Testing Libraries
 if (BUILD_TESTING)
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # required for Win32

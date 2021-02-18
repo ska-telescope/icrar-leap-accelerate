@@ -91,17 +91,14 @@ With tracing to file:
 
 #### Linux Cluster
 
-`module load cmake/3.15.1 gcc/6.3.0 boost/1.66.0 casacore/3.1.2`
-
-`module unload gfortran/default`
-
-`module load isl/default`
-
-`export CUDA_HOME=/usr/local/cuda`
-
-`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64`
-
-`export PATH=$PATH:$CUDA_HOME/bin`
+```
+module load cmake/3.15.1 gcc/6.3.0 boost/1.66.0 casacore/3.1.2
+module unload gfortran/default
+module load isl/default
+export CUDA_HOME=/usr/local/cuda
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
+export PATH=$PATH:$CUDA_HOME/bin
+```
 
 `mkdir -p build && cd build`
 
