@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygenindex xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="index.xsd" version="1.8.17">
+  <compound refid="classicrar_1_1cpu_1_1_cpu_leap_calibrator" kind="class"><name>icrar::cpu::CpuLeapCalibrator</name>
+    <member refid="classicrar_1_1cpu_1_1_cpu_leap_calibrator_1af03037332a9e0129e9c4893b5e0859ca" kind="function"><name>Calibrate</name></member>
+    <member refid="classicrar_1_1cpu_1_1_cpu_leap_calibrator_1a56111d576897e7f45749065e5075a0b7" kind="function"><name>PhaseRotate</name></member>
+    <member refid="classicrar_1_1cpu_1_1_cpu_leap_calibrator_1a933956e38c0061fca2a5a27855ffe244" kind="function"><name>RotateVisibilities</name></member>
+  </compound>
+  <compound refid="classicrar_1_1_i_leap_calibrator" kind="class"><name>icrar::ILeapCalibrator</name>
+    <member refid="classicrar_1_1_i_leap_calibrator_1af1a6c83536884eff5b4047eddbcef74f" kind="function"><name>~ILeapCalibrator</name></member>
+    <member refid="classicrar_1_1_i_leap_calibrator_1aa37eb8515b22fd7594ce1145be26ee5b" kind="function"><name>Calibrate</name></member>
+  </compound>
+  <compound refid="namespaceicrar" kind="namespace"><name>icrar</name>
+    <member refid="namespaceicrar_1ac976ffc5e5d48e6018840875dd116895" kind="enum"><name>StreamOutType</name></member>
+    <member refid="namespaceicrar_1ac976ffc5e5d48e6018840875dd116895adb6d9b451b818ccc9a449383f2f0c450" kind="enumvalue"><name>collection</name></member>
+    <member refid="namespaceicrar_1ac976ffc5e5d48e6018840875dd116895a5ac98c09c825c39e81c0e109f10baf7a" kind="enumvalue"><name>singleFIle</name></member>
+    <member refid="namespaceicrar_1ac976ffc5e5d48e6018840875dd116895aee7dbb206d2095d6f41d13ac8e7755ba" kind="enumvalue"><name>multipleFiles</name></member>
+    <member refid="namespaceicrar_1adef48186ce90b62c8d5113a075786528" kind="enum"><name>ComputeImplementation</name></member>
+    <member refid="namespaceicrar_1adef48186ce90b62c8d5113a075786528ad9747e2da342bdb995f6389533ad1a3d" kind="enumvalue"><name>cpu</name></member>
+    <member refid="namespaceicrar_1adef48186ce90b62c8d5113a075786528a39466fe22b062a34cfe09f3cc8c24868" kind="enumvalue"><name>cuda</name></member>
+    <member refid="namespaceicrar_1af6ee394916b505bc91b843b72dba64b3" kind="function"><name>TryParseStreamOutType</name></member>
+    <member refid="namespaceicrar_1af4bb30024b5606f3a9d57beed363039f" kind="function"><name>IsImmediateMode</name></member>
+    <member refid="namespaceicrar_1aee180103f48917b30bbe4841e2bd6775" kind="function"><name>TryParseComputeImplementation</name></member>
+    <member refid="namespaceicrar_1ae45f8d2929d66cc349fd096d30607436" kind="function"><name>ToMatrix</name></member>
+    <member refid="namespaceicrar_1aad421e66f6975b9d2d24b47f53e9eaad" kind="function"><name>ToMatrix</name></member>
+    <member refid="namespaceicrar_1ae948c353f03c65a4b25a58dc5334ee86" kind="function"><name>ConvertMatrix</name></member>
+    <member refid="namespaceicrar_1a23cb07a6c4eeecc78136f336e7b21752" kind="function"><name>ConvertMatrix</name></member>
+    <member refid="namespaceicrar_1aeb314815760be75a3e7428e74ee8ed16" kind="function"><name>ToVector</name></member>
+    <member refid="namespaceicrar_1a2e39265e36d08949ef4d234d31073e9a" kind="function"><name>ToVector</name></member>
+    <member refid="namespaceicrar_1a8c09159712e8acc6e3c177451d3092a3" kind="function"><name>ConvertVector</name></member>
+    <member refid="namespaceicrar_1a398aa4a16dc41a88e4d65011497415b6" kind="function"><name>ToUVW</name></member>
+    <member refid="namespaceicrar_1acc5b49f082a9eff0aade50476fbf224b" kind="function"><name>ToUVWVector</name></member>
+    <member refid="namespaceicrar_1aff3765774a2b45eb3ba8fb938d70d3d0" kind="function"><name>ToUVWVector</name></member>
+    <member refid="namespaceicrar_1af512f8326e0e9ba057292cac052abfd5" kind="function"><name>ToCasaUVW</name></member>
+    <member refid="namespaceicrar_1a8cf3488a30fa7e824196d3eab69671a9" kind="function"><name>ToCasaUVWVector</name></member>
+    <member refid="namespaceicrar_1a56502ab5ffc57629c7b270de2d6fa70e" kind="function"><name>ToCasaUVWVector</name></member>
+    <member refid="namespaceicrar_1aae9bd91e8baeb01733dbff9da5468822" kind="function"><name>ToDirection</name></member>
+    <member refid="namespaceicrar_1a2be5af8a007387ec6747a9a59ac764ae" kind="function"><name>ToDirectionVector</name></member>
+    <member refid="namespaceicrar_1a21fb4aed172a361cc6e3753f78b982f1" kind="function"><name>ToCasaDirection</name></member>
+    <member refid="namespaceicrar_1ad1cf1c5e710401673a79db4912b9cb53" kind="function"><name>ToCasaDirectionVector</name></member>
+    <member refid="namespaceicrar_1ac8217259a5f6b4591c3dd522d950655b" kind="function"><name>isApprox</name></member>
+    <member refid="namespaceicrar_1a9869fd4122f44fabacefc846c9387136" kind="function"><name>range</name></member>
+    <member refid="namespaceicrar_1af5b1bcaacdb936a2755b9734a0f163c7" kind="function"><name>range</name></member>
+    <member refid="namespaceicrar_1acbf5224cf69bece7c2027c2b1ea877bf" kind="function"><name>range</name></member>
+    <member refid="namespaceicrar_1a03c42b9ab9108be3632f27c413939688" kind="function"><name>isApprox</name></member>
+    <member refid="namespaceicrar_1a33bcc78f06ba68cb6edadf55cc67e1e3" kind="function"><name>vector_map</name></member>
+  </compound>
+  <compound refid="namespaceicrar_1_1cpu" kind="namespace"><name>icrar::cpu</name>
+  </compound>
+  <compound refid="_cpu_leap_calibrator_8h" kind="file"><name>CpuLeapCalibrator.h</name>
+  </compound>
+  <compound refid="_cuda_leap_calibrator_8h" kind="file"><name>CudaLeapCalibrator.h</name>
+  </compound>
+  <compound refid="_i_leap_calibrator_8h" kind="file"><name>ILeapCalibrator.h</name>
+  </compound>
+  <compound refid="compute__implementation_8h" kind="file"><name>compute_implementation.h</name>
+  </compound>
+  <compound refid="stream__out__type_8h" kind="file"><name>stream_out_type.h</name>
+  </compound>
+  <compound refid="complex__extensions_8h" kind="file"><name>complex_extensions.h</name>
+  </compound>
+  <compound refid="math__conversion_8h" kind="file"><name>math_conversion.h</name>
+  </compound>
+  <compound refid="vector__extensions_8h" kind="file"><name>vector_extensions.h</name>
+    <member refid="vector__extensions_8h_1a4b8db62a17e01a839e499a4c59112df5" kind="function"><name>operator&lt;&lt;</name></member>
+  </compound>
+  <compound refid="dir_aa2834aa82004298034bf6213bcf1d9c" kind="dir"><name>/home/calgray/Code/icrar/leap-accelerate/src/icrar/leap-accelerate/algorithm</name>
+  </compound>
+  <compound refid="dir_ee674cc579a6f82bd2447608147ad2b6" kind="dir"><name>/home/calgray/Code/icrar/leap-accelerate/src/icrar/leap-accelerate/core</name>
+  </compound>
+  <compound refid="dir_fff48974e8bcd8fd2eb2a194743508e4" kind="dir"><name>/home/calgray/Code/icrar/leap-accelerate/src/icrar/leap-accelerate/algorithm/cpu</name>
+  </compound>
+  <compound refid="dir_e692bd0fe16eb358a9e42d8cc9465ef5" kind="dir"><name>/home/calgray/Code/icrar/leap-accelerate/src/icrar/leap-accelerate/algorithm/cuda</name>
+  </compound>
+  <compound refid="dir_2cd41a2057587d0316622d61ff53471e" kind="dir"><name>/home/calgray/Code/icrar/leap-accelerate/src/icrar</name>
+  </compound>
+  <compound refid="dir_fd492ac65c9e5ad6fc88c528b024e268" kind="dir"><name>/home/calgray/Code/icrar/leap-accelerate/src/icrar/leap-accelerate</name>
+  </compound>
+  <compound refid="dir_7c8ab01d93454e9bb8fb0b096c0ad427" kind="dir"><name>/home/calgray/Code/icrar/leap-accelerate/src/icrar/leap-accelerate/math</name>
+  </compound>
+  <compound refid="dir_68267d1309a1af8e8297ef4c3efbcdba" kind="dir"><name>/home/calgray/Code/icrar/leap-accelerate/src</name>
+  </compound>
+</doxygenindex>

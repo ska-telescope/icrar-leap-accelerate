@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="dir_fff48974e8bcd8fd2eb2a194743508e4" kind="dir">
+    <compoundname>/home/calgray/Code/icrar/leap-accelerate/src/icrar/leap-accelerate/algorithm/cpu</compoundname>
+    <innerfile refid="_cpu_leap_calibrator_8h">CpuLeapCalibrator.h</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/calgray/Code/icrar/leap-accelerate/src/icrar/leap-accelerate/algorithm/cpu/"/>
+  </compounddef>
+</doxygen>

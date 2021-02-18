@@ -29,17 +29,17 @@ namespace icrar
     {
         if(value == "c" || value == "collection")
         {
-            out = StreamOutType::COLLECTION;
+            out = StreamOutType::collection;
             return true;
         }
         else if(value == "s" || value == "single")
         {
-            out = StreamOutType::SINGLE_FILE;
+            out = StreamOutType::singleFIle;
             return true;
         }
         else if(value == "m" || value == "multiple")
         {
-            out = StreamOutType::MUTLIPLE_FILES;
+            out = StreamOutType::multipleFiles;
             return true;
         }
         return false;
@@ -49,11 +49,11 @@ namespace icrar
     {
         switch(streamOutType)
         {
-            case StreamOutType::COLLECTION:
+            case StreamOutType::collection:
                 return false;
-            case StreamOutType::SINGLE_FILE:
+            case StreamOutType::singleFIle:
                 return true;
-            case StreamOutType::MUTLIPLE_FILES:
+            case StreamOutType::multipleFiles:
                 return true;
             default:
                 throw std::invalid_argument("invalid stream out type");

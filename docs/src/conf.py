@@ -21,6 +21,7 @@ import os
 import sys
 import subprocess
 import shutil
+import textwrap
 
 def configureDoxyfile(input_dir: str, output_dir: str):
     with open('../Doxyfile.in', 'r') as file:
@@ -73,10 +74,14 @@ if read_the_docs_build:
 # ones.
 extensions = [
     'breathe',
-    'exhale'
+    'exhale',
+    'recommonmark'
 ]
 
-source_suffix = ".rst"
+source_suffix = [".rst", '.md']
+
+from recommonmark.parser import CommonMarkParser
+source_parsers = {".md": CommonMarkParser }
 
 # Automatically generate autodoc_doxygen targets
 autodoc_default_flags = ['members']
@@ -120,6 +125,11 @@ exhale_args = {
     "containmentFolder":     "./api",
     "rootFileName":          "library_root.rst",
     "rootFileTitle":         "Leap Accelerate API Reference",
+    "afterTitleDescription": textwrap.dedent('''
+        .. note::
+
+        The following documentation presents the C++ API.
+    '''),
     "doxygenStripFromPath":  "../", #"/home/calgray/Code/icrar/leap-accelerate/src", # use src dir
     # Suggested optional arguments
     "createTreeView":        True,
@@ -134,7 +144,7 @@ exhale_args = {
         r".*\.cu": "cuda",
         r".*\.txt": "cmake"
     },
-    "verboseBuild": True,
+    #"verboseBuild": True,
     "generateBreatheFileDirectives": False
 }
 

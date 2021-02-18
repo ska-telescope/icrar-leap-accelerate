@@ -4,5 +4,5 @@
 DocMap
 ######
 
-.. .. doxygenindex::
-..     :project: LeapAccelerate
+.. doxygenindex::
+    :project: LeapAccelerate

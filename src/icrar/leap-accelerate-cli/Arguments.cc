@@ -256,16 +256,16 @@ namespace icrar
         {
             return std::make_unique<std::ostream>(std::cout.rdbuf());
         }
-        if(m_streamOutType == StreamOutType::COLLECTION)
+        if(m_streamOutType == StreamOutType::collection)
         {
             return std::make_unique<std::ostream>(std::cout.rdbuf());
         }
-        else if(m_streamOutType == StreamOutType::SINGLE_FILE)
+        else if(m_streamOutType == StreamOutType::singleFIle)
         {
             auto path = m_outputFilePath.get();
             return std::make_unique<std::ofstream>(path);
         }
-        else if(m_streamOutType == StreamOutType::MUTLIPLE_FILES)
+        else if(m_streamOutType == StreamOutType::multipleFiles)
         {
             auto path = m_outputFilePath.get() + "." + std::to_string(startEpoch) + ".json";
             return std::make_unique<std::ofstream>(path);

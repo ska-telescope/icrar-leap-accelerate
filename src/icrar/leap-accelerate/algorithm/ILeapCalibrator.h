@@ -29,10 +29,6 @@
 #include <vector>
 #include <functional>
 
-/**
- * #include <ILeapCalibrator.h> 
- * 
- */
 namespace icrar
 {
     class MeasurementSet;
@@ -60,12 +56,12 @@ namespace icrar
          * @param ms the mesurement set containing all input measurements
          * @param directions the directions to calibrate for
          * @param minimumBaselineThreshold the minimum baseline length to use in calibrations
-         * @param solutionInterval
+         * @param solutionInterval the arbitrary interval to calculate solutions for
          * @param referenceAntenna the reference antenna of metrix A1
          * @param isFileSystemCacheEnabled enable to use the filesystem to cache data between calibration calls
          * @return CalibrationCollection the calibrationn result
          */
-        virtual void AsyncCalibrate(
+        virtual void Calibrate(
             std::function<void(const cpu::Calibration&)> outputCallback,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,

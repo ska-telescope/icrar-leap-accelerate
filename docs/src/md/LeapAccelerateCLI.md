@@ -1,4 +1,4 @@
-# leap-accelerate-cli
+# Leap Accelerate CLI
 
 leap-accelerate-cli is a command line interface to performing leap calibration.
 

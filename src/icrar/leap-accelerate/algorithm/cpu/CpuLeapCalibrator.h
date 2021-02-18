@@ -54,7 +54,7 @@ namespace cpu
          * Calibrates by performing phase rotation for each direction in @p directions
          * by splitting uvws into integration batches per timestep.
          */
-        void AsyncCalibrate(
+        void Calibrate(
             std::function<void(const cpu::Calibration&)> outputCallback,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,

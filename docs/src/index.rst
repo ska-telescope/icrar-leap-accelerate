@@ -7,9 +7,13 @@
 Leap Accelerate
 ###############
 
-![License](https://img.shields.io/badge/license-LGPL_2.1-blue)
+.. image:: https://img.shields.io/badge/license-LGPL_2.1-blue
+	:alt: Project License: LGPL 2.1
+	:target: https://img.shields.io/badge/license-LGPL_2.1-blue
 
-Leap Accelerate is a calibration tool implementing Low-frequency Excision of the Atmosphere in Parallel ([LEAP](https://arxiv.org/abs/1807.04685)) for low-frequency radio antenna arrays. Leap utilizes GPGPU acceleration for parallel computation across baselines, channels and polarizations and is freely available on [GitLab](https://gitlab.com/ska-telescope/icrar-leap-accelerate) under the LGPLv2 [License](LICENSE).
+Leap Accelerate is a calibration tool implementing Low-frequency Excision of the Atmosphere in Parallel (`LEAP <https://arxiv.org/abs/1807.04685>`_) for low-frequency radio antenna arrays.
+Leap utilizes GPGPU acceleration for parallel computation across baselines,
+channels and polarizations and is freely available on `GitLab <https://gitlab.com/ska-telescope/icrar-leap-accelerate>`_ under the LGPLv2 License.
 
 Leap Accelerate consists of:
 
@@ -17,33 +21,40 @@ Leap Accelerate consists of:
 * :ref:`cli`: a CLI interface for I/O datastream or plasma data access.
 
 .. toctree::
-    :maxdepth: 7
-    :caption: Contents
+    :caption: Leap Accelerate
 
-    leap-accelerate/api.rst
-    leap-accelerate-cli/cli.rst
+    index
+
+.. toctree::
+    :caption: Library Documentation
+    :maxdepth: 2
+
+    api.rst
+    cli.rst
     api/library_root.rst
 
+.. toctree::
+    :caption: Install
+    :maxdepth: 2
+    :glob:
 
-.. docmap.rst
-.. leap-accelerate/core.rst
-.. leap-accelerate/log.rst
-.. leap-accelerate/common.rst
-.. leap-accelerate/model.rst
-.. leap-accelerate/algorithm.rst
-.. leap-accelerate/math.rst
-.. leap-accelerate/ms.rst
-.. leap-accelerate/cuda.rst
+    md/Build
 
-    
-.. about.rst    
+.. toctree::
+    :caption: Usage
+    :maxdepth: 2
+    :glob:
+
+    md/LeapAccelerateCLI
+
+.. about.rst
 
 Indices and tables
 ==================
 
 * :ref:`genindex`
 * :ref:`search`
-* :ref:`DocMap`
+.. * :ref:`DocMap`
 
 Installation
 ============

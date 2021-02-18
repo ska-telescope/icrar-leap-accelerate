@@ -1,0 +1,157 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="math__conversion_8h" kind="file" language="C++">
+    <compoundname>math_conversion.h</compoundname>
+    <includes local="no">icrar/leap-accelerate/model/cpu/MVuvw.h</includes>
+    <includes local="no">icrar/leap-accelerate/common/SphericalDirection.h</includes>
+    <includes local="no">casacore/casa/Arrays/Matrix.h</includes>
+    <includes local="no">casacore/casa/Arrays/Vector.h</includes>
+    <includes local="no">casacore/casa/Quanta/MVuvw.h</includes>
+    <includes local="no">casacore/casa/Quanta/MVDirection.h</includes>
+    <includes local="no">Eigen/Core</includes>
+    <includes local="no">vector</includes>
+    <incdepgraph>
+      <node id="8">
+        <label>Eigen/Core</label>
+      </node>
+      <node id="1">
+        <label>/home/calgray/Code/icrar/leap-accelerate/src/icrar/leap-accelerate/math/math_conversion.h</label>
+        <link refid="math__conversion_8h"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>casacore/casa/Quanta/MVuvw.h</label>
+      </node>
+      <node id="7">
+        <label>casacore/casa/Quanta/MVDirection.h</label>
+      </node>
+      <node id="5">
+        <label>casacore/casa/Arrays/Vector.h</label>
+      </node>
+      <node id="9">
+        <label>vector</label>
+      </node>
+      <node id="2">
+        <label>icrar/leap-accelerate/model/cpu/MVuvw.h</label>
+      </node>
+      <node id="3">
+        <label>icrar/leap-accelerate/common/SphericalDirection.h</label>
+      </node>
+      <node id="4">
+        <label>casacore/casa/Arrays/Matrix.h</label>
+      </node>
+    </incdepgraph>
+    <innernamespace refid="namespaceicrar">icrar</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"></codeline>
+<codeline lineno="23"><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;icrar/leap-accelerate/model/cpu/MVuvw.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;icrar/leap-accelerate/common/SphericalDirection.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;casacore/casa/Arrays/Matrix.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="29"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;casacore/casa/Arrays/Vector.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="30"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;casacore/casa/Quanta/MVuvw.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="31"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;casacore/casa/Quanta/MVDirection.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight></codeline>
+<codeline lineno="33"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;Eigen/Core&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="34"><highlight class="normal"></highlight></codeline>
+<codeline lineno="35"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="36"><highlight class="normal"></highlight></codeline>
+<codeline lineno="37"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal"><ref refid="namespaceicrar" kindref="compound">icrar</ref></highlight></codeline>
+<codeline lineno="38"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T&gt;</highlight></codeline>
+<codeline lineno="43" refid="namespaceicrar_1ae45f8d2929d66cc349fd096d30607436" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/>Eigen::Matrix&lt;T,<sp/>Eigen::Dynamic,<sp/>Eigen::Dynamic&gt;<sp/><ref refid="namespaceicrar_1ae45f8d2929d66cc349fd096d30607436" kindref="member">ToMatrix</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>casacore::Matrix&lt;T&gt;&amp;<sp/>value)</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>shape<sp/>=<sp/>value.shape();</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>output<sp/>=<sp/>Eigen::Matrix&lt;T,<sp/>Eigen::Dynamic,<sp/>Eigen::Dynamic&gt;(shape[0],<sp/>shape[1]);</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::copy(value.begin(),<sp/>value.end(),<sp/>output.reshaped().begin());</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>output;</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="50"><highlight class="normal"></highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>R,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>C&gt;</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/><sp/>Eigen::Matrix&lt;T,<sp/>R,<sp/>C&gt;<sp/><ref refid="namespaceicrar_1ae45f8d2929d66cc349fd096d30607436" kindref="member">ToMatrix</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>casacore::Matrix&lt;T&gt;&amp;<sp/>value)</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>shape<sp/>=<sp/>value.shape();</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(shape[0]<sp/>!=<sp/>R<sp/>||<sp/>shape[1]<sp/>!=<sp/>C)</highlight></codeline>
+<codeline lineno="56"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">throw</highlight><highlight class="normal"><sp/>std::invalid_argument(</highlight><highlight class="stringliteral">&quot;matrix<sp/>shape<sp/>does<sp/>not<sp/>match<sp/>template&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="59"><highlight class="normal"></highlight></codeline>
+<codeline lineno="60"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>output<sp/>=<sp/>Eigen::Matrix&lt;T,<sp/>R,<sp/>C&gt;();</highlight></codeline>
+<codeline lineno="61"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::copy(value.begin(),<sp/>value.end(),<sp/>output.reshaped().begin());</highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>output;</highlight></codeline>
+<codeline lineno="63"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="64"><highlight class="normal"></highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>R,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>C&gt;</highlight></codeline>
+<codeline lineno="69" refid="namespaceicrar_1ae948c353f03c65a4b25a58dc5334ee86" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/>casacore::Matrix&lt;T&gt;<sp/><ref refid="namespaceicrar_1ae948c353f03c65a4b25a58dc5334ee86" kindref="member">ConvertMatrix</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Eigen::Matrix&lt;T,<sp/>R,<sp/>C&gt;&amp;<sp/>value)</highlight></codeline>
+<codeline lineno="70"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>casacore::Matrix&lt;T&gt;(casacore::IPosition(2,<sp/>R,<sp/>C),<sp/>value.data());</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="73"><highlight class="normal"></highlight></codeline>
+<codeline lineno="77"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T&gt;</highlight></codeline>
+<codeline lineno="78" refid="namespaceicrar_1a23cb07a6c4eeecc78136f336e7b21752" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/>casacore::Matrix&lt;T&gt;<sp/><ref refid="namespaceicrar_1ae948c353f03c65a4b25a58dc5334ee86" kindref="member">ConvertMatrix</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Eigen::Matrix&lt;T,<sp/>Eigen::Dynamic,<sp/>Eigen::Dynamic&gt;&amp;<sp/>value)</highlight></codeline>
+<codeline lineno="79"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="80"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>casacore::Matrix&lt;T&gt;(casacore::IPosition(2,<sp/>value.rows(),<sp/>value.cols()),<sp/>value.data());</highlight></codeline>
+<codeline lineno="81"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="82"><highlight class="normal"></highlight></codeline>
+<codeline lineno="86"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T&gt;</highlight></codeline>
+<codeline lineno="87" refid="namespaceicrar_1aeb314815760be75a3e7428e74ee8ed16" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/>Eigen::Matrix&lt;T,<sp/>Eigen::Dynamic,<sp/>1&gt;<sp/><ref refid="namespaceicrar_1aeb314815760be75a3e7428e74ee8ed16" kindref="member">ToVector</ref>(casacore::Vector&lt;T&gt;<sp/>value)</highlight></codeline>
+<codeline lineno="88"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="89"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>output<sp/>=<sp/>Eigen::Matrix&lt;T,<sp/>Eigen::Dynamic,<sp/>1&gt;(value.size());</highlight></codeline>
+<codeline lineno="90"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::copy(value.begin(),<sp/>value.end(),<sp/>output.reshaped().begin());</highlight></codeline>
+<codeline lineno="91"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>output;</highlight></codeline>
+<codeline lineno="92"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="93"><highlight class="normal"></highlight></codeline>
+<codeline lineno="97"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T&gt;</highlight></codeline>
+<codeline lineno="98" refid="namespaceicrar_1a2e39265e36d08949ef4d234d31073e9a" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/>Eigen::Matrix&lt;T,<sp/>Eigen::Dynamic,<sp/>1&gt;<sp/><ref refid="namespaceicrar_1aeb314815760be75a3e7428e74ee8ed16" kindref="member">ToVector</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::vector&lt;T&gt;&amp;<sp/>value)</highlight></codeline>
+<codeline lineno="99"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>output<sp/>=<sp/>Eigen::Matrix&lt;T,<sp/>Eigen::Dynamic,<sp/>1&gt;(value.size());</highlight></codeline>
+<codeline lineno="101"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::copy(value.begin(),<sp/>value.end(),<sp/>output.reshaped().begin());</highlight></codeline>
+<codeline lineno="102"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>output;</highlight></codeline>
+<codeline lineno="103"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="104"><highlight class="normal"></highlight></codeline>
+<codeline lineno="112"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T&gt;</highlight></codeline>
+<codeline lineno="113" refid="namespaceicrar_1a8c09159712e8acc6e3c177451d3092a3" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/>casacore::Vector&lt;T&gt;<sp/><ref refid="namespaceicrar_1a8c09159712e8acc6e3c177451d3092a3" kindref="member">ConvertVector</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Eigen::Matrix&lt;T,<sp/>Eigen::Dynamic,<sp/>1&gt;&amp;<sp/>value)</highlight></codeline>
+<codeline lineno="114"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="115"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>casacore::Vector&lt;T&gt;(casacore::IPosition(1,<sp/>value.rows()),<sp/>value.data());</highlight></codeline>
+<codeline lineno="116"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="117"><highlight class="normal"></highlight></codeline>
+<codeline lineno="124"><highlight class="normal"><sp/><sp/><sp/><sp/>icrar::MVuvw<sp/><ref refid="namespaceicrar_1a398aa4a16dc41a88e4d65011497415b6" kindref="member">ToUVW</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>casacore::MVuvw&amp;<sp/>value);</highlight></codeline>
+<codeline lineno="125"><highlight class="normal"></highlight></codeline>
+<codeline lineno="126"><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;icrar::MVuvw&gt;<sp/>ToUVWVector(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::vector&lt;casacore::MVuvw&gt;&amp;<sp/>value);</highlight></codeline>
+<codeline lineno="127"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="131"><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;icrar::MVuvw&gt;<sp/>ToUVWVector(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Eigen::MatrixXd&amp;<sp/>value);</highlight></codeline>
+<codeline lineno="132"><highlight class="normal"><sp/><sp/><sp/><sp/>casacore::MVuvw<sp/>ToCasaUVW(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>icrar::MVuvw&amp;<sp/>value);</highlight></codeline>
+<codeline lineno="133"><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;casacore::MVuvw&gt;<sp/>ToCasaUVWVector(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::vector&lt;icrar::MVuvw&gt;&amp;<sp/>value);</highlight></codeline>
+<codeline lineno="134"><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;casacore::MVuvw&gt;<sp/>ToCasaUVWVector(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Eigen::MatrixX3d&amp;<sp/>value);</highlight></codeline>
+<codeline lineno="135"><highlight class="normal"></highlight></codeline>
+<codeline lineno="139"><highlight class="normal"><sp/><sp/><sp/><sp/>SphericalDirection<sp/><ref refid="namespaceicrar_1aae9bd91e8baeb01733dbff9da5468822" kindref="member">ToDirection</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>casacore::MVDirection&amp;<sp/>value);</highlight></codeline>
+<codeline lineno="140"><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;SphericalDirection&gt;<sp/>ToDirectionVector(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::vector&lt;casacore::MVDirection&gt;&amp;<sp/>value);</highlight></codeline>
+<codeline lineno="141"><highlight class="normal"></highlight></codeline>
+<codeline lineno="142"><highlight class="normal"><sp/><sp/><sp/><sp/>casacore::MVDirection<sp/>ToCasaDirection(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>SphericalDirection&amp;<sp/>value);</highlight></codeline>
+<codeline lineno="143"><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;casacore::MVDirection&gt;<sp/>ToCasaDirectionVector(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::vector&lt;SphericalDirection&gt;&amp;<sp/>value);</highlight></codeline>
+<codeline lineno="144"><highlight class="normal">}<sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>icrar</highlight></codeline>
+    </programlisting>
+    <location file="/home/calgray/Code/icrar/leap-accelerate/src/icrar/leap-accelerate/math/math_conversion.h"/>
+  </compounddef>
+</doxygen>

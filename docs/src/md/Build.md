@@ -1,3 +1,4 @@
+
 ## Compiling from Source
 
 leap-accelerate compilation is compatible with g++ and clang++ on debian or ubuntu. Support for compiling on other operating systems is currently experimental.
@@ -104,7 +105,7 @@ With tracing to file:
 
 `mkdir -p build && cd build`
 
-`cmake .. -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_ENABLED=TRUE -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release`
+`cmake .. -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_ENABLED=TRUE -DCUDA_HOST_COMPILER=g++ \ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release`
 
 #### Deploy
 
@@ -129,12 +130,16 @@ To test using the google test runner, the test binaries can be executed directly
 `./src/icrar/leap-accelerate/tests/LeapAccelerate.Tests`
 `./src/icrar/leap-accelerate-cli/tests/LeapAccelerateCLI.Tests`
 
-## Doxygen
+## Documenting
 
-Doxygen is generated with the following target:
+Doxygen docs are generated for all C++ and cuda files with the following target:
 
 `make doxygen`
 
-Generated doxygen is available at the following file location:
+Sphinx/Breath/Exhale docs are generated with the following target:
 
-`src/out/html/index.html`
+`make sphinx`
+
+Generated documentation is available locally at the following file location:
+
+`docs/sphinxindex.html`

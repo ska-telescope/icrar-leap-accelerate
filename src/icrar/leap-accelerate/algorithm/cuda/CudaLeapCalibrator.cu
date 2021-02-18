@@ -90,7 +90,7 @@ namespace cuda
         //checkCudaErrors(cudaDeviceReset());
     }
 
-    void CudaLeapCalibrator::AsyncCalibrate(
+    void CudaLeapCalibrator::Calibrate(
             std::function<void(const cpu::Calibration&)> outputCallback,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,

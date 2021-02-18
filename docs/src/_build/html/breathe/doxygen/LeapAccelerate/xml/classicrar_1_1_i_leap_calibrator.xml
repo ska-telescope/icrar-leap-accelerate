@@ -1,0 +1,157 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="classicrar_1_1_i_leap_calibrator" kind="class" language="C++" prot="public" abstract="yes">
+    <compoundname>icrar::ILeapCalibrator</compoundname>
+    <basecompoundref prot="private" virt="non-virtual">noncopyable</basecompoundref>
+    <derivedcompoundref refid="classicrar_1_1cpu_1_1_cpu_leap_calibrator" prot="public" virt="non-virtual">icrar::cpu::CpuLeapCalibrator</derivedcompoundref>
+    <includes refid="_i_leap_calibrator_8h" local="no">ILeapCalibrator.h</includes>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classicrar_1_1_i_leap_calibrator_1af1a6c83536884eff5b4047eddbcef74f" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type></type>
+        <definition>virtual icrar::ILeapCalibrator::~ILeapCalibrator</definition>
+        <argsstring>()=default</argsstring>
+        <name>~ILeapCalibrator</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/calgray/Code/icrar/leap-accelerate/src/icrar/leap-accelerate/algorithm/ILeapCalibrator.h" line="56" column="17"/>
+      </memberdef>
+      <memberdef kind="function" id="classicrar_1_1_i_leap_calibrator_1aa37eb8515b22fd7594ce1145be26ee5b" prot="public" static="no" const="no" explicit="no" inline="no" virt="pure-virtual">
+        <type>void</type>
+        <definition>virtual void icrar::ILeapCalibrator::Calibrate</definition>
+        <argsstring>(std::function&lt; void(const cpu::Calibration &amp;)&gt; outputCallback, const icrar::MeasurementSet &amp;ms, const std::vector&lt; SphericalDirection &gt; &amp;directions, const Slice &amp;solutionInterval, double minimumBaselineThreshold, boost::optional&lt; unsigned int &gt; referenceAntenna, bool isFileSystemCacheEnabled)=0</argsstring>
+        <name>Calibrate</name>
+        <reimplementedby refid="classicrar_1_1cpu_1_1_cpu_leap_calibrator_1af03037332a9e0129e9c4893b5e0859ca">Calibrate</reimplementedby>
+        <param>
+          <type>std::function&lt; void(const cpu::Calibration &amp;)&gt;</type>
+          <declname>outputCallback</declname>
+        </param>
+        <param>
+          <type>const icrar::MeasurementSet &amp;</type>
+          <declname>ms</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; SphericalDirection &gt; &amp;</type>
+          <declname>directions</declname>
+        </param>
+        <param>
+          <type>const Slice &amp;</type>
+          <declname>solutionInterval</declname>
+        </param>
+        <param>
+          <type>double</type>
+          <declname>minimumBaselineThreshold</declname>
+        </param>
+        <param>
+          <type>boost::optional&lt; unsigned int &gt;</type>
+          <declname>referenceAntenna</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>isFileSystemCacheEnabled</declname>
+        </param>
+        <briefdescription>
+<para>Performs Leap calibration for single or multiple solutions. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ms</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the mesurement set containing all input measurements </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>directions</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the directions to calibrate for </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>minimumBaselineThreshold</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the minimum baseline length to use in calibrations </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>solutionInterval</parametername>
+</parameternamelist>
+<parameterdescription>
+<para></para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>referenceAntenna</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the reference antenna of metrix A1 </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>isFileSystemCacheEnabled</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>enable to use the filesystem to cache data between calibration calls </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>CalibrationCollection the calibrationn result </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/calgray/Code/icrar/leap-accelerate/src/icrar/leap-accelerate/algorithm/ILeapCalibrator.h" line="69" column="22"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>Interface for Leap calibration implementations. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>boost::noncopyable</label>
+      </node>
+      <node id="1">
+        <label>icrar::ILeapCalibrator</label>
+        <link refid="classicrar_1_1_i_leap_calibrator"/>
+        <childnode refid="2" relation="private-inheritance">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>icrar::cpu::CpuLeapCalibrator</label>
+        <link refid="classicrar_1_1cpu_1_1_cpu_leap_calibrator"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>boost::noncopyable</label>
+      </node>
+      <node id="1">
+        <label>icrar::ILeapCalibrator</label>
+        <link refid="classicrar_1_1_i_leap_calibrator"/>
+        <childnode refid="2" relation="private-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/calgray/Code/icrar/leap-accelerate/src/icrar/leap-accelerate/algorithm/ILeapCalibrator.h" line="54" column="1" bodyfile="/home/calgray/Code/icrar/leap-accelerate/src/icrar/leap-accelerate/algorithm/ILeapCalibrator.h" bodystart="53" bodyend="77"/>
+    <listofallmembers>
+      <member refid="classicrar_1_1_i_leap_calibrator_1aa37eb8515b22fd7594ce1145be26ee5b" prot="public" virt="pure-virtual"><scope>icrar::ILeapCalibrator</scope><name>Calibrate</name></member>
+      <member refid="classicrar_1_1_i_leap_calibrator_1af1a6c83536884eff5b4047eddbcef74f" prot="public" virt="virtual"><scope>icrar::ILeapCalibrator</scope><name>~ILeapCalibrator</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

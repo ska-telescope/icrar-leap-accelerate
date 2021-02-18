@@ -137,7 +137,7 @@ int main(int argc, char** argv)
                     cal.Serialize(*args.CreateOutputStream(cal.GetStartEpoch()));
                 };
                 
-                calibrator->AsyncCalibrate(
+                calibrator->Calibrate(
                     outputCallback,
                     args.GetMeasurementSet(),
                     args.GetDirections(),
@@ -156,7 +156,7 @@ int main(int argc, char** argv)
                     calibrations.push_back(cal);
                 };
                 
-                calibrator->AsyncCalibrate(
+                calibrator->Calibrate(
                     outputCallback,
                     args.GetMeasurementSet(),
                     args.GetDirections(),

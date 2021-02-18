@@ -47,7 +47,7 @@
 namespace icrar
 {
     /**
-     * @brief An abstraction layer around a casacore MeasurementSet that provides all data
+     * @brief Provides an abstraction layer around a casacore MeasurementSet that provides all data
      * required for leap calibration. This class additionally stores runtime user
      * specificed variables and cached variabled calculated from the underlying measurement set.
      */

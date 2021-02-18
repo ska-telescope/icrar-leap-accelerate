@@ -60,7 +60,7 @@ namespace icrar
 {
 namespace cpu
 {
-    void CpuLeapCalibrator::AsyncCalibrate(
+    void CpuLeapCalibrator::Calibrate(
         std::function<void(const cpu::Calibration&)> outputCallback,
         const icrar::MeasurementSet& ms,
         const std::vector<SphericalDirection>& directions,

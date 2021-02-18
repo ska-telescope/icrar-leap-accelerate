@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="dir_aa2834aa82004298034bf6213bcf1d9c" kind="dir">
+    <compoundname>/home/calgray/Code/icrar/leap-accelerate/src/icrar/leap-accelerate/algorithm</compoundname>
+    <innerdir refid="dir_fff48974e8bcd8fd2eb2a194743508e4">/home/calgray/Code/icrar/leap-accelerate/src/icrar/leap-accelerate/algorithm/cpu</innerdir>
+    <innerdir refid="dir_e692bd0fe16eb358a9e42d8cc9465ef5">/home/calgray/Code/icrar/leap-accelerate/src/icrar/leap-accelerate/algorithm/cuda</innerdir>
+    <innerfile refid="_i_leap_calibrator_8h">ILeapCalibrator.h</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/calgray/Code/icrar/leap-accelerate/src/icrar/leap-accelerate/algorithm/"/>
+  </compounddef>
+</doxygen>

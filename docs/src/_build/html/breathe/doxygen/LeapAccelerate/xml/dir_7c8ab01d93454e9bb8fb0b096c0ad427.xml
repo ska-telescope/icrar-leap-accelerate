@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="dir_7c8ab01d93454e9bb8fb0b096c0ad427" kind="dir">
+    <compoundname>/home/calgray/Code/icrar/leap-accelerate/src/icrar/leap-accelerate/math</compoundname>
+    <innerfile refid="complex__extensions_8h">complex_extensions.h</innerfile>
+    <innerfile refid="math__conversion_8h">math_conversion.h</innerfile>
+    <innerfile refid="vector__extensions_8h">vector_extensions.h</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/calgray/Code/icrar/leap-accelerate/src/icrar/leap-accelerate/math/"/>
+  </compounddef>
+</doxygen>
