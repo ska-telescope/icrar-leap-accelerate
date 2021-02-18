@@ -1,8 +1,7 @@
 # https://devblogs.microsoft.com/cppblog/clear-functional-c-documentation-with-sphinx-breathe-doxygen-cmake/
-find_package(Doxygen REQUIRED)
-find_package(Sphinx REQUIRED)
-
-if(Sphinx_FOUND)
+find_package(Doxygen)
+find_package(Sphinx)
+if(Sphinx_FOUND AND Doxygen_FOUND)
 
   # Find all the public headers
   # get_target_property(PUBLIC_HEADER_DIR LeapAccelerate INTERFACE_INCLUDE_DIRECTORIES)

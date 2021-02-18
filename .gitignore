@@ -4,6 +4,7 @@ Testing/
 docs/Doxyfile
 docs/build
 docs/src/api
+docs/src/_build
 testdata/*
 !testdata/README.md
 !testdata/install.sh

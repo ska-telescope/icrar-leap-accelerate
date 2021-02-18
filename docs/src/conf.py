@@ -111,7 +111,7 @@ breathe_projects_source = {
     ])
 }
 
-breathe_doxygen_config_options = { '__host__': '' }
+# breathe_doxygen_config_options = { }
 
 breathe_domain_extension = {
     "h": "cpp",
