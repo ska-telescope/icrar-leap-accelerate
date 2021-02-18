@@ -113,7 +113,7 @@ Alternatively in hyades03:
 
 `./build.sh -s hyades -c /usr/local/cuda-11.0/ -D "-DCUDA_ENABLED=TRUE -DHIGH_GPU_MEMORY=TRUE"`
 
-# Testing
+# Tests
 
 Testing provided via googletest. To test using the google test runner, test binaries can be executed directly using the following commands:
 
@@ -128,7 +128,7 @@ for verbose output use:
 
 `ctest --verbose` or `ctest --output-on-failure`
 
-# Documenting
+# Documentation
 
 Generated documentation is available locally at the following file location:
 

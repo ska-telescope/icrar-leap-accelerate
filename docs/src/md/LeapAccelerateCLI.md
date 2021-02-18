@@ -32,6 +32,8 @@ leap-accelerate-cli is a command line interface to performing leap calibration.
 
 Log files are produced in the current working directory at ./log/leap_YYYY_MM_dd_{number}.log Log files rotate per day and store a maximum of 10MiB.
 
+Logging is controlled by the verbosity setting.
+
 ## Config File
 
 Config files can be specified via the --config argument to specify runtime arguments as an alternative to command line arguments.

@@ -29,7 +29,7 @@ Leap Accelerate consists of:
     api/library_root.rst
 
 .. toctree::
-    :caption: Install
+    :caption: Installation
     :maxdepth: 2
     :glob:
 
@@ -45,6 +45,14 @@ Leap Accelerate consists of:
 .. toctree::
     :caption: DocMap
 
+.. toctree::
+    :caption: Contributions
+    :maxdepth: 2
+    :glob:
+
+    md/specs/CMakeStyleGuide
+    md/specs/CPlusPlusStyleGuide
+
 .. about.rst
 
 Indices and tables
@@ -54,28 +62,15 @@ Indices and tables
 * :ref:`search`
 .. * :ref:`DocMap`
 
-Installation
-============
-
-.. See the [build](docs/src/Build.md) documentation for instructions on platform specific compilation.
-
 Usage
 =====
 
-See [leap-accelerate-cli](src/icrar/leap-accelerate-cli/ReadMe.md) for instructions on command line arguments and configuration files.
+See `Leap Accelerate Cli <md/LeapAccelerateCLI.html>`_ for instructions on command line arguments and configuration files.
 
 Examples:
 
 `LeapAccelerateCLI --help`
 
 `LeapAccelerateCLI --config "./askap.json"`
-
-Contributions
-=============
-
-Refer to the following style guides for making repository contributions
-
-.. * [CMake Style Guide](docs/src/CMakeStyleGuide.md)
-.. * [C++ Style Guide](docs/src/CPlusPlusStyleGuide.md)
 
 
