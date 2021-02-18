@@ -176,12 +176,14 @@ _prebuild_cmake() {
 	try cmake .. "$@"
 }
 
-# Build macro: arg1 git repo; arg2 git branch/tag; arg3 cmake options
+# Build macro:
+#  arg1 git repo;
+#  arg2 git branch/tag;
+#  arg3 cmake options
 build_and_install() {
 	banner Cloning $1
-	try git clone $1
+	try git clone $1 --branch $2
 	cd `repo2dir $1`
-	git checkout -b $2
 	# git reset --hard $2
 	shift; shift
 
