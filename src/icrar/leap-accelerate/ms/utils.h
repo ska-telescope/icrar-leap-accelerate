@@ -54,7 +54,7 @@ namespace icrar
         auto rms = casacore::MeasurementSet(ms);
         auto msmc = std::make_unique<casacore::MSMainColumns>(rms);
 
-        size_t total_rows = ms.nrow();
+        unsigned int total_rows = ms.nrow();
         if(start_row >= total_rows)
         {
             std::stringstream ss;
@@ -104,7 +104,7 @@ namespace icrar
             throw icrar::exception("ms column not found", __FILE__, __LINE__);
         }
 
-        size_t total_rows = ms.nrow();
+        unsigned int total_rows = ms.nrow();
         if (start_baseline >= total_rows)
         {
             std::stringstream ss;
