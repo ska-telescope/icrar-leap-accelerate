@@ -22,14 +22,14 @@
 
 #include <icrar/leap-accelerate-cli/Arguments.h>
 
-#include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
+#include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
 #include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
 #include <icrar/leap-accelerate/algorithm/cpu/CpuLeapCalibrator.h>
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
-// #include <icrar/leap-accelerate/core/stream_out_type.h>
+#include <icrar/leap-accelerate/core/stream_out_type.h>
 #include <icrar/leap-accelerate/core/git_revision.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/UsageReporter.h>
@@ -137,7 +137,7 @@ int main(int argc, char** argv)
                     cal.Serialize(*args.CreateOutputStream(cal.GetStartEpoch()));
                 };
                 
-                calibrator->AsyncCalibrate(
+                calibrator->Calibrate(
                     outputCallback,
                     args.GetMeasurementSet(),
                     args.GetDirections(),
@@ -156,7 +156,7 @@ int main(int argc, char** argv)
                     calibrations.push_back(cal);
                 };
                 
-                calibrator->AsyncCalibrate(
+                calibrator->Calibrate(
                     outputCallback,
                     args.GetMeasurementSet(),
                     args.GetDirections(),

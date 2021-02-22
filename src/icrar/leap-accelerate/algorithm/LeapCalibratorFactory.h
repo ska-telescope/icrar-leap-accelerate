@@ -30,7 +30,7 @@ namespace icrar
     class ILeapCalibrator;
 
     /**
-     * @brief Factory method object for selecting a LEAP calibration implementation.
+     * @brief Factory class for creating a specialized LEAP calibrator.
      * 
      */
     class LeapCalibratorFactory

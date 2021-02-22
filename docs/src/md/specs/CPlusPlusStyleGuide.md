@@ -3,10 +3,6 @@
 Refer to:
 * https://github.com/ska-telescope/developer.skatelescope.org/blob/master/src/development/cplusplus-codeguide.rst
 
-# Naming Conventions
-
-
-
 ## Extra
 
 Refer to:

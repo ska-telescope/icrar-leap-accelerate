@@ -28,14 +28,17 @@ namespace icrar
 {
 namespace log
 {
+    /**
+     * @brief Selects the reporting level filter for log messages
+     */
     enum class Verbosity
     {
-        fatal = 0,
-        error = 1,
-        warn = 2,
-        info = 3,
-        debug = 4,
-        trace = 5
+        fatal = 0, ///< brief Unexpected execution path, report issue to repo owner
+        error = 1, ///< Knwon execution error, address exception message before reporting
+        warn = 2, ///< Automatically resolved user exception 
+        info = 3, ///< Regular execution reporting
+        debug = 4, ///< Debug mode reporting
+        trace = 5 ///< Developer targeted reporting
     };
     
     /**

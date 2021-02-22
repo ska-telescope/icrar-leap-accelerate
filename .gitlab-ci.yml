@@ -55,10 +55,12 @@ variables:
   image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
   variables:
     DEBIAN_FRONTEND: "noninteractive"
+    CUDA_ENABLED: "OFF"
   before_script:
-    - apt update 
-    - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck
+    - apt update
+    - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck python3-pip
     - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev rapidjson-dev
+    - pip3 install -U sphinx breathe exhale sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary recommonmark
 
 .cuda_dependencies:
   extends: .common
@@ -68,8 +70,9 @@ variables:
     CUDA_ENABLED: "ON"
   before_script:
     - apt update 
-    - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck
+    - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck python3-pip
     - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev rapidjson-dev
+    - pip3 install -U sphinx breathe exhale sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary recommonmark
     - apt install -y gnupg2 software-properties-common
     - source ./.gitlab-ci/cuda_install_debian.sh
 
@@ -110,7 +113,7 @@ download_lfs:
     - mkdir build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"
-    - make -j2
+    - make LeapAccelerate LeapAccelerateCLI LeapAccelerate.Tests LeapAccelerateCLI.Tests sphinx -j2
   artifacts:
     when: always
     paths:
@@ -128,7 +131,7 @@ build_debug:
     - mkdir build
     - cd build
     - cmake .. -DWCONVERSION=TRUE -DWERROR=TRUE -DCMAKE_BUILD_TYPE=Release
-    - make -j2
+    - make LeapAccelerate LeapAccelerateCLI sphinx -j2
   artifacts:
     when: always
     paths:

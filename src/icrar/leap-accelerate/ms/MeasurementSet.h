@@ -47,9 +47,9 @@
 namespace icrar
 {
     /**
-     * @brief MeasurementSet abstraction layer around a casacore MeasurementSet. This 
-     * class additionally stores calculated (or user specificed) variables calculated from
-     * the underlying measurement set for fast access.
+     * @brief Provides an abstraction layer around a casacore MeasurementSet that provides all data
+     * required for leap calibration. This class additionally stores runtime user
+     * specificed variables and cached variabled calculated from the underlying measurement set.
      */
     class MeasurementSet
     {

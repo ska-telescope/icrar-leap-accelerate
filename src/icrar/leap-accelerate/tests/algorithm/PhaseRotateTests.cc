@@ -107,7 +107,7 @@ namespace icrar
                 calibrationsVector.push_back(cal);
             };
             
-            LeapCalibratorFactory::Create(impl)->AsyncCalibrate(
+            LeapCalibratorFactory::Create(impl)->Calibrate(
                 outputCallback,
                 *ms,
                 directions,

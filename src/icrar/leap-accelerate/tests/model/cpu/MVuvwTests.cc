@@ -22,7 +22,7 @@
 
 #include <gtest/gtest.h>
 
-#include <icrar/leap-accelerate/common/MVuvw.h>
+#include <icrar/leap-accelerate/model/cpu/MVuvw.h>
 
 namespace icrar
 {
