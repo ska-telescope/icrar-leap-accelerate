@@ -1,6 +1,10 @@
 build/
 .public/
 Testing/
+docs/Doxyfile
+docs/build
+docs/src/api
+docs/src/_build
 testdata/*
 !testdata/README.md
 !testdata/install.sh
@@ -12,7 +16,7 @@ testdata/*
 .cproject
 /bin/
 
-#VSCode Files
+# VSCode Files
 .vs/
 .vscode/
 clang-tidy-settings.json

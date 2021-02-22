@@ -28,7 +28,7 @@
 #include "device_launch_parameters.h"
 
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
-#include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
+#include <icrar/leap-accelerate/model/cpu/MVuvw.h>
 
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
 
@@ -82,7 +82,7 @@ namespace cuda
          * Calibrates by performing phase rotation for each direction in @p directions
          * by splitting uvws into integration batches per timestep.
          */
-        void AsyncCalibrate(
+        void Calibrate(
             std::function<void(const cpu::Calibration&)> outputCallback,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
@@ -104,10 +104,9 @@ namespace cuda
         /**
          * @brief Rotates oldUVW by dd into UVW
          * 
-         * @param dd 
-         * @param oldUVW 
-         * @param UVW 
-         * @return __host__ 
+         * @param dd the direction matrix
+         * @param oldUVW the unrotated uvw matrix
+         * @param UVW the output rotated uvw matrix 
          */
         __host__ void RotateUVW(
             Eigen::Matrix3d dd,
@@ -115,11 +114,10 @@ namespace cuda
             device_vector<icrar::MVuvw>& UVW);
 
         /**
-         * @brief Calculates metadata.avgData
+         * @brief Calculates avgData in metadata
          * 
-         * @param integration 
-         * @param metadata 
-         * @return __host__ 
+         * @param integration the input visibilities to integrate
+         * @param metadata the metadata container
          */
         __host__ void RotateVisibilities(
             DeviceIntegration& integration,
@@ -127,12 +125,11 @@ namespace cuda
 
     private:
         /**
-         * @brief Copies the arg of the 1st column of avgData into phaseAnglesI1
+         * @brief Copies the argument of the 1st polarization in avgData to phaseAnglesI1
          * 
-         * @param I1 
-         * @param avgData 
-         * @param phaseAnglesI1 
-         * @return __host__ 
+         * @param I1 the index vector for unflagged antennas
+         * @param avgData the averaged data matrix
+         * @param phaseAnglesI1 the output phaseAngles vector
          */
         __host__ void AvgDataToPhaseAngles(
             const device_vector<int>& I1,
@@ -140,29 +137,27 @@ namespace cuda
             device_vector<double>& phaseAnglesI1);
 
         /**
-         * @brief Calculates dInt
+         * @brief Calculates the delta phase matrix
          * 
-         * @param A 
-         * @param cal1 
-         * @param avgData 
-         * @param dInt 
-         * @return __host__ 
+         * @param A Antenna matrix
+         * @param cal1 cal1 matrix
+         * @param avgData averaged visibilities
+         * @param deltaPhase output deltaPhase matrix 
          */
-        __host__ void CalcDInt(
+        __host__ void CalcDeltaPhase(
             const device_matrix<double>& A,
             const device_vector<double>& cal1,
             const device_matrix<std::complex<double>>& avgData,
-            device_matrix<double>& dInt);
+            device_matrix<double>& deltaPhase);
 
         /**
-         * @brief Copies the first column of dInt into deltaPhaseColumn
+         * @brief Copies the first column of deltaPhase into deltaPhaseColumn
          * 
-         * @param dInt 
-         * @param deltaPhaseColumn 
-         * @return __host__ 
+         * @param deltaPhase The delta phase matrix 
+         * @param deltaPhaseColumn The output delta phase vector/column
          */
         __host__ void GenerateDeltaPhaseColumn(
-            const device_matrix<double>& dInt,
+            const device_matrix<double>& deltaPhase,
             device_vector<double>& deltaPhaseColumn);
     };
 } // namespace cuda

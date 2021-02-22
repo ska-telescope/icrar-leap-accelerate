@@ -25,6 +25,7 @@
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 
+#include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
 #include <icrar/leap-accelerate/model/cuda/HostIntegration.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
@@ -89,7 +90,7 @@ namespace cuda
         //checkCudaErrors(cudaDeviceReset());
     }
 
-    void CudaLeapCalibrator::AsyncCalibrate(
+    void CudaLeapCalibrator::Calibrate(
             std::function<void(const cpu::Calibration&)> outputCallback,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
@@ -247,14 +248,14 @@ namespace cuda
         LOG(info) << "Calibrating in cuda";
         auto devicePhaseAnglesI1 = device_vector<double>(metadata.GetI1().rows() + 1);
         auto deviceCal1 = device_vector<double>(metadata.GetAd1().rows());
-        auto deviceDInt = device_matrix<double>(metadata.GetI().size(), metadata.GetAvgData().cols());
+        auto devicedeltaPhase = device_matrix<double>(metadata.GetI().size(), metadata.GetAvgData().cols());
         auto deviceDeltaPhaseColumn = device_vector<double>(metadata.GetI().size() + 1);
         auto cal1 = Eigen::VectorXd(metadata.GetAd1().rows());
 
         AvgDataToPhaseAngles(deviceMetadata.GetConstantBuffer().GetI1(), deviceMetadata.GetAvgData(), devicePhaseAnglesI1);
         cuda::multiply(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd1(), devicePhaseAnglesI1, deviceCal1);
-        CalcDInt(deviceMetadata.GetConstantBuffer().GetA(), deviceCal1, deviceMetadata.GetAvgData(), deviceDInt);
-        GenerateDeltaPhaseColumn(deviceDInt, deviceDeltaPhaseColumn);
+        CalcDeltaPhase(deviceMetadata.GetConstantBuffer().GetA(), deviceCal1, deviceMetadata.GetAvgData(), devicedeltaPhase);
+        GenerateDeltaPhaseColumn(devicedeltaPhase, deviceDeltaPhaseColumn);
         cuda::multiply_add<double>(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd(), deviceDeltaPhaseColumn, deviceCal1);
         deviceCal1.ToHost(cal1);
         output_calibrations.emplace_back(direction, cal1);
@@ -434,19 +435,11 @@ namespace cuda
         g_AvgDataToPhaseAngles<<<blockSize, gridSize>>>(I1Map, avgDataMap, phaseAnglesI1Map);
     }
 
-    /**
-     * @brief Computes dInt matrix
-     * 
-     * @param A 
-     * @param cal1 
-     * @param avgData 
-     * @param dInt 
-     */
-    __global__ void g_CalcDInt(
+    __global__ void g_CalcDeltaPhase(
         const Eigen::Map<const Eigen::MatrixXd> A,
         const Eigen::Map<const Eigen::VectorXd> cal1,
         const Eigen::Map<const Eigen::Matrix<thrust::complex<double>, -1, -1>> avgData,
-        Eigen::Map<Eigen::VectorXd> dInt)
+        Eigen::Map<Eigen::VectorXd> deltaPhase)
     {
         constexpr double two_pi = 2 * CUDART_PI;
         int n = blockDim.x * blockIdx.x + threadIdx.x;
@@ -454,16 +447,16 @@ namespace cuda
         if(n < A.rows())
         {
             double sum = A.row(n) * cal1;
-            dInt.row(n) = (thrust::exp(thrust::complex<double>(0, -two_pi * sum)) * avgData.row(n))
+            deltaPhase.row(n) = (thrust::exp(thrust::complex<double>(0, -two_pi * sum)) * avgData.row(n))
             .unaryExpr([](const thrust::complex<double>& v){ return thrust::arg(v); });
         }
     }
 
-    __host__ void CudaLeapCalibrator::CalcDInt(
+    __host__ void CudaLeapCalibrator::CalcDeltaPhase(
         const device_matrix<double>& A,
         const device_vector<double>& cal1,
         const device_matrix<std::complex<double>>& avgData,
-        device_matrix<double>& dInt)
+        device_matrix<double>& deltaPhase)
     {
         if(A.GetCols() != cal1.GetRows())
         {
@@ -477,32 +470,26 @@ namespace cuda
         auto cal1Map = Eigen::Map<const Eigen::VectorXd>(cal1.Get(), cal1.GetRows());
         auto avgDataMap = Eigen::Map<const Eigen::Matrix<thrust::complex<double>, -1, -1>>(
             (thrust::complex<double>*)avgData.Get(), avgData.GetRows(), avgData.GetCols());
-        auto dIntMap = Eigen::Map<Eigen::VectorXd>(dInt.Get(), dInt.GetRows());
-        g_CalcDInt<<<blockSize,gridSize>>>(AMap, cal1Map, avgDataMap, dIntMap);
+        auto deltaPhaseMap = Eigen::Map<Eigen::VectorXd>(deltaPhase.Get(), deltaPhase.GetRows());
+        g_CalcDeltaPhase<<<blockSize,gridSize>>>(AMap, cal1Map, avgDataMap, deltaPhaseMap);
     }
 
-    /**
-     * @brief Copies the first column of dInt into deltaPhaseColumn
-     * 
-     * @param dInt 
-     * @param deltaPhaseColumn 
-     */
-    __global__ void g_GenerateDeltaPhaseColumn(const Eigen::Map<const Eigen::MatrixXd> dInt, Eigen::Map<Eigen::VectorXd> deltaPhaseColumn)
+    __global__ void g_GenerateDeltaPhaseColumn(const Eigen::Map<const Eigen::MatrixXd> deltaPhase, Eigen::Map<Eigen::VectorXd> deltaPhaseColumn)
     {
         int row = blockDim.x * blockIdx.x + threadIdx.x;
-        if(row < dInt.rows())
+        if(row < deltaPhase.rows())
         {
-            deltaPhaseColumn(row) = dInt(row, 0); // 1st pol only
+            deltaPhaseColumn(row) = deltaPhase(row, 0); // 1st pol only
         }
         else if (row < deltaPhaseColumn.rows())
         {
-            deltaPhaseColumn(row) = 0; // deltaPhaseColumn is dIntRows+1 where last/extra row = 0
+            deltaPhaseColumn(row) = 0; // deltaPhaseColumn is of size deltaPhaseRows+1 where the last/extra row = 0
         }
     }
 
-    __host__ void CudaLeapCalibrator::GenerateDeltaPhaseColumn(const device_matrix<double>& dInt, device_vector<double>& deltaPhaseColumn)
+    __host__ void CudaLeapCalibrator::GenerateDeltaPhaseColumn(const device_matrix<double>& deltaPhase, device_vector<double>& deltaPhaseColumn)
     {
-        if(dInt.GetRows()+1 != deltaPhaseColumn.GetRows())
+        if(deltaPhase.GetRows()+1 != deltaPhaseColumn.GetRows())
         {
             throw invalid_argument_exception("incorrect number of columns", "deltaPhaseColumn", __FILE__, __LINE__);
         }
@@ -510,9 +497,9 @@ namespace cuda
         dim3 blockSize = dim3(1024, 1, 1);
         dim3 gridSize = dim3((int)ceil(static_cast<double>(deltaPhaseColumn.GetRows()) / blockSize.x), 1, 1);
 
-        auto dIntMap = Eigen::Map<const Eigen::MatrixXd>(dInt.Get(), dInt.GetRows(), dInt.GetCols());
+        auto deltaPhaseMap = Eigen::Map<const Eigen::MatrixXd>(deltaPhase.Get(), deltaPhase.GetRows(), deltaPhase.GetCols());
         auto deltaPhaseColumnMap = Eigen::Map<Eigen::VectorXd>(deltaPhaseColumn.Get(), deltaPhaseColumn.GetRows());
-        g_GenerateDeltaPhaseColumn<<<blockSize,gridSize>>>(dIntMap, deltaPhaseColumnMap);
+        g_GenerateDeltaPhaseColumn<<<blockSize,gridSize>>>(deltaPhaseMap, deltaPhaseColumnMap);
     }
 
 } // namespace cuda

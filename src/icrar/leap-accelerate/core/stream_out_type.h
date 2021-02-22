@@ -26,13 +26,14 @@
 namespace icrar
 {
     /**
-     * @brief Specifies how results are streamed out
+     * @brief A configurable enumaration type that can be used for specifying 
+     * how calibrations are streamed to the output during computation.
      */
     enum class StreamOutType
     {
-        COLLECTION, // Results are written to a collection in a single file
-        SINGLE_FILE, // Results are continously rewritten to a single file as computed
-        MUTLIPLE_FILES // Results are continously written to multiple files as computed
+        collection, ///< Calibrations are written to a collection in a single file
+        singleFIle, ///< Calibrations are continously rewritten to a single file as computed
+        multipleFiles ///< Calibrations are continously written to multiple files as computed
     };
 
     /**

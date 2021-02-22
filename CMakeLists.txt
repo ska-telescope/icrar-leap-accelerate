@@ -112,25 +112,25 @@ if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/gtest-1.8.1/CMakeLists.txt")
 endif()
 
 # Global Libraries
-find_package(Doxygen)
-if (DOXYGEN_FOUND)
-    # set input and output files
-    set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
-    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/config-file.doxygen)
+# find_package(Doxygen)
+# if (DOXYGEN_FOUND)
+#     # set input and output files
+#     set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
+#     set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/config-file.doxygen)
 
-    # request to configure the file
-    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+#     # request to configure the file
+#     configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
 
-    # note the option ALL which allows to build the docs together with the application
-    add_custom_target(doxygen
-        #ALL
-        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src
-        COMMENT "Generating API documentation with Doxygen"
-        VERBATIM )
-else (DOXYGEN_FOUND)
-  message("Doxygen needs to be installed to generate the doxygen documentation")
-endif (DOXYGEN_FOUND)
+#     # note the option ALL which allows to build the docs together with the application
+#     add_custom_target(doxygen
+#         #ALL
+#         COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+#         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src
+#         COMMENT "Generating API documentation with Doxygen"
+#         VERBATIM )
+# else (DOXYGEN_FOUND)
+#   message("Doxygen needs to be installed to generate the doxygen documentation")
+# endif (DOXYGEN_FOUND)
 
 if(CUDA_ENABLED)
   find_package(CUDA 9.0)
@@ -184,6 +184,7 @@ message(STATUS "RapidJSON: ${RapidJSON_INCLUDE_DIRS}")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-cli)
+add_subdirectory(docs)
 
 # Install cmake config + version + target files
 include(CMakePackageConfigHelpers)
