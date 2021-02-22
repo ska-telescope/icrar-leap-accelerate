@@ -26,8 +26,9 @@
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 
 #include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
-#include <icrar/leap-accelerate/model/cuda/HostIntegration.h>
+#include <icrar/leap-accelerate/model/cuda/HostMetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
+#include <icrar/leap-accelerate/model/cuda/HostIntegration.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
 
 #include <icrar/leap-accelerate/math/cuda/math.cuh>
@@ -132,18 +133,11 @@ namespace cuda
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData Constants";
-        const auto metadata = icrar::cpu::MetaData(
+        const auto metadata = icrar::cuda::HostMetaData(
             ms,
             referenceAntenna,
             minimumBaselineThreshold,
             isFileSystemCacheEnabled);
-
-        cudaHostRegister((void*)metadata.GetA().data(), metadata.GetA().size() * sizeof(decltype(*metadata.GetA().data())), cudaHostRegisterPortable);
-        cudaHostRegister((void*)metadata.GetI().data(), metadata.GetI().size() * sizeof(decltype(*metadata.GetI().data())), cudaHostRegisterPortable);
-        cudaHostRegister((void*)metadata.GetAd().data(), metadata.GetAd().size() * sizeof(decltype(*metadata.GetAd().data())), cudaHostRegisterPortable);
-        cudaHostRegister((void*)metadata.GetA1().data(), metadata.GetA1().size() * sizeof(decltype(*metadata.GetA1().data())), cudaHostRegisterPortable);
-        cudaHostRegister((void*)metadata.GetI1().data(), metadata.GetI1().size() * sizeof(decltype(*metadata.GetI1().data())), cudaHostRegisterPortable);
-        cudaHostRegister((void*)metadata.GetAd1().data(), metadata.GetAd1().size() * sizeof(decltype(*metadata.GetAd1().data())), cudaHostRegisterPortable);
 
         LOG(info) << "Loading constant buffer";
         auto constantBuffer = std::make_shared<ConstantBuffer>(
