@@ -62,15 +62,3 @@ Indices and tables
 * :ref:`search`
 .. * :ref:`DocMap`
 
-Usage
-=====
-
-See `Leap Accelerate Cli <md/LeapAccelerateCLI.html>`_ for instructions on command line arguments and configuration files.
-
-Examples:
-
-`LeapAccelerateCLI --help`
-
-`LeapAccelerateCLI --config "./askap.json"`
-
-

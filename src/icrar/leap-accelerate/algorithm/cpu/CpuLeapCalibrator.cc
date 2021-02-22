@@ -175,13 +175,13 @@ namespace cpu
         Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAnglesI1;
         Eigen::VectorXd ACal1 = metadata.GetA() * cal1;
 
-        Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
+        Eigen::MatrixXd deltaPhase = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
-            dInt.row(n) = icrar::cpu::arg(std::exp(std::complex<double>(0, -two_pi<double>() * ACal1(n))) * metadata.GetAvgData().row(n));
+            deltaPhase.row(n) = icrar::cpu::arg(std::exp(std::complex<double>(0, -two_pi<double>() * ACal1(n))) * metadata.GetAvgData().row(n));
         }
 
-        Eigen::VectorXd deltaPhaseColumn = dInt.col(0); // 1st pol only
+        Eigen::VectorXd deltaPhaseColumn = deltaPhase.col(0); // 1st pol only
         deltaPhaseColumn.conservativeResize(deltaPhaseColumn.size() + 1);
         deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0;
 
