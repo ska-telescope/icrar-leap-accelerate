@@ -137,6 +137,15 @@ namespace cuda
             referenceAntenna,
             minimumBaselineThreshold,
             isFileSystemCacheEnabled);
+
+        cudaHostRegister((void*)metadata.GetA().data(), metadata.GetA().size() * sizeof(decltype(*metadata.GetA().data())), cudaHostRegisterPortable);
+        cudaHostRegister((void*)metadata.GetI().data(), metadata.GetI().size() * sizeof(decltype(*metadata.GetI().data())), cudaHostRegisterPortable);
+        cudaHostRegister((void*)metadata.GetAd().data(), metadata.GetAd().size() * sizeof(decltype(*metadata.GetAd().data())), cudaHostRegisterPortable);
+        cudaHostRegister((void*)metadata.GetA1().data(), metadata.GetA1().size() * sizeof(decltype(*metadata.GetA1().data())), cudaHostRegisterPortable);
+        cudaHostRegister((void*)metadata.GetI1().data(), metadata.GetI1().size() * sizeof(decltype(*metadata.GetI1().data())), cudaHostRegisterPortable);
+        cudaHostRegister((void*)metadata.GetAd1().data(), metadata.GetAd1().size() * sizeof(decltype(*metadata.GetAd1().data())), cudaHostRegisterPortable);
+
+        LOG(info) << "Loading constant buffer";
         auto constantBuffer = std::make_shared<ConstantBuffer>(
             metadata.GetConstants(),
             metadata.GetA(),
@@ -146,11 +155,15 @@ namespace cuda
             metadata.GetI1(),
             metadata.GetAd1()
         );
+        LOG(info) << "Loading solution interval buffer";
         auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetConstants().nbaselines * validatedSolutionInterval.GetInterval());
+        LOG(info) << "Loading direction buffer";
         auto directionBuffer = std::make_shared<DirectionBuffer>(
                 metadata.GetConstants().nbaselines * validatedSolutionInterval.GetInterval(),
                 metadata.GetAvgData().rows(),
                 metadata.GetAvgData().cols());
+        
+        LOG(info) << "Moving buffers to metadata";
         auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
         LOG(info) << "Metadata Constants loaded in " << metadata_read_timer;
 
@@ -251,6 +264,7 @@ namespace cuda
         auto deviceDInt = device_matrix<double>(metadata.GetI().size(), metadata.GetAvgData().cols());
         auto deviceDeltaPhaseColumn = device_vector<double>(metadata.GetI().size() + 1);
         auto cal1 = Eigen::VectorXd(metadata.GetAd1().rows());
+        LOG(info) << "buffers created";
 
         AvgDataToPhaseAngles(deviceMetadata.GetConstantBuffer().GetI1(), deviceMetadata.GetAvgData(), devicePhaseAnglesI1);
         cuda::multiply(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd1(), devicePhaseAnglesI1, deviceCal1);
