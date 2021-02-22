@@ -6,33 +6,6 @@ Leap Accelerate API
 
 A generic library containing core functionality for leap calibration.
 
-Compute Implementations
-=======================
-
-Compute functionality is split into two independant namespaces/implementations:
-
-* cpu
-* cuda
-
-cpu
-***
-
-Provides computation using Eigen3 math libraries and layout that provides trivial
-data layouts compatible with raw buffer copying to acceleration libraries and compatible 
-with kernel compilers.
-
-See [http://eigen.tuxfamily.org/index.php?title=Main_Page](Eigen) for more details.
-
-cuda
-****
-
-Provides Cuda classes and functions for nvidia hardware using cuda 9.0 and cublas.
-
-opencl
-******
-
-Experimental - Provides OpenCL classes and functions for OpenCL supported hardware.
-
 Getting Started
 ===============
 
@@ -63,9 +36,31 @@ create a calibrator object using the factory method and an output callback:
         args.GetReferenceAntenna(),
         args.IsFileSystemCacheEnabled());
 
-.. .. doxygenindex::
-..    :project: LeapAccelerate
 
+Compute Implementations
+=======================
+
+Compute functionality is split into two independant namespaces/implementations:
+
+* cpu
+* cuda
+
+cpu
+***
+
+Provides computation using Eigen3 math libraries and layout that provides trivial
+data layouts compatible with raw buffer copying to acceleration libraries and compatible 
+with kernel compilers. See `Eigen <http://eigen.tuxfamily.org/index.php?title=Main_Page>`_ for more details.
+
+cuda
+****
+
+Provides Cuda classes and functions for nvidia hardware using cuda 9.x-11.x and cublas.
+
+opencl
+******
+
+TBA - Provides OpenCL classes and functions for OpenCL supported hardware.
 
 Modules
 =======
