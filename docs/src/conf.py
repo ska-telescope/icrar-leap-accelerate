@@ -36,7 +36,7 @@ def configureDoxyfile(input_dir: str, output_dir: str):
 # -- Project information -----------------------------------------------------
 
 project = 'Leap Accelerate'
-copyright = '2021, Callan Gray'
+copyright = ' ICRAR/UWA - SKAO, CC 4.0.'
 author = 'Callan Gray'
 
 # The full version, including alpha/beta/rc tags
