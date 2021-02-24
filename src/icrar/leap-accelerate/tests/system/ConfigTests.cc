@@ -64,11 +64,6 @@ public:
 
     void SetUp() override
     {
-        //int deviceCount = 0;
-        //cudaGetDeviceCount(&deviceCount);
-        //ASSERT_NE(deviceCount, 0);
-
-        // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
     }
 
     void TearDown() override

@@ -83,6 +83,8 @@ add_test(
   COMMAND ${TEST_TARGET_NAME}
 )
 
+add_dependencies(LeapAccelerate.Tests LeapAccelerate.Tests.Data)
+  
 #gtest_add_tests(
 #  TARGET ${TEST_TARGET_NAME}
 #  TEST_PREFIX "*"
