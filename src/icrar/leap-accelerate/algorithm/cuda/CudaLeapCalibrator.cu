@@ -132,14 +132,11 @@ namespace cuda
         std::vector<double> epochs = ms.GetEpochs();
 
         profiling::timer metadata_read_timer;
-        LOG(info) << "Loading MetaData Constants";
         const auto metadata = icrar::cuda::HostMetaData(
             ms,
             referenceAntenna,
             minimumBaselineThreshold,
             isFileSystemCacheEnabled);
-
-        LOG(info) << "Loading constant buffer";
         auto constantBuffer = std::make_shared<ConstantBuffer>(
             metadata.GetConstants(),
             metadata.GetA(),
@@ -149,15 +146,12 @@ namespace cuda
             metadata.GetI1(),
             metadata.GetAd1()
         );
-        LOG(info) << "Loading solution interval buffer";
         auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetConstants().nbaselines * validatedSolutionInterval.GetInterval());
-        LOG(info) << "Loading direction buffer";
         auto directionBuffer = std::make_shared<DirectionBuffer>(
                 metadata.GetConstants().nbaselines * validatedSolutionInterval.GetInterval(),
                 metadata.GetAvgData().rows(),
                 metadata.GetAvgData().cols());
         
-        LOG(info) << "Moving buffers to metadata";
         auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
         LOG(info) << "Metadata Constants loaded in " << metadata_read_timer;
 
