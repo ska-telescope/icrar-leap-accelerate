@@ -26,6 +26,7 @@
 #include <icrar/leap-accelerate/math/math_conversion.h>
 #include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
+#include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>

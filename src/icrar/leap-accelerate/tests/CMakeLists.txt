@@ -12,7 +12,7 @@ set(sources
   common/SliceTests.cc
   common/RangeTests.cc
   common/SphericalDirectionTests.cc
-  common/MVuvwTests.cc
+  model/cpu/MVuvwTests.cc
   common/EigenStringUtilsTests.cc
 
   math/eigen_helper.cc

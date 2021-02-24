@@ -13,8 +13,6 @@ configure_file("core/git_revision.cc.in" "${git_revision_cc}" @ONLY)
 set(TARGET_NAME LeapAccelerate)
 
 set(public_headers
-    ${CMAKE_CURRENT_BINARY_DIR}/config.h
-    
     model/visibility.h
     model/band_data.h
 )
@@ -40,7 +38,7 @@ set(sources
     core/version.cc
 
     common/SphericalDirection.cc
-    common/MVuvw.cc
+    model/cpu/MVuvw.cc
     common/Slice.cc
     common/config/Arguments.cc
 
@@ -136,7 +134,7 @@ endif()
 target_link_libraries(${TARGET_NAME} Threads::Threads)
 target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 #target_link_libraries(${TARGET_NAME} ${BLAS_LIBRARIES})
-target_link_libraries(${TARGET_NAME} ${LAPACK_LIBRARIES})
+#target_link_libraries(${TARGET_NAME} ${LAPACK_LIBRARIES})
 target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
 target_link_libraries(${TARGET_NAME} RapidJSON::RapidJSON)
 
@@ -153,6 +151,11 @@ target_include_directories(${TARGET_NAME} PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>
   $<INSTALL_INTERFACE:include>
 )
+# get_target_property(PUBLIC_HEADER_DIR LeapAccelerate INTERFACE_INCLUDE_DIRECTORIES)
+# message(${PUBLIC_HEADER_DIR})
+# file(GLOB_RECURSE PUBLIC_HEADERS ${PUBLIC_HEADER_DIR} *.h)
+# message(${PUBLIC_HEADERS})
+
 add_library(${SOLUTION_NAME_LOWER}::${TARGET_NAME} ALIAS ${TARGET_NAME})
 
 if (BUILD_TESTING)

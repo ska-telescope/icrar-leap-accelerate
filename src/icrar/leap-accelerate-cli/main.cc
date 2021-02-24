@@ -29,6 +29,7 @@
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
+#include <icrar/leap-accelerate/core/stream_out_type.h>
 #include <icrar/leap-accelerate/core/git_revision.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/UsageReporter.h>

@@ -24,7 +24,7 @@
 
 #ifdef CUDA_ENABLED
 
-#include <icrar/leap-accelerate/common/MVuvw.h>
+#include <icrar/leap-accelerate/model/cpu/MVuvw.h>
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
 
 #include <icrar/leap-accelerate/common/constants.h>

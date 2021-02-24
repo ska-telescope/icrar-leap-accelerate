@@ -31,12 +31,12 @@ namespace icrar
     public:
         void TestParseStreamOutType()
         {
-            ASSERT_EQ(StreamOutType::COLLECTION, ParseStreamOutType("c"));
-            ASSERT_EQ(StreamOutType::COLLECTION, ParseStreamOutType("collection"));
-            ASSERT_EQ(StreamOutType::SINGLE_FILE, ParseStreamOutType("s"));
-            ASSERT_EQ(StreamOutType::SINGLE_FILE, ParseStreamOutType("single"));
-            ASSERT_EQ(StreamOutType::MUTLIPLE_FILES, ParseStreamOutType("m"));
-            ASSERT_EQ(StreamOutType::MUTLIPLE_FILES, ParseStreamOutType("multiple"));
+            ASSERT_EQ(StreamOutType::collection, ParseStreamOutType("c"));
+            ASSERT_EQ(StreamOutType::collection, ParseStreamOutType("collection"));
+            ASSERT_EQ(StreamOutType::singleFile, ParseStreamOutType("s"));
+            ASSERT_EQ(StreamOutType::singleFile, ParseStreamOutType("single"));
+            ASSERT_EQ(StreamOutType::multipleFiles, ParseStreamOutType("m"));
+            ASSERT_EQ(StreamOutType::multipleFiles, ParseStreamOutType("multiple"));
         }
     };
 
