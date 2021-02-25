@@ -154,11 +154,11 @@ namespace icrar
         }
     };
 
-    TEST_F(CommandLineTests, DISABLED_TestHelp) { TestHelp(); }
-    TEST_F(CommandLineTests, DISABLED_TestSimpleRun) { TestSimpleRun(); }
-    TEST_F(CommandLineTests, DISABLED_TestDeprecated) { TestDeprecated(); }
-    TEST_F(CommandLineTests, DISABLED_TestReferenceAntenna) {TestReferenceAntenna(); }
-    TEST_F(CommandLineTests, DISABLED_TestMultipleCpu) { TestMultipleCpu(); }
+    TEST_F(CommandLineTests, TestHelp) { TestHelp(); }
+    TEST_F(CommandLineTests, TestSimpleRun) { TestSimpleRun(); }
+    TEST_F(CommandLineTests, TestDeprecated) { TestDeprecated(); }
+    TEST_F(CommandLineTests, TestReferenceAntenna) {TestReferenceAntenna(); }
+    TEST_F(CommandLineTests, TestMultipleCpu) { TestMultipleCpu(); }
 
 #ifdef CUDA_ENABLED
     TEST_F(CommandLineTests, TestMultipleCuda) { TestMultipleCuda(); }
