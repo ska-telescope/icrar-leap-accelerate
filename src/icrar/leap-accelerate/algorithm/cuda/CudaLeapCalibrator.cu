@@ -138,7 +138,6 @@ namespace cuda
             minimumBaselineThreshold,
             isFileSystemCacheEnabled);
         auto constantBuffer = std::make_shared<ConstantBuffer>(
-            metadata.GetConstants(),
             metadata.GetA(),
             metadata.GetI(),
             metadata.GetAd(),
