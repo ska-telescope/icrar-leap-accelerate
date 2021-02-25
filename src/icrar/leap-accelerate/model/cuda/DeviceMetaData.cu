@@ -31,13 +31,15 @@ namespace icrar
 namespace cuda
 {
     ConstantBuffer::ConstantBuffer(
+            const icrar::cpu::Constants& constants,
             const Eigen::MatrixXd& A,
             const Eigen::VectorXi& I,
             const Eigen::MatrixXd& Ad,
             const Eigen::MatrixXd& A1,
             const Eigen::VectorXi& I1,
             const Eigen::MatrixXd& Ad1)
-        : m_A(A)
+        : m_constants(constants)
+        , m_A(A)
         , m_I(I)
         , m_Ad(Ad)
         , m_A1(A1)
@@ -46,6 +48,8 @@ namespace cuda
 
     void ConstantBuffer::ToHost(icrar::cpu::MetaData& host) const
     {
+        host.m_constants = m_constants;
+
         m_A.ToHost(host.m_A);
         m_I.ToHost(host.m_I);
         m_Ad.ToHost(host.m_Ad);
@@ -93,6 +97,7 @@ namespace cuda
 
     DeviceMetaData::DeviceMetaData(const cpu::MetaData& metadata)
     : m_constantBuffer(std::make_shared<ConstantBuffer>(
+        metadata.GetConstants(),
         metadata.GetA(),
         metadata.GetI(),
         metadata.GetAd(),
@@ -116,6 +121,11 @@ namespace cuda
     , m_solutionIntervalBuffer(solutionIntervalBuffer)
     , m_directionBuffer(directionBuffer)
     {}
+
+    const icrar::cpu::Constants& DeviceMetaData::GetConstants() const
+    {
+        return m_constantBuffer->GetConstants();
+    }
 
     void DeviceMetaData::SetAvgData(int v)
     {

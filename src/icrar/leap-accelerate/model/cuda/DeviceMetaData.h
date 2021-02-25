@@ -61,7 +61,9 @@ namespace cuda
      * threads that are const/immutable per calibration.
      */
     class ConstantBuffer
-    {        
+    {
+        icrar::cpu::Constants m_constants;
+        
         device_matrix<double> m_A;
         device_vector<int> m_I;
         device_matrix<double> m_Ad;
@@ -72,6 +74,7 @@ namespace cuda
 
     public:
         ConstantBuffer(
+            const icrar::cpu::Constants& constants,
             const Eigen::MatrixXd& A,
             const Eigen::VectorXi& I,
             const Eigen::MatrixXd& Ad,
@@ -79,7 +82,7 @@ namespace cuda
             const Eigen::VectorXi& I1,
             const Eigen::MatrixXd& Ad1);
 
-        //const icrar::cpu::Constants& GetConstants() const { return m_constants; }
+        const icrar::cpu::Constants& GetConstants() const { return m_constants; }
         const device_matrix<double>& GetA() const { return m_A; } 
         const device_vector<int>& GetI() const { return m_I; }
         const device_matrix<double>& GetAd() const { return m_Ad; }
