@@ -26,8 +26,9 @@
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 
 #include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
-#include <icrar/leap-accelerate/model/cuda/HostIntegration.h>
+#include <icrar/leap-accelerate/model/cuda/HostMetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
+#include <icrar/leap-accelerate/model/cuda/HostIntegration.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
 
 #include <icrar/leap-accelerate/math/cuda/math.cuh>
@@ -131,8 +132,7 @@ namespace cuda
         std::vector<double> epochs = ms.GetEpochs();
 
         profiling::timer metadata_read_timer;
-        LOG(info) << "Loading MetaData Constants";
-        const auto metadata = icrar::cpu::MetaData(
+        const auto metadata = icrar::cuda::HostMetaData(
             ms,
             referenceAntenna,
             minimumBaselineThreshold,
@@ -151,6 +151,7 @@ namespace cuda
                 metadata.GetConstants().nbaselines * validatedSolutionInterval.GetInterval(),
                 metadata.GetAvgData().rows(),
                 metadata.GetAvgData().cols());
+        
         auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
         LOG(info) << "Metadata Constants loaded in " << metadata_read_timer;
 
@@ -251,6 +252,7 @@ namespace cuda
         auto devicedeltaPhase = device_matrix<double>(metadata.GetI().size(), metadata.GetAvgData().cols());
         auto deviceDeltaPhaseColumn = device_vector<double>(metadata.GetI().size() + 1);
         auto cal1 = Eigen::VectorXd(metadata.GetAd1().rows());
+        LOG(info) << "buffers created";
 
         AvgDataToPhaseAngles(deviceMetadata.GetConstantBuffer().GetI1(), deviceMetadata.GetAvgData(), devicePhaseAnglesI1);
         cuda::multiply(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd1(), devicePhaseAnglesI1, deviceCal1);
