@@ -119,16 +119,25 @@ namespace cuda
             return m_buffer;
         }
 
+        /**
+         * @brief Gets the number of elements in the buffer
+         */
         __host__ __device__ size_t GetCount() const
         {
             return m_count;
         }
 
+        /**
+         * @brief Gets the number of rows in the column vector
+         */
         __host__ __device__ size_t GetRows() const
         {
             return m_count;
         }
 
+        /**
+         * @brief Gets the buffer size in bytes
+         */
         __host__ __device__ size_t GetSize() const
         {
             return m_count * sizeof(T);
@@ -142,9 +151,8 @@ namespace cuda
 
         /**
          * @brief Performs a synchronous copy of data into the device buffer
-         * 
-         * @param data 
-         * @return __host__ 
+         * @pre data points to a buffer of byte size >= GetSize()
+         * @param data data buffer for host to device copying
          */
         __host__ void SetDataSync(const T* data)
         {
@@ -156,17 +164,15 @@ namespace cuda
         }
 
         /**
-         * @brief Sets buffer data from host memory
-         * 
-         * @param data 
-         * @return __host__ 
+         * @brief Sets buffer data from pinned host memory.
+         * @pre Heap memory must be pinned using cudaHostRegister(..., cudaHostRegisterPortable)
+         * @pre data points to a buffer of byte size >= GetSize()
+         * @param data data buffer for host to device copying
          */
         __host__ void SetDataAsync(const T* data)
         {
             size_t bytes = m_count * sizeof(T);
-            //cudaHostRegister(data, bytes, cudaHostRegisterPortable);
             checkCudaErrors(cudaMemcpyAsync(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
-            //cudaHostUnregister(data);
         }
 
         __host__ void ToHost(T* out) const
@@ -187,6 +193,12 @@ namespace cuda
             ToHost(out.data());
         }
 
+        /**
+         * @brief Sets buffer data from pinned host memory.
+         * @pre Heap memory must be pinned using cudaHostRegister(..., cudaHostRegisterPortable)
+         * @pre data points to a buffer of byte size >= GetSize()
+         * @param data data buffer for device to host copying
+         */
         __host__ void ToHostAsync(T* out) const
         {
             size_t bytes = m_count * sizeof(T);

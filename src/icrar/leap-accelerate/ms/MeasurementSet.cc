@@ -186,7 +186,7 @@ namespace icrar
         auto epochIndices = casacore::Slicer(casacore::Slice(0, nBaselines));
         
         // Selects only the flags of the first channel and polarization
-        // TODO(calgray): may want to consider using logical OR over for each channel and polarization.
+        // TODO(calgray): may want to consider using logical OR over each channel and polarization
         auto flagSlice = casacore::Slicer(
             casacore::IPosition(2, 0, 0),
             casacore::IPosition(2, 1, 1),

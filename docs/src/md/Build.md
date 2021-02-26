@@ -7,14 +7,14 @@ leap-accelerate compilation is compatible with g++ and clang++ on debian or ubun
 
 ### Dependencies
 
-##### Recommended Versions Compatibility
+#### Recommended Versions Compatibility
 
 * g++ 9.3.0
 * cuda 10.1
 * boost 1.71.0
 * casacore 3.1.2
 
-##### Minimum Versions Compatibility
+#### Minimum Versions Compatibility
 
 * g++ 6.3.0
 * cuda 9.0
@@ -22,19 +22,19 @@ leap-accelerate compilation is compatible with g++ and clang++ on debian or ubun
 * cmake 3.15.1
 * casacore 3.1.2
 
-##### Ubuntu/Debian Dependencies
+#### Ubuntu/Debian Dependencies
 
-###### 20.04 LTS
+##### 20.04 LTS
 
 * sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.71-all-dev libgsl-dev
 * https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=2004&target_type=deblocal
 
-###### 18.04 LTS
+##### 18.04 LTS
 
 * sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.65-all-dev libgsl-dev
 * https://developer.nvidia.com/cuda-10.1-download-archive-update2?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=deblocal
 
-###### 16.04 LTS
+##### 16.04 LTS
 
 * https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line
 * sudo apt-get install gcc-6 g++-6 gdb doxygen casacore-dev libboost1.58-all-dev libgsl-dev
@@ -90,7 +90,7 @@ With tracing to file:
 
 `cmake ../../ -DCUDA_ENABLED=TRUE -DCMAKE_BUILD_TYPE=Release`
 
-## Tests
+## Testing
 
 Testing provided via googletest. To test using the google test runner, test binaries can be executed directly using the following commands:
 
