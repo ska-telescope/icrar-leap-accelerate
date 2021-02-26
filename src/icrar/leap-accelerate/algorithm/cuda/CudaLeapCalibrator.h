@@ -28,7 +28,7 @@
 #include "device_launch_parameters.h"
 
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
-#include <icrar/leap-accelerate/model/cpu/MVuvw.h>
+#include <icrar/leap-accelerate/model/cpu/calibration/Calibration.h>
 
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
 

@@ -32,9 +32,17 @@ namespace icrar
     enum class StreamOutType
     {
         collection, ///< Calibrations are written to a collection in a single file
-        singleFIle, ///< Calibrations are continously rewritten to a single file as computed
+        singleFile, ///< Calibrations are continously rewritten to a single file as computed
         multipleFiles ///< Calibrations are continously written to multiple files as computed
     };
+
+    /**
+     * @brief Parses string argument into an enum, throws an exception otherwise.
+     * 
+     * @param value 
+     * @return StreamOutType 
+     */
+    StreamOutType ParseStreamOutType(const std::string& value);
 
     /**
      * @return true if value was converted succesfully, false otherwise

@@ -20,7 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
-#include <icrar/leap-accelerate-cli/Arguments.h>
+#include <icrar/leap-accelerate/common/config/Arguments.h>
 
 #include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>

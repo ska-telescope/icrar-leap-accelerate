@@ -21,10 +21,20 @@
  */
 
 #include "stream_out_type.h"
-#include <stdexcept>
+#include <icrar/leap-accelerate/exception/exception.h>
 
 namespace icrar
 {
+    StreamOutType ParseStreamOutType(const std::string& value)
+    {
+        StreamOutType e;
+        if(!TryParseStreamOutType(value, e))
+        {
+            throw invalid_argument_exception(value, "value", __FILE__, __LINE__);
+        }
+        return e;
+    }
+
     bool TryParseStreamOutType(const std::string& value, StreamOutType& out)
     {
         if(value == "c" || value == "collection")
@@ -34,7 +44,7 @@ namespace icrar
         }
         else if(value == "s" || value == "single")
         {
-            out = StreamOutType::singleFIle;
+            out = StreamOutType::singleFile;
             return true;
         }
         else if(value == "m" || value == "multiple")
@@ -51,7 +61,7 @@ namespace icrar
         {
             case StreamOutType::collection:
                 return false;
-            case StreamOutType::singleFIle:
+            case StreamOutType::singleFile:
                 return true;
             case StreamOutType::multipleFiles:
                 return true;

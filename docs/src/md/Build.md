@@ -84,7 +84,11 @@ With tracing to file:
 
 `cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCUDA_ENABLED=TRUE -DTRACE=ON -DCMAKE_BUILD_TYPE=Debug`
 
-###### Release
+With gcovr analysis:
+
+`cmake ../.. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"`
+
+#### Release
 
 `mkdir -p build/Release && cd build/Release`
 
@@ -114,6 +118,12 @@ Generated documentation is available locally at the following file location:
 Once deployed to a branch the docs will be available here:
 
 https://icrar-leap-accelerate.readthedocs.io/
+
+## Test Coverage (Debug Only)
+
+`cmake ../.. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"`
+
+`make coverage`
 
 ### Building from Source
 

@@ -34,7 +34,7 @@ namespace icrar
     /**
      * Default set of command line interface arguments
      */
-    CLIArguments GetDefaultArguments()
+    CLIArguments CLIArguments::GetDefaultArguments()
     {
         auto args = CLIArguments();
         args.sourceType = InputType::MEASUREMENT_SET;
@@ -114,7 +114,7 @@ namespace icrar
     , m_verbosity(icrar::log::Verbosity::trace) //These values are overwritten
     {
         // Initialize default arguments first
-        ApplyArguments(GetDefaultArguments());
+        ApplyArguments(CLIArguments::GetDefaultArguments());
 
         // Read the config argument second and apply the config arguments over the default arguments
         if(cliArgs.configFilePath.is_initialized())
@@ -260,7 +260,7 @@ namespace icrar
         {
             return std::make_unique<std::ostream>(std::cout.rdbuf());
         }
-        else if(m_streamOutType == StreamOutType::singleFIle)
+        else if(m_streamOutType == StreamOutType::singleFile)
         {
             auto path = m_outputFilePath.get();
             return std::make_unique<std::ofstream>(path);
