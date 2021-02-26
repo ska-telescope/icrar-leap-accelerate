@@ -117,9 +117,9 @@ namespace cuda
         std::shared_ptr<ConstantBuffer> constantBuffer,
         std::shared_ptr<SolutionIntervalBuffer> solutionIntervalBuffer,
         std::shared_ptr<DirectionBuffer> directionBuffer)
-    : m_constantBuffer(constantBuffer)
-    , m_solutionIntervalBuffer(solutionIntervalBuffer)
-    , m_directionBuffer(directionBuffer)
+    : m_constantBuffer(std::move(constantBuffer))
+    , m_solutionIntervalBuffer(std::move(solutionIntervalBuffer))
+    , m_directionBuffer(std::move(directionBuffer))
     {}
 
     const icrar::cpu::Constants& DeviceMetaData::GetConstants() const
