@@ -7,12 +7,14 @@ set(sources
   test_helper.cc
 
   core/VerbosityTests.cc
+  core/StreamOutTypeTests.cc
 
   common/SliceTests.cc
   common/RangeTests.cc
   common/SphericalDirectionTests.cc
   model/cpu/MVuvwTests.cc
-  
+  common/EigenStringUtilsTests.cc
+
   math/eigen_helper.cc
   math/MatrixTests.cc
 
@@ -25,6 +27,7 @@ set(sources
   model/IntegrationTests.cc
   
   algorithm/PhaseRotateTests.cc
+  system/ConfigTests.cc
 )
 
 set(cuda_sources
@@ -62,11 +65,26 @@ endif()
 
 target_link_libraries(${TEST_TARGET_NAME} LeapAccelerate gtest)
 
+set(test_data
+  testdata/TestSolutionIntervalConfig.json
+  testdata/TestSolutionIntervalOutput.json
+)
+
+add_custom_target(${TEST_TARGET_NAME}.Data ALL
+  COMMAND ${CMAKE_COMMAND}
+  -Dsrc_dir=${CMAKE_CURRENT_SOURCE_DIR}/testdata
+  -Ddst_dir=${CMAKE_CURRENT_BINARY_DIR}/testdata
+  -P ${PROJECT_SOURCE_DIR}/cmake/update_directory.cmake
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
 add_test(
   NAME ${TEST_TARGET_NAME}
   COMMAND ${TEST_TARGET_NAME}
 )
 
+add_dependencies(LeapAccelerate.Tests LeapAccelerate.Tests.Data)
+  
 #gtest_add_tests(
 #  TARGET ${TEST_TARGET_NAME}
 #  TEST_PREFIX "*"

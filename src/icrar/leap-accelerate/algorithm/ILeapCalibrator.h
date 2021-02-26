@@ -24,6 +24,7 @@
 
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/common/Slice.h>
+#include <icrar/leap-accelerate/model/cpu/calibration/Calibration.h>
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 #include <vector>

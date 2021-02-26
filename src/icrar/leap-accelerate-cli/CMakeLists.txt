@@ -3,7 +3,6 @@ set(TARGET_EXPORT leapaccelerate-targest)
 
 set(sources
   main.cc
-  Arguments.cc
 )
 
 # add the executable

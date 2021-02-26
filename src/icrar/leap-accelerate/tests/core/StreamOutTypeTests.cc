@@ -1,4 +1,4 @@
- /**
+/**
  * ICRAR - International Centre for Radio Astronomy Research
  * (c) UWA - The University of Western Australia
  * Copyright by UWA(in the framework of the ICRAR)
@@ -20,12 +20,25 @@
  * MA 02111 - 1307  USA
  */
 
-#include <icrar/leap-accelerate/core/log/logging.h>
 #include <gtest/gtest.h>
 
-int main(int argc, char **argv)
+#include <icrar/leap-accelerate/core/stream_out_type.h>
+
+namespace icrar
 {
-    icrar::log::Initialize(icrar::log::Verbosity::info);
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
+    class StreamOutTypeTests : public testing::Test
+    {
+    public:
+        void TestParseStreamOutType()
+        {
+            ASSERT_EQ(StreamOutType::collection, ParseStreamOutType("c"));
+            ASSERT_EQ(StreamOutType::collection, ParseStreamOutType("collection"));
+            ASSERT_EQ(StreamOutType::singleFile, ParseStreamOutType("s"));
+            ASSERT_EQ(StreamOutType::singleFile, ParseStreamOutType("single"));
+            ASSERT_EQ(StreamOutType::multipleFiles, ParseStreamOutType("m"));
+            ASSERT_EQ(StreamOutType::multipleFiles, ParseStreamOutType("multiple"));
+        }
+    };
+
+    TEST_F(StreamOutTypeTests, TestParseStreamOutType) { TestParseStreamOutType(); }
+} // namespace icrar

@@ -26,6 +26,7 @@
 
 #include <icrar/leap-accelerate/common/Slice.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
+#include <icrar/leap-accelerate/model/cpu/calibration/Calibration.h>
 
 #include <casacore/ms/MeasurementSets.h>
 #include <Eigen/Core>
