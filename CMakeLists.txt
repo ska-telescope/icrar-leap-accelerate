@@ -152,8 +152,6 @@ find_package(Boost REQUIRED COMPONENTS log log_setup program_options)
 set(CASACORE_FIND_QUIETLY ON)
 find_package(Casacore REQUIRED)
 
-find_package(LAPACK)
-
 # Testing Libraries
 if (BUILD_TESTING)
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # required for Win32
@@ -177,8 +175,16 @@ endif()
 set(EIGEN3_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/eigen-3.3.90)
 find_package(Eigen3 REQUIRED)
 
-find_package(RapidJSON REQUIRED)
-message(STATUS "RapidJSON: ${RapidJSON_INCLUDE_DIRS}")
+# Use local rapidjson if available
+find_package(RapidJSON)
+if(RapidJSON_FOUND)
+  message(STATUS "RapidJSON: ${RapidJSON_INCLUDE_DIRS}")
+else()
+  # this is required for building on hyades
+  message("Loading included rapidjson")
+  set(PC_RapidJSON_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external/rapidjson-1.1.0/include)
+  find_package(RapidJSON REQUIRED)
+endif()
 
 # Local Targets
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

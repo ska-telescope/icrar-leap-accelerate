@@ -108,6 +108,7 @@ namespace cpu
     {
         MetaData() = default;
 
+    protected:
         Constants m_constants;
         double m_minimumBaselineThreshold;
 
