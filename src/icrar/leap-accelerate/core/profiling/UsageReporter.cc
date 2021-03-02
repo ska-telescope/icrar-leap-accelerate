@@ -23,9 +23,9 @@
 #include <exception>
 #include <iostream>
 
-#include "icrar/leap-accelerate/core/log/logging.h"
-#include "icrar/leap-accelerate/core/profiling/resource_usage.h"
-#include "icrar/leap-accelerate/core/profiling/UsageReporter.h"
+#include <icrar/leap-accelerate/core/log/logging.h>
+#include <icrar/leap-accelerate/core/profiling/resource_usage.h>
+#include <icrar/leap-accelerate/core/profiling/UsageReporter.h>
 
 namespace icrar
 {

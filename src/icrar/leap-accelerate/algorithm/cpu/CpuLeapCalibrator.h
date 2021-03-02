@@ -26,7 +26,7 @@
 
 #include <icrar/leap-accelerate/common/Slice.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
-#include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
+#include <icrar/leap-accelerate/model/cpu/calibration/Calibration.h>
 
 #include <casacore/ms/MeasurementSets.h>
 #include <Eigen/Core>
@@ -34,6 +34,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 
+#include <functional>
 #include <string>
 #include <memory>
 #include <vector>
@@ -50,11 +51,12 @@ namespace cpu
     {
     public:
         /**
-         * @copydoc ILeapEngine::ILeapCalibrator
+         * @copydoc ILeapCalibrator
          * Calibrates by performing phase rotation for each direction in @p directions
-         * by splitting uvws into integration batches.
+         * by splitting uvws into integration batches per timestep.
          */
-        virtual cpu::CalibrationCollection Calibrate(
+        void Calibrate(
+            std::function<void(const cpu::Calibration&)> outputCallback,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             const Slice& solutionInterval,

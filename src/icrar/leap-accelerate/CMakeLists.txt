@@ -13,8 +13,6 @@ configure_file("core/git_revision.cc.in" "${git_revision_cc}" @ONLY)
 set(TARGET_NAME LeapAccelerate)
 
 set(public_headers
-    ${CMAKE_CURRENT_BINARY_DIR}/config.h
-    
     model/visibility.h
     model/band_data.h
 )
@@ -31,17 +29,8 @@ set(sources
     ms/utils.cc
     ms/MeasurementSet.cc
 
-    model/cpu/Integration.cc
-    model/cpu/MetaData.cc
-    model/cpu/CalibrateResult.cc
-    
-    math/eigen_extensions.cc
-    math/math_conversion.cc
-    math/casa/matrix.cc
-    math/casa/matrix_invert.cc
-    math/cpu/vector.cc
-
     core/compute_implementation.cc
+    core/stream_out_type.cc
     core/log/logging.cc
     core/log/Verbosity.cc
     core/profiling/resource_usage.cc
@@ -49,37 +38,38 @@ set(sources
     core/version.cc
 
     common/SphericalDirection.cc
-    common/MVuvw.cc
+    model/cpu/MVuvw.cc
     common/Slice.cc
+    common/config/Arguments.cc
+
+    math/math_conversion.cc
+    math/cpu/eigen_extensions.cc
+    math/cuda/matrix.h
+    math/cuda/matrix.cuh
+    math/cuda/matrix_multiply.cuh
+    math/cuda/matrix_multiply.cu
+
+    model/cpu/Integration.cc
+    model/cpu/MetaData.cc
 
     algorithm/LeapCalibratorFactory.cc
     algorithm/cpu/CpuLeapCalibrator.cc
     algorithm/cpu/PhaseMatrixFunction.cc
-    )
+)
     
     set(cuda_headers
     cuda/cuda_info.h
     cuda/helper_cuda.cuh
     cuda/helper_string.cuh
-    
-    math/cuda/vector.h
-    math/cuda/vector.cuh
-    math/cuda/matrix.h
-    math/cuda/matrix.cuh
-    math/cuda/matrix_multiply.cuh
-    math/cuda/matrix_transpose.cuh
-    )
+)
     
     set(cuda_sources
     cuda/cuda_info.cu
-    math/cuda/vector.cu
-    math/cuda/matrix.cu
-    math/cuda/matrix_multiply.cu
     
     model/cuda/DeviceMetaData.cu
     model/cuda/DeviceIntegration.cu
     algorithm/cuda/CudaLeapCalibrator.cu
-    )
+)
 
 # Libraries
 option(CASA_ENABLED "Casa Enabled" TRUE)
@@ -132,7 +122,6 @@ if(CUDA_ENABLED)
   #Set Cuda Stream Setting
   #set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -lineinfo --default-stream per-thread)
   #message("CUDA_NVCC_FLAGS = ${CUDA_NVCC_FLAGS}")
-
   target_include_directories(${TARGET_NAME} SYSTEM PUBLIC ${CUDA_INCLUDE_DIRS})
   target_link_libraries(${TARGET_NAME} ${CUDA_LIBRARIES})
   target_link_libraries(${TARGET_NAME} cublas)
@@ -142,12 +131,10 @@ if(CUDA_ENABLED)
   endif()
 endif()
 
-# Legacy TODO(calgray): build support for xenial
-include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
-
 target_link_libraries(${TARGET_NAME} Threads::Threads)
-
 target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
+#target_link_libraries(${TARGET_NAME} ${BLAS_LIBRARIES})
+#target_link_libraries(${TARGET_NAME} ${LAPACK_LIBRARIES})
 target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
 target_link_libraries(${TARGET_NAME} RapidJSON::RapidJSON)
 
@@ -164,6 +151,11 @@ target_include_directories(${TARGET_NAME} PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>
   $<INSTALL_INTERFACE:include>
 )
+# get_target_property(PUBLIC_HEADER_DIR LeapAccelerate INTERFACE_INCLUDE_DIRECTORIES)
+# message(${PUBLIC_HEADER_DIR})
+# file(GLOB_RECURSE PUBLIC_HEADERS ${PUBLIC_HEADER_DIR} *.h)
+# message(${PUBLIC_HEADERS})
+
 add_library(${SOLUTION_NAME_LOWER}::${TARGET_NAME} ALIAS ${TARGET_NAME})
 
 if (BUILD_TESTING)

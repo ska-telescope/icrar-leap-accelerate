@@ -3,7 +3,6 @@ set(TARGET_EXPORT leapaccelerate-targest)
 
 set(sources
   main.cc
-  Arguments.cc
 )
 
 # add the executable
@@ -13,7 +12,7 @@ add_executable(
 )
 
 # Legacy TODO: build support for xenial
-include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
+#include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 
 target_link_libraries(${TARGET_NAME} LeapAccelerate)
 target_link_libraries(${TARGET_NAME} RapidJSON::RapidJSON)

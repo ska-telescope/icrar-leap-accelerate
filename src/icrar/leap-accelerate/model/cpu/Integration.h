@@ -24,9 +24,9 @@
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
-#include <icrar/leap-accelerate/common/MVuvw.h>
+#include <icrar/leap-accelerate/model/cpu/MVuvw.h>
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
-#include <icrar/leap-accelerate/common/Tensor3X.h>
+#include <icrar/leap-accelerate/math/Tensor3X.h>
 
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
@@ -64,10 +64,10 @@ namespace cpu
     protected:
         int m_integrationNumber;
 
-        size_t index; // row index
-        size_t x; // number of rows
-        size_t channels; // channels
-        size_t baselines; // baselines
+        int64_t index; // row index
+        int64_t x; // number of rows
+        int64_t channels; // channels
+        int64_t baselines; // baselines
 
         std::vector<MVuvw> m_UVW; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
         Eigen::Tensor<std::complex<double>, 3> m_visibilities; //[npol][nbl][nch]
@@ -76,10 +76,10 @@ namespace cpu
         Integration(
             int integrationNumber,
             const icrar::MeasurementSet& ms,
-            unsigned int index,
-            unsigned int channels,
-            unsigned int baselines,
-            unsigned int polarizations);
+            uint32_t index,
+            uint32_t channels,
+            uint32_t baselines,
+            uint32_t polarizations);
 
         bool operator==(const Integration& rhs) const;
 

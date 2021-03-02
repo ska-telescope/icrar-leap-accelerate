@@ -33,7 +33,7 @@
 #endif // __device__
 #endif // CUDA_ENABLED
 
-#include <icrar/leap-accelerate/common/MVuvw.h>
+#include <icrar/leap-accelerate/model/cpu/MVuvw.h>
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/common/constants.h>
 
@@ -108,6 +108,7 @@ namespace cpu
     {
         MetaData() = default;
 
+    protected:
         Constants m_constants;
         double m_minimumBaselineThreshold;
 
@@ -123,7 +124,7 @@ namespace cpu
         std::vector<icrar::MVuvw> m_rotatedUVW; // late initialized
     
         SphericalDirection m_direction; // calibration direction, late initialized
-        Eigen::Matrix3d m_dd; // direction matrix, late initialized
+        Eigen::Matrix3d m_dd; // direction dependant matrix, late initialized
         Eigen::MatrixXcd m_avgData; // matrix of size (baselines, polarizations), late initialized
     
     public:

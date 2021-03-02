@@ -107,9 +107,7 @@ namespace icrar
      * @tparam T 
      * @param lhs 
      * @param rhs 
-     * @param threshold 
-     * @return true 
-     * @return false 
+     * @param threshold  
      */
     template<typename T>
     bool isApprox(const std::vector<T>& lhs, const std::vector<T>& rhs, T threshold)
@@ -118,7 +116,6 @@ namespace icrar
         {
             return false;
         }
-        
         for(size_t i = 0; i < lhs.size(); ++i)
         {
             if(std::abs(lhs[i] - rhs[i]) >= threshold)

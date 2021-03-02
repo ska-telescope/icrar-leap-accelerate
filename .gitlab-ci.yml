@@ -20,7 +20,7 @@
 #  * cuda 10.1
 #  * and more
 #
-# For details see https://gitlab.com/ska-telescope/dspr
+# For details see https://gitlab.com/ska-telescope/dspsr
 #
 # To run locally use docker command:
 # sudo docker run -it nexus.engageska-portugal.pt/ska-docker/dspsr-build
@@ -55,10 +55,12 @@ variables:
   image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
   variables:
     DEBIAN_FRONTEND: "noninteractive"
+    CUDA_ENABLED: "OFF"
   before_script:
-    - apt update 
-    - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck
-    - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev
+    - apt update
+    - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck python3-pip
+    - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev rapidjson-dev
+    - pip3 install -U sphinx breathe exhale sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary recommonmark
 
 .cuda_dependencies:
   extends: .common
@@ -68,8 +70,9 @@ variables:
     CUDA_ENABLED: "ON"
   before_script:
     - apt update 
-    - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck
-    - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev
+    - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck python3-pip
+    - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev rapidjson-dev
+    - pip3 install -U sphinx breathe exhale sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary recommonmark
     - apt install -y gnupg2 software-properties-common
     - source ./.gitlab-ci/cuda_install_debian.sh
 
@@ -109,8 +112,8 @@ download_lfs:
   script:
     - mkdir build
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"
-    - make -j2
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"
+    - make LeapAccelerate LeapAccelerateCLI LeapAccelerate.Tests LeapAccelerateCLI.Tests sphinx -j2
   artifacts:
     when: always
     paths:
@@ -127,8 +130,8 @@ build_debug:
   script:
     - mkdir build
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Release
-    - make -j2
+    - cmake .. -DWCONVERSION=TRUE -DWERROR=TRUE -DCMAKE_BUILD_TYPE=Release
+    - make LeapAccelerate LeapAccelerateCLI sphinx -j2
   artifacts:
     when: always
     paths:
@@ -265,13 +268,13 @@ lint_cppcheck:
   after_script:
     - cd build
     - ctest2junit > ctest.xml
+  timeout: 1h
   artifacts:
     when: always
     paths:
       - build/
     reports:
       junit: build/ctest.xml
-
 
 test_debug_minimal:
   extends: [.required_dependencies, .test]
@@ -301,14 +304,13 @@ pages:
   extends: .required_dependencies
   stage: pages
   needs: ["test_debug_minimal", "lint_clang_tidy", "lint_cppcheck", "lint_iwyu"]
-  before_script:
+  script:
     - apt update && apt install -y curl gcovr moreutils python3-pip jq
     - pip3 install yq
-  script:
-    - mkdir -p .public/build/reports
+    - mkdir -p .public/build/reports/code-coverage
     - cd .public
-    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o index.html &> gcovr-index.log
-    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml &> gcovr-code-coverage.log
+    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o build/reports/code-coverage/index.html | sponge gcovr-html.log
+    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml | sponge gcovr-xml.log
     - cp ../build/ctest.xml build/reports/unit-tests.xml
     - cp ../build/cppcheck-junit.xml build/reports/cppcheck-junit.xml
     - cp ../build/clang-tidy-junit.xml build/reports/clang-tidy-junit.xml

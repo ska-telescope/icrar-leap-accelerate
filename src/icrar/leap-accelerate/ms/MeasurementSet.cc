@@ -23,9 +23,9 @@
 #include "MeasurementSet.h"
 #include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
-#include <icrar/leap-accelerate/math/eigen_extensions.h>
+#include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
-#include <icrar/leap-accelerate/common/vector_extensions.h>
+#include <boost/numeric/conversion/cast.hpp>
 #include <cstddef>
 
 namespace icrar
@@ -50,7 +50,8 @@ namespace icrar
             LOG(warning) << "total antennas = " << m_measurementSet->antenna().nrow();
             LOG(warning) << "unique antennas = " << m_antennas.size();
             LOG(warning) << "using unique antennas";
-            m_stations = m_antennas.size();
+
+            m_stations = boost::numeric_cast<int>(m_antennas.size());
         }
         else
         {
@@ -101,39 +102,39 @@ namespace icrar
         }
     }
 
-    unsigned int MeasurementSet::GetNumRows() const
+    uint32_t MeasurementSet::GetNumRows() const
     {
         return m_msmc->uvw().nrow();
     }
 
-    unsigned int MeasurementSet::GetTotalAntennas() const
+    uint32_t MeasurementSet::GetTotalAntennas() const
     {
         return m_measurementSet->antenna().nrow();
     }
 
-    unsigned int MeasurementSet::GetNumTimesteps() const
+    uint32_t MeasurementSet::GetNumTimesteps() const
     {
-        return GetNumRows() / GetNumBaselines();
+        return (uint32_t)GetNumRows() / GetNumBaselines();
     }
 
     std::vector<double> MeasurementSet::GetTimesteps() const
     {
         casacore::Vector<double> time = m_msmc->time().getColumn();
-        unsigned int timesteps = (unsigned int)GetNumRows() / GetNumBaselines();
+        uint32_t timesteps = GetNumTimesteps();
         std::vector<double> result;
-        for(unsigned int i = 0; i < timesteps; ++i)
+        for(uint32_t i = 0; i < timesteps; ++i)
         {
             result.push_back(time[i * GetNumBaselines()]);
         }
         return result;
     }
 
-    unsigned int MeasurementSet::GetNumStations() const
+    uint32_t MeasurementSet::GetNumStations() const
     {
         return m_stations;
     }
 
-    unsigned int MeasurementSet::GetNumPols() const
+    uint32_t MeasurementSet::GetNumPols() const
     {
         if(m_measurementSet->polarization().nrow() > 0)
         {
@@ -145,12 +146,12 @@ namespace icrar
         }
     }
 
-    unsigned int MeasurementSet::GetNumBaselines() const
+    uint32_t MeasurementSet::GetNumBaselines() const
     {
         return GetNumBaselines(m_readAutocorrelations);
     }
 
-    unsigned int MeasurementSet::GetNumBaselines(bool useAutocorrelations) const
+    uint32_t MeasurementSet::GetNumBaselines(bool useAutocorrelations) const
     {
         //TODO(calgray): cache value
         if(useAutocorrelations)
@@ -165,7 +166,7 @@ namespace icrar
         }
     }
 
-    unsigned int MeasurementSet::GetNumChannels() const
+    uint32_t MeasurementSet::GetNumChannels() const
     {
         if(m_msc->spectralWindow().nrow() > 0)
         {
@@ -192,10 +193,10 @@ namespace icrar
         return ToVector(flags);
     }
 
-    unsigned int MeasurementSet::GetNumFlaggedBaselines() const
+    uint32_t MeasurementSet::GetNumFlaggedBaselines() const
     {
         auto flaggedBaselines = GetFlaggedBaselines();
-        return std::count(flaggedBaselines.cbegin(), flaggedBaselines.cend(), true);
+        return boost::numeric_cast<uint32_t>(std::count(flaggedBaselines.cbegin(), flaggedBaselines.cend(), true));
     }
 	
 	Eigen::Matrix<bool, -1, 1> MeasurementSet::GetShortBaselines(double minimumBaselineThreshold) const
@@ -210,8 +211,8 @@ namespace icrar
             casacore::Matrix<double> uv = m_msmc->uvw().getColumn(firstChannelSlicer);
 
             // TODO(calgray): uv is of size baselines * timesteps, consider throwing a warning if flags change
-            //  in later timesteps
-            for(unsigned int i = 0; i < nBaselines; i++)
+            // in later timesteps
+            for(uint32_t i = 0; i < nBaselines; i++)
             {
                 if(std::sqrt(uv(i, 0) * uv(i, 0) + uv(i, 1) * uv(i, 1)) < minimumBaselineThreshold)
                 {
@@ -223,10 +224,10 @@ namespace icrar
         return baselineFlags;
     }
 
-    unsigned int MeasurementSet::GetNumShortBaselines(double minimumBaselineThreshold) const
+    uint32_t MeasurementSet::GetNumShortBaselines(double minimumBaselineThreshold) const
     {
         auto shortBaselines = GetShortBaselines(minimumBaselineThreshold);
-        return std::count(shortBaselines.cbegin(), shortBaselines.cend(), true);
+        return boost::numeric_cast<uint32_t>(std::count(shortBaselines.cbegin(), shortBaselines.cend(), true));
     }
 
     Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFilteredBaselines(double minimumBaselineThreshold) const
@@ -235,10 +236,10 @@ namespace icrar
         return result;
     }
 
-    unsigned int MeasurementSet::GetNumFilteredBaselines(double minimumBaselineThreshold) const
+    uint32_t MeasurementSet::GetNumFilteredBaselines(double minimumBaselineThreshold) const
     {
         auto filteredBaselines = GetFilteredBaselines(minimumBaselineThreshold);
-        return std::count(filteredBaselines.cbegin(), filteredBaselines.cend(), true);
+        return boost::numeric_cast<uint32_t>(std::count(filteredBaselines.cbegin(), filteredBaselines.cend(), true));
 	}
 
     Eigen::MatrixX3d MeasurementSet::GetCoords() const
@@ -246,7 +247,7 @@ namespace icrar
         return GetCoords(0, GetNumBaselines());
     }
 
-    Eigen::MatrixX3d MeasurementSet::GetCoords(unsigned int start_row, unsigned int nBaselines) const
+    Eigen::MatrixX3d MeasurementSet::GetCoords(uint32_t start_row, uint32_t nBaselines) const
     {
         Eigen::MatrixX3d matrix = Eigen::MatrixX3d::Zero(nBaselines, 3);
         icrar::ms_read_coords(

@@ -26,10 +26,12 @@
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
 
 #include <icrar/leap-accelerate/common/vector_extensions.h>
+#include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 #include <icrar/leap-accelerate/exception/exception.h>
-#include <icrar/leap-accelerate/math/eigen_extensions.h>
+#include <icrar/leap-accelerate/common/eigen_stringutils.h>
+#include <icrar/leap-accelerate/common/eigen_cache.h>
 #include <icrar/leap-accelerate/core/ioutils.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 
@@ -122,12 +124,12 @@ namespace cpu
         std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), filteredBaselines, boost::none);
         trace_matrix(m_A, "A");
 
-
         auto invertA1 = [](const Eigen::MatrixXd& a)
         {
             LOG(info) << "Inverting PhaseMatrix A1";
             return icrar::cpu::PseudoInverse(a);
         };
+
         auto invertA = [](const Eigen::MatrixXd& a)
         {
             LOG(info) << "Inverting PhaseMatrix A";

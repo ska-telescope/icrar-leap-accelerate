@@ -22,28 +22,27 @@
 
 #include "CudaLeapCalibrator.h"
 
-#include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/common/vector_extensions.h>
 
-#include <icrar/leap-accelerate/model/cuda/HostIntegration.h>
+#include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
+#include <icrar/leap-accelerate/model/cuda/HostMetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
+#include <icrar/leap-accelerate/model/cuda/HostIntegration.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
 
 #include <icrar/leap-accelerate/math/cuda/math.cuh>
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
-#include <icrar/leap-accelerate/math/cuda/vector.h>
-#include <icrar/leap-accelerate/math/cpu/vector.h>
 
 #include <icrar/leap-accelerate/exception/exception.h>
-#include <icrar/leap-accelerate/common/Tensor3X.h>
-#include <icrar/leap-accelerate/math/eigen_extensions.h>
+#include <icrar/leap-accelerate/math/Tensor3X.h>
+#include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
+#include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/timer.h>
 
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
-#include <icrar/leap-accelerate/cuda/cuda_mapped_matrix.h>
 #include <cuda_runtime.h>
 #include <math_constants.h>
 #include <cuComplex.h>
@@ -52,6 +51,7 @@
 
 #include <boost/math/constants/constants.hpp>
 #include <boost/optional/optional_io.hpp>
+#include <boost/thread.hpp>
 
 #include <complex>
 #include <istream>
@@ -91,21 +91,27 @@ namespace cuda
         //checkCudaErrors(cudaDeviceReset());
     }
 
-    cpu::CalibrationCollection CudaLeapCalibrator::Calibrate(
-        const icrar::MeasurementSet& ms,
-        const std::vector<SphericalDirection>& directions,
-        const Slice& solutionInterval,
-        double minimumBaselineThreshold,
-        boost::optional<unsigned int> referenceAntenna,
-        bool isFileSystemCacheEnabled)
+    void CudaLeapCalibrator::Calibrate(
+            std::function<void(const cpu::Calibration&)> outputCallback,
+            const icrar::MeasurementSet& ms,
+            const std::vector<SphericalDirection>& directions,
+            const Slice& solutionInterval,
+            double minimumBaselineThreshold,
+            boost::optional<unsigned int> referenceAntenna,
+            bool isFileSystemCacheEnabled)
     {
         LOG(info) << "Starting Calibration using cuda";
+
+        bool highGpuMemory = false;
+#ifdef HIGH_GPU_MEMORY
+        highGpuMemory = true;
+#endif
         LOG(info)
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
-        << "solutionInterval: " << "[" << solutionInterval.start << "," << solutionInterval.interval << "," << solutionInterval.end << "], "
+        << "solutionInterval: " << "[" << solutionInterval.GetStart() << "," << solutionInterval.GetInterval() << "," << solutionInterval.GetEnd() << "], "
         << "reference antenna: " << referenceAntenna << ", "
         << "baseline threshold: " << minimumBaselineThreshold << ", "
         << "short baselines: " << ms.GetNumShortBaselines(minimumBaselineThreshold) << ", "
@@ -113,20 +119,20 @@ namespace cuda
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
-        << "timesteps: " << ms.GetNumRows() / ms.GetNumBaselines();
+        << "timesteps: " << ms.GetNumTimesteps() << ", "
+        << "high gpu memory enabled: " << highGpuMemory; 
 
-        profiling::timer calibration_timer;
-        profiling::timer integration_read_timer;
+        profiling::timer calibrationTimer;
+
         auto output_calibrations = std::vector<cpu::Calibration>();
         auto input_queue = std::vector<cuda::DeviceIntegration>();
 
-        size_t timesteps = (size_t)ms.GetNumRows() / ms.GetNumBaselines();
+        size_t timesteps = ms.GetNumTimesteps();
         Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
+        std::vector<double> epochs = ms.GetTimesteps();
 
-
-        profiling::timer metadata_read_timer;
-        LOG(info) << "Loading MetaData Constants";
-        const auto metadata = icrar::cpu::MetaData(
+        profiling::timer metadataReadTimer;
+        const auto metadata = icrar::cuda::HostMetaData(
             ms,
             referenceAntenna,
             minimumBaselineThreshold,
@@ -140,25 +146,27 @@ namespace cuda
             metadata.GetI1(),
             metadata.GetAd1()
         );
-        auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetConstants().nbaselines * validatedSolutionInterval.interval);
+        auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetConstants().nbaselines * validatedSolutionInterval.GetInterval());
         auto directionBuffer = std::make_shared<DirectionBuffer>(
-                metadata.GetConstants().nbaselines * validatedSolutionInterval.interval,
+                metadata.GetConstants().nbaselines * validatedSolutionInterval.GetInterval(),
                 metadata.GetAvgData().rows(),
                 metadata.GetAvgData().cols());
+        
         auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
-        LOG(info) << "Metadata Constants loaded in " << metadata_read_timer;
+        LOG(info) << "Metadata Constants loaded in " << metadataReadTimer;
 
         size_t solutions = validatedSolutionInterval.GetSize();
         constexpr unsigned int integrationNumber = 0;
         for(int solution = 0; solution < solutions; solution++)
         {
+            profiling::timer solutionTimer;
             output_calibrations.emplace_back(
-                solution * validatedSolutionInterval.interval,
-                (solution+1) * validatedSolutionInterval.interval);
+                epochs[solution * validatedSolutionInterval.GetInterval()],
+                epochs[(solution+1) * validatedSolutionInterval.GetInterval() - 1]);
             input_queue.clear();
 
             // Flooring to remove incomplete measurements
-            int integrations = ms.GetNumRows() / ms.GetNumBaselines();
+            int integrations = ms.GetNumTimesteps();
             if(integrations == 0)
             {
                 std::stringstream ss;
@@ -166,14 +174,15 @@ namespace cuda
                 throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
             }
         
+            profiling::timer integrationReadTimer;
             auto integration = cuda::HostIntegration(
                 integrationNumber,
                 ms,
-                solution * validatedSolutionInterval.interval * ms.GetNumBaselines(),
+                solution * validatedSolutionInterval.GetInterval() * ms.GetNumBaselines(),
                 ms.GetNumChannels(),
-                validatedSolutionInterval.interval * ms.GetNumBaselines(),
+                validatedSolutionInterval.GetInterval() * ms.GetNumBaselines(),
                 ms.GetNumPols());
-            LOG(info) << "Read integration data in " << integration_read_timer;
+            LOG(info) << "Read integration data in " << integrationReadTimer;
 
             LOG(info) << "Loading Metadata UVW";
             solutionIntervalBuffer->SetUVW(integration.GetUVW());
@@ -186,7 +195,6 @@ namespace cuda
             // Emplace a single zero'd tensor
             input_queue.emplace_back(0, integration.GetVis().dimensions());
 
-            profiling::timer solution_timer;
             for(int i = 0; i < directions.size(); ++i)
             {
                 LOG(info) << "Processing direction " << i;
@@ -210,17 +218,19 @@ namespace cuda
                     directionBuffer->GetRotatedUVW());
 
                 LOG(info) << "PhaseRotate";
+                profiling::timer phaseRotateTimer;
                 PhaseRotate(
                     metadata,
                     deviceMetadata,
                     directions[i],
                     input_queue,
                     output_calibrations[solution].GetBeamCalibrations());
+                LOG(info) << "Performed PhaseRotate in " << phaseRotateTimer;
             }
-            LOG(info) << "Calculated solution in " << solution_timer;
-            LOG(info) << "Finished calibration in " << calibration_timer;
+            LOG(info) << "Calculated solution in " << solutionTimer;
+            outputCallback(output_calibrations[solution]);
         }
-        return cpu::CalibrationCollection(output_calibrations);
+        LOG(info) << "Finished calibration in " << calibrationTimer;
     }
 
     void CudaLeapCalibrator::PhaseRotate(
@@ -239,15 +249,15 @@ namespace cuda
         LOG(info) << "Calibrating in cuda";
         auto devicePhaseAnglesI1 = device_vector<double>(metadata.GetI1().rows() + 1);
         auto deviceCal1 = device_vector<double>(metadata.GetAd1().rows());
-        auto deviceDInt = device_matrix<double>(metadata.GetI().size(), metadata.GetAvgData().cols());
+        auto devicedeltaPhase = device_matrix<double>(metadata.GetI().size(), metadata.GetAvgData().cols());
         auto deviceDeltaPhaseColumn = device_vector<double>(metadata.GetI().size() + 1);
         auto cal1 = Eigen::VectorXd(metadata.GetAd1().rows());
+        LOG(info) << "buffers created";
 
-        // Cuda Calibration Pipeline
         AvgDataToPhaseAngles(deviceMetadata.GetConstantBuffer().GetI1(), deviceMetadata.GetAvgData(), devicePhaseAnglesI1);
         cuda::multiply(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd1(), devicePhaseAnglesI1, deviceCal1);
-        CalcDInt(deviceMetadata.GetConstantBuffer().GetA(), deviceCal1, deviceMetadata.GetAvgData(), deviceDInt);
-        GenerateDeltaPhaseColumn(deviceDInt, deviceDeltaPhaseColumn);
+        CalcDeltaPhase(deviceMetadata.GetConstantBuffer().GetA(), deviceCal1, deviceMetadata.GetAvgData(), devicedeltaPhase);
+        GenerateDeltaPhaseColumn(devicedeltaPhase, deviceDeltaPhaseColumn);
         cuda::multiply_add<double>(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd(), deviceDeltaPhaseColumn, deviceCal1);
         deviceCal1.ToHost(cal1);
         output_calibrations.emplace_back(direction, cal1);
@@ -427,19 +437,11 @@ namespace cuda
         g_AvgDataToPhaseAngles<<<blockSize, gridSize>>>(I1Map, avgDataMap, phaseAnglesI1Map);
     }
 
-    /**
-     * @brief Computes dInt matrix
-     * 
-     * @param A 
-     * @param cal1 
-     * @param avgData 
-     * @param dInt 
-     */
-    __global__ void g_CalcDInt(
+    __global__ void g_CalcDeltaPhase(
         const Eigen::Map<const Eigen::MatrixXd> A,
         const Eigen::Map<const Eigen::VectorXd> cal1,
         const Eigen::Map<const Eigen::Matrix<thrust::complex<double>, -1, -1>> avgData,
-        Eigen::Map<Eigen::VectorXd> dInt)
+        Eigen::Map<Eigen::VectorXd> deltaPhase)
     {
         constexpr double two_pi = 2 * CUDART_PI;
         int n = blockDim.x * blockIdx.x + threadIdx.x;
@@ -447,16 +449,16 @@ namespace cuda
         if(n < A.rows())
         {
             double sum = A.row(n) * cal1;
-            dInt.row(n) = (thrust::exp(thrust::complex<double>(0, -two_pi * sum)) * avgData.row(n))
+            deltaPhase.row(n) = (thrust::exp(thrust::complex<double>(0, -two_pi * sum)) * avgData.row(n))
             .unaryExpr([](const thrust::complex<double>& v){ return thrust::arg(v); });
         }
     }
 
-    __host__ void CudaLeapCalibrator::CalcDInt(
+    __host__ void CudaLeapCalibrator::CalcDeltaPhase(
         const device_matrix<double>& A,
         const device_vector<double>& cal1,
         const device_matrix<std::complex<double>>& avgData,
-        device_matrix<double>& dInt)
+        device_matrix<double>& deltaPhase)
     {
         if(A.GetCols() != cal1.GetRows())
         {
@@ -470,32 +472,26 @@ namespace cuda
         auto cal1Map = Eigen::Map<const Eigen::VectorXd>(cal1.Get(), cal1.GetRows());
         auto avgDataMap = Eigen::Map<const Eigen::Matrix<thrust::complex<double>, -1, -1>>(
             (thrust::complex<double>*)avgData.Get(), avgData.GetRows(), avgData.GetCols());
-        auto dIntMap = Eigen::Map<Eigen::VectorXd>(dInt.Get(), dInt.GetRows());
-        g_CalcDInt<<<blockSize,gridSize>>>(AMap, cal1Map, avgDataMap, dIntMap);
+        auto deltaPhaseMap = Eigen::Map<Eigen::VectorXd>(deltaPhase.Get(), deltaPhase.GetRows());
+        g_CalcDeltaPhase<<<blockSize,gridSize>>>(AMap, cal1Map, avgDataMap, deltaPhaseMap);
     }
 
-    /**
-     * @brief Copies the first column of dInt into deltaPhaseColumn
-     * 
-     * @param dInt 
-     * @param deltaPhaseColumn 
-     */
-    __global__ void g_GenerateDeltaPhaseColumn(const Eigen::Map<const Eigen::MatrixXd> dInt, Eigen::Map<Eigen::VectorXd> deltaPhaseColumn)
+    __global__ void g_GenerateDeltaPhaseColumn(const Eigen::Map<const Eigen::MatrixXd> deltaPhase, Eigen::Map<Eigen::VectorXd> deltaPhaseColumn)
     {
         int row = blockDim.x * blockIdx.x + threadIdx.x;
-        if(row < dInt.rows())
+        if(row < deltaPhase.rows())
         {
-            deltaPhaseColumn(row) = dInt(row, 0); // 1st pol only
+            deltaPhaseColumn(row) = deltaPhase(row, 0); // 1st pol only
         }
         else if (row < deltaPhaseColumn.rows())
         {
-            deltaPhaseColumn(row) = 0; // deltaPhaseColumn is dIntRows+1 where last/extra row = 0
+            deltaPhaseColumn(row) = 0; // deltaPhaseColumn is of size deltaPhaseRows+1 where the last/extra row = 0
         }
     }
 
-    __host__ void CudaLeapCalibrator::GenerateDeltaPhaseColumn(const device_matrix<double>& dInt, device_vector<double>& deltaPhaseColumn)
+    __host__ void CudaLeapCalibrator::GenerateDeltaPhaseColumn(const device_matrix<double>& deltaPhase, device_vector<double>& deltaPhaseColumn)
     {
-        if(dInt.GetRows()+1 != deltaPhaseColumn.GetRows())
+        if(deltaPhase.GetRows()+1 != deltaPhaseColumn.GetRows())
         {
             throw invalid_argument_exception("incorrect number of columns", "deltaPhaseColumn", __FILE__, __LINE__);
         }
@@ -503,9 +499,9 @@ namespace cuda
         dim3 blockSize = dim3(1024, 1, 1);
         dim3 gridSize = dim3((int)ceil(static_cast<double>(deltaPhaseColumn.GetRows()) / blockSize.x), 1, 1);
 
-        auto dIntMap = Eigen::Map<const Eigen::MatrixXd>(dInt.Get(), dInt.GetRows(), dInt.GetCols());
+        auto deltaPhaseMap = Eigen::Map<const Eigen::MatrixXd>(deltaPhase.Get(), deltaPhase.GetRows(), deltaPhase.GetCols());
         auto deltaPhaseColumnMap = Eigen::Map<Eigen::VectorXd>(deltaPhaseColumn.Get(), deltaPhaseColumn.GetRows());
-        g_GenerateDeltaPhaseColumn<<<blockSize,gridSize>>>(dIntMap, deltaPhaseColumnMap);
+        g_GenerateDeltaPhaseColumn<<<blockSize,gridSize>>>(deltaPhaseMap, deltaPhaseColumnMap);
     }
 
 } // namespace cuda

@@ -25,7 +25,6 @@
 #ifdef CUDA_ENABLED
 
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
-#include <icrar/leap-accelerate/model/cuda/HostIntegration.h>
 #include <cuda_runtime.h>
 
 namespace icrar
@@ -33,8 +32,8 @@ namespace icrar
 namespace cuda
 {
     /**
-     * @brief A container for storing a visibilities tensor for accumulation during phase rotating.
-     * 
+     * @brief A cuda decorator for cpu::Integration. 
+     * This class stores data on the host using pinned memory to allow for asyncronous read and write with cuda.
      */
     class HostIntegration : public cpu::Integration
     {

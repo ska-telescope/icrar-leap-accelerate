@@ -24,7 +24,7 @@
 #include <icrar/leap-accelerate/math/math_conversion.h>
 #include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
-#include <icrar/leap-accelerate/common/Tensor3X.h>
+#include <icrar/leap-accelerate/math/Tensor3X.h>
 
 #include <icrar/leap-accelerate/core/ioutils.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
@@ -36,10 +36,10 @@ namespace cpu
     Integration::Integration(
         int integrationNumber,
         const icrar::MeasurementSet& ms,
-        unsigned int startBaseline,
-        unsigned int channels,
-        unsigned int baselines,
-        unsigned int polarizations)
+        uint32_t startBaseline,
+        uint32_t channels,
+        uint32_t baselines,
+        uint32_t polarizations)
     : m_integrationNumber(integrationNumber)
     , index(startBaseline)
     , x(baselines)
@@ -47,9 +47,9 @@ namespace cpu
     , baselines(baselines)
     {
         constexpr int startChannel = 0;
-        size_t vis_size = (baselines - startBaseline) * (channels - startChannel) * polarizations * sizeof(std::complex<double>);
+        size_t vis_size = baselines * (channels - startChannel) * polarizations * sizeof(std::complex<double>);
         LOG(info) << "vis: " << memory_amount(vis_size);
-        size_t uvw_size = (baselines - startBaseline) * 3;
+        size_t uvw_size = baselines * 3;
         LOG(info) << "uvw: " << memory_amount(uvw_size);
         m_visibilities = ms.GetVis(startBaseline, startChannel, channels, baselines, polarizations);
         m_UVW = ToUVWVector(ms.GetCoords(startBaseline, baselines));

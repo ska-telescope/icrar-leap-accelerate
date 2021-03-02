@@ -24,9 +24,11 @@
 
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/common/Slice.h>
-#include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
+#include <icrar/leap-accelerate/model/cpu/calibration/Calibration.h>
 #include <boost/noncopyable.hpp>
+#include <boost/optional.hpp>
 #include <vector>
+#include <functional>
 
 namespace icrar
 {
@@ -37,6 +39,7 @@ namespace icrar
         class Integration;
         class IntegrationResult;
         class BeamCalibration;
+        class Calibration;
     }
 
     /**
@@ -49,17 +52,18 @@ namespace icrar
         virtual ~ILeapCalibrator() = default;
 
         /**
-         * @brief Performs Leap calibration using a specialized implementation.
+         * @brief Performs Leap calibration for single or multiple solutions.
          * 
          * @param ms the mesurement set containing all input measurements
          * @param directions the directions to calibrate for
          * @param minimumBaselineThreshold the minimum baseline length to use in calibrations
-         * @param solutionInterval
+         * @param solutionInterval the arbitrary interval to calculate solutions for
          * @param referenceAntenna the reference antenna of metrix A1
          * @param isFileSystemCacheEnabled enable to use the filesystem to cache data between calibration calls
          * @return CalibrationCollection the calibrationn result
          */
-        virtual cpu::CalibrationCollection Calibrate(
+        virtual void Calibrate(
+            std::function<void(const cpu::Calibration&)> outputCallback,
             const icrar::MeasurementSet& ms,
             const std::vector<SphericalDirection>& directions,
             const Slice& solutionInterval,
