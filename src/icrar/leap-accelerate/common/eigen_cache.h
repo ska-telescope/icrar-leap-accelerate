@@ -36,14 +36,6 @@
 namespace icrar
 {
     /**
-     * @brief Computes the component-wise arguments/angles of a complex matrix
-     * 
-     * @param a complex matrix
-     * @return Eigen::MatrixXd arguments matrix
-     */
-    Eigen::MatrixXd arg(const Eigen::Ref<const Eigen::MatrixXcd>& a);
-
-    /**
      * @brief Hash function for Eigen matrix and vector.
      * The code is from `hash_combine` function of the Boost library. See
      * http://www.boost.org/doc/libs/1_55_0/doc/html/hash/reference.html#boost.hash_combine .
