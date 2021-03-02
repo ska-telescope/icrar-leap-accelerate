@@ -23,7 +23,7 @@
 #include "eigen_helper.h"
 
 #include <icrar/leap-accelerate/common/stream_extensions.h>
-#include <icrar/leap-accelerate/common/vector_extensions.h>
+#include <icrar/leap-accelerate/math/vector_extensions.h>
 
 void assert_near_cd(const std::complex<double>& expected, const std::complex<double>& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {

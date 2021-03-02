@@ -107,7 +107,7 @@ breathe_projects_source = {
         "leap-accelerate/algorithm/cuda/CudaLeapCalibrator.h",
         "leap-accelerate/math/math_conversion.h",
         "leap-accelerate/math/complex_extensions.h",
-        "leap-accelerate/common/vector_extensions.h"
+        "leap-accelerate/math/vector_extensions.h"
     ])
 }
 
