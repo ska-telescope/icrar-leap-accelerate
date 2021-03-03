@@ -242,6 +242,6 @@ namespace icrar
     TEST_F(CudaMatrixEigenTests, TestPseudoInverseLarge) { TestPseudoInverseLarge(ComputeImplementation::cpu); }
     TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverseLarge) { TestPseudoInverseLarge(ComputeImplementation::cuda); }
     TEST_F(CudaMatrixEigenTests, TestPseudoInverseSKA) { TestPseudoInverseSKA(ComputeImplementation::cpu); }
-    TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverseSKA) { TestPseudoInverseSKA(ComputeImplementation::cuda); }
+    TEST_F(CudaMatrixEigenTests, DISABLED_TestCudaPseudoInverseSKA) { TestPseudoInverseSKA(ComputeImplementation::cuda); }
 
 }
