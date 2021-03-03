@@ -179,8 +179,6 @@ namespace cuda
         double epsilon = std::numeric_limits<typename Eigen::MatrixXd::Scalar>::epsilon();
         double tolerance = epsilon * std::max(a.cols(), a.rows()) * S.array().abs()(0);
 
-        LOG(info) << "building matrix...";
-
         Eigen::MatrixXd Sd;
         if(jobType == JobType::A)
         {

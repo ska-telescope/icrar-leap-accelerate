@@ -36,7 +36,8 @@ namespace cuda
     enum class JobType : signed char
     {
         A = 'A', ///< All - Entire dense matrix is used
-        S = 'S' ///< Slim/Thin - Copies only required values of matrix
+        S = 'S' ///< Slim/Thin - Minimal matrix dimensions
+        // T = 'T' Truncated
     };
 
     /**
@@ -44,7 +45,7 @@ namespace cuda
      * 
      * @param ctx 
      * @param a 
-     * @param jobtype 'A' or 'S' 
+     * @param jobtype SVD matrix dimension type
      * @return Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> 
      */
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> PseudoInverse(

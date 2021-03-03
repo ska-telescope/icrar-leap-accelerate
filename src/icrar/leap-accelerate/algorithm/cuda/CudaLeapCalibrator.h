@@ -75,7 +75,7 @@ namespace cuda
     class CudaLeapCalibrator : public ILeapCalibrator
     {
         cublasHandle_t m_cublasContext;
-        cusolverDnHandle_t m_cusolverDnCtx;
+        cusolverDnHandle_t m_cusolverDnContext;
 
     public:
         CudaLeapCalibrator();

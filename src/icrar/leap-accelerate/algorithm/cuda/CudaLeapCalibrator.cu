@@ -82,12 +82,12 @@ namespace cuda
         }
 
         checkCudaErrors(cublasCreate(&m_cublasContext));
-        checkCudaErrors(cusolverDnCreate(&m_cusolverDnCtx));
+        checkCudaErrors(cusolverDnCreate(&m_cusolverDnContext));
     }
 
     CudaLeapCalibrator::~CudaLeapCalibrator()
     {
-        checkCudaErrors(cusolverDnDestroy(m_cusolverDnCtx));
+        checkCudaErrors(cusolverDnDestroy(m_cusolverDnContext));
         checkCudaErrors(cublasDestroy(m_cublasContext));
 
         // cuda calls may still occur outside of this instance lifetime

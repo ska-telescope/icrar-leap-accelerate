@@ -31,22 +31,20 @@
 #include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 
 #include <icrar/leap-accelerate/core/log/logging.h>
+#include <icrar/leap-accelerate/core/compute_implementation.h>
 
 #include <Eigen/Core>
-
 #include <gtest/gtest.h>
-
 #include <stdio.h>
 #include <array>
-
-#include <icrar/leap-accelerate/common/eigen_stringutils.h>
 
 namespace icrar
 {
     class CudaMatrixEigenTests : public testing::Test
     {
         double TOLERANCE = 0.1;
-        cusolverDnHandle_t m_cusolverDnCtx;
+        cublasHandle_t m_cublasContext;
+        cusolverDnHandle_t m_cusolverDnContext;
 
     public:
         void SetUp() override
@@ -56,12 +54,14 @@ namespace icrar
             checkCudaErrors(cudaGetDeviceCount(&deviceCount));
             ASSERT_EQ(1, deviceCount);
 
-            checkCudaErrors(cusolverDnCreate(&m_cusolverDnCtx));
+            checkCudaErrors(cublasCreate(&m_cublasContext));
+            checkCudaErrors(cusolverDnCreate(&m_cusolverDnContext));
         }
 
         void TearDown() override
         {
-            checkCudaErrors(cusolverDnDestroy(m_cusolverDnCtx));
+            checkCudaErrors(cusolverDnDestroy(m_cusolverDnContext));
+            checkCudaErrors(cublasDestroy(m_cublasContext));
             checkCudaErrors(cudaDeviceReset());
         }
 
@@ -93,7 +93,7 @@ namespace icrar
             1, 3, 5,
             2, 4, 6;
 
-            auto m1d = icrar::cuda::PseudoInverse(m_cusolverDnCtx, m1, jobType);
+            auto m1d = icrar::cuda::PseudoInverse(m_cusolverDnContext, m1, jobType);
             ASSERT_MEQD(m1, m1 * m1d * m1, TOLERANCE);
             ASSERT_MEQD(Eigen::MatrixXd::Identity(2,2), m1 * m1d, TOLERANCE);
         }
@@ -109,7 +109,7 @@ namespace icrar
             -1, -1,
             -0.5, -0.5;
 
-            auto m1d = icrar::cuda::PseudoInverse(m_cusolverDnCtx, m1);
+            auto m1d = icrar::cuda::PseudoInverse(m_cusolverDnContext, m1);
 
             auto expected_m1d = Eigen::MatrixXd(N, M);
             expected_m1d <<
@@ -131,8 +131,8 @@ namespace icrar
             4, 5, 6,
             7, 8, 9;
 
-            ASSERT_THROW(icrar::cuda::PseudoInverse(m_cusolverDnCtx, m1, jobType), icrar::invalid_argument_exception);
-            //auto m1d = icrar::cuda::PseudoInverse(m_cusolverDnCtx, m1, jobType);
+            ASSERT_THROW(icrar::cuda::PseudoInverse(m_cusolverDnContext, m1, jobType), icrar::invalid_argument_exception);
+            //auto m1d = icrar::cuda::PseudoInverse(m_cusolverDnContext, m1, jobType);
             //ASSERT_MEQD(m1, m1 * m1d * m1, TOLERANCE);
             //ASSERT_MEQD(Eigen::MatrixXd::Identity(3,3), m1 * m1d, TOLERANCE);
         }
@@ -148,7 +148,7 @@ namespace icrar
             3, 4,
             5, 6;
 
-            Eigen::MatrixXd m1d = icrar::cuda::PseudoInverse(m_cusolverDnCtx, m1, jobType);
+            Eigen::MatrixXd m1d = icrar::cuda::PseudoInverse(m_cusolverDnContext, m1, jobType);
             ASSERT_MEQD(m1, m1 * (m1d * m1), TOLERANCE);
             ASSERT_MEQD(Eigen::MatrixXd::Identity(2,2), m1d * m1, TOLERANCE);
         }
@@ -165,7 +165,7 @@ namespace icrar
             5, 6,
             7, 8;
 
-            Eigen::MatrixXd m1d = icrar::cuda::PseudoInverse(m_cusolverDnCtx, m1, jobType);
+            Eigen::MatrixXd m1d = icrar::cuda::PseudoInverse(m_cusolverDnContext, m1, jobType);
             ASSERT_MEQD(m1, m1 * (m1d * m1), TOLERANCE);
             ASSERT_MEQD(Eigen::MatrixXd::Identity(2,2), m1d * m1, TOLERANCE);
         }
@@ -176,19 +176,27 @@ namespace icrar
             constexpr int N = 128;
 
             Eigen::MatrixXd m1 = Eigen::MatrixXd::Random(M, N);
-            Eigen::MatrixXd m1d = icrar::cuda::PseudoInverse(m_cusolverDnCtx, m1, jobType);
+            Eigen::MatrixXd m1d = icrar::cuda::PseudoInverse(m_cusolverDnContext, m1, jobType);
 
             ASSERT_MEQD(m1, m1 * (m1d * m1), TOLERANCE);
             ASSERT_MEQD(Eigen::MatrixXd::Identity(N,N), m1d * m1, TOLERANCE);
         }
 
-        void TestPseudoInverseLarge()
+        void TestPseudoInverseLarge(ComputeImplementation impl)
         {
-            constexpr int M = 61250;
-            constexpr int N = 350;
+            constexpr int M = 70817;
+            constexpr int N = 512;
 
             Eigen::MatrixXd m1 = Eigen::MatrixXd::Random(M, N);
-            Eigen::MatrixXd m1d = icrar::cuda::PseudoInverse(m_cusolverDnCtx, m1, cuda::JobType::S);
+            Eigen::MatrixXd m1d;
+            if(impl == ComputeImplementation::cuda)
+            {
+                m1d = icrar::cuda::PseudoInverse(m_cusolverDnContext, m1, cuda::JobType::S);
+            }
+            else
+            {
+                m1d = icrar::cpu::PseudoInverse(m1);
+            }
             
             //Note: for large matrices the smaller intermediate matrix is required to avoid std::bad_alloc issues
             Eigen::MatrixXd calculatedm1 = m1 * (m1d * m1);
@@ -196,13 +204,21 @@ namespace icrar
             ASSERT_MEQD(Eigen::MatrixXd::Identity(N,N), m1d * m1, TOLERANCE);
         }
 
-        void TestPseudoInverseSKA()
+        void TestPseudoInverseSKA(ComputeImplementation impl)
         {
-            constexpr int M = 130817; // TODO(calgray): cudamalloc
+            constexpr int M = 130817; // TODO(calgray): ska - cudamalloc error
             constexpr int N = 512;
 
             Eigen::MatrixXd m1 = Eigen::MatrixXd::Random(M, N);
-            Eigen::MatrixXd m1d = icrar::cuda::PseudoInverse(m_cusolverDnCtx, m1, cuda::JobType::S);
+            Eigen::MatrixXd m1d;
+            if(impl == ComputeImplementation::cuda)
+            {
+                m1d = icrar::cuda::PseudoInverse(m_cusolverDnContext, m1, cuda::JobType::S);
+            }
+            else
+            {
+                m1d = icrar::cpu::PseudoInverse(m1);
+            }
             
             //Note: for large matrices the smaller intermediate matrix is required to avoid memory issues
             Eigen::MatrixXd calculatedm1 = m1 * (m1d * m1);
@@ -211,18 +227,21 @@ namespace icrar
         }
     };
 
-    TEST_F(CudaMatrixEigenTests, TestGpuVectorAdd10) { TestVectorAdd(); }
-    TEST_F(CudaMatrixEigenTests, DISABLED_TestGpuPseudoInverse23A) { TestPseudoInverse23(cuda::JobType::A); }
-    TEST_F(CudaMatrixEigenTests, DISABLED_TestGpuPseudoInverse23S) { TestPseudoInverse23(cuda::JobType::S); }
-    TEST_F(CudaMatrixEigenTests, DISABLED_TestGpuPseudoInverse32Degenerate) { TestPseudoInverse32Degenerate(); }
-    TEST_F(CudaMatrixEigenTests, TestGpuPseudoInverse32A) { TestPseudoInverse32(cuda::JobType::A); }
-    TEST_F(CudaMatrixEigenTests, TestGpuPseudoInverse32S) { TestPseudoInverse32(cuda::JobType::S); }
-    TEST_F(CudaMatrixEigenTests, TestGpuPseudoInverse33A) { TestPseudoInverse33(cuda::JobType::A); }
-    TEST_F(CudaMatrixEigenTests, TestGpuPseudoInverse33S) { TestPseudoInverse33(cuda::JobType::S); }
-    TEST_F(CudaMatrixEigenTests, TestGpuPseudoInverse42A) { TestPseudoInverse42(cuda::JobType::A); }
-    TEST_F(CudaMatrixEigenTests, TestGpuPseudoInverse42S) { TestPseudoInverse42(cuda::JobType::S); }
+    TEST_F(CudaMatrixEigenTests, TestCudaVectorAdd10) { TestVectorAdd(); }
+    TEST_F(CudaMatrixEigenTests, DISABLED_TestCudaPseudoInverse23A) { TestPseudoInverse23(cuda::JobType::A); }
+    TEST_F(CudaMatrixEigenTests, DISABLED_TestCudaPseudoInverse23S) { TestPseudoInverse23(cuda::JobType::S); }
+    TEST_F(CudaMatrixEigenTests, DISABLED_TestCudaPseudoInverse32Degenerate) { TestPseudoInverse32Degenerate(); }
+    TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverse32A) { TestPseudoInverse32(cuda::JobType::A); }
+    TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverse32S) { TestPseudoInverse32(cuda::JobType::S); }
+    TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverse33A) { TestPseudoInverse33(cuda::JobType::A); }
+    TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverse33S) { TestPseudoInverse33(cuda::JobType::S); }
+    TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverse42A) { TestPseudoInverse42(cuda::JobType::A); }
+    TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverse42S) { TestPseudoInverse42(cuda::JobType::S); }
 
-    TEST_F(CudaMatrixEigenTests, TestGpuPseudoInverseMWA) { TestPseudoInverseMWA(cuda::JobType::S); }
-    TEST_F(CudaMatrixEigenTests, TestGpuPseudoInverseLarge) { TestPseudoInverseLarge(); }
-    TEST_F(CudaMatrixEigenTests, TestGpuPseudoInverseSKA) { TestPseudoInverseSKA(); }
+    TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverseMWA) { TestPseudoInverseMWA(cuda::JobType::S); }
+    TEST_F(CudaMatrixEigenTests, TestPseudoInverseLarge) { TestPseudoInverseLarge(ComputeImplementation::cpu); }
+    TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverseLarge) { TestPseudoInverseLarge(ComputeImplementation::cuda); }
+    TEST_F(CudaMatrixEigenTests, TestPseudoInverseSKA) { TestPseudoInverseSKA(ComputeImplementation::cpu); }
+    TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverseSKA) { TestPseudoInverseSKA(ComputeImplementation::cuda); }
+
 }
