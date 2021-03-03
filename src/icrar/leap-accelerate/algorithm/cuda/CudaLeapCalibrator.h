@@ -40,6 +40,9 @@
 //#define EIGEN_CUDACC 1
 #include <Eigen/Core>
 
+#include <cublas_v2.h>
+#include <cusolverDn.h>
+
 #include <boost/noncopyable.hpp>
 #include <vector>
 
@@ -72,6 +75,7 @@ namespace cuda
     class CudaLeapCalibrator : public ILeapCalibrator
     {
         cublasHandle_t m_cublasContext;
+        cusolverDnHandle_t m_cusolverDnCtx;
 
     public:
         CudaLeapCalibrator();

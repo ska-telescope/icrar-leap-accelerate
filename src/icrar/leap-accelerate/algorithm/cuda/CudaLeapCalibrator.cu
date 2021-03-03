@@ -46,6 +46,7 @@
 #include <cuda_runtime.h>
 #include <math_constants.h>
 #include <cuComplex.h>
+#include <cusolverDn.h>
 #include <cublas_v2.h>
 #include <thrust/complex.h>
 
@@ -81,13 +82,15 @@ namespace cuda
         }
 
         checkCudaErrors(cublasCreate(&m_cublasContext));
+        checkCudaErrors(cusolverDnCreate(&m_cusolverDnCtx));
     }
 
     CudaLeapCalibrator::~CudaLeapCalibrator()
     {
+        checkCudaErrors(cusolverDnDestroy(m_cusolverDnCtx));
         checkCudaErrors(cublasDestroy(m_cublasContext));
 
-        // cuda calls may still occur outside of this instance
+        // cuda calls may still occur outside of this instance lifetime
         //checkCudaErrors(cudaDeviceReset());
     }
 
@@ -137,6 +140,7 @@ namespace cuda
             referenceAntenna,
             minimumBaselineThreshold,
             isFileSystemCacheEnabled);
+        
         auto constantBuffer = std::make_shared<ConstantBuffer>(
             metadata.GetConstants(),
             metadata.GetA(),
@@ -151,7 +155,6 @@ namespace cuda
                 metadata.GetConstants().nbaselines * validatedSolutionInterval.GetInterval(),
                 metadata.GetAvgData().rows(),
                 metadata.GetAvgData().cols());
-        
         auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
         LOG(info) << "Metadata Constants loaded in " << metadata_read_timer;
 

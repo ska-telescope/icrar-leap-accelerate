@@ -44,10 +44,10 @@ set(sources
 
     math/math_conversion.cc
     math/cpu/eigen_extensions.cc
+    
     math/cuda/matrix.h
-    math/cuda/matrix.cuh
-    math/cuda/matrix_multiply.cuh
     math/cuda/matrix_multiply.cu
+    math/cuda/matrix_invert.cu
 
     model/cpu/Integration.cc
     model/cpu/MetaData.cc
@@ -127,7 +127,7 @@ if(CUDA_ENABLED)
   target_link_libraries(${TARGET_NAME} cublas)
   if(CUDA_VERSION_MAJOR VERSION_GREATER 9)
     target_link_libraries(${TARGET_NAME} cublasLt)
-    #target_link_libraries(${TARGET_NAME} ${CUDA_cusolver_LIBRARY})
+    target_link_libraries(${TARGET_NAME} ${CUDA_cusolver_LIBRARY})
   endif()
 endif()
 

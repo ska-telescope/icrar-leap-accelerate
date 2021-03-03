@@ -22,5 +22,7 @@
 
 #pragma once
 
+//#include <icrar/leap-accelerate/math/cuda/matrix_add.h>
 #include <icrar/leap-accelerate/math/cuda/matrix_multiply.h>
+#include <icrar/leap-accelerate/math/cuda/matrix_invert.h>
 

@@ -43,6 +43,7 @@ namespace cpu
 {
     MetaData::MetaData(const icrar::MeasurementSet& ms, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool useCache)
     : m_constants({})
+    , m_useCache(useCache)
     , m_minimumBaselineThreshold(minimumBaselineThreshold)
     {
         auto pms = ms.GetMS();
@@ -90,6 +91,7 @@ namespace cpu
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumnRange(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
         
+
         LOG(info) << "Calculating PhaseMatrix A1";
         std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), filteredBaselines, m_constants.referenceAntenna);
         trace_matrix(m_A1, "A1");
@@ -99,20 +101,26 @@ namespace cpu
         std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), filteredBaselines, boost::none);
         trace_matrix(m_A, "A");
 
+        //TODO: no need to compute each time
+        ComputeInverse();
+    }
+
+    void MetaData::ComputeInverse()
+    {
         auto invertA1 = [](const Eigen::MatrixXd& a)
         {
-            LOG(info) << "Inverting PhaseMatrix A1";
+            LOG(info) << "Inverting PhaseMatrix A1 " << a.rows() << ":" << a.cols();
             return icrar::cpu::PseudoInverse(a);
         };
 
         auto invertA = [](const Eigen::MatrixXd& a)
         {
-            LOG(info) << "Inverting PhaseMatrix A";
+            LOG(info) << "Inverting PhaseMatrix A " << a.rows() << ":" << a.cols();
             return icrar::cpu::PseudoInverse(a);
         };
 
         m_Ad1 = invertA1(m_A1);
-        if(useCache)
+        if(m_useCache)
         {
             //cache Ad with A hash
             ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(

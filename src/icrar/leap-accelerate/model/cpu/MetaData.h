@@ -111,6 +111,7 @@ namespace cpu
     protected:
         Constants m_constants;
         double m_minimumBaselineThreshold;
+        bool m_useCache;
 
         Eigen::MatrixXd m_A;
         Eigen::VectorXi m_I; // The flagged indexes of A
@@ -195,6 +196,12 @@ namespace cpu
         void SetDirection(const SphericalDirection& direction);
 
         void SetUVW(const std::vector<icrar::MVuvw>& uvws);
+
+        /**
+         * @brief Computes the A and A1 inverse matrices 
+         * 
+         */
+        void ComputeInverse();
 
         /**
          * @brief Updates the rotated UVW vector using the DD matrix

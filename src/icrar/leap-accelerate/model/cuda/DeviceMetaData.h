@@ -81,6 +81,23 @@ namespace cuda
             const Eigen::MatrixXd& A1,
             const Eigen::VectorXi& I1,
             const Eigen::MatrixXd& Ad1);
+        
+        /**
+         * @brief Construct a new Constant Buffer object and compute inverse matrices
+         * 
+         * @param constants 
+         * @param A 
+         * @param I 
+         * @param A1 
+         * @param I1 
+         */
+        ConstantBuffer(
+            cusolverDnHandle_t& cusolverHandle,
+            const icrar::cpu::Constants& constants,
+            const Eigen::MatrixXd& A,
+            const Eigen::VectorXi& I,
+            const Eigen::MatrixXd& A1,
+            const Eigen::VectorXi& I1);
 
         const icrar::cpu::Constants& GetConstants() const { return m_constants; }
         const device_matrix<double>& GetA() const { return m_A; } 

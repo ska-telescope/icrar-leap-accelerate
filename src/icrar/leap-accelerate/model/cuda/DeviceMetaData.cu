@@ -25,6 +25,7 @@
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
 #include <icrar/leap-accelerate/exception/exception.h>
+#include <icrar/leap-accelerate/math/cuda/matrix_invert.h>
 
 namespace icrar
 {
@@ -45,6 +46,22 @@ namespace cuda
         , m_A1(A1)
         , m_I1(I1)
         , m_Ad1(Ad1) { }
+
+    ConstantBuffer::ConstantBuffer(
+            cusolverDnHandle_t& cusolverHandle,
+            const icrar::cpu::Constants& constants,
+            const Eigen::MatrixXd& A,
+            const Eigen::VectorXi& I,
+            const Eigen::MatrixXd& A1,
+            const Eigen::VectorXi& I1)
+        : m_constants(constants)
+        , m_A(A)
+        , m_I(I)
+        , m_A1(A1)
+        , m_I1(I1)
+        , m_Ad(cuda::PseudoInverse(cusolverHandle, A, JobType::S))
+        , m_Ad1(cuda::PseudoInverse(cusolverHandle, A1, JobType::S))
+        { }
 
     void ConstantBuffer::ToHost(icrar::cpu::MetaData& host) const
     {
