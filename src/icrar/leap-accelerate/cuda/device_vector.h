@@ -135,6 +135,11 @@ namespace cuda
             return m_count;
         }
 
+        constexpr __host__ __device__ size_t GetCols() const
+        {
+            return 1;
+        }
+
         /**
          * @brief Gets the buffer size in bytes
          */

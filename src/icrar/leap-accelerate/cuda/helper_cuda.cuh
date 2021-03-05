@@ -37,8 +37,9 @@
 
 #if CUBLAS_VER_MAJOR > 9
 #include <cublasLt.h>
-#include <cusolverDn.h>
 #endif
+
+#include <cusolverDn.h>
 
 #include <cstdint>
 #include <cstdio>

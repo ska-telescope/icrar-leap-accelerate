@@ -49,6 +49,7 @@ namespace cuda
 
     ConstantBuffer::ConstantBuffer(
             cusolverDnHandle_t& cusolverHandle,
+            cublasHandle_t& cublasHandle,
             const icrar::cpu::Constants& constants,
             const Eigen::MatrixXd& A,
             const Eigen::VectorXi& I,
@@ -59,8 +60,8 @@ namespace cuda
         , m_I(I)
         , m_A1(A1)
         , m_I1(I1)
-        , m_Ad(cuda::PseudoInverse(cusolverHandle, A, JobType::S))
-        , m_Ad1(cuda::PseudoInverse(cusolverHandle, A1, JobType::S))
+        , m_Ad(cuda::PseudoInverse(cusolverHandle, nullptr, A, JobType::S))
+        , m_Ad1(cuda::PseudoInverse(cusolverHandle, nullptr, A1, JobType::S))
         { }
 
     void ConstantBuffer::ToHost(icrar::cpu::MetaData& host) const

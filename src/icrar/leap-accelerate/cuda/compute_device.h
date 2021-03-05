@@ -22,37 +22,22 @@
 
 #pragma once
 
-#include <cusolverDn.h>
-#include <Eigen/Dense>
+#if CUDA_ENABLED
 
 namespace icrar
 {
 namespace cuda
 {
-    /**
-     * @brief Corresponds to SVD job types of CusolverDn API (e.g. cusolverDnDgesvd)
-     * 
-     */
-    enum class JobType : signed char
+    class ComputeDevice
     {
-        A = 'A', ///< All - Entire dense matrix is used
-        S = 'S' ///< Slim/Thin - Minimal matrix dimensions
-        // T = 'T' Truncated
+#if CUBLAS_VER_MAJOR > 11
+        cublasHandle_t m_cublasContext;
+#else
+        cublasLtHandle_t m_cublasLtContext;
+#endif
+        cusolverDnHandle_t m_cusolverDnContext;
     };
 
-    /**
-     * @brief 
-     * 
-     * @param cusolverHandle 
-     * @param cublasHandle
-     * @param a 
-     * @param jobtype SVD matrix dimension type
-     * @return Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> 
-     */
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> PseudoInverse(
-        cusolverDnHandle_t cusolverHandle,
-        cublasHandle_t cublasHandle,
-        const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& a,
-        const JobType jobtype = JobType::S);
-} // namespace cuda
+#endif
+} // namepsace cuda
 } // namespace icrar

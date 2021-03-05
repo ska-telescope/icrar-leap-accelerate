@@ -28,6 +28,11 @@
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/core/ioutils.h>
 
+#include <icrar/leap-accelerate/cuda/device_matrix.h>
+#include <icrar/leap-accelerate/cuda/device_vector.h>
+
+#include <icrar/leap-accelerate/math/cuda/matrix_multiply.h>
+
 #include <Eigen/Dense>
 #include <Eigen/LU>
 
@@ -47,16 +52,17 @@ namespace icrar
 namespace cuda
 {
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> PseudoInverse(
-        cusolverDnHandle_t ctx,
-        const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& a,
+        cusolverDnHandle_t cusolverHandle,
+        cublasHandle_t cublasHandle,
+        const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& matrix,
         const JobType jobType)
     {
-        size_t m = a.rows();
-        size_t n = a.cols();
+        size_t m = matrix.rows();
+        size_t n = matrix.cols();
         size_t k = std::min(m, n);
         if(m <= n)
         {
-            throw invalid_argument_exception("m<=n not supported", "a", __FILE__, __LINE__);
+            throw invalid_argument_exception("m<=n not supported", "matrix", __FILE__, __LINE__);
         }
 
         signed char jobu = static_cast<std::underlying_type<decltype(jobType)>::type>(jobType);
@@ -102,28 +108,24 @@ namespace cuda
         checkCudaErrors(cudaMemGetInfo(&free, &total));
         LOG(info) << "free memory: " << memory_amount(free) << "/" << memory_amount(total); 
         LOG(info) << "cuda svd allocation (" << m << ", " << n << "): "
-        << memory_amount((a.size() + U.size() + Vt.size() + S.size()) * sizeof(double));
-        // https://stackoverflow.com/questions/17401765/parallel-implementation-for-multiple-svds-using-cuda
+        << memory_amount((matrix.size() + U.size() + Vt.size() + S.size()) * sizeof(double));
 
-        //gesvdjInfo_t gesvdjParams = nullptr;
-        //cusolveSafeCall(cusolverDnCreateGesvdjInfo(&gesvdjParams));
+
+        auto d_U = device_matrix<double>(U.rows(), U.cols());
+        auto d_Vt = device_matrix<double>(Vt.rows(), Vt.cols());
+
+        // Solve U, S, Vt with A
+        // https://stackoverflow.com/questions/17401765/parallel-implementation-for-multiple-svds-using-cuda
         {
+            auto d_A = device_matrix<double>(matrix);
+            auto d_S = device_vector<double>(S.size());
+            
+            //gesvdjInfo_t gesvdjParams = nullptr;
+            //cusolveSafeCall(cusolverDnCreateGesvdjInfo(&gesvdjParams));
+
             int* d_devInfo;
             size_t d_devInfoSize = sizeof(std::remove_pointer_t<decltype(d_devInfo)>());
             checkCudaErrors(cudaMalloc(&d_devInfo, d_devInfoSize));
-
-            const double* h_A = a.data();
-            double* d_A;
-            checkCudaErrors(cudaMalloc(&d_A, a.rows() * a.cols() * sizeof(double)));
-            checkCudaErrors(cudaMemcpy(d_A, h_A, a.rows() * a.cols() * sizeof(double), cudaMemcpyKind::cudaMemcpyHostToDevice));
-
-            double* h_U = U.data();
-            double* h_Vt = Vt.data();
-            double* h_S = S.data();
-
-            double* d_U; checkCudaErrors(cudaMalloc(&d_U, U.rows() * U.cols() * sizeof(double)));
-            double* d_Vt; checkCudaErrors(cudaMalloc(&d_Vt, Vt.rows() * Vt.cols() * sizeof(double)));
-            double* d_S; checkCudaErrors(cudaMalloc(&d_S, S.size() * sizeof(double)));
 
             // --- Set the computation tolerance, since the default tolerance is machine precision
             //cusolveSafeCall(cusolverDnXgesvdjSetTolerance(gesvdj_params, tol));
@@ -132,7 +134,7 @@ namespace cuda
             //cusolveSafeCall(cusolverDnXgesvdjSetMaxSweeps(gesvdj_params, maxSweeps));
 
             int workSize = 0;
-            checkCudaErrors(cusolverDnDgesvd_bufferSize(ctx, m, n, &workSize));
+            checkCudaErrors(cusolverDnDgesvd_bufferSize(cusolverHandle, m, n, &workSize));
             LOG(info) << "inverse matrix cuda worksize: " << memory_amount(workSize * sizeof(double));
             double* d_work; checkCudaErrors(cudaMalloc(&d_work, workSize * sizeof(double)));
 
@@ -141,15 +143,15 @@ namespace cuda
 
             int h_devInfo = 0;
             checkCudaErrors(cusolverDnDgesvd(
-                ctx,
+                cusolverHandle,
                 jobu, jobvt,
                 m, n,
-                d_A,
+                d_A.Get(),
                 lda,
-                d_S,
-                d_U,
+                d_S.Get(),
+                d_U.Get(),
                 ldu,
-                d_Vt,
+                d_Vt.Get(),
                 ldvt,
                 d_work,
                 workSize,
@@ -164,20 +166,15 @@ namespace cuda
                 throw icrar::exception(ss.str(), __FILE__, __LINE__);
             }
 
-            checkCudaErrors(cudaMemcpy(h_S, d_S, S.size() * sizeof(double), cudaMemcpyDeviceToHost));
-            checkCudaErrors(cudaMemcpy(h_U, d_U, U.size() * sizeof(double), cudaMemcpyDeviceToHost));
-            checkCudaErrors(cudaMemcpy(h_Vt, d_Vt, Vt.size() * sizeof(double), cudaMemcpyDeviceToHost));
-
-            checkCudaErrors(cudaFree(d_S));
-            checkCudaErrors(cudaFree(d_Vt));
-            checkCudaErrors(cudaFree(d_U));
+            d_S.ToHostAsync(S.data()); // Sigma currently converted to matrix on cpu
             checkCudaErrors(cudaFree(d_devInfo));
+
             //cusolverDnDestroyGesvdjInfo(&);
         }
 
         cudaThreadSynchronize();
         double epsilon = std::numeric_limits<typename Eigen::MatrixXd::Scalar>::epsilon();
-        double tolerance = epsilon * std::max(a.cols(), a.rows()) * S.array().abs()(0);
+        double tolerance = epsilon * std::max(matrix.cols(), matrix.rows()) * S.array().abs()(0);
 
         Eigen::MatrixXd Sd;
         if(jobType == JobType::A)
@@ -193,9 +190,20 @@ namespace cuda
             throw invalid_argument_exception("Unsupported argument", "jobType", __FILE__, __LINE__);
         }
         Sd.topLeftCorner(k, k) = (S.array().abs() > tolerance).select(S.array().inverse(), 0).matrix().asDiagonal();
+
+
+        auto d_Sd = device_matrix<double>(Sd);
+        auto d_result = device_matrix<double>(Sd.rows(), U.rows());
         
+        // result = V * (S * Ut)
+        icrar::cuda::multiply(cublasHandle, d_Sd, d_U, d_result, MatrixOp::normal, MatrixOp::hermitian);
+        icrar::cuda::multiply(cublasHandle, d_Vt, d_result, d_result, MatrixOp::transpose, MatrixOp::normal);
+
+        auto VSUt = Eigen::MatrixXd(matrix.cols(), matrix.rows());
+        d_result.ToHostAsync(VSUt.data());
+
         //Inverse = V * Sd * Ut
-        return Vt.transpose() * Sd * U.adjoint();
+        return VSUt;
     }
 } // namespace cuda
 } // namespace icrar

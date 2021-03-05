@@ -44,10 +44,6 @@ set(sources
 
     math/math_conversion.cc
     math/cpu/eigen_extensions.cc
-    
-    math/cuda/matrix.h
-    math/cuda/matrix_multiply.cu
-    math/cuda/matrix_invert.cu
 
     model/cpu/Integration.cc
     model/cpu/MetaData.cc
@@ -66,6 +62,10 @@ set(sources
     set(cuda_sources
     cuda/cuda_info.cu
     
+    math/cuda/matrix_op.cu
+    math/cuda/matrix_multiply.cu
+    math/cuda/matrix_invert.cu
+
     model/cuda/DeviceMetaData.cu
     model/cuda/DeviceIntegration.cu
     algorithm/cuda/CudaLeapCalibrator.cu

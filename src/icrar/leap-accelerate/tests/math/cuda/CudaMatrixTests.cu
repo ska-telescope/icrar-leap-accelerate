@@ -21,6 +21,7 @@
  */
 
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+#include <icrar/leap-accelerate/math/cuda/matrix_op.h>
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
 #include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 
@@ -72,6 +73,58 @@ namespace icrar
             cd.ToHost(c);
 
             MatrixXT expected = (a * b);
+            ASSERT_MEQD(expected, c, TOLERANCE);
+        }
+
+        template<typename T>
+        void TestMatrixMatrixMultiplyTranspose()
+        {
+            using MatrixXT = Eigen::Matrix<T, -1, -1>;
+
+            auto a = MatrixXT(2,2);
+            a << 1, 2,
+                3, 4;
+
+            auto b = MatrixXT(3,2);
+            b << 5, 8,
+                 6, 9,
+                 7, 10;
+
+            auto c = MatrixXT(2,3);
+
+            auto ad = cuda::device_matrix<T>(a);
+            auto bd = cuda::device_matrix<T>(b);
+            auto cd = cuda::device_matrix<T>(c);
+            icrar::cuda::multiply(m_cublasContext, ad, bd, cd, cuda::MatrixOp::normal, cuda::MatrixOp::transpose);
+            cd.ToHost(c);
+
+            MatrixXT expected = a * b.transpose();
+            ASSERT_MEQD(expected, c, TOLERANCE);
+        }
+
+        template<typename T>
+        void TestMatrixMatrixMultiplyHermetian()
+        {
+            using MatrixXT = Eigen::Matrix<T, -1, -1>;
+
+            auto a = MatrixXT(2,2);
+            a << 1, 2,
+                3, 4;
+
+            auto b = MatrixXT(3,2);
+            b << 5, 8,
+                 6, 9,
+                 7, 10;
+
+            auto c = MatrixXT(2,3);
+
+            auto ad = cuda::device_matrix<T>(a);
+            auto bd = cuda::device_matrix<T>(b);
+            auto cd = cuda::device_matrix<T>(c);
+            icrar::cuda::multiply(m_cublasContext, ad, bd, cd, cuda::MatrixOp::normal, cuda::MatrixOp::hermitian);
+            cd.ToHost(c);
+
+            MatrixXT expected = a * b.adjoint();
             ASSERT_MEQD(expected, c, TOLERANCE);
         }
 
@@ -144,17 +197,12 @@ namespace icrar
             MatrixXT expected = a * b;
             ASSERT_EQ(c, expected);
         }
-
-        template<typename T>
-        void TestScalearMatrixMultiply()
-        {
-
-        }
     };
 
     TEST_F(CudaMatrixTests, TestMatrixMatrixMultiply) { TestMatrixMatrixMultiply<double>(); }
+    TEST_F(CudaMatrixTests, TestMatrixMatrixMultiplyTranspose) { TestMatrixMatrixMultiplyTranspose<double>(); }
+    TEST_F(CudaMatrixTests, TestMatrixMatrixMultiplyHermetian) { TestMatrixMatrixMultiplyHermetian<double>(); }
     TEST_F(CudaMatrixTests, TestMatrixMatrixMultiplyAdd) { TestMatrixMatrixMultiplyAdd<double>(); }
     TEST_F(CudaMatrixTests, TestMatrixMatrixMultiply32) { TestMatrixMatrixMultiply32<double>(); }
     TEST_F(CudaMatrixTests, TestMatrixVectorMultiply33) { TestMatrixVectorMultiply33<double>(); }
-    TEST_F(CudaMatrixTests, DISABLED_TestScalearMatrixMultiply) { TestScalearMatrixMultiply<double>(); }
 } // namespace icrar

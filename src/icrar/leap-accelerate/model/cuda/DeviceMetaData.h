@@ -50,6 +50,8 @@
 #include <vector>
 #include <complex>
 
+#include <cublas_v2.h>
+#include <cusolverDn.h>
 #include <cuComplex.h>
 
 namespace icrar
@@ -93,6 +95,7 @@ namespace cuda
          */
         ConstantBuffer(
             cusolverDnHandle_t& cusolverHandle,
+            cublasHandle_t& cublasHandle,
             const icrar::cpu::Constants& constants,
             const Eigen::MatrixXd& A,
             const Eigen::VectorXi& I,
