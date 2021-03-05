@@ -96,12 +96,12 @@ add_library(
 )
 endif()
 
-if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
-# TODO(calgray): clang-tidy tries to analyze pch systems headers
-#  target_precompile_headers(${TARGET_NAME}
-#    PRIVATE
-#    [[pch.h]]
-#  )
+if(${CMAKE_VERSION} VERSION_GREATER "3.16.0" AND NOT CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+  # clang-tidy analysis does not support precompiled headers
+  target_precompile_headers(${TARGET_NAME}
+    PRIVATE
+    [[pch.h]]
+  )
 endif()
 
 #target_compile_definitions(${TARGET_NAME} PUBLIC PRETTY_WRITER)

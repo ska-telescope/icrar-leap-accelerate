@@ -234,6 +234,7 @@ static const char *_cudaGetErrorEnum(cusolverStatus_t error) {
       return "CUSOLVER_STATUS_ZERO_PIVOT";
     case CUSOLVER_STATUS_INVALID_LICENSE:
       return "CUSOLVER_STATUS_INVALID_LICENSE";
+#if CUSOLVER_VER_MAJOR >= 10
     case CUSOLVER_STATUS_IRS_PARAMS_NOT_INITIALIZED:
       return "CUSOLVER_STATUS_IRS_PARAMS_NOT_INITIALIZED";
     case CUSOLVER_STATUS_IRS_PARAMS_INVALID:
@@ -260,6 +261,7 @@ static const char *_cudaGetErrorEnum(cusolverStatus_t error) {
       return "CUSOLVER_STATUS_IRS_MATRIX_SINGULAR";
     case CUSOLVER_STATUS_INVALID_WORKSPACE:
       return "CUSOLVER_STATUS_INVALID_WORKSPACE";
+#endif
   }
 
   return "<unknown>";

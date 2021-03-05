@@ -41,10 +41,10 @@ namespace icrar
 {
 namespace cpu
 {
-    MetaData::MetaData(const icrar::MeasurementSet& ms, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool useCache)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool computeInverse, bool useCache)
     : m_constants({})
-    , m_useCache(useCache)
     , m_minimumBaselineThreshold(minimumBaselineThreshold)
+    , m_useCache(useCache)
     {
         auto pms = ms.GetMS();
         auto msc = ms.GetMSColumns();
@@ -101,8 +101,10 @@ namespace cpu
         std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), filteredBaselines, boost::none);
         trace_matrix(m_A, "A");
 
-        //TODO: no need to compute each time
-        ComputeInverse();
+        if(computeInverse)
+        {
+            ComputeInverse();
+        }
     }
 
     void MetaData::ComputeInverse()
@@ -147,14 +149,14 @@ namespace cpu
         }
     }
 
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool useCache)
-    : MetaData(ms, refAnt, minimumBaselineThreshold, useCache)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool computeInverse, bool useCache)
+    : MetaData(ms, refAnt, minimumBaselineThreshold, computeInverse, useCache)
     {
         SetUVW(uvws);
     }
 
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool useCache)
-    : MetaData(ms, uvws, refAnt, minimumBaselineThreshold, useCache)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool computeInverse, bool useCache)
+    : MetaData(ms, uvws, refAnt, minimumBaselineThreshold, computeInverse, useCache)
     {
         SetUVW(uvws);
         SetDirection(direction);

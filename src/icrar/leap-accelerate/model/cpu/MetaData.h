@@ -137,7 +137,7 @@ namespace cpu
          * @param minimumBaselineThreshold
          * @param useCache
          */
-        MetaData(const icrar::MeasurementSet& ms, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool useCache = true);
+        MetaData(const icrar::MeasurementSet& ms, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool computeInverse = true, bool useCache = true);
 
 
         /**
@@ -149,7 +149,7 @@ namespace cpu
          * @param minimumBaselineThreshold baseline lengths less that the minimum in meters are flagged
          * @param useCache whether to load Ad matrix from cache
          */
-        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool useCache = true);
+        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool computeInverse = true, bool useCache = true);
 
         /**
          * @brief Construct a new MetaData object.
@@ -161,7 +161,7 @@ namespace cpu
          * @param minimumBaselineThreshold baseline lengths less that the minimum in meters are flagged
          * @param useCache whether to load Ad matrix from cache
          */
-        MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool useCache = true);
+        MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool computeInverse = true, bool useCache = true);
 
         const Constants& GetConstants() const;
 
