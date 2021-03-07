@@ -257,7 +257,6 @@ namespace cuda
         auto devicedeltaPhase = device_matrix<double>(metadata.GetI().size(), metadata.GetAvgData().cols());
         auto deviceDeltaPhaseColumn = device_vector<double>(metadata.GetI().size() + 1);
         auto cal1 = Eigen::VectorXd(metadata.GetAd1().rows());
-        LOG(info) << "buffers created";
 
         AvgDataToPhaseAngles(deviceMetadata.GetConstantBuffer().GetI1(), deviceMetadata.GetAvgData(), devicePhaseAnglesI1);
         cuda::multiply(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd1(), devicePhaseAnglesI1, deviceCal1);

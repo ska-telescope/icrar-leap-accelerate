@@ -95,6 +95,7 @@ namespace cpu
             ms,
             referenceAntenna,
             minimumBaselineThreshold,
+            true,
             isFileSystemCacheEnabled);
         LOG(info) << "Read metadata in " << metadata_read_timer;
 
