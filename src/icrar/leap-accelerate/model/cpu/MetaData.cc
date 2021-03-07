@@ -232,20 +232,12 @@ namespace cpu
 
     void MetaData::CalcUVW()
     {
-        auto size = m_UVW.size();
-        m_rotatedUVW.clear();
-        m_rotatedUVW.reserve(m_UVW.size());
-        for(size_t n = 0; n < size; n++)
-        {
-            m_rotatedUVW.emplace_back(m_dd * m_UVW[n]);
-        }
     }
 
     bool MetaData::operator==(const MetaData& rhs) const
     {
         return m_constants == rhs.m_constants
         && m_UVW == rhs.m_UVW
-        && m_rotatedUVW == rhs.m_rotatedUVW
         && m_A == rhs.m_A
         && m_I == rhs.m_I
         && m_Ad == rhs.m_Ad

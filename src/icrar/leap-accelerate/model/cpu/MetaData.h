@@ -122,7 +122,6 @@ namespace cpu
         Eigen::MatrixXd m_Ad1;
 
         std::vector<icrar::MVuvw> m_UVW;
-        std::vector<icrar::MVuvw> m_rotatedUVW; // late initialized
     
         SphericalDirection m_direction; // calibration direction, late initialized
         Eigen::Matrix3d m_dd; // direction dependant matrix, late initialized
@@ -189,7 +188,6 @@ namespace cpu
         const Eigen::MatrixXd& GetAd1() const;
 
         const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
-        const std::vector<icrar::MVuvw>& GetRotatedUVW() const { return m_rotatedUVW; }
 
         const SphericalDirection& GetDirection() const { return m_direction; }
         const Eigen::Matrix3d& GetDD() const { return m_dd; }

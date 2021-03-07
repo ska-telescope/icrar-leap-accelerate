@@ -172,15 +172,20 @@ namespace cpu
         phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
         phaseAnglesI1(phaseAnglesI1.rows() - 1) = 0;
 
+        LOG(info) << "Cal1 Calibration";
         Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAnglesI1;
+        LOG(info) << "ACal1 Calibration";
         Eigen::VectorXd ACal1 = metadata.GetA() * cal1;
 
+        LOG(info) << "DeltaPhase Calibration";
         Eigen::MatrixXd deltaPhase = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
             deltaPhase.row(n) = icrar::cpu::arg(std::exp(std::complex<double>(0, -two_pi<double>() * ACal1(n))) * metadata.GetAvgData().row(n));
         }
 
+
+        LOG(info) << "DeltaPhase0 Calibration";
         Eigen::VectorXd deltaPhaseColumn = deltaPhase.col(0); // 1st pol only
         deltaPhaseColumn.conservativeResize(deltaPhaseColumn.size() + 1);
         deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0;
@@ -197,7 +202,8 @@ namespace cpu
         for(size_t baseline = 0; baseline < integration.GetBaselines(); ++baseline)
         {
             auto md_baseline = static_cast<int>(baseline % static_cast<size_t>(metadata.GetConstants().nbaselines)); // metadata baseline
-            double shiftFactor = -two_pi<double>() * (metadata.GetRotatedUVW()[baseline](2) - metadata.GetUVW()[baseline](2));
+            auto rotatedUVW = metadata.GetDD() * metadata.GetUVW()[baseline];
+            double shiftFactor = -two_pi<double>() * (rotatedUVW(2) - metadata.GetUVW()[baseline](2));
 
             // Loop over channels
             for(uint32_t channel = 0; channel < metadata.GetConstants().channels; channel++)
