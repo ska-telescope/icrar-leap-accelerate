@@ -237,7 +237,6 @@ namespace icrar
             auto directionBuffer = std::make_shared<icrar::cuda::DirectionBuffer>(
                 expectedhostMetadata.GetDirection(),
                 expectedhostMetadata.GetDD(),
-                expectedhostMetadata.GetRotatedUVW(),
                 expectedhostMetadata.GetAvgData()
             );
 

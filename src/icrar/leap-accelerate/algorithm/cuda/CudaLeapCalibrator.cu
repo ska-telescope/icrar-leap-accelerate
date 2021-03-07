@@ -217,12 +217,6 @@ namespace cuda
                 input_queue[0].Set(integration);
     #endif
 
-                LOG(info) << "RotateUVW";
-                RotateUVW(
-                    directionBuffer->GetDD(),
-                    solutionIntervalBuffer->GetUVW(),
-                    directionBuffer->GetRotatedUVW());
-
                 LOG(info) << "PhaseRotate";
                 PhaseRotate(
                     metadata,
@@ -269,50 +263,19 @@ namespace cuda
     }
 
     /**
-     * @brief Kernel for rotating UVWs
-     * 
-     * @param dd rotation matrix
-     * @param UVWs unrotated UVW buffer
-     * @param RotatedUVWs output rotated UVW buffer
-     */
-    __global__ void g_RotateUVW(
-        const Eigen::Matrix3d dd,
-        const Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>> UVWs,
-        Eigen::Map<Eigen::Matrix<double, 3, Eigen::Dynamic>> RotatedUVWs)
-    {
-        // Compute cols in parallel
-        int col = blockDim.x * blockIdx.x + threadIdx.x;
-        if(col < UVWs.cols())
-        {
-            RotatedUVWs.col(col) = dd * UVWs.col(col);
-        }
-    }
-
-    __host__ void CudaLeapCalibrator::RotateUVW(Eigen::Matrix3d dd, const device_vector<icrar::MVuvw>& UVWs, device_vector<icrar::MVuvw>& rotatedUVWs)
-    {
-        assert(UVWs.GetCount() == rotatedUVWs.GetCount());
-        dim3 blockSize = dim3(1024, 1, 1);
-        dim3 gridSize = dim3((int)ceil((float)UVWs.GetCount() / blockSize.x), 1, 1);
-
-        auto UVWsMap = Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>>(UVWs.Get()->data(), 3, UVWs.GetCount());
-        auto rotatedUVWsMap = Eigen::Map<Eigen::Matrix<double, 3, Eigen::Dynamic>>(rotatedUVWs.Get()->data(), 3, rotatedUVWs.GetCount());
-        g_RotateUVW<<<blockSize, gridSize>>>(dd, UVWsMap, rotatedUVWsMap);
-    }
-
-    /**
      * @brief Rotates visibilities in parallel for baselines and channels
      * @note Atomic operator required for writing to @p pAvgData
      * 
      * @param constants measurement set constants
-     * @param rotatedUVW rotated uvws
+     * @param dd direction dependent rotation 
      * @param UVW unrotated uvws
      * @param integrationData inout integration data 
      * @param avgData output avgData to increment
      */
     __global__ void g_RotateVisibilities(
         const icrar::cpu::Constants constants,
-        const Eigen::Map<Eigen::Matrix<double3, Eigen::Dynamic, 1>> rotatedUVW,
-        const Eigen::Map<Eigen::Matrix<double3, Eigen::Dynamic, 1>> UVW,
+        const Eigen::Matrix3d dd,
+        const Eigen::Map<Eigen::Matrix<double, 3, Eigen::Dynamic>> UVWs,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>> integrationData,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> avgData)
     {
@@ -322,7 +285,7 @@ namespace cuda
         const int polarizations = constants.num_pols;
 
         //parallel execution per channel
-        int baseline = blockDim.x * blockIdx.x + threadIdx.x;
+        int baseline = blockDim.x * blockIdx.x + threadIdx.x; //baseline amongst all time smeared baselines
         int channel = blockDim.y * blockIdx.y + threadIdx.y;
 
         if(baseline < integration_baselines && channel < integration_channels)
@@ -332,14 +295,13 @@ namespace cuda
             // loop over baselines
             constexpr double two_pi = 2 * CUDART_PI;
 
-            //TODO(calgray): Rotated UVW could be calculated here
-            double shiftFactor = -two_pi * (rotatedUVW[baseline].z - UVW[baseline].z);
+            Eigen::Vector3d rotatedUVW = dd * UVWs.col(baseline);
+            double shiftFactor = -two_pi * (rotatedUVW.z() - UVWs.col(baseline).z());
 
             // loop over channels
             double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
             cuDoubleComplex exp = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
 
-            //std::vector<cuDoubleComplex> rotatedIntegrations(polarizations);
             for(int polarization = 0; polarization < polarizations; polarization++)
             {
                 integrationData(polarization, baseline, channel) = cuCmul(integrationData(polarization, baseline, channel), exp);
@@ -392,19 +354,15 @@ namespace cuda
             (int)metadata.GetAvgData().GetCols() // inferring (const int) causes error
         );
 
-        auto rotatedUVWMap = Eigen::Map<Eigen::Matrix<double3, -1, 1>>(
-            (double3*)metadata.GetRotatedUVW().Get(),
-            metadata.GetRotatedUVW().GetCount()
-        );
-
-        auto UVWMap = Eigen::Map<Eigen::Matrix<double3, -1, 1>>(
-            (double3*)metadata.GetUVW().Get(),
+        auto UVWMap = Eigen::Map<Eigen::Matrix<double, 3, -1>>(
+            (double*)metadata.GetUVW().Get(),
+            3,
             metadata.GetUVW().GetCount()
         );
 
         g_RotateVisibilities<<<gridSize, blockSize>>>(
             constants,
-            rotatedUVWMap,
+            metadata.GetDD(),
             UVWMap,
             integrationDataMap,
             avgDataMap);

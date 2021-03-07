@@ -142,7 +142,6 @@ namespace cuda
         SphericalDirection m_direction;
         Eigen::Matrix3d m_dd;
 
-        device_vector<icrar::MVuvw> m_rotatedUVW;
         device_matrix<std::complex<double>> m_avgData;
 
     public:
@@ -157,7 +156,6 @@ namespace cuda
         DirectionBuffer(
             const SphericalDirection& direction,
             const Eigen::Matrix3d& dd,
-            const std::vector<icrar::MVuvw>& rotatedUVW,
             const Eigen::MatrixXcd& avgData);
 
         /**
@@ -173,10 +171,8 @@ namespace cuda
             int avgDataCols);
 
         const SphericalDirection& GetDirection() const { return m_direction; }
-        const device_vector<icrar::MVuvw>& GetRotatedUVW() const { return m_rotatedUVW; }
         const Eigen::Matrix3d& GetDD() const { return m_dd; }
 
-        device_vector<icrar::MVuvw>& GetRotatedUVW() { return m_rotatedUVW; }
         device_matrix<std::complex<double>>& GetAvgData() { return m_avgData; }
 
         void SetDirection(const SphericalDirection& direction);
@@ -222,7 +218,6 @@ namespace cuda
         const icrar::cpu::Constants& GetConstants() const;
 
         const device_vector<icrar::MVuvw>& GetUVW() const { return m_solutionIntervalBuffer->GetUVW(); }
-        const device_vector<icrar::MVuvw>& GetRotatedUVW() const { return m_directionBuffer->GetRotatedUVW(); }
         const SphericalDirection& GetDirection() const { return m_directionBuffer->GetDirection(); }
         const Eigen::Matrix3d& GetDD() const { return m_directionBuffer->GetDD(); }
         

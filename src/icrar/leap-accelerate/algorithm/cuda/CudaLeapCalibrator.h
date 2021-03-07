@@ -106,18 +106,6 @@ namespace cuda
             std::vector<cpu::BeamCalibration>& output_calibrations);
 
         /**
-         * @brief Rotates oldUVW by dd into UVW
-         * 
-         * @param dd the direction matrix
-         * @param oldUVW the unrotated uvw matrix
-         * @param UVW the output rotated uvw matrix 
-         */
-        __host__ void RotateUVW(
-            Eigen::Matrix3d dd,
-            const device_vector<icrar::MVuvw>& oldUVW,
-            device_vector<icrar::MVuvw>& UVW);
-
-        /**
          * @brief Calculates avgData in metadata
          * 
          * @param integration the input visibilities to integrate
