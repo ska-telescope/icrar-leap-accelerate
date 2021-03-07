@@ -30,7 +30,7 @@ namespace icrar
 namespace cuda
 {
     /**
-     * @brief Corresponds to SVD job types of CusolverDn API (e.g. cusolverDnDgesvd)
+     * @brief Corresponds to job types of CusolverDn API (e.g. cusolverDnDgesvd)
      * 
      */
     enum class JobType : signed char

@@ -43,12 +43,14 @@
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+
 #include <cuda_runtime.h>
 #include <math_constants.h>
 #include <cuComplex.h>
 #include <cusolverDn.h>
 #include <cublas_v2.h>
 #include <thrust/complex.h>
+#include <thrust/device_vector.h>
 
 #include <boost/math/constants/constants.hpp>
 #include <boost/optional/optional_io.hpp>
@@ -329,20 +331,24 @@ namespace cuda
 
             // loop over baselines
             constexpr double two_pi = 2 * CUDART_PI;
+
+            //TODO(calgray): Rotated UVW could be calculated here
             double shiftFactor = -two_pi * (rotatedUVW[baseline].z - UVW[baseline].z);
 
             // loop over channels
             double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
             cuDoubleComplex exp = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
+
+            //std::vector<cuDoubleComplex> rotatedIntegrations(polarizations);
             for(int polarization = 0; polarization < polarizations; polarization++)
             {
-                 integrationData(polarization, baseline, channel) = cuCmul(integrationData(polarization, baseline, channel), exp);
+                integrationData(polarization, baseline, channel) = cuCmul(integrationData(polarization, baseline, channel), exp);
             }
 
             bool hasNaN = false;
             for(int polarization = 0; polarization < polarizations; polarization++)
             {
-                auto n = integrationData(polarization, baseline, channel);
+                cuDoubleComplex n = integrationData(polarization, baseline, channel);
                 hasNaN |= isnan(n.x) || isnan(n.y);
             }
 
