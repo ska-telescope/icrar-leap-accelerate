@@ -221,7 +221,6 @@ lint_iwyu:
       -j 2
       --library=googletest 2>&1 | tee cppcheck.xml'
     - cppcheck_junit cppcheck.xml cppcheck-junit.xml
-
   artifacts:
     when: always
     paths:

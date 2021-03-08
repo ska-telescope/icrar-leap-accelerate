@@ -39,7 +39,7 @@ namespace cuda
     {
     public:
         HostMetaData(const icrar::MeasurementSet& ms, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool useCache = true)
-        : MetaData(ms, refAnt, minimumBaselineThreshold, useCache)
+        : MetaData(ms, refAnt, minimumBaselineThreshold, false, useCache)
         {
             cudaHostRegister(m_A.data(), m_A.size() * sizeof(decltype(*m_A.data())), cudaHostRegisterPortable);
             cudaHostRegister(m_I.data(), m_I.size() * sizeof(decltype(*m_I.data())), cudaHostRegisterPortable);

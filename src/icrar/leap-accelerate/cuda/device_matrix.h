@@ -91,7 +91,7 @@ namespace cuda
          * 
          * @param rows number of rows
          * @param cols number of columns
-         * @param data constigous column major data of size rows*cols*sizeof(T)
+         * @param data constigous column major data of size rows*cols*sizeof(T) to copy to device
          */
         device_matrix(size_t rows, size_t cols, const T* data = nullptr)
         : m_rows(rows)

@@ -25,6 +25,8 @@
 #include <cusolverDn.h>
 #include <Eigen/Dense>
 
+#include <icrar/leap-accelerate/cuda/device_matrix.h>
+
 namespace icrar
 {
 namespace cuda
@@ -54,5 +56,23 @@ namespace cuda
         cublasHandle_t cublasHandle,
         const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& a,
         const JobType jobtype = JobType::S);
+
+
+    /**
+     * @brief 
+     * 
+     */
+    device_matrix<double> PseudoInverse(
+        cusolverDnHandle_t cusolverHandle,
+        cublasHandle_t cublasHandle,
+        const device_matrix<double>& matrix,
+        const JobType jobType = JobType::S);
+
+    // template<typename T>
+    // device_matrix<T> PseudoInverse(
+    //     cusolverDnHandle_t cusolverHandle,
+    //     cublasHandle_t cublasHandle,
+    //     const device_matrix<T>& matrix,
+    //     const JobType jobType = JobType::S);
 } // namespace cuda
 } // namespace icrar

@@ -84,7 +84,9 @@ namespace cuda
 
         if(acols != brows)
         {
-            throw invalid_argument_exception("a columns does not match b rows", "b", __FILE__, __LINE__);
+            std::stringstream ss;
+            ss << "a columns (" << acols << ") does not match b rows (" << brows << ")"; 
+            throw invalid_argument_exception(ss.str(), "b", __FILE__, __LINE__);
         }
 
         if(arows != c.GetRows())

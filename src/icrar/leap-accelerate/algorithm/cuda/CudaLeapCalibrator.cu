@@ -75,6 +75,7 @@ namespace cuda
 {
     CudaLeapCalibrator::CudaLeapCalibrator()
     : m_cublasContext(nullptr)
+    , m_cusolverDnContext(nullptr)
     {
         int deviceCount = 0;
         checkCudaErrors(cudaGetDeviceCount(&deviceCount));
@@ -144,14 +145,15 @@ namespace cuda
             isFileSystemCacheEnabled);
         
         auto constantBuffer = std::make_shared<ConstantBuffer>(
+            m_cusolverDnContext,
+            m_cublasContext,
             metadata.GetConstants(),
             metadata.GetA(),
             metadata.GetI(),
-            metadata.GetAd(),
             metadata.GetA1(),
-            metadata.GetI1(),
-            metadata.GetAd1()
+            metadata.GetI1()
         );
+
         auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetConstants().nbaselines * validatedSolutionInterval.GetInterval());
         auto directionBuffer = std::make_shared<DirectionBuffer>(
                 metadata.GetConstants().nbaselines * validatedSolutionInterval.GetInterval(),
@@ -247,10 +249,10 @@ namespace cuda
 
         LOG(info) << "Calibrating in cuda";
         auto devicePhaseAnglesI1 = device_vector<double>(metadata.GetI1().rows() + 1);
-        auto deviceCal1 = device_vector<double>(metadata.GetAd1().rows());
+        auto deviceCal1 = device_vector<double>(metadata.GetA1().cols());
         auto devicedeltaPhase = device_matrix<double>(metadata.GetI().size(), metadata.GetAvgData().cols());
         auto deviceDeltaPhaseColumn = device_vector<double>(metadata.GetI().size() + 1);
-        auto cal1 = Eigen::VectorXd(metadata.GetAd1().rows());
+        auto cal1 = Eigen::VectorXd(metadata.GetA1().cols());
 
         AvgDataToPhaseAngles(deviceMetadata.GetConstantBuffer().GetI1(), deviceMetadata.GetAvgData(), devicePhaseAnglesI1);
         cuda::multiply(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd1(), devicePhaseAnglesI1, deviceCal1);

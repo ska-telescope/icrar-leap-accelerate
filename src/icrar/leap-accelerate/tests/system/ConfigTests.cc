@@ -40,6 +40,7 @@
 #include <string>
 #include <limits.h>
 #include <unistd.h>
+
 boost::filesystem::path getexepath()
 {
   char result[PATH_MAX];
