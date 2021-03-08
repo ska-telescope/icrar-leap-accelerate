@@ -63,7 +63,7 @@ namespace cuda
         , m_I(I)
         , m_Ad1(cpu::PseudoInverse(A1))
 #ifdef HIGH_GPU_MEMORY
-        , m_Ad(cuda::PseudoInverse(cusolverHandle, cublasHandle, A, JobType::S))
+        , m_Ad(cuda::PseudoInverse(cusolverHandle, cublasHandle, m_A, JobType::S))
 #else
         , m_Ad(cpu::PseudoInverse(A))
 #endif
