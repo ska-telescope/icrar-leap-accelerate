@@ -128,7 +128,7 @@ namespace icrar
         Validate();
 
         // Load resources
-        icrar::log::Initialize(GetVerbosity());
+        icrar::log::Initialize(GetVerbosity()); //TODO: Arguments tests already intiializes verbosity
         switch (m_sourceType)
         {
         case InputType::MEASUREMENT_SET:

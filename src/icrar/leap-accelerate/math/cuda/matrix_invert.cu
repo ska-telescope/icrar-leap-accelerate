@@ -51,164 +51,16 @@ namespace icrar
 {
 namespace cuda
 {
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> PseudoInverse(
+    /**
+     * @brief Splits a matrix into U, S and Vt components
+     * 
+     * @param cusolverHandle 
+     * @param d_A 
+     * @param jobType 
+     * @return std::tuple<device_matrix<double>, device_vector<double>, device_matrix<double>> 
+     */
+    std::tuple<device_matrix<double>, device_vector<double>, device_matrix<double>> SVD(
         cusolverDnHandle_t cusolverHandle,
-        cublasHandle_t cublasHandle,
-        const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& matrix,
-        const JobType jobType)
-    {
-        size_t m = matrix.rows();
-        size_t n = matrix.cols();
-        size_t k = std::min(m, n);
-        if(m <= n)
-        {
-            throw invalid_argument_exception("m<=n not supported", "matrix", __FILE__, __LINE__);
-        }
-
-        signed char jobu = static_cast<std::underlying_type<decltype(jobType)>::type>(jobType);
-        signed char jobvt = static_cast<std::underlying_type<decltype(jobType)>::type>(jobType);
-        
-        int ldu = m;
-        int lda = m;
-        int ldvt = n;
-
-        Eigen::MatrixXd U;
-        if(jobType == JobType::A)
-        {
-            U = Eigen::MatrixXd::Zero(ldu, m);
-        }
-        else if(jobType == JobType::S)
-        {
-            U = Eigen::MatrixXd::Zero(ldu, k);
-        }
-        else
-        {
-            throw invalid_argument_exception("Unsupported argument", "jobu", __FILE__, __LINE__);
-        }
-
-
-        Eigen::MatrixXd Vt;
-        if(jobType == JobType::A)
-        {
-            Vt = Eigen::MatrixXd::Zero(ldvt, n);
-        }
-        else if(jobType == JobType::S)
-        {
-            ldvt = k;
-            Vt = Eigen::MatrixXd::Zero(ldvt, k);
-        }
-        else
-        {
-            throw invalid_argument_exception("Unsupported argument", "jobvt", __FILE__, __LINE__);
-        }
-        Eigen::VectorXd S = Eigen::VectorXd::Zero(k);
-
-        size_t free;
-        size_t total;
-        checkCudaErrors(cudaMemGetInfo(&free, &total));
-        LOG(info) << "free memory: " << memory_amount(free) << "/" << memory_amount(total); 
-        LOG(info) << "cuda svd allocation (" << m << ", " << n << "): "
-        << memory_amount((matrix.size() + U.size() + Vt.size() + S.size()) * sizeof(double));
-
-
-        auto d_U = device_matrix<double>(U.rows(), U.cols());
-        auto d_Vt = device_matrix<double>(Vt.rows(), Vt.cols());
-
-        // Solve U, S, Vt with A
-        // https://stackoverflow.com/questions/17401765/parallel-implementation-for-multiple-svds-using-cuda
-        {
-            auto d_A = device_matrix<double>(matrix);
-            auto d_S = device_vector<double>(S.size());
-            
-            //gesvdjInfo_t gesvdjParams = nullptr;
-            //cusolveSafeCall(cusolverDnCreateGesvdjInfo(&gesvdjParams));
-
-            int* d_devInfo;
-            size_t d_devInfoSize = sizeof(std::remove_pointer_t<decltype(d_devInfo)>());
-            checkCudaErrors(cudaMalloc(&d_devInfo, d_devInfoSize));
-
-            // --- Set the computation tolerance, since the default tolerance is machine precision
-            //cusolveSafeCall(cusolverDnXgesvdjSetTolerance(gesvdj_params, tol));
-
-            // --- Set the maximum number of sweeps, since the default value of max. sweeps is 100
-            //cusolveSafeCall(cusolverDnXgesvdjSetMaxSweeps(gesvdj_params, maxSweeps));
-
-            int workSize = 0;
-            checkCudaErrors(cusolverDnDgesvd_bufferSize(cusolverHandle, m, n, &workSize));
-            LOG(info) << "inverse matrix cuda worksize: " << memory_amount(workSize * sizeof(double));
-            double* d_work; checkCudaErrors(cudaMalloc(&d_work, workSize * sizeof(double)));
-
-            LOG(info) << "inverse matrix cuda rworksize: " << memory_amount((m-1) * sizeof(double));
-            double* d_rwork; checkCudaErrors(cudaMalloc(&d_rwork, (m-1) * sizeof(double)));
-
-            int h_devInfo = 0;
-            checkCudaErrors(cusolverDnDgesvd(
-                cusolverHandle,
-                jobu, jobvt,
-                m, n,
-                d_A.Get(),
-                lda,
-                d_S.Get(),
-                d_U.Get(),
-                ldu,
-                d_Vt.Get(),
-                ldvt,
-                d_work,
-                workSize,
-                d_rwork,
-                d_devInfo));
-            checkCudaErrors(cudaMemcpy(&h_devInfo, d_devInfo, d_devInfoSize, cudaMemcpyDeviceToHost));
-
-            if(h_devInfo != 0)
-            {
-                std::stringstream ss;
-                ss << "devInfo: " << h_devInfo;
-                throw icrar::exception(ss.str(), __FILE__, __LINE__);
-            }
-
-            d_S.ToHostAsync(S.data()); // Sigma currently converted to matrix on cpu
-            checkCudaErrors(cudaFree(d_devInfo));
-
-            //cusolverDnDestroyGesvdjInfo(&);
-        }
-
-        cudaThreadSynchronize();
-        double epsilon = std::numeric_limits<typename Eigen::MatrixXd::Scalar>::epsilon();
-        double tolerance = epsilon * std::max(matrix.cols(), matrix.rows()) * S.array().abs()(0);
-
-        Eigen::MatrixXd Sd;
-        if(jobType == JobType::A)
-        {
-            Sd = Eigen::MatrixXd::Zero(n, m);
-        }
-        else if(jobType == JobType::S)
-        {
-            Sd = Eigen::MatrixXd::Zero(n, k);
-        }
-        else
-        {
-            throw invalid_argument_exception("Unsupported argument", "jobType", __FILE__, __LINE__);
-        }
-        Sd.topLeftCorner(k, k) = (S.array().abs() > tolerance).select(S.array().inverse(), 0).matrix().asDiagonal();
-
-
-        auto d_Sd = device_matrix<double>(Sd);
-        auto d_result = device_matrix<double>(Sd.rows(), U.rows());
-        
-        // result = V * (S * Ut)
-        icrar::cuda::multiply(cublasHandle, d_Sd, d_U, d_result, MatrixOp::normal, MatrixOp::hermitian);
-        icrar::cuda::multiply(cublasHandle, d_Vt, d_result, d_result, MatrixOp::transpose, MatrixOp::normal);
-
-        auto VSUt = Eigen::MatrixXd(matrix.cols(), matrix.rows());
-        d_result.ToHostAsync(VSUt.data());
-
-        //Inverse = V * Sd * Ut
-        return VSUt;
-    }
-    
-    device_matrix<double> PseudoInverse(
-        cusolverDnHandle_t cusolverHandle,
-        cublasHandle_t cublasHandle,
         const device_matrix<double>& d_A,
         const JobType jobType)
     {
@@ -243,7 +95,6 @@ namespace cuda
             throw invalid_argument_exception("Unsupported argument", "jobu", __FILE__, __LINE__);
         }
 
-
         Eigen::MatrixXd Vt;
         if(jobType == JobType::A)
         {
@@ -263,97 +114,128 @@ namespace cuda
         size_t free;
         size_t total;
         checkCudaErrors(cudaMemGetInfo(&free, &total));
-        LOG(info) << "free memory: " << memory_amount(free) << "/" << memory_amount(total); 
-        LOG(info) << "cuda svd allocation (" << m << ", " << n << "): "
+        LOG(trace) << "free memory: " << memory_amount(free) << "/" << memory_amount(total); 
+        LOG(trace) << "cuda svd allocation (" << m << ", " << n << "): "
         << memory_amount((U.size() + Vt.size() + S.size()) * sizeof(double));
 
         auto d_U = device_matrix<double>(U.rows(), U.cols());
+        auto d_S = device_vector<double>(S.size());
         auto d_Vt = device_matrix<double>(Vt.rows(), Vt.cols());
 
         // Solve U, S, Vt with A
         // https://stackoverflow.com/questions/17401765/parallel-implementation-for-multiple-svds-using-cuda
+
+        int* d_devInfo;
+        size_t d_devInfoSize = sizeof(std::remove_pointer_t<decltype(d_devInfo)>());
+        checkCudaErrors(cudaMalloc(&d_devInfo, d_devInfoSize));
+
+        int workSize = 0;
+        checkCudaErrors(cusolverDnDgesvd_bufferSize(cusolverHandle, m, n, &workSize));
+        LOG(info) << "inverse matrix cuda worksize: " << memory_amount(workSize * sizeof(double));
+        double* d_work; checkCudaErrors(cudaMalloc(&d_work, workSize * sizeof(double)));
+
+        LOG(info) << "inverse matrix cuda rworksize: " << memory_amount((m-1) * sizeof(double));
+        double* d_rwork; checkCudaErrors(cudaMalloc(&d_rwork, (m-1) * sizeof(double)));
+
+        int h_devInfo = 0;
+        checkCudaErrors(cusolverDnDgesvd(
+            cusolverHandle,
+            jobu, jobvt,
+            m, n,
+            (double*)d_A.Get(), // TODO cast may be deprecated in newer function
+            lda,
+            d_S.Get(),
+            d_U.Get(),
+            ldu,
+            d_Vt.Get(),
+            ldvt,
+            d_work,
+            workSize,
+            d_rwork,
+            d_devInfo));
+        checkCudaErrors(cudaMemcpy(&h_devInfo, d_devInfo, d_devInfoSize, cudaMemcpyDeviceToHost));
+
+        if(h_devInfo != 0)
         {
-            auto d_S = device_vector<double>(S.size());
-            
-            //gesvdjInfo_t gesvdjParams = nullptr;
-            //cusolveSafeCall(cusolverDnCreateGesvdjInfo(&gesvdjParams));
-
-            int* d_devInfo;
-            size_t d_devInfoSize = sizeof(std::remove_pointer_t<decltype(d_devInfo)>());
-            checkCudaErrors(cudaMalloc(&d_devInfo, d_devInfoSize));
-
-            // --- Set the computation tolerance, since the default tolerance is machine precision
-            //cusolveSafeCall(cusolverDnXgesvdjSetTolerance(gesvdj_params, tol));
-
-            // --- Set the maximum number of sweeps, since the default value of max. sweeps is 100
-            //cusolveSafeCall(cusolverDnXgesvdjSetMaxSweeps(gesvdj_params, maxSweeps));
-
-            int workSize = 0;
-            checkCudaErrors(cusolverDnDgesvd_bufferSize(cusolverHandle, m, n, &workSize));
-            LOG(info) << "inverse matrix cuda worksize: " << memory_amount(workSize * sizeof(double));
-            double* d_work; checkCudaErrors(cudaMalloc(&d_work, workSize * sizeof(double)));
-
-            LOG(info) << "inverse matrix cuda rworksize: " << memory_amount((m-1) * sizeof(double));
-            double* d_rwork; checkCudaErrors(cudaMalloc(&d_rwork, (m-1) * sizeof(double)));
-
-            int h_devInfo = 0;
-            checkCudaErrors(cusolverDnDgesvd(
-                cusolverHandle,
-                jobu, jobvt,
-                m, n,
-                (double*)d_A.Get(), // TODO cast be be deprecated in newer function
-                lda,
-                d_S.Get(),
-                d_U.Get(),
-                ldu,
-                d_Vt.Get(),
-                ldvt,
-                d_work,
-                workSize,
-                d_rwork,
-                d_devInfo));
-            checkCudaErrors(cudaMemcpy(&h_devInfo, d_devInfo, d_devInfoSize, cudaMemcpyDeviceToHost));
-
-            if(h_devInfo != 0)
-            {
-                std::stringstream ss;
-                ss << "devInfo: " << h_devInfo;
-                throw icrar::exception(ss.str(), __FILE__, __LINE__);
-            }
-
-            d_S.ToHostAsync(S.data()); // Sigma currently converted to matrix on cpu
-            checkCudaErrors(cudaFree(d_devInfo));
-
-            //cusolverDnDestroyGesvdjInfo(&);
+            std::stringstream ss;
+            ss << "devInfo: " << h_devInfo;
+            throw icrar::exception(ss.str(), __FILE__, __LINE__);
         }
 
-        cudaThreadSynchronize();
+        checkCudaErrors(cudaFree(d_devInfo));
+
+        return std::make_tuple(std::move(d_U), std::move(d_S), std::move(d_Vt));
+    }
+
+    /**
+     * @brief Combines SVD components using multiplcation and transposition to create a pseudoinverse
+     * 
+     * @param d_U 
+     * @param d_S 
+     * @param d_Vt 
+     * @return const device_matrix<double> 
+     */
+    device_matrix<double> SVDCombineInverse(
+        cublasHandle_t cublasHandle,
+        const device_matrix<double>& d_U,
+        const device_vector<double>& d_S,
+        const device_matrix<double>& d_Vt,
+        const JobType jobType)
+    {
+        //cudaThreadSynchronize();
+        size_t m = d_U.GetRows();
+        size_t n = d_Vt.GetRows();
+        size_t k = std::min(m, n);
+
+        auto S = Eigen::VectorXd(d_S.GetRows());
+        d_S.ToHostAsync(S.data());
+
+        Eigen::MatrixXd Sd = Eigen::MatrixXd::Zero(n, d_U.GetCols());
+
         double epsilon = std::numeric_limits<typename Eigen::MatrixXd::Scalar>::epsilon();
-        double tolerance = epsilon * std::max(d_A.GetCols(), d_A.GetRows()) * S.array().abs()(0);
-
-        Eigen::MatrixXd Sd;
-        if(jobType == JobType::A)
-        {
-            Sd = Eigen::MatrixXd::Zero(n, m);
-        }
-        else if(jobType == JobType::S)
-        {
-            Sd = Eigen::MatrixXd::Zero(n, k);
-        }
-        else
-        {
-            throw invalid_argument_exception("Unsupported argument", "jobType", __FILE__, __LINE__);
-        }
+        double tolerance = epsilon * std::max(m, n) * S.array().abs()(0);
         Sd.topLeftCorner(k, k) = (S.array().abs() > tolerance).select(S.array().inverse(), 0).matrix().asDiagonal();
 
-
         auto d_Sd = device_matrix<double>(Sd);
-        auto d_result = device_matrix<double>(Sd.rows(), U.rows());
+        auto d_result = device_matrix<double>(n, m);
         
         // result = V * (S * Ut)
         icrar::cuda::multiply(cublasHandle, d_Sd, d_U, d_result, MatrixOp::normal, MatrixOp::hermitian);
         icrar::cuda::multiply(cublasHandle, d_Vt, d_result, d_result, MatrixOp::transpose, MatrixOp::normal);
         return d_result;
+    }
+
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> PseudoInverse(
+        cusolverDnHandle_t cusolverHandle,
+        cublasHandle_t cublasHandle,
+        const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& matrix,
+        const JobType jobType)
+    {
+        device_matrix<double> d_U(0, 0, nullptr);
+        device_vector<double> d_S(0, nullptr);
+        device_matrix<double> d_Vt(0, 0, nullptr);
+        {
+            auto d_A = device_matrix<double>(matrix);
+            std::tie(d_U, d_S, d_Vt) = SVD(cusolverHandle, d_A, jobType);
+        }
+        device_matrix<double> d_VSUt = SVDCombineInverse(cublasHandle, d_U, d_S, d_Vt, jobType);
+
+        auto VSUt = Eigen::MatrixXd(matrix.cols(), matrix.rows());
+        d_VSUt.ToHostAsync(VSUt.data());
+        return VSUt;
+    }
+
+    device_matrix<double> PseudoInverse(
+        cusolverDnHandle_t cusolverHandle,
+        cublasHandle_t cublasHandle,
+        const device_matrix<double>& d_A,
+        const JobType jobType)
+    {
+        device_matrix<double> d_U(0, 0, nullptr);
+        device_vector<double> d_S(0, nullptr);
+        device_matrix<double> d_Vt(0, 0, nullptr);
+        std::tie(d_U, d_S, d_Vt) = SVD(cusolverHandle, d_A, jobType);
+        return SVDCombineInverse(cublasHandle, d_U, d_S, d_Vt, jobType);
     }
 } // namespace cuda
 } // namespace icrar
