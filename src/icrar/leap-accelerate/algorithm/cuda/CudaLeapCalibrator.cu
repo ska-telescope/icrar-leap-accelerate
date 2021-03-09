@@ -303,17 +303,14 @@ namespace cuda
             double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
             cuDoubleComplex exp = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
 
-            //cuDoubleComplex rotatedIntegration = make_cuDoubleComplex(0.0, 0.0);
             for(int polarization = 0; polarization < polarizations; polarization++)
             {
                 integrationData(polarization, baseline, channel) = cuCmul(integrationData(polarization, baseline, channel), exp);
-                //rotatedIntegration = cuCmul(integrationData(polarization, baseline, channel), exp);
             }
             bool hasNaN = false;
             for(int polarization = 0; polarization < polarizations; polarization++)
             {
                 cuDoubleComplex n = integrationData(polarization, baseline, channel);
-                //cuDoubleComplex n = rotatedIntegration;
                 hasNaN |= isnan(n.x) || isnan(n.y);
             }
 
@@ -324,8 +321,6 @@ namespace cuda
                     
                     atomicAdd(&avgData(md_baseline, polarization).x, integrationData(polarization, baseline, channel).x);
                     atomicAdd(&avgData(md_baseline, polarization).y, integrationData(polarization, baseline, channel).y);
-                    // atomicAdd(&avgData(md_baseline, polarization).x, rotatedIntegration.x);
-                    // atomicAdd(&avgData(md_baseline, polarization).y, rotatedIntegration.y);
                 }
             }
         }

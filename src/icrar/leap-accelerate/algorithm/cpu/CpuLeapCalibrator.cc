@@ -173,20 +173,15 @@ namespace cpu
         phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
         phaseAnglesI1(phaseAnglesI1.rows() - 1) = 0;
 
-        LOG(info) << "Cal1 Calibration";
         Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAnglesI1;
-        LOG(info) << "ACal1 Calibration";
         Eigen::VectorXd ACal1 = metadata.GetA() * cal1;
 
-        LOG(info) << "DeltaPhase Calibration";
         Eigen::MatrixXd deltaPhase = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
             deltaPhase.row(n) = icrar::cpu::arg(std::exp(std::complex<double>(0, -two_pi<double>() * ACal1(n))) * metadata.GetAvgData().row(n));
         }
 
-
-        LOG(info) << "DeltaPhase0 Calibration";
         Eigen::VectorXd deltaPhaseColumn = deltaPhase.col(0); // 1st pol only
         deltaPhaseColumn.conservativeResize(deltaPhaseColumn.size() + 1);
         deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0;
