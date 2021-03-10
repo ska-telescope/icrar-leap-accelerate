@@ -33,9 +33,11 @@
 
 #include <icrar/leap-accelerate/math/cuda/math.cuh>
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
+#include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
+#include <icrar/leap-accelerate/common/eigen_cache.h>
 #include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/timer.h>
@@ -138,20 +140,53 @@ namespace cuda
         std::vector<double> epochs = ms.GetEpochs();
 
         profiling::timer metadata_read_timer;
-        const auto metadata = icrar::cuda::HostMetaData(
+        auto metadata = icrar::cuda::HostMetaData(
             ms,
             referenceAntenna,
             minimumBaselineThreshold,
+            !highGpuMemory,
             isFileSystemCacheEnabled);
         
+        auto Ad = device_matrix<double>(0, 0, nullptr);
+#ifdef HIGH_GPU_MEMORY
+        // Skip computing Ad in hostmetadata and compute via cuda
+        if(isFileSystemCacheEnabled)
+        {
+            auto invertA = [](const Eigen::MatrixXd& a)
+            {
+                LOG(info) << "Inverting PhaseMatrix A " << a.rows() << ":" << a.cols();
+                Ad = cuda::PseudoInverse(cusolverHandle, cublasHandle, metadata.GetA(), JobType::S));
+                auto hostAd = Eigen::MatrixXd(deviceAd.GetRows(), deviceAd.GetCols());
+                Ad.ToHost(hostAd);
+                return hostAd;
+            };
+
+            ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
+                matrix_hash<Eigen::MatrixXd>()(metadata.GetA()),
+                metadata.GetA(), metadata.GetAd(),
+                "A.hash", "Ad.cache",
+                invertA);
+        }
+        else
+        {
+            // Skip writing cache to host and disk
+            LOG(info) << "Inverting PhaseMatrix A " << a.rows() << ":" << a.cols();
+            Ad = cuda::PseudoInverse(cusolverHandle, cublasHandle, metadata.GetA(), JobType::S));
+        }
+#else
+        //Host Ad exists if and only if highGpumemory is disabled
+        Ad = device_matrix<double>(metadata.GetAd());
+#endif
+
+
         auto constantBuffer = std::make_shared<ConstantBuffer>(
-            m_cusolverDnContext,
-            m_cublasContext,
             metadata.GetConstants(),
-            metadata.GetA(),
-            metadata.GetI(),
-            metadata.GetA1(),
-            metadata.GetI1()
+            device_matrix<double>(metadata.GetA()),
+            device_vector<int>(metadata.GetI()),
+            std::move(Ad),
+            device_matrix<double>(metadata.GetA1()),
+            device_vector<int>(metadata.GetI1()),
+            device_matrix<double>(metadata.GetAd1())
         );
 
         auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetConstants().nbaselines * validatedSolutionInterval.GetInterval());
@@ -193,11 +228,16 @@ namespace cuda
 
             LOG(info) << "Loading Metadata UVW";
             solutionIntervalBuffer->SetUVW(integration.GetUVW());
-            LOG(info) << "Metadata Constants loaded";
+            LOG(info) << "Cuda metadata loaded";
 
     #ifdef HIGH_GPU_MEMORY
             const auto deviceIntegration = DeviceIntegration(integration);
     #endif
+
+        size_t free;
+        size_t total;
+        checkCudaErrors(cudaMemGetInfo(&free, &total));
+        LOG(info) << "free memory: " << memory_amount(free) << "/" << memory_amount(total);
 
             // Emplace a single zero'd tensor
             input_queue.emplace_back(0, integration.GetVis().dimensions());

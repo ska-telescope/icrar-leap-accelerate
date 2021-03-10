@@ -315,14 +315,12 @@ pages:
     - cp ../build/clang-tidy-junit.xml build/reports/clang-tidy-junit.xml
     - cp ../build/iwyu-junit.xml build/reports/iwyu-junit.xml
     
-    # Combine XML
+    # Combine Linting XML
     - 'xq -s "{testsuites: { testsuite: [ .[0].testsuite, .[1].testsuite, .[2].testsuite ] } }"
       build/reports/clang-tidy-junit.xml
       build/reports/cppcheck-junit.xml
       build/reports/iwyu-junit.xml
       --xml-output | sponge build/reports/linting.xml'
-
-    # Calculate Metrics
     - 'xq ".testsuites |= {\"@tests\": .testsuite | map(.\"@tests\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
     - 'xq ".testsuites |= {\"@errors\": .testsuite | map(.\"@errors\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
     - 'xq ".testsuites |= {\"@failures\": .testsuite | map(.\"@failures\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
@@ -336,3 +334,4 @@ pages:
     when: always
     paths:
       - public
+  allow_failure: true

@@ -34,39 +34,19 @@ namespace cuda
 {
     ConstantBuffer::ConstantBuffer(
             const icrar::cpu::Constants& constants,
-            const Eigen::MatrixXd& A,
-            const Eigen::VectorXi& I,
-            const Eigen::MatrixXd& Ad,
-            const Eigen::MatrixXd& A1,
-            const Eigen::VectorXi& I1,
-            const Eigen::MatrixXd& Ad1)
+            device_matrix<double>&& A,
+            device_vector<int>&& I,
+            device_matrix<double>&& Ad,
+            device_matrix<double>&& A1,
+            device_vector<int>&& I1,
+            device_matrix<double>&& Ad1)
         : m_constants(constants)
-        , m_A(A)
-        , m_I(I)
-        , m_Ad(Ad)
-        , m_A1(A1)
-        , m_I1(I1)
-        , m_Ad1(Ad1) { }
-
-    ConstantBuffer::ConstantBuffer(
-            cusolverDnHandle_t& cusolverHandle,
-            cublasHandle_t& cublasHandle,
-            const icrar::cpu::Constants& constants,
-            const Eigen::MatrixXd& A,
-            const Eigen::VectorXi& I,
-            const Eigen::MatrixXd& A1,
-            const Eigen::VectorXi& I1)
-        : m_constants(constants)
-        , m_A1(A1)
-        , m_A(A)
-        , m_I1(I1)
-        , m_I(I)
-        , m_Ad1(cpu::PseudoInverse(A1))
-#ifdef HIGH_GPU_MEMORY
-        , m_Ad(cuda::PseudoInverse(cusolverHandle, cublasHandle, m_A, JobType::S))
-#else
-        , m_Ad(cpu::PseudoInverse(A))
-#endif
+        , m_A1(std::move(A1))
+        , m_A(std::move(A))
+        , m_I1(std::move(I1))
+        , m_I(std::move(I))
+        , m_Ad(std::move(Ad))
+        , m_Ad1(std::move(Ad1))
         { }
 
     void ConstantBuffer::ToHost(icrar::cpu::MetaData& host) const
@@ -118,12 +98,12 @@ namespace cuda
     DeviceMetaData::DeviceMetaData(const cpu::MetaData& metadata)
     : m_constantBuffer(std::make_shared<ConstantBuffer>(
         metadata.GetConstants(),
-        metadata.GetA(),
-        metadata.GetI(),
-        metadata.GetAd(),
-        metadata.GetA1(),
-        metadata.GetI1(),
-        metadata.GetAd1()))
+        device_matrix<double>(metadata.GetA()),
+        device_vector<int>(metadata.GetI()),
+        device_matrix<double>(metadata.GetAd()),
+        device_matrix<double>(metadata.GetA1()),
+        device_vector<int>(metadata.GetI1()),
+        device_matrix<double>(metadata.GetAd1())))
     , m_solutionIntervalBuffer(std::make_shared<SolutionIntervalBuffer>(
         metadata.GetUVW()))
     , m_directionBuffer(std::make_shared<DirectionBuffer>(

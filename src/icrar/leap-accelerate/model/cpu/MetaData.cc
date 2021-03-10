@@ -82,7 +82,7 @@ namespace cpu
         }
 
         m_avgData = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
-        LOG(info) << "avg_data: " << memory_amount(m_avgData.size() * sizeof(std::complex<double>));
+        LOG(trace) << "avg_data: " << memory_amount(m_avgData.size() * sizeof(std::complex<double>));
 
         auto filteredBaselines = ms.GetFilteredBaselines(m_minimumBaselineThreshold);
 
@@ -139,6 +139,11 @@ namespace cpu
         trace_matrix(m_Ad1, "Ad1");
         trace_matrix(m_Ad, "Ad");
 
+        ValidateInverse();
+    }
+
+    void MetaData::ValidateInverse() const
+    {
         if(!(m_Ad * m_A).isApprox(Eigen::MatrixXd::Identity(m_A.cols(), m_A.cols()), 0.001))
         {
             LOG(warning) << "Ad is degenerate";

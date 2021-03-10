@@ -115,14 +115,13 @@ namespace cpu
 
         Eigen::MatrixXd m_A;
         Eigen::VectorXi m_I; // The flagged indexes of A
-        Eigen::MatrixXd m_Ad; // The pseudo-inverse of m_A
-
         Eigen::MatrixXd m_A1;
         Eigen::VectorXi m_I1;
-        Eigen::MatrixXd m_Ad1;
+        Eigen::MatrixXd m_Ad; ///< The pseudo-inverse of m_A, late intitialized
+        Eigen::MatrixXd m_Ad1; //< The pseudo-inverse of m_Ad1, late intitialized
 
         std::vector<icrar::MVuvw> m_UVW;
-    
+
         SphericalDirection m_direction; // calibration direction, late initialized
         Eigen::Matrix3d m_dd; // direction dependant matrix, late initialized
         Eigen::MatrixXcd m_avgData; // matrix of size (baselines, polarizations), late initialized
@@ -178,6 +177,7 @@ namespace cpu
          * @brief The pseudoinverse of A with shape [stations, baselines]
          */
         const Eigen::MatrixXd& GetAd() const;
+        Eigen::MatrixXd& GetAd() { return m_Ad; }
 
         /**
          * @brief Matrix of baselines using the reference antenna of shape [stations+1, stations]
@@ -185,6 +185,7 @@ namespace cpu
          */
         const Eigen::MatrixXd& GetA1() const;
         const Eigen::VectorXi& GetI1() const;
+
         const Eigen::MatrixXd& GetAd1() const;
 
         const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
@@ -200,6 +201,12 @@ namespace cpu
          * 
          */
         void ComputeInverse();
+
+        /**
+         * @brief Output logs on the validity of inverse matrices
+         * 
+         */
+        void ValidateInverse() const;
 
         /**
          * @brief Updates the rotated UVW vector using the DD matrix

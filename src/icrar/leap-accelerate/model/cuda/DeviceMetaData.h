@@ -59,7 +59,7 @@ namespace icrar
 namespace cuda
 {
     /**
-     * Container of uniform gpu buffers available to all cuda
+     * Container class of uniform gpu buffers available to all cuda
      * threads that are const/immutable per calibration.
      */
     class ConstantBuffer
@@ -75,32 +75,25 @@ namespace cuda
         device_matrix<double> m_Ad1;
 
     public:
-        ConstantBuffer(
-            const icrar::cpu::Constants& constants,
-            const Eigen::MatrixXd& A,
-            const Eigen::VectorXi& I,
-            const Eigen::MatrixXd& Ad,
-            const Eigen::MatrixXd& A1,
-            const Eigen::VectorXi& I1,
-            const Eigen::MatrixXd& Ad1);
-        
         /**
-         * @brief Construct a new Constant Buffer object and compute inverse matrices
+         * @brief Construct a new Constant Buffer object
          * 
          * @param constants 
          * @param A 
          * @param I 
+         * @param Ad 
          * @param A1 
          * @param I1 
+         * @param Ad1 
          */
         ConstantBuffer(
-            cusolverDnHandle_t& cusolverHandle,
-            cublasHandle_t& cublasHandle,
             const icrar::cpu::Constants& constants,
-            const Eigen::MatrixXd& A,
-            const Eigen::VectorXi& I,
-            const Eigen::MatrixXd& A1,
-            const Eigen::VectorXi& I1);
+            device_matrix<double>&& A,
+            device_vector<int>&& I,
+            device_matrix<double>&& Ad,
+            device_matrix<double>&& A1,
+            device_vector<int>&& I1,
+            device_matrix<double>&& Ad1);
 
         const icrar::cpu::Constants& GetConstants() const { return m_constants; }
         const device_matrix<double>& GetA() const { return m_A; } 

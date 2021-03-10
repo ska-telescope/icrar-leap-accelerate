@@ -10,7 +10,7 @@ message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(CUDA_ENABLED "Build with cuda support" OFF)
-option(HIGH_GPU_MEMORY "Improves device performance at the cost of extra device memory" OFF)
+option(HIGH_GPU_MEMORY "Optimize for device performance at the cost of device memory" OFF)
 option(WERROR "Warnings as Errors" OFF)
 option(WCONVERSION "Conversion warnings" OFF)
 option(TRACE "Trace Data Values" OFF)
@@ -62,7 +62,7 @@ configure_file(.clang-tidy .clang-tidy COPYONLY)
 
 # Project configuration, specifying version, languages,
 # and the C++ standard to use for the whole project
-project(${SOLUTION_NAME} LANGUAGES CXX VERSION ${SOLUTION_VERSION})
+project(${SOLUTION_NAME} LANGUAGES C CXX VERSION ${SOLUTION_VERSION})
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -150,7 +150,7 @@ add_definitions(-DBOOST_ALL_DYN_LINK)
 find_package(Boost REQUIRED COMPONENTS log log_setup program_options)
 
 set(CASACORE_FIND_QUIETLY ON)
-find_package(Casacore REQUIRED)
+find_package(Casacore COMPONENTS ms)
 
 # Eigen Acceleration
 # find_package(BLAS REQUIRED)
