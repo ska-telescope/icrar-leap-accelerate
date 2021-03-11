@@ -190,7 +190,7 @@ namespace cuda
         {
             out.resize(GetCount());
             ToHost(out.data());
-        } 
+        }
 
         __host__ void ToHost(Eigen::Matrix<T, Eigen::Dynamic, 1>& out) const
         {
@@ -208,6 +208,25 @@ namespace cuda
         {
             size_t bytes = m_count * sizeof(T);
             checkCudaErrors(cudaMemcpyAsync(out, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));
+        }
+
+        __host__ void ToHostAsync(std::vector<T>& out) const
+        {
+            out.resize(GetCount());
+            ToHostAsync(out.data());
+        }
+
+        __host__ void ToHostAsync(Eigen::Matrix<T, Eigen::Dynamic, 1>& out) const
+        {
+            out.resize(GetCount());
+            ToHostAsync(out.data());
+        }
+
+        __host__ Eigen::Matrix<T, Eigen::Dynamic, 1> ToHostAsync() const
+        {
+            auto result = Eigen::Matrix<T, Eigen::Dynamic, 1>(GetRows(), 1);
+            ToHostAsync(result.data());
+            return result;
         }
     };
 }

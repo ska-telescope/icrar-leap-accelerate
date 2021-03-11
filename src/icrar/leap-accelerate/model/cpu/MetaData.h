@@ -187,6 +187,7 @@ namespace cpu
         const Eigen::VectorXi& GetI1() const;
 
         const Eigen::MatrixXd& GetAd1() const;
+        Eigen::MatrixXd& GetAd1() { return m_Ad1; }
 
         const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
 

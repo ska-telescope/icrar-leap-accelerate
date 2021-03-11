@@ -96,6 +96,23 @@ namespace cuda
             bool isFileSystemCacheEnabled) override;
 
         /**
+         * @brief Calculates Ad into deviceAd and writes to cache if @p isFileSystemCacheEnabled is true
+         * 
+         * @param hostA matrix to invert
+         * @param hostAd output host memory of Ad (optionally written to)
+         * @param deviceAd otput device memory of Ad
+         * @param isFileSystemCacheEnabled whether to use file caching
+         * @param useCuda whether to use cuda solvers
+         */
+        void CalculateAd(
+            const Eigen::Matrix<double, -1, -1>& hostA,
+            device_matrix<double>& deviceA,
+            Eigen::Matrix<double, -1, -1>& hostAd,
+            device_matrix<double>& deviceAd,
+            bool isFileSystemCacheEnabled,
+            bool useCuda);
+
+        /**
          * Performs only visibilities rotation on the GPU
          */
         void PhaseRotate(

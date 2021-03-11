@@ -104,6 +104,7 @@ namespace cuda
         const device_matrix<double>& GetAd1() const { return m_Ad1; }
 
         void ToHost(icrar::cpu::MetaData& host) const;
+        void ToHostAsync(icrar::cpu::MetaData& host) const;
     };
 
     /**
@@ -221,6 +222,7 @@ namespace cuda
 
         void ToHost(icrar::cpu::MetaData& host) const;
         icrar::cpu::MetaData ToHost() const;
+        
         void ToHostAsync(icrar::cpu::MetaData& host) const;
     };
 }

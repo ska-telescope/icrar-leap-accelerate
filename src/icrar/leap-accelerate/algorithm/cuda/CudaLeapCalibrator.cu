@@ -144,49 +144,28 @@ namespace cuda
             ms,
             referenceAntenna,
             minimumBaselineThreshold,
-            !highGpuMemory,
+            false,
             isFileSystemCacheEnabled);
         
-        auto Ad = device_matrix<double>(0, 0, nullptr);
-#ifdef HIGH_GPU_MEMORY
-        // Skip computing Ad in hostmetadata and compute via cuda
-        if(isFileSystemCacheEnabled)
-        {
-            auto invertA = [](const Eigen::MatrixXd& a)
-            {
-                LOG(info) << "Inverting PhaseMatrix A " << a.rows() << ":" << a.cols();
-                Ad = cuda::PseudoInverse(cusolverHandle, cublasHandle, metadata.GetA(), JobType::S));
-                auto hostAd = Eigen::MatrixXd(deviceAd.GetRows(), deviceAd.GetCols());
-                Ad.ToHost(hostAd);
-                return hostAd;
-            };
+        auto deviceA = device_matrix<double>(0, 0, nullptr);
+        auto deviceAd = device_matrix<double>(0, 0, nullptr);
+        CalculateAd(metadata.GetA(), deviceA, metadata.GetAd(), deviceAd, isFileSystemCacheEnabled, highGpuMemory);
 
-            ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
-                matrix_hash<Eigen::MatrixXd>()(metadata.GetA()),
-                metadata.GetA(), metadata.GetAd(),
-                "A.hash", "Ad.cache",
-                invertA);
-        }
-        else
-        {
-            // Skip writing cache to host and disk
-            LOG(info) << "Inverting PhaseMatrix A " << a.rows() << ":" << a.cols();
-            Ad = cuda::PseudoInverse(cusolverHandle, cublasHandle, metadata.GetA(), JobType::S));
-        }
-#else
-        //Host Ad exists if and only if highGpumemory is disabled
-        Ad = device_matrix<double>(metadata.GetAd());
-#endif
-
+        // This matrix is not always m > n
+        //auto deviceAd1 = cpu::PseudoInverse(deviceA1);
+        //metadata.GetAd1() = deviceAd1.ToHostAsync();
+        auto deviceA1 = device_matrix<double>(metadata.GetA1());
+        metadata.GetAd1() = cpu::PseudoInverse(metadata.GetA1());
+        auto deviceAd1 = device_matrix<double>(metadata.GetAd1());
 
         auto constantBuffer = std::make_shared<ConstantBuffer>(
             metadata.GetConstants(),
-            device_matrix<double>(metadata.GetA()),
+            std::move(deviceA),
             device_vector<int>(metadata.GetI()),
-            std::move(Ad),
-            device_matrix<double>(metadata.GetA1()),
+            std::move(deviceAd),
+            std::move(deviceA1),
             device_vector<int>(metadata.GetI1()),
-            device_matrix<double>(metadata.GetAd1())
+            std::move(deviceAd1)
         );
 
         auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetConstants().nbaselines * validatedSolutionInterval.GetInterval());
@@ -272,6 +251,86 @@ namespace cuda
             outputCallback(output_calibrations[solution]);
         }
         LOG(info) << "Finished calibration in " << calibration_timer;
+    }
+
+    // void CudaLeapCalibrator::CalculateAd1(
+    //     const Eigen::Matrix<double, -1, -1>& hostA1,
+    //     device_matrix<double>& deviceA1,
+    //     Eigen::Matrix<double, -1, -1>& hostA1,
+    //     device_matrix<double>& deviceA1,
+    //     bool isFileSystemCacheEnabled,
+    //     bool useCuda)
+    //     {
+
+    //     }
+
+    void CudaLeapCalibrator::CalculateAd(
+        const Eigen::Matrix<double, -1, -1>& hostA,
+        device_matrix<double>& deviceA,
+        Eigen::Matrix<double, -1, -1>& hostAd,
+        device_matrix<double>& deviceAd,
+        bool isFileSystemCacheEnabled,
+        bool useCuda)
+    {
+        if(hostA.rows() <= hostA.cols())
+        {
+            useCuda = false;
+        }
+        if(useCuda)
+        {
+            // Compute Ad using cuda
+            if(isFileSystemCacheEnabled)
+            {
+                auto invertA = [&](const Eigen::MatrixXd& a)
+                {
+                    LOG(info) << "Inverting PhaseMatrix A with cuda (" << a.rows() << ":" << a.cols() << ")";
+                    deviceA = device_matrix<double>(a);
+                    deviceAd = cuda::PseudoInverse(m_cusolverDnContext, m_cublasContext, deviceA, JobType::S);
+                    // Write to host to update disk cache
+                    return deviceAd.ToHost();
+                };
+
+                // Load cache into hostAd then deviceAd,
+                // or load hostA into deviceA, compute deviceAd then load into hostAd
+                ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
+                    matrix_hash<Eigen::MatrixXd>()(hostA),
+                    hostA, hostAd,
+                    "A.hash", "Ad.cache",
+                    invertA);
+            }
+            else
+            {
+                // Compute deviceA then deviceAd and skip writing to hostAd and diskAd
+                LOG(info) << "Inverting PhaseMatrix A with cuda (" << hostA.rows() << ":" << hostA.cols() << ")";
+                deviceA = device_matrix<double>(hostA);
+                deviceAd = cuda::PseudoInverse(m_cusolverDnContext, m_cublasContext, deviceA, JobType::S);
+            }
+        }
+        else
+        {
+            //Compute Ad into host
+            auto invertA = [](const Eigen::MatrixXd& a)
+            {
+                LOG(info) << "Inverting PhaseMatrix A with cpu " << a.rows() << ":" << a.cols();
+                return icrar::cpu::PseudoInverse(a);
+            };
+
+            if(isFileSystemCacheEnabled)
+            {
+                ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
+                    matrix_hash<Eigen::MatrixXd>()(hostA),
+                    hostA, hostAd,
+                    "A.hash", "Ad.cache",
+                    invertA);
+            }
+            else
+            {
+                hostAd = invertA(hostA);
+            }
+
+            deviceAd = device_matrix<double>(hostAd);
+            deviceA = device_matrix<double>(hostA);
+        }
     }
 
     void CudaLeapCalibrator::PhaseRotate(

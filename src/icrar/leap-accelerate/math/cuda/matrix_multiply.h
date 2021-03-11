@@ -168,7 +168,9 @@ namespace cuda
     {
         if(a.GetCols() != b.GetRows())
         {
-            throw invalid_argument_exception("a columns does not match b rows", "b", __FILE__, __LINE__);
+            std::stringstream ss;
+            ss << "a columns (" << a.cols() << ") does not match b rows (" << b.rows() << ")";
+            throw invalid_argument_exception(ss.str(), "b", __FILE__, __LINE__);
         }
         if(a.GetRows() != c.GetRows())
         {
@@ -186,7 +188,9 @@ namespace cuda
     {
         if(a.GetCols() != b.GetRows())
         {
-            throw invalid_argument_exception("a columns does not match b rows", "b", __FILE__, __LINE__);
+            std::stringstream ss;
+            ss << "a columns (" << a.GetCols() << ") does not match b rows (" << b.GetRows() << ")";
+            throw invalid_argument_exception(ss.str(), "b", __FILE__, __LINE__);
         }
         if(a.GetRows() != c.GetRows() || b.GetCols() != c.GetCols())
         {
@@ -200,7 +204,9 @@ namespace cuda
     {
         if(a.GetCols() != b.GetRows())
         {
-            throw invalid_argument_exception("a columns does not match b rows", "b", __FILE__, __LINE__);
+            std::stringstream ss;
+            ss << "a columns (" << a.GetCols() << ") does not match b rows (" << b.GetRows() << ")";
+            throw invalid_argument_exception(ss.str(), "b", __FILE__, __LINE__);
         }
         if(a.GetRows() != c.GetRows())
         {
@@ -215,7 +221,9 @@ namespace cuda
     {
         if(a.GetCols() != b.GetRows())
         {
-            throw invalid_argument_exception("a columns does not match b rows", "b", __FILE__, __LINE__);
+            std::stringstream ss;
+            ss << "a columns (" << a.cols() << ") does not match b rows (" << b.rows() << ")";
+            throw invalid_argument_exception(ss.str(), "b", __FILE__, __LINE__);
         }
         if(a.GetRows() != c.GetRows() || b.GetCols() != c.GetCols())
         {

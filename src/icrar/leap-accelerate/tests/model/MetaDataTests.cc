@@ -23,6 +23,7 @@
 
 #include <icrar/leap-accelerate/model/cpu/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
+#include <icrar/leap-accelerate/model/cuda/HostMetaData.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 
@@ -219,16 +220,17 @@ namespace icrar
             auto uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
             meta.SetDirection(direction);
 
-            auto expectedhostMetadata = icrar::cpu::MetaData(*ms, direction, ToUVWVector(uvw));
+            auto expectedhostMetadata = icrar::cuda::HostMetaData(*ms, boost::none, 0.0, true, false);
+            //direction, ToUVWVector(uvw)
 
             auto constantBuffer = std::make_shared<icrar::cuda::ConstantBuffer>(
                 expectedhostMetadata.GetConstants(),
-                expectedhostMetadata.GetA(),
-                expectedhostMetadata.GetI(),
-                expectedhostMetadata.GetAd(),
-                expectedhostMetadata.GetA1(),
-                expectedhostMetadata.GetI1(),
-                expectedhostMetadata.GetAd1()
+                icrar::cuda::device_matrix<double>(expectedhostMetadata.GetA()),
+                icrar::cuda::device_vector<int>(expectedhostMetadata.GetI()),
+                icrar::cuda::device_matrix<double>(expectedhostMetadata.GetAd()),
+                icrar::cuda::device_matrix<double>(expectedhostMetadata.GetA1()),
+                icrar::cuda::device_vector<int>(expectedhostMetadata.GetI1()),
+                icrar::cuda::device_matrix<double>(expectedhostMetadata.GetAd1())
             );
 
             auto solutionIntervalBuffer = std::make_shared<icrar::cuda::SolutionIntervalBuffer>(

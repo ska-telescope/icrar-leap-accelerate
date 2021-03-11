@@ -212,10 +212,30 @@ namespace cuda
             ToHost(out.data());
         }
 
+        __host__ Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ToHost() const
+        {
+            auto result = Eigen::MatrixXd(GetRows(), GetCols());
+            ToHost(result.data());
+            return result;
+        }
+
         __host__ void ToHostAsync(T* out) const
         {
             size_t bytes = GetSize();
             checkCudaErrors(cudaMemcpyAsync(out, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));
+        }
+
+        __host__ void ToHostAsync(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& out) const
+        {
+            out.resize(GetRows(), GetCols());
+            ToHostAsync(out.data());
+        }
+
+        __host__ Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ToHostAsync() const
+        {
+            auto result = Eigen::MatrixXd(GetRows(), GetCols());
+            ToHostAsync(result.data());
+            return result;
         }
     };
 }

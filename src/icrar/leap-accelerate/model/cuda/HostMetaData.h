@@ -40,10 +40,10 @@ namespace cuda
     public:
         HostMetaData(
             const icrar::MeasurementSet& ms,
-            boost::optional<unsigned int> refAnt = boost::none,
-            double minimumBaselineThreshold = 0.0,
-            bool computeInverse = false,
-            bool useCache = true)
+            boost::optional<unsigned int> refAnt,
+            double minimumBaselineThreshold,
+            bool computeInverse,
+            bool useCache)
         : MetaData(ms, refAnt, minimumBaselineThreshold, computeInverse, useCache)
         {
             cudaHostRegister(m_A.data(), m_A.size() * sizeof(decltype(*m_A.data())), cudaHostRegisterPortable);

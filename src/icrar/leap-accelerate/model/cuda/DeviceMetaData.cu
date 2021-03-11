@@ -61,6 +61,18 @@ namespace cuda
         m_Ad1.ToHost(host.m_Ad1);
     }
 
+    void ConstantBuffer::ToHostAsync(icrar::cpu::MetaData& host) const
+    {
+        host.m_constants = m_constants;
+
+        m_A.ToHostAsync(host.m_A);
+        m_I.ToHostAsync(host.m_I);
+        m_Ad.ToHostAsync(host.m_Ad);
+        m_A1.ToHostAsync(host.m_A1);
+        m_I1.ToHostAsync(host.m_I1);
+        m_Ad1.ToHostAsync(host.m_Ad1);
+    }
+
     SolutionIntervalBuffer::SolutionIntervalBuffer(const std::vector<icrar::MVuvw>& uvw)
     : m_UVW(uvw)
     {}
@@ -135,7 +147,7 @@ namespace cuda
     {
         m_constantBuffer->ToHost(metadata);
 
-        m_solutionIntervalBuffer->GetUVW().ToHost(metadata.m_UVW);
+        m_solutionIntervalBuffer->GetUVW().ToHostAsync(metadata.m_UVW);
         metadata.m_direction = m_directionBuffer->GetDirection();
         metadata.m_dd = m_directionBuffer->GetDD();
         m_directionBuffer->GetAvgData().ToHost(metadata.m_avgData);
@@ -148,9 +160,14 @@ namespace cuda
         return result;
     }
 
-    void DeviceMetaData::ToHostAsync(cpu::MetaData& host) const
+    void DeviceMetaData::ToHostAsync(cpu::MetaData& metadata) const
     {
-        throw std::runtime_error("not implemented");
+        m_constantBuffer->ToHostAsync(metadata);
+
+        m_solutionIntervalBuffer->GetUVW().ToHostAsync(metadata.m_UVW);
+        metadata.m_direction = m_directionBuffer->GetDirection();
+        metadata.m_dd = m_directionBuffer->GetDD();
+        m_directionBuffer->GetAvgData().ToHostAsync(metadata.m_avgData);
     }
 }
 }
