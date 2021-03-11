@@ -151,12 +151,9 @@ namespace cuda
         auto deviceAd = device_matrix<double>(0, 0, nullptr);
         CalculateAd(metadata.GetA(), deviceA, metadata.GetAd(), deviceAd, isFileSystemCacheEnabled, highGpuMemory);
 
-        // This matrix is not always m > n
-        //auto deviceAd1 = cpu::PseudoInverse(deviceA1);
-        //metadata.GetAd1() = deviceAd1.ToHostAsync();
-        auto deviceA1 = device_matrix<double>(metadata.GetA1());
-        metadata.GetAd1() = cpu::PseudoInverse(metadata.GetA1());
-        auto deviceAd1 = device_matrix<double>(metadata.GetAd1());
+        auto deviceA1 = device_matrix<double>(0, 0, nullptr);
+        auto deviceAd1 = device_matrix<double>(0, 0, nullptr);
+        CalculateAd1(metadata.GetA1(), deviceA1, metadata.GetAd1(), deviceAd1);
 
         auto constantBuffer = std::make_shared<ConstantBuffer>(
             metadata.GetConstants(),
@@ -253,17 +250,6 @@ namespace cuda
         LOG(info) << "Finished calibration in " << calibration_timer;
     }
 
-    // void CudaLeapCalibrator::CalculateAd1(
-    //     const Eigen::Matrix<double, -1, -1>& hostA1,
-    //     device_matrix<double>& deviceA1,
-    //     Eigen::Matrix<double, -1, -1>& hostA1,
-    //     device_matrix<double>& deviceA1,
-    //     bool isFileSystemCacheEnabled,
-    //     bool useCuda)
-    //     {
-
-    //     }
-
     void CudaLeapCalibrator::CalculateAd(
         const Eigen::Matrix<double, -1, -1>& hostA,
         device_matrix<double>& deviceA,
@@ -331,6 +317,18 @@ namespace cuda
             deviceAd = device_matrix<double>(hostAd);
             deviceA = device_matrix<double>(hostA);
         }
+    }
+
+    void CudaLeapCalibrator::CalculateAd1(
+        const Eigen::Matrix<double, -1, -1>& hostA1,
+        device_matrix<double>& deviceA1,
+        Eigen::Matrix<double, -1, -1>& hostAd1,
+        device_matrix<double>& deviceAd1)
+    {
+        // This matrix is not always m > n, compute on cpu until cuda supports this
+        deviceA1 = device_matrix<double>(hostA1);
+        hostAd1 = cpu::PseudoInverse(hostA1);
+        deviceAd1 = device_matrix<double>(hostA1);
     }
 
     void CudaLeapCalibrator::PhaseRotate(
