@@ -114,7 +114,7 @@ namespace cuda
         size_t free;
         size_t total;
         checkCudaErrors(cudaMemGetInfo(&free, &total));
-        LOG(trace) << "free memory: " << memory_amount(free) << "/" << memory_amount(total); 
+        LOG(trace) << "free device memory: " << memory_amount(free) << "/" << memory_amount(total); 
         LOG(trace) << "cuda svd allocation (" << m << ", " << n << "): "
         << memory_amount((U.size() + Vt.size() + S.size()) * sizeof(double));
 

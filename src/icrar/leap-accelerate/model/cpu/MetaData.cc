@@ -111,13 +111,13 @@ namespace cpu
     {
         auto invertA1 = [](const Eigen::MatrixXd& a)
         {
-            LOG(info) << "Inverting PhaseMatrix A1 " << a.rows() << ":" << a.cols();
+            LOG(info) << "Inverting PhaseMatrix A1 (" << a.rows() << ":" << a.cols() << ")";
             return icrar::cpu::PseudoInverse(a);
         };
 
         auto invertA = [](const Eigen::MatrixXd& a)
         {
-            LOG(info) << "Inverting PhaseMatrix A " << a.rows() << ":" << a.cols();
+            LOG(info) << "Inverting PhaseMatrix A (" << a.rows() << ":" << a.cols() << ")";
             return icrar::cpu::PseudoInverse(a);
         };
 

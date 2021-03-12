@@ -213,7 +213,7 @@ namespace cuda
         size_t free;
         size_t total;
         checkCudaErrors(cudaMemGetInfo(&free, &total));
-        LOG(info) << "free memory: " << memory_amount(free) << "/" << memory_amount(total);
+        LOG(trace) << "free device memory: " << memory_amount(free) << "/" << memory_amount(total);
 
             // Emplace a single zero'd tensor
             input_queue.emplace_back(0, integration.GetVis().dimensions());
@@ -297,7 +297,7 @@ namespace cuda
             //Compute Ad into host
             auto invertA = [](const Eigen::MatrixXd& a)
             {
-                LOG(info) << "Inverting PhaseMatrix A with cpu " << a.rows() << ":" << a.cols();
+                LOG(info) << "Inverting PhaseMatrix A with cpu (" << a.rows() << ":" << a.cols() << ")";
                 return icrar::cpu::PseudoInverse(a);
             };
 
