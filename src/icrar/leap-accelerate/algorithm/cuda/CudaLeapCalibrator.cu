@@ -106,14 +106,10 @@ namespace cuda
             const Slice& solutionInterval,
             double minimumBaselineThreshold,
             boost::optional<unsigned int> referenceAntenna,
-            bool isFileSystemCacheEnabled)
+            const ComputeOptions computeOptions)
     {
         LOG(info) << "Starting Calibration using cuda";
 
-        bool highGpuMemory = false;
-#ifdef HIGH_GPU_MEMORY
-        highGpuMemory = true;
-#endif
         LOG(info)
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
@@ -128,7 +124,7 @@ namespace cuda
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
         << "timesteps: " << ms.GetNumTimesteps() << ", "
-        << "high gpu memory enabled: " << highGpuMemory; 
+        << "use intermediate cuda buffer: " << computeOptions.useIntermediateBuffer; 
 
         profiling::timer calibration_timer;
 
@@ -145,11 +141,11 @@ namespace cuda
             referenceAntenna,
             minimumBaselineThreshold,
             false,
-            isFileSystemCacheEnabled);
+            computeOptions.isFileSystemCacheEnabled);
         
         auto deviceA = device_matrix<double>(0, 0, nullptr);
         auto deviceAd = device_matrix<double>(0, 0, nullptr);
-        CalculateAd(metadata.GetA(), deviceA, metadata.GetAd(), deviceAd, isFileSystemCacheEnabled, highGpuMemory);
+        CalculateAd(metadata.GetA(), deviceA, metadata.GetAd(), deviceAd, computeOptions.isFileSystemCacheEnabled, computeOptions.useCusolver);
 
         auto deviceA1 = device_matrix<double>(0, 0, nullptr);
         auto deviceAd1 = device_matrix<double>(0, 0, nullptr);
@@ -206,14 +202,17 @@ namespace cuda
             solutionIntervalBuffer->SetUVW(integration.GetUVW());
             LOG(info) << "Cuda metadata loaded";
 
-    #ifdef HIGH_GPU_MEMORY
-            const auto deviceIntegration = DeviceIntegration(integration);
-    #endif
+            boost::optional<DeviceIntegration> deviceIntegration;
+            if(computeOptions.useIntermediateBuffer)
+            {
+                LOG(info) << "Copying integration to intermediate buffer on device";
+                deviceIntegration = DeviceIntegration(integration);
+            }
 
-        size_t free;
-        size_t total;
-        checkCudaErrors(cudaMemGetInfo(&free, &total));
-        LOG(trace) << "free device memory: " << memory_amount(free) << "/" << memory_amount(total);
+            size_t free;
+            size_t total;
+            checkCudaErrors(cudaMemGetInfo(&free, &total));
+            LOG(trace) << "free device memory: " << memory_amount(free) << "/" << memory_amount(total);
 
             // Emplace a single zero'd tensor
             input_queue.emplace_back(0, integration.GetVis().dimensions());
@@ -228,12 +227,15 @@ namespace cuda
                 directionBuffer->SetDD(metadata.GenerateDDMatrix(directions[i]));
                 directionBuffer->GetAvgData().SetZeroAsync();
 
-                LOG(info) << "Sending integration to device";
-    #ifdef HIGH_GPU_MEMORY
-                input_queue[0].Set(deviceIntegration);
-    #else
-                input_queue[0].Set(integration);
-    #endif
+                if(computeOptions.useIntermediateBuffer)
+                {
+                    input_queue[0].Set(deviceIntegration.get());
+                }
+                else
+                {
+                    LOG(info) << "Sending integration to device";
+                    input_queue[0].Set(integration);
+                }
 
                 LOG(info) << "PhaseRotate";
                 PhaseRotate(
@@ -328,7 +330,7 @@ namespace cuda
         // This matrix is not always m > n, compute on cpu until cuda supports this
         deviceA1 = device_matrix<double>(hostA1);
         hostAd1 = cpu::PseudoInverse(hostA1);
-        deviceAd1 = device_matrix<double>(hostA1);
+        deviceAd1 = device_matrix<double>(hostAd1);
     }
 
     void CudaLeapCalibrator::PhaseRotate(
@@ -352,9 +354,11 @@ namespace cuda
         auto cal1 = Eigen::VectorXd(metadata.GetA1().cols());
 
         AvgDataToPhaseAngles(deviceMetadata.GetConstantBuffer().GetI1(), deviceMetadata.GetAvgData(), devicePhaseAnglesI1);
+        LOG(info) << "devicePhaseAnglesI1";
         cuda::multiply(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd1(), devicePhaseAnglesI1, deviceCal1);
         CalcDeltaPhase(deviceMetadata.GetConstantBuffer().GetA(), deviceCal1, deviceMetadata.GetAvgData(), devicedeltaPhase);
         GenerateDeltaPhaseColumn(devicedeltaPhase, deviceDeltaPhaseColumn);
+        LOG(info) << "deviceDeltaPhaseColumn";
         cuda::multiply_add<double>(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd(), deviceDeltaPhaseColumn, deviceCal1);
         deviceCal1.ToHost(cal1);
         output_calibrations.emplace_back(direction, cal1);

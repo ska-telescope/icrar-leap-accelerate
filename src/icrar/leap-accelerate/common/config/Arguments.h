@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/algorithm/ComputeOptions.h>
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/common/Slice.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
@@ -121,9 +122,10 @@ namespace icrar
         double m_minimumBaselineThreshold; // Minimum baseline length otherwise flagged at runtime
         bool m_readAutocorrelations; // Adjusts the number of baselines calculation to include autocorrelations
         bool m_mwaSupport; // Negates baselines when enabled
-        bool m_useFileSystemCache; // Enables caching of expensive calculations to the filesystem
         icrar::log::Verbosity m_verbosity; // Defines logging level for std::out
 
+        ComputeOptions m_computeOptions; // Defines options for compute performance to be determined based on harware configuration
+        
         /**
          * Resources
          */
@@ -175,6 +177,8 @@ namespace icrar
          * @return double baseline threshold length in meters
          */
         double GetMinimumBaselineThreshold() const;
+
+        ComputeOptions GetComputeOptions() const;
 
         bool IsFileSystemCacheEnabled() const;
 

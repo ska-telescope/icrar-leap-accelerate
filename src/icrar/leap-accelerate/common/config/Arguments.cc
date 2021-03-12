@@ -110,7 +110,7 @@ namespace icrar
     , m_minimumBaselineThreshold(0)
     , m_readAutocorrelations(false)
     , m_mwaSupport(false)
-    , m_useFileSystemCache(false)
+    , m_computeOptions(false, false, false)
     , m_verbosity(icrar::log::Verbosity::trace) //These values are overwritten
     {
         // Initialize default arguments first
@@ -222,7 +222,7 @@ namespace icrar
 
         if(args.useFileSystemCache.is_initialized())
         {
-            m_useFileSystemCache = std::move(args.useFileSystemCache.get());
+            m_computeOptions.isFileSystemCacheEnabled = std::move(args.useFileSystemCache.get());
         }
 
         if(args.verbosity.is_initialized())
@@ -306,9 +306,14 @@ namespace icrar
         return m_minimumBaselineThreshold;
     }
 	
+    ComputeOptions ArgumentsValidated::GetComputeOptions() const
+    {
+        return m_computeOptions;
+    } 
+
 	bool ArgumentsValidated::IsFileSystemCacheEnabled() const
     {
-        return m_useFileSystemCache;
+        return m_computeOptions.isFileSystemCacheEnabled;
     }
 
     icrar::log::Verbosity ArgumentsValidated::GetVerbosity() const

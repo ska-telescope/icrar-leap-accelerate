@@ -67,7 +67,7 @@ namespace cpu
         const Slice& solutionInterval,
         double minimumBaselineThreshold,
         boost::optional<unsigned int> referenceAntenna,
-        bool isFileSystemCacheEnabled)
+        const ComputeOptions computeOptions)
     {
         LOG(info) << "Starting calibration using cpu";
         LOG(info)
@@ -96,7 +96,7 @@ namespace cpu
             referenceAntenna,
             minimumBaselineThreshold,
             true,
-            isFileSystemCacheEnabled);
+            computeOptions.isFileSystemCacheEnabled);
         LOG(info) << "Read metadata in " << metadata_read_timer;
 
         size_t solutions = validatedSolutionInterval.GetSize();

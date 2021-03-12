@@ -91,7 +91,7 @@ public:
             args.GetSolutionInterval(),
             args.GetMinimumBaselineThreshold(),
             args.GetReferenceAntenna(),
-            args.IsFileSystemCacheEnabled());
+            args.GetComputeOptions());
 
         auto actualFile = std::ofstream(getexedir().append("testdata/DefaultOutput_ACTUAL.json").string());
         actualFile << output.str();

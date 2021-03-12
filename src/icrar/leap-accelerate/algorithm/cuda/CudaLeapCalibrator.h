@@ -93,7 +93,7 @@ namespace cuda
             const Slice& solutionInterval,
             double minimumBaselineThreshold,
             boost::optional<unsigned int> referenceAntenna,
-            bool isFileSystemCacheEnabled) override;
+            const ComputeOptions computeOptions) override;
 
         /**
          * @brief Calculates Ad into deviceAd, writes to cache if @p isFileSystemCacheEnabled is true
