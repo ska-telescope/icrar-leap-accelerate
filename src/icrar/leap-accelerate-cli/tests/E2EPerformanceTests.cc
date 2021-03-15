@@ -41,6 +41,10 @@ using namespace std::literals::complex_literals;
 
 namespace icrar
 {
+    /**
+     * @brief End-to-end performance tests
+     * 
+     */
     class E2EPerformanceTests : public ::testing::Test
     {
         std::unique_ptr<icrar::MeasurementSet> ms;
@@ -81,11 +85,19 @@ namespace icrar
                 calibrations.push_back(cal);
             };
 
+            auto computeOptions = ComputeOptions(
+                false,
+                false,
+                false
+            );
             LeapCalibratorFactory::Create(impl)->Calibrate(
                 outputCallback,
                 *ms,
                 directions,
-                Slice(0,1,1), 0.0, 0, false); 
+                Slice(0,1,1),
+                0.0,
+                0,
+                computeOptions);
         }
     };
 

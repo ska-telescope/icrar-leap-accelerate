@@ -136,7 +136,7 @@ int main(int argc, char** argv)
                 {
                     cal.Serialize(*args.CreateOutputStream(cal.GetStartEpoch()));
                 };
-                
+
                 calibrator->Calibrate(
                     outputCallback,
                     args.GetMeasurementSet(),
@@ -144,7 +144,7 @@ int main(int argc, char** argv)
                     args.GetSolutionInterval(),
                     args.GetMinimumBaselineThreshold(),
                     args.GetReferenceAntenna(),
-                    args.IsFileSystemCacheEnabled());
+                    args.GetComputeOptions());
             }
             else
             {
@@ -163,7 +163,7 @@ int main(int argc, char** argv)
                     args.GetSolutionInterval(),
                     args.GetMinimumBaselineThreshold(),
                     args.GetReferenceAntenna(),
-                    args.IsFileSystemCacheEnabled());
+                    args.GetComputeOptions());
                 
                 auto calibrationCollection = cpu::CalibrationCollection(std::move(calibrations));
                 calibrationCollection.Serialize(*args.CreateOutputStream());
