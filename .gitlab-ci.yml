@@ -259,8 +259,6 @@ lint_cppcheck:
 
 .test:
   stage: test
-  variables:
-    GTEST_FILTER: "-*Cuda*:*cuda*:*Gpu*:*gpu*:*SKA*"
   script:
     - cd build
     - ctest -T test --no-compress-output --verbose
@@ -278,6 +276,8 @@ lint_cppcheck:
 test_debug_minimal:
   extends: [.required_dependencies, .test]
   needs: ["download_lfs", "build_debug_minimal"]
+  variables:
+    GTEST_FILTER: "-*Cuda*:*cuda*:*Gpu*:*gpu*:*SKA*"
 
 # Needs cuda enabled runner
 test_debug_all:
