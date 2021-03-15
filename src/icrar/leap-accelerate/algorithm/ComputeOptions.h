@@ -30,7 +30,7 @@ namespace icrar
      */
     struct ComputeOptions
     {
-        bool isFileSystemCacheEnabled; // Enables caching of expensive calculations to the filesystem
+        bool isFileSystemCacheEnabled; ///< Enables caching of expensive calculations to the filesystem
         bool useIntermediateBuffer;
         bool useCusolver;
 

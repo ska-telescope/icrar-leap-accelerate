@@ -22,8 +22,14 @@
 
 #include "Arguments.h"
 
+#include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/exception/exception.h>
+
+#if CUDA_ENABLED
+#include <cuda_runtime.h>
+#include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+#endif
 
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
@@ -110,8 +116,9 @@ namespace icrar
     , m_minimumBaselineThreshold(0)
     , m_readAutocorrelations(false)
     , m_mwaSupport(false)
+    , m_verbosity(icrar::log::Verbosity::trace)
     , m_computeOptions(false, false, false)
-    , m_verbosity(icrar::log::Verbosity::trace) //These values are overwritten
+     //Initial values are overwritten
     {
         // Initialize default arguments first
         ApplyArguments(CLIArguments::GetDefaultArguments());
@@ -123,7 +130,23 @@ namespace icrar
             ApplyArguments(ParseConfig(cliArgs.configFilePath.get()));
         }
 
-        // OVerride the config args with the remaining cli arguments
+#if CUDA_ENABLED
+    //TODO(cgray): this should be moved to a cuda file if the option is not set
+        // Detect performance tweaks
+        if(GetCudaDeviceCount() != 0)
+        {
+            size_t free;
+            size_t total;
+            checkCudaErrors(cudaMemGetInfo(&free, &total));
+            if(static_cast<double>(free) > 1 * std::pow(2, 30)) // If available VRAM is > 2Gb
+            {
+                m_computeOptions.useIntermediateBuffer = true;
+                m_computeOptions.useCusolver = true;
+            }
+        }
+#endif
+
+        // Override the config args with the remaining cli arguments
         ApplyArguments(std::move(cliArgs));
         Validate();
 
@@ -310,11 +333,6 @@ namespace icrar
     {
         return m_computeOptions;
     } 
-
-	bool ArgumentsValidated::IsFileSystemCacheEnabled() const
-    {
-        return m_computeOptions.isFileSystemCacheEnabled;
-    }
 
     icrar::log::Verbosity ArgumentsValidated::GetVerbosity() const
     {

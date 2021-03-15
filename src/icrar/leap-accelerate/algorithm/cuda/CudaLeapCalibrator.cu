@@ -124,7 +124,8 @@ namespace cuda
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
         << "timesteps: " << ms.GetNumTimesteps() << ", "
-        << "use intermediate cuda buffer: " << computeOptions.useIntermediateBuffer; 
+        << "use intermediate cuda buffer: " << computeOptions.useIntermediateBuffer << ", "
+        << "use cosolver: " << computeOptions.useCusolver;
 
         profiling::timer calibration_timer;
 
@@ -258,15 +259,15 @@ namespace cuda
         Eigen::Matrix<double, -1, -1>& hostAd,
         device_matrix<double>& deviceAd,
         bool isFileSystemCacheEnabled,
-        bool useCuda)
+        bool useCusolver)
     {
         if(hostA.rows() <= hostA.cols())
         {
-            useCuda = false;
+            useCusolver = false;
         }
-        if(useCuda)
+        if(useCusolver)
         {
-            // Compute Ad using cuda
+            // Compute Ad using Cusolver
             if(isFileSystemCacheEnabled)
             {
                 auto invertA = [&](const Eigen::MatrixXd& a)
@@ -285,6 +286,8 @@ namespace cuda
                     hostA, hostAd,
                     "A.hash", "Ad.cache",
                     invertA);
+                deviceA = device_matrix<double>(hostA);
+                deviceAd = device_matrix<double>(hostAd);
             }
             else
             {
@@ -531,7 +534,9 @@ namespace cuda
     {
         if(A.GetCols() != cal1.GetRows())
         {
-            throw invalid_argument_exception("A.cols must equal cal1.rows", "cal1", __FILE__, __LINE__);
+            std::stringstream ss;
+            ss << "a columns (" << A.GetCols() << ") does not match cal1 rows (" << cal1.GetRows() << ")";
+            throw invalid_argument_exception(ss.str(), "A", __FILE__, __LINE__);
         }
 
         dim3 blockSize = dim3(1024, 1, 1);
