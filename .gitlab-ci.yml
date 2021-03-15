@@ -283,6 +283,7 @@ test_debug_minimal:
 .test_debug_all:
   extends: [.all_dependencies, .test]
   needs: ["download_lfs", "build_debug"]
+  tags: ["cuda", "docker"]
 
 # A job that runs the tests under valgrid
 # It might take a while, so not always run by default
