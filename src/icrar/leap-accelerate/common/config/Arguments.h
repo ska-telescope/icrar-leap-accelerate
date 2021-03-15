@@ -42,20 +42,21 @@ namespace icrar
 
     enum class InputType
     {
-        MEASUREMENT_SET,
-        STREAM,
-        //APACHE_ARROW
+        file, ///< Read from a casacore table file
+        stream ///< Read from a spead2 stream
     };
 
     /**
-     * @brief Raw arguments received via CLI interface
+     * @brief Raw arguments received via the command line interface using boost::program_options.
+     * Only raw types std::string, bool, int, uint, float and double are allowed here. 
      * 
      */
     struct CLIArguments
     {
-        boost::optional<InputType> sourceType;
+        boost::optional<std::string> inputType;
         boost::optional<std::string> filePath;
         boost::optional<std::string> configFilePath;
+
         boost::optional<std::string> streamOutType;
         boost::optional<std::string> outputFilePath;
 
@@ -65,9 +66,9 @@ namespace icrar
         boost::optional<std::string> computeImplementation;
         boost::optional<std::string> solutionInterval;
         boost::optional<double> minimumBaselineThreshold;
-        boost::optional<bool> useFileSystemCache;
         boost::optional<bool> mwaSupport;
         boost::optional<bool> readAutocorrelations;
+        boost::optional<bool> useFileSystemCache;
         boost::optional<int> verbosity;
 
         static CLIArguments GetDefaultArguments();
@@ -82,7 +83,7 @@ namespace icrar
         Arguments() = default;
         Arguments(CLIArguments&& args);
 
-        boost::optional<InputType> sourceType; ///< MeasurementSet source type
+        boost::optional<InputType> inputType; ///< MeasurementSet source type
         boost::optional<std::string> filePath; ///< MeasurementSet filepath
         boost::optional<std::string> configFilePath; ///< Optional config filepath
         boost::optional<StreamOutType> streamOutType;
@@ -108,7 +109,7 @@ namespace icrar
         /**
          * Constants
          */
-        InputType m_sourceType;
+        InputType m_inputType;
         boost::optional<std::string> m_filePath; ///< MeasurementSet filepath
         boost::optional<std::string> m_configFilePath; ///< Config filepath
         StreamOutType m_streamOutType;

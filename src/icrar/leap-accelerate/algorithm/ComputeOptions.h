@@ -22,11 +22,13 @@
 
 #pragma once
 
+#include <boost/optional.hpp>
+
 namespace icrar
 {
     /**
-     * @brief Options that affect how computation performance based on hardware configuration 
-     * 
+     * @brief Options that affect how computation performance based on input and hardware configuration.
+     * Can either be overriden or determined at runtime.
      */
     struct ComputeOptions
     {

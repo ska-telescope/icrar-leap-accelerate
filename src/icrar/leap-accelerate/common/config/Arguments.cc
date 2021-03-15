@@ -43,7 +43,7 @@ namespace icrar
     CLIArguments CLIArguments::GetDefaultArguments()
     {
         auto args = CLIArguments();
-        args.sourceType = InputType::MEASUREMENT_SET;
+        args.inputType = "file";
         args.filePath = boost::none;
         args.configFilePath = boost::none;
         args.streamOutType = "single";
@@ -63,8 +63,7 @@ namespace icrar
     }
 
     Arguments::Arguments(CLIArguments&& args)
-        : sourceType(args.sourceType)
-        , filePath(std::move(args.filePath))
+        : filePath(std::move(args.filePath))
         , configFilePath(std::move(args.configFilePath))
         , outputFilePath(std::move(args.outputFilePath))
         , stations(std::move(args.stations))
@@ -75,6 +74,15 @@ namespace icrar
         , useFileSystemCache(args.useFileSystemCache)
     {
         //Perform type conversions
+        if(args.inputType.is_initialized())
+        {
+            inputType.reset(InputType()); //Defualt value ignored
+            // if(!TryParseComputeImplementation(args.computeImplementation.get(), computeImplementation.get()))
+            // {
+            //     throw std::invalid_argument("invalid compute implementation argument");
+            // }
+        }
+        
         if(args.computeImplementation.is_initialized())
         {
             computeImplementation.reset(ComputeImplementation()); //Defualt value ignored
@@ -110,7 +118,7 @@ namespace icrar
     }
 
     ArgumentsValidated::ArgumentsValidated(Arguments&& cliArgs)
-    : m_sourceType(InputType::MEASUREMENT_SET)
+    : m_inputType(InputType::file)
     , m_computeImplementation(ComputeImplementation::cpu)
     , m_solutionInterval()
     , m_minimumBaselineThreshold(0)
@@ -138,7 +146,7 @@ namespace icrar
             size_t free;
             size_t total;
             checkCudaErrors(cudaMemGetInfo(&free, &total));
-            if(static_cast<double>(free) > 2 * std::pow(2, 30)) // If available VRAM is > 2Gb
+            if(static_cast<double>(free) > 1 * std::pow(2, 30)) // If available VRAM is > 2Gb
             {
                 m_computeOptions.useIntermediateBuffer = true;
                 m_computeOptions.useCusolver = true;
@@ -152,9 +160,9 @@ namespace icrar
 
         // Load resources
         icrar::log::Initialize(GetVerbosity()); //TODO: Arguments tests already intiializes verbosity
-        switch (m_sourceType)
+        switch (m_inputType)
         {
-        case InputType::MEASUREMENT_SET:
+        case InputType::file:
             if (m_filePath.is_initialized())
             {
                 m_measurementSet = std::make_unique<MeasurementSet>(
@@ -167,7 +175,7 @@ namespace icrar
                 throw std::invalid_argument("measurement set filename not provided");
             }
             break;
-        case InputType::STREAM:
+        case InputType::stream:
             throw std::runtime_error("only measurement set input is currently supported");
             break;
         default:
@@ -178,9 +186,9 @@ namespace icrar
 
     void ArgumentsValidated::ApplyArguments(Arguments&& args)
     {
-        if(args.sourceType.is_initialized())
+        if(args.inputType.is_initialized())
         {
-            m_sourceType = std::move(args.sourceType.get());
+            m_inputType = std::move(args.inputType.get());
         }
 
         if(args.filePath.is_initialized())
