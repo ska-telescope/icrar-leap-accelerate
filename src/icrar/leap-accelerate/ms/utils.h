@@ -32,6 +32,8 @@
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays.h>
 
+#include <boost/numeric/conversion/cast.hpp>
+
 #include <iterator>
 #include <sstream>
 #include <string>

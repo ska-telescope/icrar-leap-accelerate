@@ -138,7 +138,7 @@ namespace icrar
             size_t free;
             size_t total;
             checkCudaErrors(cudaMemGetInfo(&free, &total));
-            if(static_cast<double>(free) > 1 * std::pow(2, 30)) // If available VRAM is > 2Gb
+            if(static_cast<double>(free) > 2 * std::pow(2, 30)) // If available VRAM is > 2Gb
             {
                 m_computeOptions.useIntermediateBuffer = true;
                 m_computeOptions.useCusolver = true;
