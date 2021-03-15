@@ -22,29 +22,34 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/algorithm/ComputeOptions.h>
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <boost/optional.hpp>
 
 namespace icrar
 {
-    /**
-     * @brief Options that affect how computation performance based on input and hardware configuration.
-     * Can either be overriden or determined at runtime.
-     */
-    struct ComputeOptions
+    class ValidatedCpuComputeOptions
     {
-        boost::optional<bool> isFileSystemCacheEnabled; ///< Enables caching of expensive calculations to the filesystem
-        boost::optional<bool> useIntermediateBuffer;
-        boost::optional<bool> useCusolver;
+    public:
+        bool isFileSystemCacheEnabled; ///< Enables caching of expensive calculations to the filesystem
 
-        ComputeOptions(){}
-
-        ComputeOptions(
-            boost::optional<bool> isFileSystemCacheEnabled,
-            boost::optional<bool> useIntermediateBuffer,
-            boost::optional<bool> useCusolver)
-        : isFileSystemCacheEnabled(isFileSystemCacheEnabled)
-        , useIntermediateBuffer(useIntermediateBuffer)
-        , useCusolver(useCusolver)
-        {}
+        /**
+         * @brief Determines ideal calibration compute options for a given measurementSet 
+         * 
+         * @param computeOptions 
+         * @param ms 
+         */
+        ValidatedCpuComputeOptions(const ComputeOptions& computeOptions, const icrar::MeasurementSet& ms)
+        {
+            if(computeOptions.isFileSystemCacheEnabled.is_initialized())
+            {
+                isFileSystemCacheEnabled = computeOptions.isFileSystemCacheEnabled.get();
+            }
+            else
+            {
+                isFileSystemCacheEnabled = ms.GetNumBaselines() > 128;
+                
+            }
+        }
     };
 } // namespace icrar

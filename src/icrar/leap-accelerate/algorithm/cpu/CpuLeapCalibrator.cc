@@ -24,6 +24,7 @@
 #include "CpuLeapCalibrator.h"
 
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
+#include <icrar/leap-accelerate/algorithm/cpu/ValidatedCpuComputeOptions.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/model/cpu/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
@@ -69,6 +70,8 @@ namespace cpu
         boost::optional<unsigned int> referenceAntenna,
         const ComputeOptions computeOptions)
     {
+        auto cpuComputeOptions = ValidatedCpuComputeOptions(computeOptions, ms);
+
         LOG(info) << "Starting calibration using cpu";
         LOG(info)
         << "stations: " << ms.GetNumStations() << ", "
@@ -96,7 +99,7 @@ namespace cpu
             referenceAntenna,
             minimumBaselineThreshold,
             true,
-            computeOptions.isFileSystemCacheEnabled);
+            cpuComputeOptions.isFileSystemCacheEnabled);
         LOG(info) << "Read metadata in " << metadata_read_timer;
 
         size_t solutions = validatedSolutionInterval.GetSize();

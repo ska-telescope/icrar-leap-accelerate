@@ -26,11 +26,6 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/exception/exception.h>
 
-#if CUDA_ENABLED
-#include <cuda_runtime.h>
-#include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
-#endif
-
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/ostreamwrapper.h>
@@ -76,7 +71,7 @@ namespace icrar
         //Perform type conversions
         if(args.inputType.is_initialized())
         {
-            inputType.reset(InputType()); //Defualt value ignored
+            inputType.reset(InputType()); //Default value ignored
             // if(!TryParseComputeImplementation(args.computeImplementation.get(), computeImplementation.get()))
             // {
             //     throw std::invalid_argument("invalid compute implementation argument");
@@ -85,7 +80,7 @@ namespace icrar
         
         if(args.computeImplementation.is_initialized())
         {
-            computeImplementation.reset(ComputeImplementation()); //Defualt value ignored
+            computeImplementation.reset(ComputeImplementation()); //Default value ignored
             if(!TryParseComputeImplementation(args.computeImplementation.get(), computeImplementation.get()))
             {
                 throw std::invalid_argument("invalid compute implementation argument");
@@ -125,7 +120,7 @@ namespace icrar
     , m_readAutocorrelations(false)
     , m_mwaSupport(false)
     , m_verbosity(icrar::log::Verbosity::trace)
-    , m_computeOptions(false, false, false)
+    , m_computeOptions()
      //Initial values are overwritten
     {
         // Initialize default arguments first
@@ -137,22 +132,6 @@ namespace icrar
             // Configuration via json config
             ApplyArguments(ParseConfig(cliArgs.configFilePath.get()));
         }
-
-#if CUDA_ENABLED
-    //TODO(cgray): this should be moved to a cuda file if the option is not set
-        // Detect performance tweaks
-        if(GetCudaDeviceCount() != 0)
-        {
-            size_t free;
-            size_t total;
-            checkCudaErrors(cudaMemGetInfo(&free, &total));
-            if(static_cast<double>(free) > 1 * std::pow(2, 30)) // If available VRAM is > 2Gb
-            {
-                m_computeOptions.useIntermediateBuffer = true;
-                m_computeOptions.useCusolver = true;
-            }
-        }
-#endif
 
         // Override the config args with the remaining cli arguments
         ApplyArguments(std::move(cliArgs));

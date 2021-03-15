@@ -118,8 +118,8 @@ namespace icrar
                     0.0,
                     0,
                     ComputeOptions(useCache, false, false));
-
                 calibrationsVector.clear();
+                
                 // Load cache
                 LeapCalibratorFactory::Create(impl)->Calibrate(
                     outputCallback,

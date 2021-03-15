@@ -25,6 +25,8 @@
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 
+#include <icrar/leap-accelerate/algorithm/cuda/ValidatedCudaComputeOptions.h>
+
 #include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
 #include <icrar/leap-accelerate/model/cuda/HostMetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
@@ -108,8 +110,9 @@ namespace cuda
             boost::optional<unsigned int> referenceAntenna,
             const ComputeOptions computeOptions)
     {
-        LOG(info) << "Starting Calibration using cuda";
+        auto cudaComputeOptions = ValidatedCudaComputeOptions(computeOptions, ms);
 
+        LOG(info) << "Starting Calibration using cuda";
         LOG(info)
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
@@ -124,8 +127,8 @@ namespace cuda
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
         << "timesteps: " << ms.GetNumTimesteps() << ", "
-        << "use intermediate cuda buffer: " << computeOptions.useIntermediateBuffer << ", "
-        << "use cosolver: " << computeOptions.useCusolver;
+        << "use intermediate cuda buffer: " << cudaComputeOptions.useIntermediateBuffer << ", "
+        << "use cosolver: " << cudaComputeOptions.useCusolver;
 
         profiling::timer calibration_timer;
 
@@ -142,11 +145,11 @@ namespace cuda
             referenceAntenna,
             minimumBaselineThreshold,
             false,
-            computeOptions.isFileSystemCacheEnabled);
+            cudaComputeOptions.isFileSystemCacheEnabled);
         
         auto deviceA = device_matrix<double>(0, 0, nullptr);
         auto deviceAd = device_matrix<double>(0, 0, nullptr);
-        CalculateAd(metadata.GetA(), deviceA, metadata.GetAd(), deviceAd, computeOptions.isFileSystemCacheEnabled, computeOptions.useCusolver);
+        CalculateAd(metadata.GetA(), deviceA, metadata.GetAd(), deviceAd, cudaComputeOptions.isFileSystemCacheEnabled, cudaComputeOptions.useCusolver);
 
         auto deviceA1 = device_matrix<double>(0, 0, nullptr);
         auto deviceAd1 = device_matrix<double>(0, 0, nullptr);
@@ -204,7 +207,7 @@ namespace cuda
             LOG(info) << "Cuda metadata loaded";
 
             boost::optional<DeviceIntegration> deviceIntegration;
-            if(computeOptions.useIntermediateBuffer)
+            if(cudaComputeOptions.useIntermediateBuffer)
             {
                 LOG(info) << "Copying integration to intermediate buffer on device";
                 deviceIntegration = DeviceIntegration(integration);
@@ -228,7 +231,7 @@ namespace cuda
                 directionBuffer->SetDD(metadata.GenerateDDMatrix(directions[i]));
                 directionBuffer->GetAvgData().SetZeroAsync();
 
-                if(computeOptions.useIntermediateBuffer)
+                if(cudaComputeOptions.useIntermediateBuffer)
                 {
                     input_queue[0].Set(deviceIntegration.get());
                 }
