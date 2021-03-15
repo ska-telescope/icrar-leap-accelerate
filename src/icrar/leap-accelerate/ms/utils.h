@@ -32,6 +32,8 @@
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays.h>
 
+#include <boost/numeric/conversion/cast.hpp>
+
 #include <iterator>
 #include <sstream>
 #include <string>
@@ -45,8 +47,8 @@ namespace icrar
     template<typename T>
     void ms_read_coords(
         const casacore::MeasurementSet& ms,
-        unsigned int start_row,
-        unsigned int num_baselines,
+        uint32_t start_row,
+        uint32_t num_baselines,
         T* uu,
         T* vv,
         T* ww)
@@ -54,7 +56,7 @@ namespace icrar
         auto rms = casacore::MeasurementSet(ms);
         auto msmc = std::make_unique<casacore::MSMainColumns>(rms);
 
-        unsigned int total_rows = ms.nrow();
+        uint32_t total_rows = boost::numeric_cast<uint32_t>(ms.nrow());
         if(start_row >= total_rows)
         {
             std::stringstream ss;
@@ -72,7 +74,7 @@ namespace icrar
         casacore::Array<double> column_range = msmc->uvw().getColumnRange(slice);
         casacore::Matrix<double> matrix;
         matrix.reference(column_range);
-        for (unsigned int i = 0; i < num_baselines; ++i)
+        for (uint32_t i = 0; i < num_baselines; ++i)
         {
             uu[i] = matrix(0, i); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             vv[i] = matrix(1, i); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
@@ -104,7 +106,7 @@ namespace icrar
             throw icrar::exception("ms column not found", __FILE__, __LINE__);
         }
 
-        unsigned int total_rows = ms.nrow();
+        uint32_t total_rows = boost::numeric_cast<uint32_t>(ms.nrow());
         if (start_baseline >= total_rows)
         {
             std::stringstream ss;

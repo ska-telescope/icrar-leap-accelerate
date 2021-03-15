@@ -37,8 +37,9 @@ set(sources
     core/profiling/UsageReporter.cc
     core/version.cc
 
-    common/SphericalDirection.cc
     model/cpu/MVuvw.cc
+    
+    common/SphericalDirection.cc
     common/Slice.cc
     common/config/Arguments.cc
 
@@ -52,22 +53,21 @@ set(sources
     algorithm/cpu/CpuLeapCalibrator.cc
     algorithm/cpu/PhaseMatrixFunction.cc
 )
-    
-    set(cuda_headers
+set(cuda_headers
     cuda/cuda_info.h
     cuda/helper_cuda.cuh
     cuda/helper_string.cuh
 )
-    
-    set(cuda_sources
+set(cuda_sources
     cuda/cuda_info.cu
     
     math/cuda/matrix_op.cu
     math/cuda/matrix_multiply.cu
     math/cuda/matrix_invert.cu
-
+    
     model/cuda/DeviceMetaData.cu
     model/cuda/DeviceIntegration.cu
+    algorithm/cuda/ValidatedCudaComputeOptions.cu
     algorithm/cuda/CudaLeapCalibrator.cu
 )
 

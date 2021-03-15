@@ -42,20 +42,21 @@ namespace icrar
 
     enum class InputType
     {
-        MEASUREMENT_SET,
-        STREAM,
-        //APACHE_ARROW
+        file, ///< Read from a casacore table file
+        stream ///< Read from a spead2 stream
     };
 
     /**
-     * @brief Raw arguments received via CLI interface
+     * @brief Raw arguments received via the command line interface using boost::program_options.
+     * Only raw types std::string, bool, int, uint, float and double are allowed here. 
      * 
      */
     struct CLIArguments
     {
-        boost::optional<InputType> sourceType;
+        boost::optional<std::string> inputType;
         boost::optional<std::string> filePath;
         boost::optional<std::string> configFilePath;
+
         boost::optional<std::string> streamOutType;
         boost::optional<std::string> outputFilePath;
 
@@ -65,9 +66,9 @@ namespace icrar
         boost::optional<std::string> computeImplementation;
         boost::optional<std::string> solutionInterval;
         boost::optional<double> minimumBaselineThreshold;
-        boost::optional<bool> useFileSystemCache;
         boost::optional<bool> mwaSupport;
         boost::optional<bool> readAutocorrelations;
+        boost::optional<bool> useFileSystemCache;
         boost::optional<int> verbosity;
 
         static CLIArguments GetDefaultArguments();
@@ -82,11 +83,11 @@ namespace icrar
         Arguments() = default;
         Arguments(CLIArguments&& args);
 
-        boost::optional<InputType> sourceType; // MeasurementSet source type
-        boost::optional<std::string> filePath; // MeasurementSet filepath
-        boost::optional<std::string> configFilePath; // Optional config filepath
+        boost::optional<InputType> inputType; ///< MeasurementSet source type
+        boost::optional<std::string> filePath; ///< MeasurementSet filepath
+        boost::optional<std::string> configFilePath; ///< Optional config filepath
         boost::optional<StreamOutType> streamOutType;
-        boost::optional<std::string> outputFilePath; // Calibration output file, print to terminal if empty
+        boost::optional<std::string> outputFilePath; ///< Calibration output file, print to terminal if empty
 
         boost::optional<int> stations;
         boost::optional<unsigned int> referenceAntenna;
@@ -108,29 +109,28 @@ namespace icrar
         /**
          * Constants
          */
-        InputType m_sourceType;
-        boost::optional<std::string> m_filePath; // MeasurementSet filepath
-        boost::optional<std::string> m_configFilePath; // Config filepath
+        InputType m_inputType;
+        boost::optional<std::string> m_filePath; ///< MeasurementSet filepath
+        boost::optional<std::string> m_configFilePath; ///< Config filepath
         StreamOutType m_streamOutType;
-        boost::optional<std::string> m_outputFilePath; // Calibration output filepath
+        boost::optional<std::string> m_outputFilePath; ///< Calibration output filepath
 
-        boost::optional<int> m_stations; // Overriden number of stations (will be removed in a later release)
-        boost::optional<unsigned int> m_referenceAntenna; // Index of the reference antenna
-        std::vector<SphericalDirection> m_directions; // Calibration directions
-        ComputeImplementation m_computeImplementation; // Specifies the implementation for calibration computation
-        Slice m_solutionInterval; // Specifies the interval to calculate solutions for
-        double m_minimumBaselineThreshold; // Minimum baseline length otherwise flagged at runtime
-        bool m_readAutocorrelations; // Adjusts the number of baselines calculation to include autocorrelations
-        bool m_mwaSupport; // Negates baselines when enabled
-        icrar::log::Verbosity m_verbosity; // Defines logging level for std::out
+        boost::optional<int> m_stations; ///< Overriden number of stations (will be removed in a later release)
+        boost::optional<unsigned int> m_referenceAntenna; ///< Index of the reference antenna
+        std::vector<SphericalDirection> m_directions; ///< Calibration directions
+        ComputeImplementation m_computeImplementation; ///< Specifies the implementation for calibration computation
+        Slice m_solutionInterval; ///< Specifies the interval to calculate solutions for
+        double m_minimumBaselineThreshold; ///< Minimum baseline length otherwise flagged at runtime
+        bool m_readAutocorrelations; ///< Adjusts the number of baselines calculation to include autocorrelations
+        bool m_mwaSupport; ///< Negates baselines when enabled
+        icrar::log::Verbosity m_verbosity; ///< Defines logging level for std::out
 
-        ComputeOptions m_computeOptions; // Defines options for compute performance to be determined based on harware configuration
+        ComputeOptions m_computeOptions; ///< Defines options for compute performance tweaks
         
         /**
          * Resources
          */
         std::unique_ptr<MeasurementSet> m_measurementSet;
-
 
     public:
         ArgumentsValidated(Arguments&& cliArgs);
@@ -178,10 +178,18 @@ namespace icrar
          */
         double GetMinimumBaselineThreshold() const;
 
+        /**
+         * @brief Gets configured options related to compute performance
+         * 
+         * @return ComputeOptions
+         */
         ComputeOptions GetComputeOptions() const;
 
-        bool IsFileSystemCacheEnabled() const;
-
+        /**
+         * @brief Gets the configured logging verbosity
+         * 
+         * @return icrar::log::Verbosity 
+         */
         icrar::log::Verbosity GetVerbosity() const;
 
     private:

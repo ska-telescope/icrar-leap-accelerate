@@ -25,6 +25,8 @@
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 
+#include <icrar/leap-accelerate/algorithm/cuda/ValidatedCudaComputeOptions.h>
+
 #include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
 #include <icrar/leap-accelerate/model/cuda/HostMetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
@@ -108,8 +110,9 @@ namespace cuda
             boost::optional<unsigned int> referenceAntenna,
             const ComputeOptions computeOptions)
     {
-        LOG(info) << "Starting Calibration using cuda";
+        auto cudaComputeOptions = ValidatedCudaComputeOptions(computeOptions, ms);
 
+        LOG(info) << "Starting Calibration using cuda";
         LOG(info)
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
@@ -124,7 +127,8 @@ namespace cuda
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
         << "timesteps: " << ms.GetNumTimesteps() << ", "
-        << "use intermediate cuda buffer: " << computeOptions.useIntermediateBuffer; 
+        << "use intermediate cuda buffer: " << cudaComputeOptions.useIntermediateBuffer << ", "
+        << "use cosolver: " << cudaComputeOptions.useCusolver;
 
         profiling::timer calibration_timer;
 
@@ -141,11 +145,11 @@ namespace cuda
             referenceAntenna,
             minimumBaselineThreshold,
             false,
-            computeOptions.isFileSystemCacheEnabled);
+            cudaComputeOptions.isFileSystemCacheEnabled);
         
         auto deviceA = device_matrix<double>(0, 0, nullptr);
         auto deviceAd = device_matrix<double>(0, 0, nullptr);
-        CalculateAd(metadata.GetA(), deviceA, metadata.GetAd(), deviceAd, computeOptions.isFileSystemCacheEnabled, computeOptions.useCusolver);
+        CalculateAd(metadata.GetA(), deviceA, metadata.GetAd(), deviceAd, cudaComputeOptions.isFileSystemCacheEnabled, cudaComputeOptions.useCusolver);
 
         auto deviceA1 = device_matrix<double>(0, 0, nullptr);
         auto deviceAd1 = device_matrix<double>(0, 0, nullptr);
@@ -203,7 +207,7 @@ namespace cuda
             LOG(info) << "Cuda metadata loaded";
 
             boost::optional<DeviceIntegration> deviceIntegration;
-            if(computeOptions.useIntermediateBuffer)
+            if(cudaComputeOptions.useIntermediateBuffer)
             {
                 LOG(info) << "Copying integration to intermediate buffer on device";
                 deviceIntegration = DeviceIntegration(integration);
@@ -227,7 +231,7 @@ namespace cuda
                 directionBuffer->SetDD(metadata.GenerateDDMatrix(directions[i]));
                 directionBuffer->GetAvgData().SetZeroAsync();
 
-                if(computeOptions.useIntermediateBuffer)
+                if(cudaComputeOptions.useIntermediateBuffer)
                 {
                     input_queue[0].Set(deviceIntegration.get());
                 }
@@ -258,15 +262,15 @@ namespace cuda
         Eigen::Matrix<double, -1, -1>& hostAd,
         device_matrix<double>& deviceAd,
         bool isFileSystemCacheEnabled,
-        bool useCuda)
+        bool useCusolver)
     {
         if(hostA.rows() <= hostA.cols())
         {
-            useCuda = false;
+            useCusolver = false;
         }
-        if(useCuda)
+        if(useCusolver)
         {
-            // Compute Ad using cuda
+            // Compute Ad using Cusolver
             if(isFileSystemCacheEnabled)
             {
                 auto invertA = [&](const Eigen::MatrixXd& a)
@@ -285,6 +289,8 @@ namespace cuda
                     hostA, hostAd,
                     "A.hash", "Ad.cache",
                     invertA);
+                deviceA = device_matrix<double>(hostA);
+                deviceAd = device_matrix<double>(hostAd);
             }
             else
             {
@@ -531,7 +537,9 @@ namespace cuda
     {
         if(A.GetCols() != cal1.GetRows())
         {
-            throw invalid_argument_exception("A.cols must equal cal1.rows", "cal1", __FILE__, __LINE__);
+            std::stringstream ss;
+            ss << "a columns (" << A.GetCols() << ") does not match cal1 rows (" << cal1.GetRows() << ")";
+            throw invalid_argument_exception(ss.str(), "A", __FILE__, __LINE__);
         }
 
         dim3 blockSize = dim3(1024, 1, 1);

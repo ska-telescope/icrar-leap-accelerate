@@ -59,8 +59,13 @@ namespace cuda
 
 
     /**
-     * @brief 
+     * @brief Performs matrix inversion using cusolver and cublas 
      * 
+     * @param cusolverHandle 
+     * @param cublasHandle 
+     * @param matrix 
+     * @param jobType 
+     * @return device_matrix<double> 
      */
     device_matrix<double> PseudoInverse(
         cusolverDnHandle_t cusolverHandle,

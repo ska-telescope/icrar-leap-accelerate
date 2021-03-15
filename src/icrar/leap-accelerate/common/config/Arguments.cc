@@ -22,6 +22,7 @@
 
 #include "Arguments.h"
 
+#include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/exception/exception.h>
 
@@ -37,7 +38,7 @@ namespace icrar
     CLIArguments CLIArguments::GetDefaultArguments()
     {
         auto args = CLIArguments();
-        args.sourceType = InputType::MEASUREMENT_SET;
+        args.inputType = "file";
         args.filePath = boost::none;
         args.configFilePath = boost::none;
         args.streamOutType = "single";
@@ -57,8 +58,7 @@ namespace icrar
     }
 
     Arguments::Arguments(CLIArguments&& args)
-        : sourceType(args.sourceType)
-        , filePath(std::move(args.filePath))
+        : filePath(std::move(args.filePath))
         , configFilePath(std::move(args.configFilePath))
         , outputFilePath(std::move(args.outputFilePath))
         , stations(std::move(args.stations))
@@ -69,9 +69,18 @@ namespace icrar
         , useFileSystemCache(args.useFileSystemCache)
     {
         //Perform type conversions
+        if(args.inputType.is_initialized())
+        {
+            inputType.reset(InputType()); //Default value ignored
+            // if(!TryParseComputeImplementation(args.computeImplementation.get(), computeImplementation.get()))
+            // {
+            //     throw std::invalid_argument("invalid compute implementation argument");
+            // }
+        }
+        
         if(args.computeImplementation.is_initialized())
         {
-            computeImplementation.reset(ComputeImplementation()); //Defualt value ignored
+            computeImplementation.reset(ComputeImplementation()); //Default value ignored
             if(!TryParseComputeImplementation(args.computeImplementation.get(), computeImplementation.get()))
             {
                 throw std::invalid_argument("invalid compute implementation argument");
@@ -104,14 +113,15 @@ namespace icrar
     }
 
     ArgumentsValidated::ArgumentsValidated(Arguments&& cliArgs)
-    : m_sourceType(InputType::MEASUREMENT_SET)
+    : m_inputType(InputType::file)
     , m_computeImplementation(ComputeImplementation::cpu)
     , m_solutionInterval()
     , m_minimumBaselineThreshold(0)
     , m_readAutocorrelations(false)
     , m_mwaSupport(false)
-    , m_computeOptions(false, false, false)
-    , m_verbosity(icrar::log::Verbosity::trace) //These values are overwritten
+    , m_verbosity(icrar::log::Verbosity::trace)
+    , m_computeOptions()
+     //Initial values are overwritten
     {
         // Initialize default arguments first
         ApplyArguments(CLIArguments::GetDefaultArguments());
@@ -123,15 +133,15 @@ namespace icrar
             ApplyArguments(ParseConfig(cliArgs.configFilePath.get()));
         }
 
-        // OVerride the config args with the remaining cli arguments
+        // Override the config args with the remaining cli arguments
         ApplyArguments(std::move(cliArgs));
         Validate();
 
         // Load resources
         icrar::log::Initialize(GetVerbosity()); //TODO: Arguments tests already intiializes verbosity
-        switch (m_sourceType)
+        switch (m_inputType)
         {
-        case InputType::MEASUREMENT_SET:
+        case InputType::file:
             if (m_filePath.is_initialized())
             {
                 m_measurementSet = std::make_unique<MeasurementSet>(
@@ -144,7 +154,7 @@ namespace icrar
                 throw std::invalid_argument("measurement set filename not provided");
             }
             break;
-        case InputType::STREAM:
+        case InputType::stream:
             throw std::runtime_error("only measurement set input is currently supported");
             break;
         default:
@@ -155,9 +165,9 @@ namespace icrar
 
     void ArgumentsValidated::ApplyArguments(Arguments&& args)
     {
-        if(args.sourceType.is_initialized())
+        if(args.inputType.is_initialized())
         {
-            m_sourceType = std::move(args.sourceType.get());
+            m_inputType = std::move(args.inputType.get());
         }
 
         if(args.filePath.is_initialized())
@@ -310,11 +320,6 @@ namespace icrar
     {
         return m_computeOptions;
     } 
-
-	bool ArgumentsValidated::IsFileSystemCacheEnabled() const
-    {
-        return m_computeOptions.isFileSystemCacheEnabled;
-    }
 
     icrar::log::Verbosity ArgumentsValidated::GetVerbosity() const
     {
