@@ -46,5 +46,12 @@ namespace icrar
         , useIntermediateBuffer(useIntermediateBuffer)
         , useCusolver(useCusolver)
         {}
+
+        bool IsInitialized() const
+        {
+            return isFileSystemCacheEnabled.is_initialized()
+            && useIntermediateBuffer.is_initialized()
+            && useCusolver.is_initialized(); 
+        }
     };
 } // namespace icrar

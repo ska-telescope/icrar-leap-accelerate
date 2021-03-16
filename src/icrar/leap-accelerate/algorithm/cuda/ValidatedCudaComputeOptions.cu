@@ -44,7 +44,6 @@ namespace icrar
         {
             checkCudaErrors(cudaMemGetInfo(&free, &total));
         }
-        LOG(info) << "available cuda memory: " << memory_amount(free);
         size_t VisSize = ms.GetNumBaselines() * ms.GetNumChannels() * sizeof(std::complex<double>);
         size_t AdSize = ms.GetNumStations() * ms.GetNumBaselines() * sizeof(double);
         double safetyFactor = 1.3;
