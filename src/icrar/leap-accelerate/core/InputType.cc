@@ -20,36 +20,34 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
-
-#include <icrar/leap-accelerate/algorithm/ComputeOptions.h>
-#include <icrar/leap-accelerate/ms/MeasurementSet.h>
-#include <boost/optional.hpp>
+#include "InputType.h"
+#include <icrar/leap-accelerate/exception/exception.h>
 
 namespace icrar
 {
-    class ValidatedCpuComputeOptions
+    InputType ParseInputType(const std::string& value)
     {
-    public:
-        bool isFileSystemCacheEnabled; ///< Enables caching of expensive calculations to the filesystem
-
-        /**
-         * @brief Determines ideal calibration compute options for a given MeasurementSet
-         * 
-         * @param computeOptions 
-         * @param ms 
-         */
-        ValidatedCpuComputeOptions(const ComputeOptions& computeOptions, const icrar::MeasurementSet& ms)
+        InputType e;
+        if(!TryParseInputType(value, e))
         {
-            if(computeOptions.isFileSystemCacheEnabled.is_initialized())
-            {
-                isFileSystemCacheEnabled = computeOptions.isFileSystemCacheEnabled.get();
-            }
-            else
-            {
-                isFileSystemCacheEnabled = ms.GetNumBaselines() > 128;
-                
-            }
+            throw invalid_argument_exception(value, "value", __FILE__, __LINE__);
         }
-    };
+        return e;
+    }
+
+    bool TryParseInputType(const std::string& value, InputType& out)
+    {
+        bool handled = false;
+        if(value == "f" || value == "file")
+        {
+            out = InputType::file;
+            handled = true;
+        }
+        else if(value == "s" || value == "stream")
+        {
+            out = InputType::stream;
+            handled = true;
+        }
+        return handled;
+    }
 } // namespace icrar

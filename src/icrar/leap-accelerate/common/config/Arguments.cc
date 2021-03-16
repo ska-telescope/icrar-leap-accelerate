@@ -72,10 +72,10 @@ namespace icrar
         if(args.inputType.is_initialized())
         {
             inputType.reset(InputType()); //Default value ignored
-            // if(!TryParseComputeImplementation(args.computeImplementation.get(), computeImplementation.get()))
-            // {
-            //     throw std::invalid_argument("invalid compute implementation argument");
-            // }
+            if(!TryParseInputType(args.inputType.get(), inputType.get()))
+            {
+                throw std::invalid_argument("invalid compute implementation argument");
+            }
         }
         
         if(args.computeImplementation.is_initialized())
@@ -235,6 +235,16 @@ namespace icrar
             m_computeOptions.isFileSystemCacheEnabled = std::move(args.useFileSystemCache.get());
         }
 
+        if(args.useCusolver.is_initialized())
+        {
+            m_computeOptions.useCusolver = std::move(args.useCusolver.get());
+        }
+
+        if(args.useIntermediateBuffer.is_initialized())
+        {
+            m_computeOptions.useIntermediateBuffer = std::move(args.useIntermediateBuffer.get());
+        }
+
         if(args.verbosity.is_initialized())
         {
             m_verbosity = std::move(args.verbosity.get());
@@ -353,7 +363,7 @@ namespace icrar
             else
             {
                 std::string key = it->name.GetString();
-                if(key == "sourceType")
+                if(key == "inputType")
                 {
                     //args.sourceType = it->value.GetInt(); //TODO: use string
                 }

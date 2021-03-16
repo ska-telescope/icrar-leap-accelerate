@@ -30,6 +30,7 @@ set(sources
     ms/MeasurementSet.cc
 
     core/compute_implementation.cc
+    core/InputType.cc
     core/stream_out_type.cc
     core/log/logging.cc
     core/log/Verbosity.cc
@@ -107,10 +108,6 @@ endif()
 #target_compile_definitions(${TARGET_NAME} PUBLIC PRETTY_WRITER)
 
 if(CUDA_ENABLED)
-  if(HIGH_GPU_MEMORY)
-  target_compile_definitions(${TARGET_NAME} PUBLIC HIGH_GPU_MEMORY)
-  endif()
-  
   if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
     message("generating clang-tidy cuda compatible configuration")
     configure_clang_cuda_compiler(${TARGET_NAME})

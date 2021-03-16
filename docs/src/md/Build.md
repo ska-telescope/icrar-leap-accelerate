@@ -48,8 +48,6 @@ Setting an environment variable of the same name will also override these cmake 
 
 `CUDA_ENABLED` - Enables building with cuda support
 
-`HIGH_GPU_MEMORY` - Optimizes device performance at the cost of extra device memory
-
 `WERROR` - Enables warnings as Errors
 
 `WCONVERSION` - Enables warnings on implicit numeric conversions
