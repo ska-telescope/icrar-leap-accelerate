@@ -53,4 +53,4 @@ namespace icrar
      * @brief True if solutions should be written to IO as soon as they are computed.
      */
     bool IsImmediateMode(StreamOutType streamOutType);
-}
+} // namespace icrar

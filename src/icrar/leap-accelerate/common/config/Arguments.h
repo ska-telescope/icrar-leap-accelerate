@@ -28,6 +28,7 @@
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/stream_out_type.h>
+#include <icrar/leap-accelerate/core/InputType.h>
 
 #include <boost/optional.hpp>
 #include <vector>
@@ -39,12 +40,6 @@
 namespace icrar
 {
     class MeasurementSet;
-
-    enum class InputType
-    {
-        file, ///< Read from a casacore table file
-        stream ///< Read from a spead2 stream
-    };
 
     /**
      * @brief Raw arguments received via the command line interface using boost::program_options.
@@ -68,8 +63,11 @@ namespace icrar
         boost::optional<double> minimumBaselineThreshold;
         boost::optional<bool> mwaSupport;
         boost::optional<bool> readAutocorrelations;
-        boost::optional<bool> useFileSystemCache;
         boost::optional<int> verbosity;
+
+        boost::optional<bool> useFileSystemCache;
+        boost::optional<bool> useIntermediateBuffer;
+        boost::optional<bool> useCusolver;
 
         static CLIArguments GetDefaultArguments();
     };
@@ -97,8 +95,11 @@ namespace icrar
         boost::optional<double> minimumBaselineThreshold;
         boost::optional<bool> readAutocorrelations;
         boost::optional<bool> mwaSupport;
-        boost::optional<bool> useFileSystemCache;
         boost::optional<icrar::log::Verbosity> verbosity;
+        
+        boost::optional<bool> useFileSystemCache; ///< Whether to update a file cache for fast inverse matrix loading
+        boost::optional<bool> useIntermediateBuffer; ///< Whether to allocate intermediate buffers for reduced cpu->gpu copies
+        boost::optional<bool> useCusolver; ///< Whether to use cusolverDn for matrix inversion
     };
 
     /**

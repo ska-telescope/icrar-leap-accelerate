@@ -21,35 +21,27 @@
  */
 
 #pragma once
-
-#include <icrar/leap-accelerate/algorithm/ComputeOptions.h>
-#include <icrar/leap-accelerate/ms/MeasurementSet.h>
-#include <boost/optional.hpp>
+#include <string>
 
 namespace icrar
 {
-    class ValidatedCpuComputeOptions
+    enum class InputType
     {
-    public:
-        bool isFileSystemCacheEnabled; ///< Enables caching of expensive calculations to the filesystem
-
-        /**
-         * @brief Determines ideal calibration compute options for a given MeasurementSet
-         * 
-         * @param computeOptions 
-         * @param ms 
-         */
-        ValidatedCpuComputeOptions(const ComputeOptions& computeOptions, const icrar::MeasurementSet& ms)
-        {
-            if(computeOptions.isFileSystemCacheEnabled.is_initialized())
-            {
-                isFileSystemCacheEnabled = computeOptions.isFileSystemCacheEnabled.get();
-            }
-            else
-            {
-                isFileSystemCacheEnabled = ms.GetNumBaselines() > 128;
-                
-            }
-        }
+        file, ///< Read from a casacore table file
+        stream ///< Read from a spead2 stream (unsupported)
     };
+
+    /**
+     * @brief Parses string argument into an enum, throws an exception otherwise.
+     * 
+     * @param value 
+     * @return StreamOutType 
+     */
+    InputType ParseInputType(const std::string& value);
+
+    /**
+     * @return true if value was converted succesfully, false otherwise
+     */
+    bool TryParseInputType(const std::string& value, InputType& out);
+
 } // namespace icrar
