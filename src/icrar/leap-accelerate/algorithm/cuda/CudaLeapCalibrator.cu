@@ -147,7 +147,7 @@ namespace cuda
             referenceAntenna,
             minimumBaselineThreshold,
             false,
-            cudaComputeOptions.isFileSystemCacheEnabled);
+            false);
         
         auto deviceA = device_matrix<double>(0, 0, nullptr);
         auto deviceAd = device_matrix<double>(0, 0, nullptr);
@@ -272,18 +272,18 @@ namespace cuda
         }
         if(useCusolver)
         {
+            auto invertA = [&](const Eigen::MatrixXd& a)
+            {
+                LOG(info) << "Inverting PhaseMatrix A with cuda (" << a.rows() << ":" << a.cols() << ")";
+                deviceA = device_matrix<double>(a);
+                deviceAd = cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, deviceA, JobType::S);
+                // Write to host to update disk cache
+                return deviceAd.ToHost();
+            };
+
             // Compute Ad using Cusolver
             if(isFileSystemCacheEnabled)
             {
-                auto invertA = [&](const Eigen::MatrixXd& a)
-                {
-                    LOG(info) << "Inverting PhaseMatrix A with cuda (" << a.rows() << ":" << a.cols() << ")";
-                    deviceA = device_matrix<double>(a);
-                    deviceAd = cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, deviceA, JobType::S);
-                    // Write to host to update disk cache
-                    return deviceAd.ToHost();
-                };
-
                 // Load cache into hostAd then deviceAd,
                 // or load hostA into deviceA, compute deviceAd then load into hostAd
                 ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
@@ -292,16 +292,18 @@ namespace cuda
                     "A.hash", "Ad.cache",
                     invertA);
                 deviceA = device_matrix<double>(hostA);
-                deviceAd = device_matrix<double>(hostAd);
+                deviceAd = device_matrix<double>(hostAd); // redundant?
             }
             else
             {
-                // Compute deviceA then deviceAd and skip writing to hostAd and diskAd
-                LOG(info) << "Inverting PhaseMatrix A with cuda (" << hostA.rows() << ":" << hostA.cols() << ")";
+                hostAd = invertA(hostA);
                 deviceA = device_matrix<double>(hostA);
-                deviceAd = cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, deviceA, JobType::S);
-                //TODO: can be removed
-                deviceAd.ToHost(hostAd);
+                deviceAd = device_matrix<double>(hostAd); //redundant?
+
+                // This causes strange matrix issues!!! 
+                // deviceA = device_matrix<double>(hostA);
+                // deviceAd = cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, deviceA, JobType::S);
+                // deviceAd.ToHost(hostAd);
             }
 
         }
@@ -329,6 +331,14 @@ namespace cuda
 
             deviceAd = device_matrix<double>(hostAd);
             deviceA = device_matrix<double>(hostA);
+        }
+
+        auto check = cpu::pseudo_inverse(hostA);
+        if(!check.isApprox(hostAd, 0.0000000001))
+        {
+            LOG(info) << "Ad: " << pretty_matrix(hostAd);
+            LOG(info) << "check: " << pretty_matrix(check);
+            throw std::runtime_error("unexpected matrix");
         }
     }
 
