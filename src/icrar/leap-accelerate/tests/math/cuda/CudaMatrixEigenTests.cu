@@ -291,7 +291,6 @@ namespace icrar
             double tolerance = epsilon * std::max(m, n) * Se.array().abs()(0);
             Sde.topLeftCorner(k, k) = (Se.array().abs() > tolerance).select(Se.array().inverse(), 0).matrix().asDiagonal();
 
-
             Eigen::MatrixXd Adexpected = Vte.adjoint() * (Sde * Ue.adjoint());
             Eigen::MatrixXd Ad = icrar::cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, A, cuda::JobType::S);
 
@@ -333,7 +332,7 @@ namespace icrar
     TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverse42A) { TestPseudoInverse42(cuda::JobType::A); }
     TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverse42S) { TestPseudoInverse42(cuda::JobType::S); }
     TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverseMWA) { TestPseudoInverseMWA(cuda::JobType::S); }
-    TEST_F(CudaMatrixEigenTests, TestCudaSVDMatmul) { TestCudaSVDMatmul(); }
+    TEST_F(CudaMatrixEigenTests, TestCudaSVDMatmulAskap) { TestCudaSVDMatmulAskap(); }
     TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverseAskap) { TestPseudoInverseAskap(); }
     TEST_F(CudaMatrixEigenTests, TestPseudoInverseLarge) { TestPseudoInverseLarge(ComputeImplementation::cpu); }
     TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverseLarge) { TestPseudoInverseLarge(ComputeImplementation::cuda); }

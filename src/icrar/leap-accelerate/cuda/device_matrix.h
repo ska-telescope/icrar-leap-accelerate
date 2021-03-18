@@ -54,7 +54,6 @@ namespace cuda
         T* m_buffer;
 
     public:
-
         /**
          * @brief Default constructor
          * 
@@ -71,9 +70,9 @@ namespace cuda
          * @param other 
          */
         device_matrix(device_matrix&& other) noexcept 
-            : m_rows(other.m_rows)
-            , m_cols(other.m_cols)
-            , m_buffer(other.m_buffer)
+        : m_rows(other.m_rows)
+        , m_cols(other.m_cols)
+        , m_buffer(other.m_buffer)
         {
             other.m_rows = 0;
             other.m_cols = 0;

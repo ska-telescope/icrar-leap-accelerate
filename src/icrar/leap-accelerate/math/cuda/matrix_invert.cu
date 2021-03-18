@@ -21,21 +21,25 @@
  */
 
 #include "icrar/leap-accelerate/math/cuda/matrix_invert.h"
-#include <icrar/leap-accelerate/math/cuda/matrix_epsilon.h>
-
-#include <cusolver_common.h>
-#include <cusolverDn.h>
-#include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
-#include <icrar/leap-accelerate/exception/exception.h>
-#include <icrar/leap-accelerate/core/ioutils.h>
 
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
 #include <icrar/leap-accelerate/cuda/device_vector.h>
+#include <icrar/leap-accelerate/math/cuda/matrix_epsilon.h>
+
+#include <icrar/leap-accelerate/core/log/logging.h>
+#include <icrar/leap-accelerate/common/eigen_stringutils.h>
+
+#include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+#include <icrar/leap-accelerate/exception/exception.h>
+#include <icrar/leap-accelerate/core/ioutils.h>
 
 #include <icrar/leap-accelerate/math/cuda/matrix_multiply.h>
 
 #include <Eigen/Dense>
 #include <Eigen/LU>
+
+#include <cusolver_common.h>
+#include <cusolverDn.h>
 
 #include <iostream>
 #include <string>
@@ -44,9 +48,6 @@
 #include <complex>
 #include <queue>
 #include <limits>
-
-#include <icrar/leap-accelerate/core/log/logging.h>
-#include <icrar/leap-accelerate/common/eigen_stringutils.h>
 
 namespace icrar
 {
@@ -222,9 +223,9 @@ namespace cuda
         const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& matrix,
         const JobType jobType)
     {
-        device_matrix<double> d_U(0, 0, nullptr);
-        device_vector<double> d_S(0, nullptr);
-        device_matrix<double> d_Vt(0, 0, nullptr);
+        device_matrix<double> d_U;
+        device_vector<double> d_S;
+        device_matrix<double> d_Vt;
         {
             auto d_A = device_matrix<double>(matrix);
             checkCudaErrors(cudaDeviceSynchronize());
@@ -247,9 +248,9 @@ namespace cuda
         const device_matrix<double>& d_A,
         const JobType jobType)
     {
-        device_matrix<double> d_U(0, 0, nullptr);
-        device_vector<double> d_S(0, nullptr);
-        device_matrix<double> d_Vt(0, 0, nullptr);
+        device_matrix<double> d_U;
+        device_vector<double> d_S;
+        device_matrix<double> d_Vt;
         std::tie(d_U, d_S, d_Vt) = svd(cusolverHandle, d_A, jobType);
         return SVDCombineInverse(cublasHandle, d_U, d_S, d_Vt, jobType);
     }
