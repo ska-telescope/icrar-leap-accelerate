@@ -296,6 +296,8 @@ namespace icrar
 
             ASSERT_MEQD(Adexpected, Ad, TOLERANCE);
             ASSERT_MEQD(Adcpu, Ad, TOLERANCE);
+            ASSERT_MEQD(A,  A * (Ad * A), TOLERANCE);
+            ASSERT_MEQD(Eigen::MatrixXd::Identity(A.cols(),A.cols()), Ad * A, TOLERANCE);
         }
 
         void TestPseudoInverseSKA(ComputeImplementation impl)

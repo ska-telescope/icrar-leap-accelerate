@@ -105,7 +105,6 @@ namespace cpu
             true,
             cpuComputeOptions.isFileSystemCacheEnabled);
         LOG(info) << "Metadata loaded in " << metadata_read_timer;
-        LOG(info) << "Ad: " << pretty_matrix(metadata.GetAd());
 
         size_t solutions = validatedSolutionInterval.GetSize();
         auto output_calibrations = std::vector<cpu::Calibration>(); // Reserve memory

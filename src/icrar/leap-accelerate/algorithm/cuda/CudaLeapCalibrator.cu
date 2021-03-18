@@ -174,7 +174,6 @@ namespace cuda
                 metadata.GetAvgData().cols());
         auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
         LOG(info) << "Metadata loaded in " << metadata_read_timer;
-        LOG(info) << "Ad: " << pretty_matrix(metadata.GetAd());
 
         size_t solutions = validatedSolutionInterval.GetSize();
         constexpr unsigned int integrationNumber = 0;
@@ -301,10 +300,10 @@ namespace cuda
                 LOG(info) << "Inverting PhaseMatrix A with cuda (" << hostA.rows() << ":" << hostA.cols() << ")";
                 deviceA = device_matrix<double>(hostA);
                 deviceAd = cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, deviceA, JobType::S);
+                //TODO: can be removed
+                deviceAd.ToHost(hostAd);
             }
 
-            //TODO: can be removed
-            deviceAd.ToHost(hostAd);
         }
         else
         {
