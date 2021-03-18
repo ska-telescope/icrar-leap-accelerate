@@ -65,6 +65,7 @@ set(cuda_sources
     math/cuda/matrix_op.cu
     math/cuda/matrix_multiply.cu
     math/cuda/matrix_invert.cu
+    math/cuda/matrix_epsilon.cu
     
     model/cuda/DeviceMetaData.cu
     model/cuda/DeviceIntegration.cu

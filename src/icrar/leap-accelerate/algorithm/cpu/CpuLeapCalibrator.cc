@@ -23,6 +23,8 @@
 
 #include "CpuLeapCalibrator.h"
 
+#include <icrar/leap-accelerate/common/eigen_stringutils.h>
+
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
 #include <icrar/leap-accelerate/algorithm/cpu/ValidatedCpuComputeOptions.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
@@ -43,6 +45,7 @@
 
 #include <boost/math/constants/constants.hpp>
 #include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
 #include <boost/thread.hpp>
 
 #include <istream>
@@ -78,6 +81,7 @@ namespace cpu
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "solutionInterval: [" << solutionInterval.GetStart() << "," << solutionInterval.GetInterval() << "," << solutionInterval.GetEnd() << "], "
+        << "reference antenna: " << referenceAntenna << ", "
         << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
         << "baseline threshold: " << minimumBaselineThreshold << "m, "
         << "short baselines: " << ms.GetNumShortBaselines(minimumBaselineThreshold) << ", "
@@ -100,7 +104,8 @@ namespace cpu
             minimumBaselineThreshold,
             true,
             cpuComputeOptions.isFileSystemCacheEnabled);
-        LOG(info) << "Read metadata in " << metadata_read_timer;
+        LOG(info) << "Metadata loaded in " << metadata_read_timer;
+        LOG(info) << "Ad: " << pretty_matrix(metadata.GetAd());
 
         size_t solutions = validatedSolutionInterval.GetSize();
         auto output_calibrations = std::vector<cpu::Calibration>(); // Reserve memory

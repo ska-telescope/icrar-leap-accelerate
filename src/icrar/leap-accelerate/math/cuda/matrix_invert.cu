@@ -21,6 +21,7 @@
  */
 
 #include "icrar/leap-accelerate/math/cuda/matrix_invert.h"
+#include <icrar/leap-accelerate/math/cuda/matrix_epsilon.h>
 
 #include <cusolver_common.h>
 #include <cusolverDn.h>
@@ -59,7 +60,7 @@ namespace cuda
      * @param jobType 
      * @return std::tuple<device_matrix<double>, device_vector<double>, device_matrix<double>> 
      */
-    std::tuple<device_matrix<double>, device_vector<double>, device_matrix<double>> SVD(
+    std::tuple<device_matrix<double>, device_vector<double>, device_matrix<double>> svd(
         cusolverDnHandle_t cusolverHandle,
         const device_matrix<double>& d_A,
         const JobType jobType)
@@ -182,13 +183,12 @@ namespace cuda
         const device_matrix<double>& d_Vt,
         const JobType jobType)
     {
-        //cudaThreadSynchronize();
         size_t m = d_U.GetRows();
         size_t n = d_Vt.GetRows();
         size_t k = std::min(m, n);
 
         auto S = Eigen::VectorXd(d_S.GetRows());
-        d_S.ToHostAsync(S.data());
+        d_S.ToHost(S.data());
 
         Eigen::MatrixXd Sd = Eigen::MatrixXd::Zero(n, d_U.GetCols());
 
@@ -196,16 +196,27 @@ namespace cuda
         double tolerance = epsilon * std::max(m, n) * S.array().abs()(0);
         Sd.topLeftCorner(k, k) = (S.array().abs() > tolerance).select(S.array().inverse(), 0).matrix().asDiagonal();
 
-        auto d_Sd = device_matrix<double>(Sd);
-        auto d_result = device_matrix<double>(n, m);
-        
-        // result = V * (S * Ut)
-        icrar::cuda::multiply(cublasHandle, d_Sd, d_U, d_result, MatrixOp::normal, MatrixOp::hermitian);
-        icrar::cuda::multiply(cublasHandle, d_Vt, d_result, d_result, MatrixOp::transpose, MatrixOp::normal);
-        return d_result;
+        //Multiply on CPU
+        Eigen::MatrixXd U; d_U.ToHost(U);
+        Eigen::MatrixXd Vt; d_Vt.ToHost(Vt);
+
+        auto result = Vt.transpose() * (Sd * U.adjoint());
+        return device_matrix<double>(result);
+
+        // Multiply in Cuda TODO(cgray): check cublas result with eigen result
+        // auto d_Sd = device_matrix<double>(Sd);
+        // auto d_result = device_matrix<double>(n, m);
+
+        // // result = V * (S * Uh)
+        // icrar::cuda::multiply(cublasHandle, d_Sd, d_U, d_result, MatrixOp::normal, MatrixOp::hermitian);
+        // checkCudaErrors(cudaDeviceSynchronize());
+        // icrar::cuda::multiply(cublasHandle, d_Vt, d_result, d_result, MatrixOp::transpose, MatrixOp::normal);
+        // checkCudaErrors(cudaDeviceSynchronize());
+        // //icrar::cuda::epsilon(d_result, 0.001);
+        // return d_result;
     }
 
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> PseudoInverse(
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> pseudo_inverse(
         cusolverDnHandle_t cusolverHandle,
         cublasHandle_t cublasHandle,
         const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& matrix,
@@ -216,16 +227,21 @@ namespace cuda
         device_matrix<double> d_Vt(0, 0, nullptr);
         {
             auto d_A = device_matrix<double>(matrix);
-            std::tie(d_U, d_S, d_Vt) = SVD(cusolverHandle, d_A, jobType);
+            checkCudaErrors(cudaDeviceSynchronize());
+            std::tie(d_U, d_S, d_Vt) = svd(cusolverHandle, d_A, jobType);
         }
+        checkCudaErrors(cudaDeviceSynchronize());
         device_matrix<double> d_VSUt = SVDCombineInverse(cublasHandle, d_U, d_S, d_Vt, jobType);
+        checkCudaErrors(cudaDeviceSynchronize());
 
         auto VSUt = Eigen::MatrixXd(matrix.cols(), matrix.rows());
-        d_VSUt.ToHostAsync(VSUt.data());
+        d_VSUt.ToHost(VSUt.data()); //Could be async
+
+        checkCudaErrors(cudaDeviceSynchronize());
         return VSUt;
     }
 
-    device_matrix<double> PseudoInverse(
+    device_matrix<double> pseudo_inverse(
         cusolverDnHandle_t cusolverHandle,
         cublasHandle_t cublasHandle,
         const device_matrix<double>& d_A,
@@ -234,7 +250,7 @@ namespace cuda
         device_matrix<double> d_U(0, 0, nullptr);
         device_vector<double> d_S(0, nullptr);
         device_matrix<double> d_Vt(0, 0, nullptr);
-        std::tie(d_U, d_S, d_Vt) = SVD(cusolverHandle, d_A, jobType);
+        std::tie(d_U, d_S, d_Vt) = svd(cusolverHandle, d_A, jobType);
         return SVDCombineInverse(cublasHandle, d_U, d_S, d_Vt, jobType);
     }
 } // namespace cuda

@@ -348,10 +348,10 @@ namespace icrar
                 auto ea2 = ToVector(a2);
                 auto efg = ToVector(flags);
                 std::tie(A, I) = cpu::PhaseMatrixFunction(ea1, ea2, efg, boost::none);
-                Ad = icrar::cpu::PseudoInverse(A);
+                Ad = icrar::cpu::pseudo_inverse(A);
 
                 std::tie(A1, I1) = cpu::PhaseMatrixFunction(ea1, ea2, efg, 0);
-                Ad1 = icrar::cpu::PseudoInverse(A1);
+                Ad1 = icrar::cpu::pseudo_inverse(A1);
             }
             else
             {

@@ -24,6 +24,7 @@
 
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/vector_extensions.h>
+#include <icrar/leap-accelerate/common/eigen_stringutils.h>
 
 #include <icrar/leap-accelerate/algorithm/cuda/ValidatedCudaComputeOptions.h>
 
@@ -127,6 +128,7 @@ namespace cuda
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
         << "timesteps: " << ms.GetNumTimesteps() << ", "
+        << "use filesystem cache: " << cudaComputeOptions.isFileSystemCacheEnabled << ", "
         << "use intermediate cuda buffer: " << cudaComputeOptions.useIntermediateBuffer << ", "
         << "use cosolver: " << cudaComputeOptions.useCusolver;
 
@@ -171,7 +173,8 @@ namespace cuda
                 metadata.GetAvgData().rows(),
                 metadata.GetAvgData().cols());
         auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
-        LOG(info) << "Metadata Constants loaded in " << metadata_read_timer;
+        LOG(info) << "Metadata loaded in " << metadata_read_timer;
+        LOG(info) << "Ad: " << pretty_matrix(metadata.GetAd());
 
         size_t solutions = validatedSolutionInterval.GetSize();
         constexpr unsigned int integrationNumber = 0;
@@ -277,7 +280,7 @@ namespace cuda
                 {
                     LOG(info) << "Inverting PhaseMatrix A with cuda (" << a.rows() << ":" << a.cols() << ")";
                     deviceA = device_matrix<double>(a);
-                    deviceAd = cuda::PseudoInverse(m_cusolverDnContext, m_cublasContext, deviceA, JobType::S);
+                    deviceAd = cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, deviceA, JobType::S);
                     // Write to host to update disk cache
                     return deviceAd.ToHost();
                 };
@@ -297,8 +300,11 @@ namespace cuda
                 // Compute deviceA then deviceAd and skip writing to hostAd and diskAd
                 LOG(info) << "Inverting PhaseMatrix A with cuda (" << hostA.rows() << ":" << hostA.cols() << ")";
                 deviceA = device_matrix<double>(hostA);
-                deviceAd = cuda::PseudoInverse(m_cusolverDnContext, m_cublasContext, deviceA, JobType::S);
+                deviceAd = cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, deviceA, JobType::S);
             }
+
+            //TODO: can be removed
+            deviceAd.ToHost(hostAd);
         }
         else
         {
@@ -306,7 +312,7 @@ namespace cuda
             auto invertA = [](const Eigen::MatrixXd& a)
             {
                 LOG(info) << "Inverting PhaseMatrix A with cpu (" << a.rows() << ":" << a.cols() << ")";
-                return icrar::cpu::PseudoInverse(a);
+                return icrar::cpu::pseudo_inverse(a);
             };
 
             if(isFileSystemCacheEnabled)
@@ -335,7 +341,7 @@ namespace cuda
     {
         // This matrix is not always m > n, compute on cpu until cuda supports this
         deviceA1 = device_matrix<double>(hostA1);
-        hostAd1 = cpu::PseudoInverse(hostA1);
+        hostAd1 = cpu::pseudo_inverse(hostA1);
         deviceAd1 = device_matrix<double>(hostAd1);
     }
 

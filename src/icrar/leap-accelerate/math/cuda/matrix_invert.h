@@ -22,10 +22,11 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/cuda/device_matrix.h>
+#include <icrar/leap-accelerate/cuda/device_vector.h>
+
 #include <cusolverDn.h>
 #include <Eigen/Dense>
-
-#include <icrar/leap-accelerate/cuda/device_matrix.h>
 
 namespace icrar
 {
@@ -51,12 +52,24 @@ namespace cuda
      * @param jobtype SVD matrix dimension type
      * @return Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> 
      */
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> PseudoInverse(
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> pseudo_inverse(
         cusolverDnHandle_t cusolverHandle,
         cublasHandle_t cublasHandle,
         const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& a,
         const JobType jobtype = JobType::S);
 
+    /**
+     * @brief Computes the U, S and Vt values of matrix singular value decomposition
+     * 
+     * @param cusolverHandle 
+     * @param deviceA 
+     * @param jobType 
+     * @return std::tuple<device_matrix<double>, device_vector<double>, device_matrix<double>> 
+     */
+    std::tuple<device_matrix<double>, device_vector<double>, device_matrix<double>> svd(
+        cusolverDnHandle_t cusolverHandle,
+        const device_matrix<double>& deviceA,
+        const JobType jobType);
 
     /**
      * @brief Performs matrix inversion using cusolver and cublas 
@@ -67,14 +80,14 @@ namespace cuda
      * @param jobType 
      * @return device_matrix<double> 
      */
-    device_matrix<double> PseudoInverse(
+    device_matrix<double> pseudo_inverse(
         cusolverDnHandle_t cusolverHandle,
         cublasHandle_t cublasHandle,
         const device_matrix<double>& matrix,
         const JobType jobType = JobType::S);
 
     // template<typename T>
-    // device_matrix<T> PseudoInverse(
+    // device_matrix<T> pseudo_inverse(
     //     cusolverDnHandle_t cusolverHandle,
     //     cublasHandle_t cublasHandle,
     //     const device_matrix<T>& matrix,
