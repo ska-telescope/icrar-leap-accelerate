@@ -213,11 +213,6 @@ namespace cuda
                 deviceIntegration = DeviceIntegration(integration);
             }
 
-            size_t free;
-            size_t total;
-            checkCudaErrors(cudaMemGetInfo(&free, &total));
-            LOG(trace) << "free device memory: " << memory_amount(free) << "/" << memory_amount(total);
-
             // Emplace a single zero'd tensor
             input_queue.emplace_back(0, integration.GetVis().dimensions());
 
@@ -289,7 +284,7 @@ namespace cuda
                     hostA, hostAd,
                     "A.hash", "Ad.cache",
                     invertA);
-                    
+
                 //TODO(calgray) only copy to deviceAd if loading from cache
                 deviceAd = device_matrix<double>(hostAd);
 
@@ -330,7 +325,7 @@ namespace cuda
 
 #ifndef NDEBUG
         // degenerate check
-        constexpr TOLERANCE = 0.0001;
+        constexpr double TOLERANCE = 0.0001;
         if(!(hostAd * hostA).isApprox(Eigen::MatrixXd::Identity(hostA.cols(), hostA.cols()), TOLERANCE))
         {
             LOG(warning) << "Ad is degenerate";
@@ -351,10 +346,10 @@ namespace cuda
 
 #ifndef NDEBUG
         // degenerate check
-        constexpr TOLERANCE = 0.0001;
+        constexpr double TOLERANCE = 0.0001;
         if(!(hostAd1 * hostA1).isApprox(Eigen::MatrixXd::Identity(hostA1.cols(), hostA1.cols()), TOLERANCE))
         {
-            LOG(warning) << "Ad is degenerate";
+            LOG(warning) << "Ad1 is degenerate";
         }
 #endif
     }

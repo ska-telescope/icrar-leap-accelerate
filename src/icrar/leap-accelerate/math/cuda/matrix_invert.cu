@@ -160,7 +160,7 @@ namespace cuda
         if(h_devInfo != 0)
         {
             std::stringstream ss;
-            ss << "devInfo: " << h_devInfo;
+            ss << "devInfo=" << h_devInfo;
             throw icrar::exception(ss.str(), __FILE__, __LINE__);
         }
 
@@ -172,10 +172,10 @@ namespace cuda
     /**
      * @brief Combines SVD components using multiplcation and transposition to create a pseudoinverse
      * 
-     * @param d_U 
-     * @param d_S 
-     * @param d_Vt 
-     * @return const device_matrix<double> 
+     * @param d_U the device U matrix
+     * @param d_S the device S eigen values
+     * @param d_Vt the device V' matrix
+     * @return const device_matrix<double>
      */
     device_matrix<double> SVDCombineInverse(
         cublasHandle_t cublasHandle,
@@ -197,24 +197,16 @@ namespace cuda
         double tolerance = epsilon * std::max(m, n) * S.array().abs()(0);
         Sd.topLeftCorner(k, k) = (S.array().abs() > tolerance).select(S.array().inverse(), 0).matrix().asDiagonal();
 
-        //Multiply on CPU
-        Eigen::MatrixXd U; d_U.ToHost(U);
-        Eigen::MatrixXd Vt; d_Vt.ToHost(Vt);
+        auto d_Sd = device_matrix<double>(Sd);
+        auto d_result = device_matrix<double>(n, m);
 
-        auto result = Vt.transpose() * (Sd * U.adjoint());
-        return device_matrix<double>(result);
-
-        // Multiply in Cuda TODO(cgray): check cublas result with eigen result
-        // auto d_Sd = device_matrix<double>(Sd);
-        // auto d_result = device_matrix<double>(n, m);
-
-        // // result = V * (S * Uh)
-        // icrar::cuda::multiply(cublasHandle, d_Sd, d_U, d_result, MatrixOp::normal, MatrixOp::hermitian);
-        // checkCudaErrors(cudaDeviceSynchronize());
-        // icrar::cuda::multiply(cublasHandle, d_Vt, d_result, d_result, MatrixOp::transpose, MatrixOp::normal);
-        // checkCudaErrors(cudaDeviceSynchronize());
-        // //icrar::cuda::epsilon(d_result, 0.001);
-        // return d_result;
+        // result = V * (S * Uh)
+        icrar::cuda::multiply(cublasHandle, d_Sd, d_U, d_result, MatrixOp::normal, MatrixOp::hermitian);
+        checkCudaErrors(cudaDeviceSynchronize());
+        icrar::cuda::multiply(cublasHandle, d_Vt, d_result, d_result, MatrixOp::hermitian, MatrixOp::normal);
+        checkCudaErrors(cudaDeviceSynchronize());
+        //icrar::cuda::epsilon(d_result, 0.001);
+        return d_result;
     }
 
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> pseudo_inverse(
@@ -236,7 +228,7 @@ namespace cuda
         checkCudaErrors(cudaDeviceSynchronize());
 
         auto VSUt = Eigen::MatrixXd(matrix.cols(), matrix.rows());
-        d_VSUt.ToHost(VSUt.data()); //Could be async
+        d_VSUt.ToHostAsync(VSUt.data());
 
         checkCudaErrors(cudaDeviceSynchronize());
         return VSUt;

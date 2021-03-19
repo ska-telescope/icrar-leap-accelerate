@@ -44,7 +44,7 @@ namespace cuda
     };
 
     /**
-     * @brief 
+     * @brief Computes the moore penrose pseudo inverse where A'A = I (left inverse)
      * 
      * @param cusolverHandle 
      * @param cublasHandle
