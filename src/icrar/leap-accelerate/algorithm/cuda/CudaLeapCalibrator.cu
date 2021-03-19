@@ -149,12 +149,10 @@ namespace cuda
             false,
             false);
         
-        auto deviceA = device_matrix<double>(0, 0, nullptr);
-        auto deviceAd = device_matrix<double>(0, 0, nullptr);
+        device_matrix<double> deviceA, deviceAd;
         CalculateAd(metadata.GetA(), deviceA, metadata.GetAd(), deviceAd, cudaComputeOptions.isFileSystemCacheEnabled, cudaComputeOptions.useCusolver);
 
-        auto deviceA1 = device_matrix<double>(0, 0, nullptr);
-        auto deviceAd1 = device_matrix<double>(0, 0, nullptr);
+        device_matrix<double> deviceA1, deviceAd1;
         CalculateAd1(metadata.GetA1(), deviceA1, metadata.GetAd1(), deviceAd1);
 
         auto constantBuffer = std::make_shared<ConstantBuffer>(
@@ -291,19 +289,16 @@ namespace cuda
                     hostA, hostAd,
                     "A.hash", "Ad.cache",
                     invertA);
+                    
+                //TODO(calgray) only copy to deviceAd if loading from cache
+                deviceAd = device_matrix<double>(hostAd);
+
                 deviceA = device_matrix<double>(hostA);
-                deviceAd = device_matrix<double>(hostAd); // redundant?
             }
             else
             {
                 hostAd = invertA(hostA);
                 deviceA = device_matrix<double>(hostA);
-                deviceAd = device_matrix<double>(hostAd); //redundant?
-
-                // This causes strange matrix issues!!! 
-                // deviceA = device_matrix<double>(hostA);
-                // deviceAd = cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, deviceA, JobType::S);
-                // deviceAd.ToHost(hostAd);
             }
 
         }
@@ -333,13 +328,14 @@ namespace cuda
             deviceA = device_matrix<double>(hostA);
         }
 
-        auto check = cpu::pseudo_inverse(hostA);
-        if(!check.isApprox(hostAd, 0.0000000001))
+#ifndef NDEBUG
+        // degenerate check
+        constexpr TOLERANCE = 0.0001;
+        if(!(hostAd * hostA).isApprox(Eigen::MatrixXd::Identity(hostA.cols(), hostA.cols()), TOLERANCE))
         {
-            LOG(info) << "Ad: " << pretty_matrix(hostAd);
-            LOG(info) << "check: " << pretty_matrix(check);
-            throw std::runtime_error("unexpected matrix");
+            LOG(warning) << "Ad is degenerate";
         }
+#endif
     }
 
     void CudaLeapCalibrator::CalculateAd1(
@@ -352,6 +348,15 @@ namespace cuda
         deviceA1 = device_matrix<double>(hostA1);
         hostAd1 = cpu::pseudo_inverse(hostA1);
         deviceAd1 = device_matrix<double>(hostAd1);
+
+#ifndef NDEBUG
+        // degenerate check
+        constexpr TOLERANCE = 0.0001;
+        if(!(hostAd1 * hostA1).isApprox(Eigen::MatrixXd::Identity(hostA1.cols(), hostA1.cols()), TOLERANCE))
+        {
+            LOG(warning) << "Ad is degenerate";
+        }
+#endif
     }
 
     void CudaLeapCalibrator::PhaseRotate(
@@ -405,7 +410,8 @@ namespace cuda
         const int integration_baselines = integrationData.dimension(1);
         const int integration_channels = integrationData.dimension(2);
         const int md_baselines = constants.nbaselines; //metadata baselines
-        const int polarizations = constants.num_pols; //TODO
+        const int polarizations = constants.num_pols;
+        constexpr double two_pi = 2 * CUDART_PI;
 
         //parallel execution per channel
         int baseline = blockDim.x * blockIdx.x + threadIdx.x; //baseline amongst all time smeared baselines
@@ -413,10 +419,7 @@ namespace cuda
 
         if(baseline < integration_baselines && channel < integration_channels)
         {
-            int md_baseline = baseline % md_baselines; //baseline within
-
-            // loop over baselines
-            constexpr double two_pi = 2 * CUDART_PI;
+            int md_baseline = baseline % md_baselines; 
 
             Eigen::Vector3d rotatedUVW = dd * UVWs.col(baseline);
             double shiftFactor = -two_pi * (rotatedUVW.z() - UVWs.col(baseline).z());
@@ -440,7 +443,6 @@ namespace cuda
             {
                 for(int polarization = 0; polarization < polarizations; ++polarization)
                 {
-                    
                     atomicAdd(&avgData(md_baseline, polarization).x, integrationData(polarization, baseline, channel).x);
                     atomicAdd(&avgData(md_baseline, polarization).y, integrationData(polarization, baseline, channel).y);
                 }

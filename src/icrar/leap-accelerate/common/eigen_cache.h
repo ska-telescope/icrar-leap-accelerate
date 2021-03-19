@@ -179,7 +179,7 @@ namespace icrar
         }
         catch(const std::exception& e)
         {
-            LOG(error) << e.what() << '\n';
+            LOG(warning) << e.what() << '\n';
         }
 
         if(!cacheRead)

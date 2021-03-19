@@ -38,6 +38,8 @@ namespace icrar
 {
     ValidatedCudaComputeOptions::ValidatedCudaComputeOptions(const ComputeOptions& computeOptions, const icrar::MeasurementSet& ms)
     {
+        LOG(info) << "Determining cuda compute options";
+
         size_t free = 0;
         size_t total = 0;
         if(GetCudaDeviceCount() != 0)
@@ -67,12 +69,12 @@ namespace icrar
             size_t required = 3 * AdSize * safetyFactor; // A, Ad and SVD buffers required to compute inverse
             if(required < free)
             {
-                LOG(info) << memory_amount(free) << " > " << memory_amount(required) << ". Enabling cusolver";
+                LOG(info) << memory_amount(free) << " > " << memory_amount(required) << ". Enabling Cusolver";
                 useCusolver = true;
             }
             else
             {
-                LOG(info) << memory_amount(free) << " < " << memory_amount(required) << ". Disabling cusolver";
+                LOG(info) << memory_amount(free) << " < " << memory_amount(required) << ". Disabling Cusolver";
                 useCusolver = false;
             }
         }

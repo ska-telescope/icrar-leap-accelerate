@@ -144,7 +144,7 @@ namespace cuda
             cusolverHandle,
             jobu, jobvt,
             m, n,
-            (double*)d_A.Get(), // TODO cast may be deprecated in newer function
+            const_cast<double*>(d_A.Get()),
             lda,
             d_S.Get(),
             d_U.Get(),
