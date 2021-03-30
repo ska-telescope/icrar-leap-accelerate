@@ -29,7 +29,7 @@ if(Sphinx_FOUND AND Doxygen_FOUND)
   COMMENT "Generating doxygen")
 
   # Nice named target so we can run the job easily
-  add_custom_target(doxygen ALL DEPENDS ${DOXYGEN_INDEX_FILE})
+  add_custom_target(doxygen DEPENDS ${DOXYGEN_INDEX_FILE})
 
   set(SPHINX_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
   set(SPHINX_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/sphinx)

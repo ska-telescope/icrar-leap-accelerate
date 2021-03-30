@@ -46,7 +46,7 @@ namespace icrar
         {
             checkCudaErrors(cudaMemGetInfo(&free, &total));
         }
-        size_t VisSize = ms.GetNumBaselines() * ms.GetNumChannels() * sizeof(std::complex<double>);
+        size_t VisSize = ms.GetNumPols() * ms.GetNumBaselines() * ms.GetNumChannels() * sizeof(std::complex<double>);
         size_t AdSize = ms.GetNumStations() * ms.GetNumBaselines() * sizeof(double);
         double safetyFactor = 1.3;
 
