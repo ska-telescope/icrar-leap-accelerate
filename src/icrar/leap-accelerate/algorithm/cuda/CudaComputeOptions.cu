@@ -22,7 +22,7 @@
 
 #if CUDA_ENABLED
 
-#include <icrar/leap-accelerate/algorithm/cuda/ValidatedCudaComputeOptions.h>
+#include <icrar/leap-accelerate/algorithm/cuda/CudaComputeOptions.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/ioutils.h>
@@ -36,7 +36,7 @@
 
 namespace icrar
 {
-    ValidatedCudaComputeOptions::ValidatedCudaComputeOptions(const ComputeOptions& computeOptions, const icrar::MeasurementSet& ms)
+    CudaComputeOptions::CudaComputeOptions(const ComputeOptionsDTO& computeOptions, const icrar::MeasurementSet& ms)
     {
         LOG(info) << "Determining cuda compute options";
 

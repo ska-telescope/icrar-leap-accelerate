@@ -85,7 +85,7 @@ namespace icrar
                 calibrations.push_back(cal);
             };
 
-            auto computeOptions = ComputeOptions{
+            auto computeOptions = ComputeOptionsDTO{
                 /*.boostisFileSystemCacheEnabled = */false,
                 /*.useIntermediateBuffer = */false,
                 /*.useCusolver = */false

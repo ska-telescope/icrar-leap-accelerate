@@ -35,9 +35,9 @@ namespace icrar
     /**
      * Default set of command line interface arguments
      */
-    CLIArguments CLIArguments::GetDefaultArguments()
+    CLIArgumentsDTO CLIArgumentsDTO::GetDefaultArguments()
     {
-        auto args = CLIArguments();
+        auto args = CLIArgumentsDTO();
         args.inputType = "file";
         args.filePath = boost::none;
         args.configFilePath = boost::none;
@@ -57,7 +57,7 @@ namespace icrar
         return args;
     }
 
-    Arguments::Arguments(CLIArguments&& args)
+    ArgumentsDTO::ArgumentsDTO(CLIArgumentsDTO&& args)
         : filePath(std::move(args.filePath))
         , configFilePath(std::move(args.configFilePath))
         , outputFilePath(std::move(args.outputFilePath))
@@ -112,7 +112,7 @@ namespace icrar
         }
     }
 
-    ArgumentsValidated::ArgumentsValidated(Arguments&& cliArgs)
+    ArgumentsValidated::ArgumentsValidated(ArgumentsDTO&& cliArgs)
     : m_inputType(InputType::file)
     , m_computeImplementation(ComputeImplementation::cpu)
     , m_solutionInterval()
@@ -124,7 +124,7 @@ namespace icrar
      //Initial values are overwritten
     {
         // Initialize default arguments first
-        ApplyArguments(CLIArguments::GetDefaultArguments());
+        ApplyArguments(CLIArgumentsDTO::GetDefaultArguments());
 
         // Read the config argument second and apply the config arguments over the default arguments
         if(cliArgs.configFilePath.is_initialized())
@@ -163,7 +163,7 @@ namespace icrar
         }
     }
 
-    void ArgumentsValidated::ApplyArguments(Arguments&& args)
+    void ArgumentsValidated::ApplyArguments(ArgumentsDTO&& args)
     {
         if(args.inputType.is_initialized())
         {
@@ -326,7 +326,7 @@ namespace icrar
         return m_minimumBaselineThreshold;
     }
 	
-    ComputeOptions ArgumentsValidated::GetComputeOptions() const
+    ComputeOptionsDTO ArgumentsValidated::GetComputeOptions() const
     {
         return m_computeOptions;
     } 
@@ -336,14 +336,14 @@ namespace icrar
         return m_verbosity;
     }
 
-    Arguments ArgumentsValidated::ParseConfig(const std::string& configFilepath)
+    ArgumentsDTO ArgumentsValidated::ParseConfig(const std::string& configFilepath)
     {
-        Arguments args;
+        ArgumentsDTO args;
         ParseConfig(configFilepath, args);
         return args;
     }
 
-    void ArgumentsValidated::ParseConfig(const std::string& configFilepath, Arguments& args)
+    void ArgumentsValidated::ParseConfig(const std::string& configFilepath, ArgumentsDTO& args)
     {
         auto ifs = std::ifstream(configFilepath);
         rapidjson::IStreamWrapper isw(ifs);

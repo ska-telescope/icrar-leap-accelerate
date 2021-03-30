@@ -26,7 +26,7 @@
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/common/eigen_stringutils.h>
 
-#include <icrar/leap-accelerate/algorithm/cuda/ValidatedCudaComputeOptions.h>
+#include <icrar/leap-accelerate/algorithm/cuda/CudaComputeOptions.h>
 
 #include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
 #include <icrar/leap-accelerate/model/cuda/HostMetaData.h>
@@ -109,9 +109,9 @@ namespace cuda
             const Slice& solutionInterval,
             double minimumBaselineThreshold,
             boost::optional<unsigned int> referenceAntenna,
-            const ComputeOptions computeOptions)
+            const ComputeOptionsDTO computeOptions)
     {
-        auto cudaComputeOptions = ValidatedCudaComputeOptions(computeOptions, ms);
+        auto cudaComputeOptions = CudaComputeOptions(computeOptions, ms);
 
         LOG(info) << "Starting Calibration using cuda";
         LOG(info)

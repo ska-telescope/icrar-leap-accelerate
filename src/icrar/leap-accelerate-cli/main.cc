@@ -86,7 +86,7 @@ int main(int argc, char** argv)
 
     po::options_description desc(appName);
 
-    CLIArguments rawArgs;
+    CLIArgumentsDTO rawArgs;
     desc.add_options()
         ("help,h", "display help message")
         ("version,v", "display version information")
@@ -125,7 +125,7 @@ int main(int argc, char** argv)
         else
         {
             icrar::profiling::UsageReporter _;
-            ArgumentsValidated args = { Arguments(std::move(rawArgs)) };
+            ArgumentsValidated args = { ArgumentsDTO(std::move(rawArgs)) };
 
             LOG(info) << version_information(argv[0]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             LOG(info) << arg_string(argc, argv);

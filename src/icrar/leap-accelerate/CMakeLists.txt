@@ -68,7 +68,7 @@ set(cuda_sources
     
     model/cuda/DeviceMetaData.cu
     model/cuda/DeviceIntegration.cu
-    algorithm/cuda/ValidatedCudaComputeOptions.cu
+    algorithm/cuda/CudaComputeOptions.cu
     algorithm/cuda/CudaLeapCalibrator.cu
 )
 

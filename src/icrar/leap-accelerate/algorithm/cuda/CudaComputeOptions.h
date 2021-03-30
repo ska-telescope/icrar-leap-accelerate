@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/algorithm/ComputeOptions.h>
+#include <icrar/leap-accelerate/algorithm/ComputeOptionsDTO.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/ioutils.h>
@@ -39,10 +39,10 @@
 namespace icrar
 {
     /**
-     * @brief Validates and determines the best compute features for calibration depending on data and hardware
+     * @brief Validates and determines the best compute features for calibration depending on measurement set data and hardware
      * configuration.
      */
-    class ValidatedCudaComputeOptions
+    class CudaComputeOptions
     {
     public:
         bool isFileSystemCacheEnabled; ///< Enables caching of expensive calculations to the filesystem
@@ -55,7 +55,7 @@ namespace icrar
          * @param computeOptions 
          * @param ms 
          */
-        ValidatedCudaComputeOptions(const ComputeOptions& computeOptions, const icrar::MeasurementSet& ms);
+        CudaComputeOptions(const ComputeOptionsDTO& computeOptions, const icrar::MeasurementSet& ms);
     };
 } // namespace icrar
 

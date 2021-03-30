@@ -26,7 +26,7 @@
 #include <icrar/leap-accelerate/common/eigen_stringutils.h>
 
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
-#include <icrar/leap-accelerate/algorithm/cpu/ValidatedCpuComputeOptions.h>
+#include <icrar/leap-accelerate/algorithm/cpu/CpuComputeOptions.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/model/cpu/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
@@ -71,9 +71,9 @@ namespace cpu
         const Slice& solutionInterval,
         double minimumBaselineThreshold,
         boost::optional<unsigned int> referenceAntenna,
-        const ComputeOptions computeOptions)
+        const ComputeOptionsDTO computeOptions)
     {
-        auto cpuComputeOptions = ValidatedCpuComputeOptions(computeOptions, ms);
+        auto cpuComputeOptions = CpuComputeOptions(computeOptions, ms);
 
         LOG(info) << "Starting calibration using cpu";
         LOG(info)
@@ -103,7 +103,7 @@ namespace cpu
             referenceAntenna,
             minimumBaselineThreshold,
             true,
-            cpuComputeOptions.isFileSystemCacheEnabled);
+            cpuComputeOptions.IsFileSystemCacheEnabled());
         LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
         size_t solutions = validatedSolutionInterval.GetSize();
