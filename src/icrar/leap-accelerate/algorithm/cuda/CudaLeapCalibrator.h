@@ -106,7 +106,7 @@ namespace cuda
          * @param useCuda whether to use cuda solvers
          */
         void CalculateAd(
-            const Eigen::Matrix<double, -1, -1>& hostA,
+            const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& hostA,
             device_matrix<double>& deviceA,
             Eigen::Matrix<double, -1, -1>& hostAd,
             device_matrix<double>& deviceAd,
@@ -122,9 +122,9 @@ namespace cuda
          * @param deviceAd1 output device memory of Ad1
          */
         void CalculateAd1(
-            const Eigen::Matrix<double, -1, -1>& hostA1,
+            const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& hostA1,
             device_matrix<double>& deviceA1,
-            Eigen::Matrix<double, -1, -1>& hostAd1,
+            Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& hostAd1,
             device_matrix<double>& deviceAd1);
 
         /**
