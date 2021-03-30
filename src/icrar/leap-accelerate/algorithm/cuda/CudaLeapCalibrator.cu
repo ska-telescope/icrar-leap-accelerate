@@ -130,7 +130,7 @@ namespace cuda
         << "timesteps: " << ms.GetNumTimesteps() << ", "
         << "use filesystem cache: " << cudaComputeOptions.isFileSystemCacheEnabled << ", "
         << "use intermediate cuda buffer: " << cudaComputeOptions.useIntermediateBuffer << ", "
-        << "use cosolver: " << cudaComputeOptions.useCusolver;
+        << "use cusolver: " << cudaComputeOptions.useCusolver;
 
         profiling::timer calibration_timer;
 
@@ -251,6 +251,17 @@ namespace cuda
         LOG(info) << "Finished calibration in " << calibration_timer;
     }
 
+    inline void CheckIdentity(const Eigen::MatrixXd& left, const Eigen::MatrixXd& right, const std::string& message)
+    {
+#ifndef NDEBUG
+        constexpr double TOLERANCE = 0.0001;
+        if(!(left * right).isApprox(Eigen::MatrixXd::Identity(left.cols(), right.cols()), TOLERANCE))
+        {
+            LOG(warning) << message;
+        }
+#endif
+    }
+
     void CudaLeapCalibrator::CalculateAd(
         const Eigen::Matrix<double, -1, -1>& hostA,
         device_matrix<double>& deviceA,
@@ -322,15 +333,7 @@ namespace cuda
             deviceAd = device_matrix<double>(hostAd);
             deviceA = device_matrix<double>(hostA);
         }
-
-#ifndef NDEBUG
-        // degenerate check
-        constexpr double TOLERANCE = 0.0001;
-        if(!(hostAd * hostA).isApprox(Eigen::MatrixXd::Identity(hostA.cols(), hostA.cols()), TOLERANCE))
-        {
-            LOG(warning) << "Ad is degenerate";
-        }
-#endif
+        CheckIdentity(hostAd, hostA, "Ad is degenerate");
     }
 
     void CudaLeapCalibrator::CalculateAd1(
@@ -343,15 +346,7 @@ namespace cuda
         deviceA1 = device_matrix<double>(hostA1);
         hostAd1 = cpu::pseudo_inverse(hostA1);
         deviceAd1 = device_matrix<double>(hostAd1);
-
-#ifndef NDEBUG
-        // degenerate check
-        constexpr double TOLERANCE = 0.0001;
-        if(!(hostAd1 * hostA1).isApprox(Eigen::MatrixXd::Identity(hostA1.cols(), hostA1.cols()), TOLERANCE))
-        {
-            LOG(warning) << "Ad1 is degenerate";
-        }
-#endif
+        CheckIdentity(hostAd1, hostA1, "Ad1 is degenerate");
     }
 
     void CudaLeapCalibrator::PhaseRotate(
@@ -375,11 +370,9 @@ namespace cuda
         auto cal1 = Eigen::VectorXd(metadata.GetA1().cols());
 
         AvgDataToPhaseAngles(deviceMetadata.GetConstantBuffer().GetI1(), deviceMetadata.GetAvgData(), devicePhaseAnglesI1);
-        LOG(info) << "devicePhaseAnglesI1";
         cuda::multiply(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd1(), devicePhaseAnglesI1, deviceCal1);
         CalcDeltaPhase(deviceMetadata.GetConstantBuffer().GetA(), deviceCal1, deviceMetadata.GetAvgData(), devicedeltaPhase);
         GenerateDeltaPhaseColumn(devicedeltaPhase, deviceDeltaPhaseColumn);
-        LOG(info) << "deviceDeltaPhaseColumn";
         cuda::multiply_add<double>(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd(), deviceDeltaPhaseColumn, deviceCal1);
         deviceCal1.ToHost(cal1);
         output_calibrations.emplace_back(direction, cal1);

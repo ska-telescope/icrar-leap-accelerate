@@ -36,17 +36,6 @@ namespace icrar
         boost::optional<bool> useIntermediateBuffer;
         boost::optional<bool> useCusolver;
 
-        ComputeOptions(){}
-
-        ComputeOptions(
-            boost::optional<bool> isFileSystemCacheEnabled,
-            boost::optional<bool> useIntermediateBuffer,
-            boost::optional<bool> useCusolver)
-        : isFileSystemCacheEnabled(isFileSystemCacheEnabled)
-        , useIntermediateBuffer(useIntermediateBuffer)
-        , useCusolver(useCusolver)
-        {}
-
         bool IsInitialized() const
         {
             return isFileSystemCacheEnabled.is_initialized()

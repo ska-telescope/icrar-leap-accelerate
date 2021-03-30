@@ -85,7 +85,8 @@ namespace icrar
         }
         else // determine from available memory
         {
-            size_t required = (2 * AdSize + 2 * VisSize) * safetyFactor; // A, Ad and 2x visibilities required to calibrate
+            // A, Ad and 2x visibilities required to calibrate
+            size_t required = (2 * AdSize + 2 * VisSize) * safetyFactor;
             if(required < free)
             {
                 LOG(info) << memory_amount(free) << " > " << memory_amount(required) << ". Enabling IntermediateBuffer";

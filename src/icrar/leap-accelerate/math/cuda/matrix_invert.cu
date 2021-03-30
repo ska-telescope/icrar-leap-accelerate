@@ -24,7 +24,6 @@
 
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
 #include <icrar/leap-accelerate/cuda/device_vector.h>
-#include <icrar/leap-accelerate/math/cuda/matrix_epsilon.h>
 
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/common/eigen_stringutils.h>
