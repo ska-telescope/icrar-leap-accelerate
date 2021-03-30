@@ -57,7 +57,7 @@ if(Sphinx_FOUND AND Doxygen_FOUND)
                     COMMENT "Generating documentation with sphinx")
 
   # Nice named target so we can run the job easily
-  add_custom_target(sphinx ALL DEPENDS ${SPHINX_INDEX_FILE})
+  add_custom_target(sphinx DEPENDS ${SPHINX_INDEX_FILE})
   add_dependencies(sphinx doxygen)
 
   # Add an install target to install the docs

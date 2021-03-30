@@ -65,8 +65,8 @@ namespace icrar
         }
         else // determine from available memory
         {
-            //check Ad matrix size
-            size_t required = 3 * AdSize * safetyFactor; // A, Ad and SVD buffers required to compute inverse
+            // A, Ad and SVD buffers required to compute inverse
+            size_t required = 3 * AdSize * safetyFactor;
             if(required < free)
             {
                 LOG(info) << memory_amount(free) << " > " << memory_amount(required) << ". Enabling Cusolver";
