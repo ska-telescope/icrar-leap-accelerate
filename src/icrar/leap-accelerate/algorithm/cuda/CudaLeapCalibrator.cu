@@ -88,6 +88,8 @@ namespace cuda
         {
             throw icrar::exception("CUDA error: no devices supporting CUDA.", __FILE__, __LINE__);
         }
+        //TODO(calgray): test simple kernel to check sm compatibility
+        checkCudaErrors(cudaGetLastError());
 
         checkCudaErrors(cublasCreate(&m_cublasContext));
         checkCudaErrors(cusolverDnCreate(&m_cusolverDnContext));
@@ -95,6 +97,7 @@ namespace cuda
 
     CudaLeapCalibrator::~CudaLeapCalibrator()
     {
+        checkCudaErrors(cudaGetLastError());
         checkCudaErrors(cusolverDnDestroy(m_cusolverDnContext));
         checkCudaErrors(cublasDestroy(m_cublasContext));
 

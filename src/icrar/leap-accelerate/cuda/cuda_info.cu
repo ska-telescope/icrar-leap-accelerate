@@ -35,6 +35,11 @@ int GetCudaDeviceCount()
     return deviceCount;
 }
 
+// __global__ void CheckSM()
+// {
+//     __CUDA_ARCH__
+// }
+
 void printCudaVersion()
 {
     std::cout << "CUDA Compiled version: " << __CUDACC_VER_MAJOR__ << __CUDACC_VER_MINOR__ << __CUDACC_VER_BUILD__ << std::endl;
