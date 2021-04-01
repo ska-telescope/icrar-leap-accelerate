@@ -92,8 +92,8 @@ namespace cuda
             throw icrar::exception("CUDA error: no devices supporting CUDA.", __FILE__, __LINE__);
         }
         g_checkKernelSM<<<1,1>>>();
-        cudaError_enum smError = cudaGetLastError();
-        if(smError != cudaError_enum::CUDA_SUCCESS)
+        cudaError_t smError = cudaGetLastError();
+        if(smError != cudaError_t::cudaSuccess)
         {   
             CUdevice device;
             cuDeviceGet(&device, 0);
