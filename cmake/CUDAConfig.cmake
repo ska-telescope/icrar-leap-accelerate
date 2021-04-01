@@ -66,7 +66,7 @@ function(configure_nvcc_cuda_compiler TARGET_NAME)
   endif()
   target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --display_error_number>)
 
-  message(STATUS "cuda shader config: ${CUDA_FINAL_SM}")
+  message(STATUS "cuda sm level: ${CUDA_FINAL_SM}")
 endfunction()
 
 # Configure Clang++ cuda compiler

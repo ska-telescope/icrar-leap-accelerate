@@ -96,12 +96,10 @@ namespace cuda
         if(smError != cudaError_t::cudaSuccess)
         {   
             CUdevice device;
-            cuDeviceGet(&device, 0);
-            int major = -1;
-            int minor = -1;
+            checkCudaErrors(cuDeviceGet(&device, 0));
+            int major, minor;
             checkCudaErrors(cuDeviceGetAttribute(&major, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, device));
             checkCudaErrors(cuDeviceGetAttribute(&minor, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, device));
-
             LOG(warning) << "CUDA error: No suitable kernel found, hardware sm compatibility is sm_" << major << minor;
         }
         checkCudaErrors(smError);
