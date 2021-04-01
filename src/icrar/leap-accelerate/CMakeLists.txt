@@ -30,6 +30,7 @@ set(sources
     ms/MeasurementSet.cc
 
     core/compute_implementation.cc
+    core/InputType.cc
     core/stream_out_type.cc
     core/log/logging.cc
     core/log/Verbosity.cc
@@ -37,8 +38,9 @@ set(sources
     core/profiling/UsageReporter.cc
     core/version.cc
 
-    common/SphericalDirection.cc
     model/cpu/MVuvw.cc
+    
+    common/SphericalDirection.cc
     common/Slice.cc
     common/config/Arguments.cc
 
@@ -52,22 +54,21 @@ set(sources
     algorithm/cpu/CpuLeapCalibrator.cc
     algorithm/cpu/PhaseMatrixFunction.cc
 )
-    
-    set(cuda_headers
+set(cuda_headers
     cuda/cuda_info.h
     cuda/helper_cuda.cuh
     cuda/helper_string.cuh
 )
-    
-    set(cuda_sources
+set(cuda_sources
     cuda/cuda_info.cu
     
     math/cuda/matrix_op.cu
     math/cuda/matrix_multiply.cu
     math/cuda/matrix_invert.cu
-
+    
     model/cuda/DeviceMetaData.cu
     model/cuda/DeviceIntegration.cu
+    algorithm/cuda/CudaComputeOptions.cu
     algorithm/cuda/CudaLeapCalibrator.cu
 )
 
@@ -107,10 +108,6 @@ endif()
 #target_compile_definitions(${TARGET_NAME} PUBLIC PRETTY_WRITER)
 
 if(CUDA_ENABLED)
-  if(HIGH_GPU_MEMORY)
-  target_compile_definitions(${TARGET_NAME} PUBLIC HIGH_GPU_MEMORY)
-  endif()
-  
   if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
     message("generating clang-tidy cuda compatible configuration")
     configure_clang_cuda_compiler(${TARGET_NAME})

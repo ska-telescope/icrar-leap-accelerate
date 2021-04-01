@@ -72,7 +72,7 @@ public:
         ASSERT_TRUE(expectedStream.good());
         auto expected = std::string(std::istreambuf_iterator<char>(expectedStream), std::istreambuf_iterator<char>());
     
-        auto rawArgs = CLIArguments::GetDefaultArguments();
+        auto rawArgs = CLIArgumentsDTO::GetDefaultArguments();
         rawArgs.filePath = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
         rawArgs.directions = "[[0,0]]";
         auto args = ArgumentsValidated(std::move(rawArgs));
@@ -91,7 +91,7 @@ public:
             args.GetSolutionInterval(),
             args.GetMinimumBaselineThreshold(),
             args.GetReferenceAntenna(),
-            args.IsFileSystemCacheEnabled());
+            args.GetComputeOptions());
 
         auto actualFile = std::ofstream(getexedir().append("testdata/DefaultOutput_ACTUAL.json").string());
         actualFile << output.str();

@@ -23,7 +23,10 @@
 
 #include "CpuLeapCalibrator.h"
 
+#include <icrar/leap-accelerate/common/eigen_stringutils.h>
+
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
+#include <icrar/leap-accelerate/algorithm/cpu/CpuComputeOptions.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/model/cpu/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
@@ -42,6 +45,7 @@
 
 #include <boost/math/constants/constants.hpp>
 #include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
 #include <boost/thread.hpp>
 
 #include <istream>
@@ -67,14 +71,17 @@ namespace cpu
         const Slice& solutionInterval,
         double minimumBaselineThreshold,
         boost::optional<unsigned int> referenceAntenna,
-        bool isFileSystemCacheEnabled)
+        const ComputeOptionsDTO computeOptions)
     {
+        auto cpuComputeOptions = CpuComputeOptions(computeOptions, ms);
+
         LOG(info) << "Starting calibration using cpu";
         LOG(info)
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "solutionInterval: [" << solutionInterval.GetStart() << "," << solutionInterval.GetInterval() << "," << solutionInterval.GetEnd() << "], "
+        << "reference antenna: " << referenceAntenna << ", "
         << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
         << "baseline threshold: " << minimumBaselineThreshold << "m, "
         << "short baselines: " << ms.GetNumShortBaselines(minimumBaselineThreshold) << ", "
@@ -96,8 +103,8 @@ namespace cpu
             referenceAntenna,
             minimumBaselineThreshold,
             true,
-            isFileSystemCacheEnabled);
-        LOG(info) << "Read metadata in " << metadata_read_timer;
+            cpuComputeOptions.IsFileSystemCacheEnabled());
+        LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
         size_t solutions = validatedSolutionInterval.GetSize();
         auto output_calibrations = std::vector<cpu::Calibration>(); // Reserve memory

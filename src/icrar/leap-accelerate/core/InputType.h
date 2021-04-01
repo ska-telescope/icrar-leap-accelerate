@@ -25,15 +25,10 @@
 
 namespace icrar
 {
-    /**
-     * @brief A configurable enumaration type that can be used for specifying 
-     * how calibrations are streamed to the output during computation.
-     */
-    enum class StreamOutType
+    enum class InputType
     {
-        collection, ///< Calibrations are written to a collection in a single file
-        singleFile, ///< Calibrations are continously rewritten to a single file as computed
-        multipleFiles ///< Calibrations are continously written to multiple files as computed
+        file, ///< Read from a casacore table file
+        stream ///< Read from a spead2 stream (unsupported)
     };
 
     /**
@@ -42,15 +37,11 @@ namespace icrar
      * @param value 
      * @return StreamOutType 
      */
-    StreamOutType ParseStreamOutType(const std::string& value);
+    InputType ParseInputType(const std::string& value);
 
     /**
      * @return true if value was converted succesfully, false otherwise
      */
-    bool TryParseStreamOutType(const std::string& value, StreamOutType& out);
+    bool TryParseInputType(const std::string& value, InputType& out);
 
-    /**
-     * @brief True if solutions should be written to IO as soon as they are computed.
-     */
-    bool IsImmediateMode(StreamOutType streamOutType);
 } // namespace icrar

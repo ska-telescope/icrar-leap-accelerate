@@ -39,9 +39,10 @@ namespace icrar
 namespace cuda
 {
     /**
-     * @brief A cuda device buffer object that represents a memory buffer on a cuda device.
+     * @brief A cuda device buffer object that represents a memory buffer on a cuda device. Matrix size is fixed
+     * at construction and can only be resized using move semantics.
      * 
-     * @tparam T 
+     * @tparam T numeric type
      * @note See https://www.quantstart.com/articles/Matrix-Matrix-Multiplication-on-the-GPU-with-Nvidia-CUDA/
      * @note See https://forums.developer.nvidia.com/t/guide-cudamalloc3d-and-cudaarrays/23421
      */
@@ -54,14 +55,24 @@ namespace cuda
 
     public:
         /**
+         * @brief Default constructor
+         * 
+         */
+        device_matrix()
+        : m_rows(0)
+        , m_cols(0)
+        , m_buffer(nullptr)
+        { }
+
+        /**
          * @brief Move Constructor
          * 
          * @param other 
          */
         device_matrix(device_matrix&& other) noexcept 
-            : m_rows(other.m_rows)
-            , m_cols(other.m_cols)
-            , m_buffer(other.m_buffer)
+        : m_rows(other.m_rows)
+        , m_cols(other.m_cols)
+        , m_buffer(other.m_buffer)
         {
             other.m_rows = 0;
             other.m_cols = 0;

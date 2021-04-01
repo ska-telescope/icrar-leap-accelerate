@@ -260,6 +260,6 @@ namespace icrar
     TEST_F(MetaDataTests, TestReferenceAntenna) { TestReferenceAntenna(); }
 
 #ifdef CUDA_ENABLED
-    TEST_F(MetaDataTests, TestCudaBufferCopy) { TestCudaBufferCopy(); }
+    TEST_F(MetaDataTests, DISABLED_TestCudaBufferCopy) { TestCudaBufferCopy(); }
 #endif
 } // namespace icrar
