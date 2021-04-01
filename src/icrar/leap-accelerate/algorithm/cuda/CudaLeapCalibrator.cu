@@ -49,6 +49,7 @@
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 
+#include <cuda.h>
 #include <cuda_runtime.h>
 #include <math_constants.h>
 #include <cuComplex.h>
@@ -78,6 +79,8 @@ namespace icrar
 {
 namespace cuda
 {
+    __global__ void g_checkKernelSM() { }
+
     CudaLeapCalibrator::CudaLeapCalibrator()
     : m_cublasContext(nullptr)
     , m_cusolverDnContext(nullptr)
@@ -88,8 +91,20 @@ namespace cuda
         {
             throw icrar::exception("CUDA error: no devices supporting CUDA.", __FILE__, __LINE__);
         }
-        //TODO(calgray): test simple kernel to check sm compatibility
-        checkCudaErrors(cudaGetLastError());
+        g_checkKernelSM<<<1,1>>>();
+        cudaError_enum smError = cudaGetLastError();
+        if(smError != cudaError_enum::CUDA_SUCCESS)
+        {   
+            CUdevice device;
+            cuDeviceGet(&device, 0);
+            int major = -1;
+            int minor = -1;
+            checkCudaErrors(cuDeviceGetAttribute(&major, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, device));
+            checkCudaErrors(cuDeviceGetAttribute(&minor, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, device));
+
+            LOG(warning) << "CUDA error: No suitable kernel found, hardware sm compatibility is sm_" << major << minor;
+        }
+        checkCudaErrors(smError);
 
         checkCudaErrors(cublasCreate(&m_cublasContext));
         checkCudaErrors(cusolverDnCreate(&m_cusolverDnContext));
