@@ -77,7 +77,7 @@ namespace cuda
 
         signed char jobu = static_cast<std::underlying_type<decltype(jobType)>::type>(jobType);
         signed char jobvt = static_cast<std::underlying_type<decltype(jobType)>::type>(jobType);
-        
+
         int ldu = m;
         int lda = m;
         int ldvt = n;
@@ -127,7 +127,7 @@ namespace cuda
         // https://stackoverflow.com/questions/17401765/parallel-implementation-for-multiple-svds-using-cuda
 
         int* d_devInfo;
-        size_t d_devInfoSize = sizeof(std::remove_pointer_t<decltype(d_devInfo)>());
+        size_t d_devInfoSize = sizeof(int);
         checkCudaErrors(cudaMalloc(&d_devInfo, d_devInfoSize));
 
         int workSize = 0;

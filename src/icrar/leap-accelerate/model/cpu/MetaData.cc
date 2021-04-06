@@ -165,7 +165,6 @@ namespace cpu
     {
         SetUVW(uvws);
         SetDirection(direction);
-        CalcUVW();
     }
 
     const Constants& MetaData::GetConstants() const
@@ -233,10 +232,6 @@ namespace cpu
     void MetaData::SetUVW(const std::vector<icrar::MVuvw>& uvw)
     {
         m_UVW = uvw;
-    }
-
-    void MetaData::CalcUVW()
-    {
     }
 
     bool MetaData::operator==(const MetaData& rhs) const

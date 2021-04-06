@@ -143,7 +143,6 @@ namespace cpu
             {
                 LOG(info) << "Processing direction " << i;
                 metadata.SetDirection(directions[i]);
-                metadata.CalcUVW();
                 metadata.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
                 PhaseRotate(
                     metadata,
