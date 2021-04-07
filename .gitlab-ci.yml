@@ -50,18 +50,6 @@ variables:
 .common:
   tags: [engageska, docker]
 
-.doc_dependencies:
-  extends: .common
-  image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
-  variables:
-    DEBIAN_FRONTEND: "noninteractive"
-    CUDA_ENABLED: "OFF"
-  before_script:
-    - apt update
-    - apt install -y cmake python3-pip
-    - apt install -y git jq moreutils wget doxygen
-    - pip3 install -U sphinx breathe exhale sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary recommonmark
-
 .required_dependencies:
   extends: .common
   image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
@@ -156,7 +144,7 @@ build_release:
   extends: [.all_dependencies, .build_release]
 
 build_docs:
-  extends: .doc_dependencies
+  extends: .required_dependencies
   stage: build
   script:
     - mkdir build
