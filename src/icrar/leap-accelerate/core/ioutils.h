@@ -20,10 +20,6 @@
  * MA 02111 - 1307  USA
  */
 
-/**
- * @file Utilities for uniformly formatting values
- */
-
 #pragma once
 
 #include <chrono>
