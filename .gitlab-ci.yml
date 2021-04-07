@@ -51,7 +51,7 @@ variables:
   tags: [engageska, docker]
 
 .doc_dependencies:
-    extends: .common
+  extends: .common
   image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
   variables:
     DEBIAN_FRONTEND: "noninteractive"
