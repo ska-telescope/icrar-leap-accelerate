@@ -27,6 +27,7 @@
 
 namespace icrar
 {
+/// cuda
 namespace cuda
 {
     enum class MatrixOp

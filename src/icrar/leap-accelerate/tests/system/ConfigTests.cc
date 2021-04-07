@@ -65,7 +65,6 @@ public:
 
     void TestDefaultConfig(boost::filesystem::path outputPath)
     {
-
         std::string path = (getexedir() / outputPath).string();
         std::ifstream expectedStream(path);
         std::cout << path << std::endl;

@@ -50,6 +50,9 @@ variables:
 .common:
   tags: [engageska, docker]
 
+.doc_dependencies:
+  - pip3 install -U sphinx breathe exhale sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary recommonmark
+
 .required_dependencies:
   extends: .common
   image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
@@ -113,7 +116,7 @@ download_lfs:
     - mkdir build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"
-    - make LeapAccelerate LeapAccelerateCLI LeapAccelerate.Tests LeapAccelerateCLI.Tests sphinx -j2
+    - make -j2
   artifacts:
     when: always
     paths:
@@ -131,7 +134,7 @@ build_debug:
     - mkdir build
     - cd build
     - cmake .. -DWCONVERSION=TRUE -DWERROR=TRUE -DCMAKE_BUILD_TYPE=Release
-    - make LeapAccelerate LeapAccelerateCLI sphinx -j2
+    - make -j2
   artifacts:
     when: always
     paths:
@@ -142,6 +145,21 @@ build_release_minimal:
 
 build_release:
   extends: [.all_dependencies, .build_release]
+
+build_docs:
+  extends: .doc_dependencies
+  stage: build
+  script:
+    - mkdir build
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release
+    - make sphinx -j2
+  artifacts:
+    when: always
+    paths:
+      - build
+      - /tmp
+
 
 .build_export_compile_commands:
   stage: build

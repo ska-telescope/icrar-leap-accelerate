@@ -143,7 +143,6 @@ namespace cpu
             {
                 LOG(info) << "Processing direction " << i;
                 metadata.SetDirection(directions[i]);
-                metadata.CalcUVW();
                 metadata.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
                 PhaseRotate(
                     metadata,
@@ -201,7 +200,7 @@ namespace cpu
         using namespace std::literals::complex_literals;
         Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.GetVis();
 
-        // loop over smeared baselines
+        // loop over smeared baselines ('md_baseline' is always 'baseline' when timesteps = 1)
         for(size_t baseline = 0; baseline < integration.GetBaselines(); ++baseline)
         {
             auto md_baseline = static_cast<int>(baseline % static_cast<size_t>(metadata.GetConstants().nbaselines)); // metadata baseline

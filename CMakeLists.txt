@@ -143,7 +143,7 @@ set(CMAKE_CUDA_COMPILER ${CMAKE_CXX_COMPILER})
 endif()
 
 add_definitions(-DBOOST_ALL_DYN_LINK)
-find_package(Boost REQUIRED COMPONENTS log log_setup program_options)
+find_package(Boost REQUIRED COMPONENTS log log_setup program_options filesystem)
 
 set(CASACORE_FIND_QUIETLY ON)
 find_package(Casacore COMPONENTS ms)

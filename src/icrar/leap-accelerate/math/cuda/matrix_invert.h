@@ -30,17 +30,17 @@
 
 namespace icrar
 {
+/// cuda
 namespace cuda
 {
     /**
      * @brief Corresponds to job types of CusolverDn API (e.g. cusolverDnDgesvd)
-     * 
      */
     enum class JobType : signed char
     {
         A = 'A', ///< All - Entire dense matrix is used
         S = 'S' ///< Slim/Thin - Minimal matrix dimensions
-        // T = 'T' Truncated
+        // T = 'T' ///< Truncated
     };
 
     /**
