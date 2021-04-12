@@ -50,6 +50,8 @@
 #include <vector>
 #include <complex>
 
+#include <cublas_v2.h>
+#include <cusolverDn.h>
 #include <cuComplex.h>
 
 namespace icrar
@@ -57,7 +59,7 @@ namespace icrar
 namespace cuda
 {
     /**
-     * Container of uniform gpu buffers available to all cuda
+     * Container class of uniform gpu buffers available to all cuda
      * threads that are const/immutable per calibration.
      */
     class ConstantBuffer
@@ -73,14 +75,25 @@ namespace cuda
         device_matrix<double> m_Ad1;
 
     public:
+        /**
+         * @brief Construct a new Constant Buffer object
+         * 
+         * @param constants 
+         * @param A 
+         * @param I 
+         * @param Ad 
+         * @param A1 
+         * @param I1 
+         * @param Ad1 
+         */
         ConstantBuffer(
             const icrar::cpu::Constants& constants,
-            const Eigen::MatrixXd& A,
-            const Eigen::VectorXi& I,
-            const Eigen::MatrixXd& Ad,
-            const Eigen::MatrixXd& A1,
-            const Eigen::VectorXi& I1,
-            const Eigen::MatrixXd& Ad1);
+            device_matrix<double>&& A,
+            device_vector<int>&& I,
+            device_matrix<double>&& Ad,
+            device_matrix<double>&& A1,
+            device_vector<int>&& I1,
+            device_matrix<double>&& Ad1);
 
         const icrar::cpu::Constants& GetConstants() const { return m_constants; }
         const device_matrix<double>& GetA() const { return m_A; } 
@@ -91,6 +104,7 @@ namespace cuda
         const device_matrix<double>& GetAd1() const { return m_Ad1; }
 
         void ToHost(icrar::cpu::MetaData& host) const;
+        void ToHostAsync(icrar::cpu::MetaData& host) const;
     };
 
     /**
@@ -122,7 +136,6 @@ namespace cuda
         SphericalDirection m_direction;
         Eigen::Matrix3d m_dd;
 
-        device_vector<icrar::MVuvw> m_rotatedUVW;
         device_matrix<std::complex<double>> m_avgData;
 
     public:
@@ -137,7 +150,6 @@ namespace cuda
         DirectionBuffer(
             const SphericalDirection& direction,
             const Eigen::Matrix3d& dd,
-            const std::vector<icrar::MVuvw>& rotatedUVW,
             const Eigen::MatrixXcd& avgData);
 
         /**
@@ -153,10 +165,8 @@ namespace cuda
             int avgDataCols);
 
         const SphericalDirection& GetDirection() const { return m_direction; }
-        const device_vector<icrar::MVuvw>& GetRotatedUVW() const { return m_rotatedUVW; }
         const Eigen::Matrix3d& GetDD() const { return m_dd; }
 
-        device_vector<icrar::MVuvw>& GetRotatedUVW() { return m_rotatedUVW; }
         device_matrix<std::complex<double>>& GetAvgData() { return m_avgData; }
 
         void SetDirection(const SphericalDirection& direction);
@@ -202,7 +212,6 @@ namespace cuda
         const icrar::cpu::Constants& GetConstants() const;
 
         const device_vector<icrar::MVuvw>& GetUVW() const { return m_solutionIntervalBuffer->GetUVW(); }
-        const device_vector<icrar::MVuvw>& GetRotatedUVW() const { return m_directionBuffer->GetRotatedUVW(); }
         const SphericalDirection& GetDirection() const { return m_directionBuffer->GetDirection(); }
         const Eigen::Matrix3d& GetDD() const { return m_directionBuffer->GetDD(); }
         
@@ -213,6 +222,7 @@ namespace cuda
 
         void ToHost(icrar::cpu::MetaData& host) const;
         icrar::cpu::MetaData ToHost() const;
+        
         void ToHostAsync(icrar::cpu::MetaData& host) const;
     };
 }

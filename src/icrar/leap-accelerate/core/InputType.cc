@@ -20,31 +20,34 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
+#include "InputType.h"
+#include <icrar/leap-accelerate/exception/exception.h>
 
-#include <icrar/leap-accelerate/tests/math/eigen_helper.h>
+namespace icrar
+{
+    InputType ParseInputType(const std::string& value)
+    {
+        InputType e;
+        if(!TryParseInputType(value, e))
+        {
+            throw invalid_argument_exception(value, "value", __FILE__, __LINE__);
+        }
+        return e;
+    }
 
-#include <casacore/casa/Arrays/Matrix.h>
-#include <casacore/casa/Arrays/Array.h>
-
-#include <Eigen/Core>
-#include <Eigen/LU>
-#include <Eigen/Sparse>
-#include <Eigen/SVD>
-
-#include <cuda_runtime.h>
-#include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
-
-#include <gtest/gtest.h>
-
-#include <boost/filesystem/path.hpp>
-#include <boost/filesystem/operations.hpp>
-
-#include <stdio.h>
-#include <utility>
-#include <sstream>
-#include <iostream>
-#include <streambuf>
-#include <vector>
-#include <array>
-#include <set>
+    bool TryParseInputType(const std::string& value, InputType& out)
+    {
+        bool handled = false;
+        if(value == "f" || value == "file")
+        {
+            out = InputType::file;
+            handled = true;
+        }
+        else if(value == "s" || value == "stream")
+        {
+            out = InputType::stream;
+            handled = true;
+        }
+        return handled;
+    }
+} // namespace icrar

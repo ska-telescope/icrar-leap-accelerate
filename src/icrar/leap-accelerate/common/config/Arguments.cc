@@ -22,6 +22,7 @@
 
 #include "Arguments.h"
 
+#include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/exception/exception.h>
 
@@ -34,10 +35,10 @@ namespace icrar
     /**
      * Default set of command line interface arguments
      */
-    CLIArguments CLIArguments::GetDefaultArguments()
+    CLIArgumentsDTO CLIArgumentsDTO::GetDefaultArguments()
     {
-        auto args = CLIArguments();
-        args.sourceType = InputType::MEASUREMENT_SET;
+        auto args = CLIArgumentsDTO();
+        args.inputType = "file";
         args.filePath = boost::none;
         args.configFilePath = boost::none;
         args.streamOutType = "single";
@@ -56,9 +57,8 @@ namespace icrar
         return args;
     }
 
-    Arguments::Arguments(CLIArguments&& args)
-        : sourceType(args.sourceType)
-        , filePath(std::move(args.filePath))
+    ArgumentsDTO::ArgumentsDTO(CLIArgumentsDTO&& args)
+        : filePath(std::move(args.filePath))
         , configFilePath(std::move(args.configFilePath))
         , outputFilePath(std::move(args.outputFilePath))
         , stations(std::move(args.stations))
@@ -69,9 +69,18 @@ namespace icrar
         , useFileSystemCache(args.useFileSystemCache)
     {
         //Perform type conversions
+        if(args.inputType.is_initialized())
+        {
+            inputType.reset(InputType()); //Default value ignored
+            if(!TryParseInputType(args.inputType.get(), inputType.get()))
+            {
+                throw std::invalid_argument("invalid compute implementation argument");
+            }
+        }
+        
         if(args.computeImplementation.is_initialized())
         {
-            computeImplementation.reset(ComputeImplementation()); //Defualt value ignored
+            computeImplementation.reset(ComputeImplementation()); //Default value ignored
             if(!TryParseComputeImplementation(args.computeImplementation.get(), computeImplementation.get()))
             {
                 throw std::invalid_argument("invalid compute implementation argument");
@@ -103,18 +112,19 @@ namespace icrar
         }
     }
 
-    ArgumentsValidated::ArgumentsValidated(Arguments&& cliArgs)
-    : m_sourceType(InputType::MEASUREMENT_SET)
+    ArgumentsValidated::ArgumentsValidated(ArgumentsDTO&& cliArgs)
+    : m_inputType(InputType::file)
     , m_computeImplementation(ComputeImplementation::cpu)
     , m_solutionInterval()
     , m_minimumBaselineThreshold(0)
     , m_readAutocorrelations(false)
     , m_mwaSupport(false)
-    , m_useFileSystemCache(false)
-    , m_verbosity(icrar::log::Verbosity::trace) //These values are overwritten
+    , m_verbosity(icrar::log::Verbosity::trace)
+    , m_computeOptions()
+     //Initial values are overwritten
     {
         // Initialize default arguments first
-        ApplyArguments(CLIArguments::GetDefaultArguments());
+        ApplyArguments(CLIArgumentsDTO::GetDefaultArguments());
 
         // Read the config argument second and apply the config arguments over the default arguments
         if(cliArgs.configFilePath.is_initialized())
@@ -123,15 +133,15 @@ namespace icrar
             ApplyArguments(ParseConfig(cliArgs.configFilePath.get()));
         }
 
-        // OVerride the config args with the remaining cli arguments
+        // Override the config args with the remaining cli arguments
         ApplyArguments(std::move(cliArgs));
         Validate();
 
         // Load resources
-        icrar::log::Initialize(GetVerbosity());
-        switch (m_sourceType)
+        icrar::log::Initialize(GetVerbosity()); //TODO: Arguments tests already intiializes verbosity
+        switch (m_inputType)
         {
-        case InputType::MEASUREMENT_SET:
+        case InputType::file:
             if (m_filePath.is_initialized())
             {
                 m_measurementSet = std::make_unique<MeasurementSet>(
@@ -144,7 +154,7 @@ namespace icrar
                 throw std::invalid_argument("measurement set filename not provided");
             }
             break;
-        case InputType::STREAM:
+        case InputType::stream:
             throw std::runtime_error("only measurement set input is currently supported");
             break;
         default:
@@ -153,11 +163,11 @@ namespace icrar
         }
     }
 
-    void ArgumentsValidated::ApplyArguments(Arguments&& args)
+    void ArgumentsValidated::ApplyArguments(ArgumentsDTO&& args)
     {
-        if(args.sourceType.is_initialized())
+        if(args.inputType.is_initialized())
         {
-            m_sourceType = std::move(args.sourceType.get());
+            m_inputType = std::move(args.inputType.get());
         }
 
         if(args.filePath.is_initialized())
@@ -222,7 +232,17 @@ namespace icrar
 
         if(args.useFileSystemCache.is_initialized())
         {
-            m_useFileSystemCache = std::move(args.useFileSystemCache.get());
+            m_computeOptions.isFileSystemCacheEnabled = std::move(args.useFileSystemCache.get());
+        }
+
+        if(args.useCusolver.is_initialized())
+        {
+            m_computeOptions.useCusolver = std::move(args.useCusolver.get());
+        }
+
+        if(args.useIntermediateBuffer.is_initialized())
+        {
+            m_computeOptions.useIntermediateBuffer = std::move(args.useIntermediateBuffer.get());
         }
 
         if(args.verbosity.is_initialized())
@@ -306,24 +326,24 @@ namespace icrar
         return m_minimumBaselineThreshold;
     }
 	
-	bool ArgumentsValidated::IsFileSystemCacheEnabled() const
+    ComputeOptionsDTO ArgumentsValidated::GetComputeOptions() const
     {
-        return m_useFileSystemCache;
-    }
+        return m_computeOptions;
+    } 
 
     icrar::log::Verbosity ArgumentsValidated::GetVerbosity() const
     {
         return m_verbosity;
     }
 
-    Arguments ArgumentsValidated::ParseConfig(const std::string& configFilepath)
+    ArgumentsDTO ArgumentsValidated::ParseConfig(const std::string& configFilepath)
     {
-        Arguments args;
+        ArgumentsDTO args;
         ParseConfig(configFilepath, args);
         return args;
     }
 
-    void ArgumentsValidated::ParseConfig(const std::string& configFilepath, Arguments& args)
+    void ArgumentsValidated::ParseConfig(const std::string& configFilepath, ArgumentsDTO& args)
     {
         auto ifs = std::ifstream(configFilepath);
         rapidjson::IStreamWrapper isw(ifs);
@@ -343,7 +363,7 @@ namespace icrar
             else
             {
                 std::string key = it->name.GetString();
-                if(key == "sourceType")
+                if(key == "inputType")
                 {
                     //args.sourceType = it->value.GetInt(); //TODO: use string
                 }

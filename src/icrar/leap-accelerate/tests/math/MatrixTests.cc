@@ -159,7 +159,7 @@ public:
         2, 0, -2,
         0, 1, 1;
 
-        auto m1d = icrar::cpu::PseudoInverse(m1);
+        auto m1d = icrar::cpu::pseudo_inverse(m1);
 
         auto expected_m1d = Eigen::MatrixXd(3, 3);
         expected_m1d <<
@@ -178,7 +178,7 @@ public:
         -1, -1,
         -0.5, -0.5;
 
-        auto m1d = icrar::cpu::PseudoInverse(m1);
+        auto m1d = icrar::cpu::pseudo_inverse(m1);
 
         auto expected_m1d = Eigen::MatrixXd(2, 3);
         expected_m1d <<

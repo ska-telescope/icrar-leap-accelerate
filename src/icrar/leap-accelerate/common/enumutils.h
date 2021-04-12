@@ -1,3 +1,4 @@
+
 /**
 *    ICRAR - International Centre for Radio Astronomy Research
 *    (c) UWA - The University of Western Australia
@@ -22,5 +23,20 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/math/cuda/matrix_multiply.cuh>
+#include <type_traits>
 
+namespace icrar
+{
+    /**
+     * @brief Safely casts an enum to its underlying type
+     * 
+     * @tparam T enum with underlying type
+     * @param e enum value
+     * @return std::underlying_type_t<T> the cast value
+     */
+    template<typename T>
+    std::underlying_type_t<T> to_underlying_type(T e)
+    {
+        return static_cast<typename std::underlying_type_t<T>>(e);
+    }
+} // namespace icrar

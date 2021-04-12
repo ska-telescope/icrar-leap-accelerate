@@ -40,19 +40,29 @@ using cudaDataType_t = cudaDataType;
 template<typename T>
 struct is_cublas_supported : public std::false_type {};
 template<>
-struct is_cublas_supported<double> : public std::true_type
+struct is_cublas_supported<double> : public std::true_type {};
+template<>
+struct is_cublas_supported<float> : public std::true_type {};
+template<>
+struct is_cublas_supported<int32_t> : public std::true_type {};
+
+
+template<typename T>
+struct cublas_type {};
+template<>
+struct cublas_type<double>
 {
     static constexpr cublasComputeType_t GetComputeType() { return cublasComputeType_t::CUBLAS_COMPUTE_64F; }
     static constexpr cudaDataType_t GetDataType() { return cudaDataType_t::CUDA_R_64F; }
 };
 template<>
-struct is_cublas_supported<float> : public std::true_type
+struct cublas_type<float>
 {
     static constexpr cublasComputeType_t GetComputeType() { return cublasComputeType_t::CUBLAS_COMPUTE_32F; }
     static constexpr cudaDataType_t GetDataType() { return cudaDataType_t::CUDA_R_32F; }
 };
 template<>
-struct is_cublas_supported<int32_t> : public std::true_type
+struct cublas_type<int32_t>
 {
     static constexpr cublasComputeType_t GetComputeType() { return cublasComputeType_t::CUBLAS_COMPUTE_32I; }
     static constexpr cudaDataType_t GetDataType() { return cudaDataType_t::CUDA_R_32I; }
@@ -77,24 +87,23 @@ namespace cuda
      */
     template<typename T,
             std::enable_if_t<is_cublas_supported<T>::value, bool> = true>
-    __host__ void mat_mul(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const T* A, const T* B, T* C)
+    __host__ void mat_mul(cublasHandle_t handle, MatrixOp transa, MatrixOp transb, const size_t m, const size_t n, const size_t k, const T* A, const T* B, T* C)
     {
         const double alpha = 1.0;
         const double beta = 0.0;
-        cublasOperation_t transa = cublasOperation_t::CUBLAS_OP_N;
-        cublasOperation_t transb = cublasOperation_t::CUBLAS_OP_N;
 
-        int lda = m;
-        int ldb = k;
+        // Assuming normal matrices are always in column major format
+        int lda = (transa == MatrixOp::transpose) || (transa == MatrixOp::hermitian) ? k : m;
+        int ldb = (transb == MatrixOp::transpose) || (transb == MatrixOp::hermitian) ? n : k;
         int ldc = m;
 
-        cublasComputeType_t computeType = is_cublas_supported<T>::GetComputeType();
-        cudaDataType_t dataType = is_cublas_supported<T>::GetDataType();
+        cublasComputeType_t computeType = cublas_type<T>::GetComputeType();
+        cudaDataType_t dataType = cublas_type<T>::GetDataType();
 
         checkCudaErrors(cublasGemmEx(
             handle,
-            transa, 
-            transb,
+            ToCublasOp(transa),
+            ToCublasOp(transb),
             m, n, k,
             &alpha,
             A, dataType, lda,
@@ -131,12 +140,12 @@ namespace cuda
         int ldb = k;
         int ldc = m;
 
-        cublasComputeType_t computeType = is_cublas_supported<T>::GetComputeType();
-        cudaDataType_t dataType = is_cublas_supported<T>::GetDataType();
+        cublasComputeType_t computeType = cublas_type<T>::GetComputeType();
+        cudaDataType_t dataType = cublas_type<T>::GetDataType();
 
         checkCudaErrors(cublasGemmEx(
             handle,
-            transa, 
+            transa,
             transb,
             m, n, k,
             &alpha,
@@ -163,11 +172,11 @@ namespace cuda
      */
     template<typename T,
             std::enable_if_t<is_cublas_supported<T>::value, bool> = true>
-    __host__ void mat_mul(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const T* A, const T* B, T* C)
+    __host__ void mat_mul(cublasLtHandle_t handle, MatrixOp transA, MatrixOp transB, const size_t m, const size_t n, const size_t k, const T* A, const T* B, T* C)
     {
 #if CUBLAS_VER_MAJOR > 10
-        cublasOperation_t transa = cublasOperation_t::CUBLAS_OP_N;
-        cublasOperation_t transb = cublasOperation_t::CUBLAS_OP_N;
+        cublasOperation_t transa = ToCublasOp(transA);
+        cublasOperation_t transb = ToCublasOp(transB);
 
         size_t lda = m;
         size_t ldb = k;
@@ -187,8 +196,8 @@ namespace cuda
 
         // create operation desciriptor; see cublasLtMatmulDescAttributes_t for details about defaults; here we just need to
         // set the transforms for A and B
-        cublasComputeType_t computeType = is_cublas_supported<T>::GetComputeType();
-        cudaDataType_t dataType = is_cublas_supported<T>::GetDataType();
+        cublasComputeType_t computeType = cublas_type<T>::GetComputeType();
+        cudaDataType_t dataType = cublas_type<T>::GetDataType();
 
         checkCudaErrors(cublasLtMatmulDescInit(&operationDesc, computeType, dataType));
         checkCudaErrors(cublasLtMatmulDescSetAttribute(&operationDesc, CUBLASLT_MATMUL_DESC_TRANSA, &transa, sizeof(transa)));
@@ -285,8 +294,8 @@ namespace cuda
         // create operation desciriptor; see cublasLtMatmulDescAttributes_t for details about defaults; here we just need to
         // set the transforms for A and B
 
-        cublasComputeType_t computeType = is_cublas_supported<T>::GetComputeType();
-        cudaDataType_t dataType = is_cublas_supported<T>::GetDataType();
+        cublasComputeType_t computeType = cublas_type<T>::GetComputeType();
+        cudaDataType_t dataType = cublas_type<T>::GetDataType();
 
         //LtSgemm
 
@@ -344,30 +353,30 @@ namespace cuda
 #endif
     }
 
-    __host__ void mat_mul(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const double* A, const double* B, double* C)
+    __host__ void mat_mul(cublasHandle_t handle, MatrixOp transa, MatrixOp transb, const size_t m, const size_t n, const size_t k, const double* A, const double* B, double* C)
     {
-        mat_mul<double>(handle, m, n, k, A, B, C);
+        mat_mul<double>(handle, transa, transb, m, n, k, A, B, C);
     }
-    __host__ void mat_mul(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const float* A, const float* B, float* C)
+    __host__ void mat_mul(cublasHandle_t handle, MatrixOp transa, MatrixOp transb, const size_t m, const size_t n, const size_t k, const float* A, const float* B, float* C)
     {
-        mat_mul<float>(handle, m, n, k, A, B, C);
+        mat_mul<float>(handle, transa, transb, m, n, k, A, B, C);
     }
-    __host__ void mat_mul(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const int* A, const int* B, int* C)
+    __host__ void mat_mul(cublasHandle_t handle, MatrixOp transa, MatrixOp transb, const size_t m, const size_t n, const size_t k, const int* A, const int* B, int* C)
     {
-        mat_mul<int>(handle, m, n, k, A, B, C);
+        mat_mul<int>(handle, transa, transb, m, n, k, A, B, C);
     }
 
-    __host__ void mat_mul(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const double* A, const double* B, double* C)
+    __host__ void mat_mul(cublasLtHandle_t handle, MatrixOp transa, MatrixOp transb, const size_t m, const size_t n, const size_t k, const double* A, const double* B, double* C)
     {
-        mat_mul<double>(handle, m, n, k, A, B, C);
+        mat_mul<double>(handle, transa, transb, m, n, k, A, B, C);
     }
-    __host__ void mat_mul(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const float* A, const float* B, float* C)
+    __host__ void mat_mul(cublasLtHandle_t handle, MatrixOp transa, MatrixOp transb, const size_t m, const size_t n, const size_t k, const float* A, const float* B, float* C)
     {
-        mat_mul<float>(handle, m, n, k, A, B, C);
+        mat_mul<float>(handle, transa, transb, m, n, k, A, B, C);
     }
-    __host__ void mat_mul(cublasLtHandle_t handle, const size_t m, const size_t n, const size_t k, const int* A, const int* B, int* C)
+    __host__ void mat_mul(cublasLtHandle_t handle, MatrixOp transa, MatrixOp transb, const size_t m, const size_t n, const size_t k, const int* A, const int* B, int* C)
     {
-        mat_mul<int>(handle, m, n, k, A, B, C);
+        mat_mul<int>(handle, transa, transb, m, n, k, A, B, C);
     }
 
     __host__ void mat_mul_add(cublasHandle_t handle, const size_t m, const size_t n, const size_t k, const double* A, const double* B, double* C)

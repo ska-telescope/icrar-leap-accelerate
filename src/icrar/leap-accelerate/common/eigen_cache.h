@@ -95,7 +95,9 @@ namespace icrar
         in.read(reinterpret_cast<char*>(&rows), sizeof(typename Matrix::Index)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
         in.read(reinterpret_cast<char*>(&cols), sizeof(typename Matrix::Index)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
         matrix.resize(rows, cols);
-        LOG(info) << "Reading " << memory_amount(rows * cols * sizeof(typename Matrix::Scalar)) << " from " << filepath;
+        LOG(info)
+        << "Reading " << memory_amount(rows * cols * sizeof(typename Matrix::Scalar))
+        << " from " << filepath << "(" << rows << "," << cols << ")";
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         in.read(reinterpret_cast<char*>(matrix.data()), rows * cols * sizeof(typename Matrix::Scalar) );
         in.close();
@@ -177,7 +179,7 @@ namespace icrar
         }
         catch(const std::exception& e)
         {
-            LOG(error) << e.what() << '\n';
+            LOG(warning) << e.what() << '\n';
         }
 
         if(!cacheRead)

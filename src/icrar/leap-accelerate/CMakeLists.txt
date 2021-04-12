@@ -30,6 +30,7 @@ set(sources
     ms/MeasurementSet.cc
 
     core/compute_implementation.cc
+    core/InputType.cc
     core/stream_out_type.cc
     core/log/logging.cc
     core/log/Verbosity.cc
@@ -37,17 +38,14 @@ set(sources
     core/profiling/UsageReporter.cc
     core/version.cc
 
-    common/SphericalDirection.cc
     model/cpu/MVuvw.cc
+    
+    common/SphericalDirection.cc
     common/Slice.cc
     common/config/Arguments.cc
 
     math/math_conversion.cc
     math/cpu/eigen_extensions.cc
-    math/cuda/matrix.h
-    math/cuda/matrix.cuh
-    math/cuda/matrix_multiply.cuh
-    math/cuda/matrix_multiply.cu
 
     model/cpu/Integration.cc
     model/cpu/MetaData.cc
@@ -56,18 +54,21 @@ set(sources
     algorithm/cpu/CpuLeapCalibrator.cc
     algorithm/cpu/PhaseMatrixFunction.cc
 )
-    
-    set(cuda_headers
+set(cuda_headers
     cuda/cuda_info.h
     cuda/helper_cuda.cuh
     cuda/helper_string.cuh
 )
-    
-    set(cuda_sources
+set(cuda_sources
     cuda/cuda_info.cu
+    
+    math/cuda/matrix_op.cu
+    math/cuda/matrix_multiply.cu
+    math/cuda/matrix_invert.cu
     
     model/cuda/DeviceMetaData.cu
     model/cuda/DeviceIntegration.cu
+    algorithm/cuda/CudaComputeOptions.cu
     algorithm/cuda/CudaLeapCalibrator.cu
 )
 
@@ -96,21 +97,17 @@ add_library(
 )
 endif()
 
-if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
-# TODO(calgray): clang-tidy tries to analyze pch systems headers
-#  target_precompile_headers(${TARGET_NAME}
-#    PRIVATE
-#    [[pch.h]]
-#  )
+if(${CMAKE_VERSION} VERSION_GREATER "3.16.0" AND NOT CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+  # clang-tidy analysis does not support precompiled headers
+  target_precompile_headers(${TARGET_NAME}
+    PRIVATE
+    [[pch.h]]
+  )
 endif()
 
 #target_compile_definitions(${TARGET_NAME} PUBLIC PRETTY_WRITER)
 
 if(CUDA_ENABLED)
-  if(HIGH_GPU_MEMORY)
-  target_compile_definitions(${TARGET_NAME} PUBLIC HIGH_GPU_MEMORY)
-  endif()
-  
   if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
     message("generating clang-tidy cuda compatible configuration")
     configure_clang_cuda_compiler(${TARGET_NAME})
@@ -127,7 +124,7 @@ if(CUDA_ENABLED)
   target_link_libraries(${TARGET_NAME} cublas)
   if(CUDA_VERSION_MAJOR VERSION_GREATER 9)
     target_link_libraries(${TARGET_NAME} cublasLt)
-    #target_link_libraries(${TARGET_NAME} ${CUDA_cusolver_LIBRARY})
+    target_link_libraries(${TARGET_NAME} ${CUDA_cusolver_LIBRARY})
   endif()
 endif()
 

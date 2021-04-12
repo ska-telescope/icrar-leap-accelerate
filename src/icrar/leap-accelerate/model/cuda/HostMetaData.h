@@ -38,14 +38,19 @@ namespace cuda
     class HostMetaData : public cpu::MetaData
     {
     public:
-        HostMetaData(const icrar::MeasurementSet& ms, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool useCache = true)
-        : MetaData(ms, refAnt, minimumBaselineThreshold, useCache)
+        HostMetaData(
+            const icrar::MeasurementSet& ms,
+            boost::optional<unsigned int> refAnt,
+            double minimumBaselineThreshold,
+            bool computeInverse,
+            bool useCache)
+        : MetaData(ms, refAnt, minimumBaselineThreshold, computeInverse, useCache)
         {
             cudaHostRegister(m_A.data(), m_A.size() * sizeof(decltype(*m_A.data())), cudaHostRegisterPortable);
             cudaHostRegister(m_I.data(), m_I.size() * sizeof(decltype(*m_I.data())), cudaHostRegisterPortable);
-            cudaHostRegister(m_Ad.data(), m_Ad.size() * sizeof(decltype(*m_Ad.data())), cudaHostRegisterPortable);
             cudaHostRegister(m_A1.data(), m_A1.size() * sizeof(decltype(*m_A1.data())), cudaHostRegisterPortable);
             cudaHostRegister(m_I1.data(), m_I1.size() * sizeof(decltype(*m_I1.data())), cudaHostRegisterPortable);
+            cudaHostRegister(m_Ad.data(), m_Ad.size() * sizeof(decltype(*m_Ad.data())), cudaHostRegisterPortable);
             cudaHostRegister(m_Ad1.data(), m_Ad1.size() * sizeof(decltype(*m_Ad1.data())), cudaHostRegisterPortable);
         }
 
@@ -53,9 +58,9 @@ namespace cuda
         {
             cudaHostUnregister(m_A.data());
             cudaHostUnregister(m_I.data());
-            cudaHostUnregister(m_Ad.data());
             cudaHostUnregister(m_A1.data());
             cudaHostUnregister(m_I1.data());
+            cudaHostUnregister(m_Ad.data());
             cudaHostUnregister(m_Ad1.data());
         }
     };

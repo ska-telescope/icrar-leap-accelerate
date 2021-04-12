@@ -111,18 +111,17 @@ namespace cpu
     protected:
         Constants m_constants;
         double m_minimumBaselineThreshold;
+        bool m_useCache;
 
         Eigen::MatrixXd m_A;
         Eigen::VectorXi m_I; // The flagged indexes of A
-        Eigen::MatrixXd m_Ad; // The pseudo-inverse of m_A
-
         Eigen::MatrixXd m_A1;
         Eigen::VectorXi m_I1;
-        Eigen::MatrixXd m_Ad1;
+        Eigen::MatrixXd m_Ad; ///< The pseudo-inverse of m_A, late intitialized
+        Eigen::MatrixXd m_Ad1; //< The pseudo-inverse of m_Ad1, late intitialized
 
         std::vector<icrar::MVuvw> m_UVW;
-        std::vector<icrar::MVuvw> m_rotatedUVW; // late initialized
-    
+
         SphericalDirection m_direction; // calibration direction, late initialized
         Eigen::Matrix3d m_dd; // direction dependant matrix, late initialized
         Eigen::MatrixXcd m_avgData; // matrix of size (baselines, polarizations), late initialized
@@ -136,7 +135,7 @@ namespace cpu
          * @param minimumBaselineThreshold
          * @param useCache
          */
-        MetaData(const icrar::MeasurementSet& ms, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool useCache = true);
+        MetaData(const icrar::MeasurementSet& ms, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool computeInverse = true, bool useCache = true);
 
 
         /**
@@ -148,7 +147,7 @@ namespace cpu
          * @param minimumBaselineThreshold baseline lengths less that the minimum in meters are flagged
          * @param useCache whether to load Ad matrix from cache
          */
-        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool useCache = true);
+        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool computeInverse = true, bool useCache = true);
 
         /**
          * @brief Construct a new MetaData object.
@@ -160,7 +159,7 @@ namespace cpu
          * @param minimumBaselineThreshold baseline lengths less that the minimum in meters are flagged
          * @param useCache whether to load Ad matrix from cache
          */
-        MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool useCache = true);
+        MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool computeInverse = true, bool useCache = true);
 
         const Constants& GetConstants() const;
 
@@ -178,6 +177,7 @@ namespace cpu
          * @brief The pseudoinverse of A with shape [stations, baselines]
          */
         const Eigen::MatrixXd& GetAd() const;
+        Eigen::MatrixXd& GetAd() { return m_Ad; }
 
         /**
          * @brief Matrix of baselines using the reference antenna of shape [stations+1, stations]
@@ -185,10 +185,11 @@ namespace cpu
          */
         const Eigen::MatrixXd& GetA1() const;
         const Eigen::VectorXi& GetI1() const;
+
         const Eigen::MatrixXd& GetAd1() const;
+        Eigen::MatrixXd& GetAd1() { return m_Ad1; }
 
         const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
-        const std::vector<icrar::MVuvw>& GetRotatedUVW() const { return m_rotatedUVW; }
 
         const SphericalDirection& GetDirection() const { return m_direction; }
         const Eigen::Matrix3d& GetDD() const { return m_dd; }
@@ -197,10 +198,16 @@ namespace cpu
         void SetUVW(const std::vector<icrar::MVuvw>& uvws);
 
         /**
-         * @brief Updates the rotated UVW vector using the DD matrix
-         * @pre DD is set, UVW is set
+         * @brief Computes the A and A1 inverse matrices 
+         * 
          */
-        void CalcUVW();
+        void ComputeInverse();
+
+        /**
+         * @brief Output logs on the validity of inverse matrices
+         * 
+         */
+        void ValidateInverse() const;
 
         /**
          * @brief Utility method to generate a direction matrix using the

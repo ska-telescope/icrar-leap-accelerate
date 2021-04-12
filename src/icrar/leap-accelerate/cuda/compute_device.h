@@ -22,29 +22,22 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/tests/math/eigen_helper.h>
+#if CUDA_ENABLED
 
-#include <casacore/casa/Arrays/Matrix.h>
-#include <casacore/casa/Arrays/Array.h>
+namespace icrar
+{
+namespace cuda
+{
+    class ComputeDevice
+    {
+#if CUBLAS_VER_MAJOR > 11
+        cublasHandle_t m_cublasContext;
+#else
+        cublasLtHandle_t m_cublasLtContext;
+#endif
+        cusolverDnHandle_t m_cusolverDnContext;
+    };
 
-#include <Eigen/Core>
-#include <Eigen/LU>
-#include <Eigen/Sparse>
-#include <Eigen/SVD>
-
-#include <cuda_runtime.h>
-#include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
-
-#include <gtest/gtest.h>
-
-#include <boost/filesystem/path.hpp>
-#include <boost/filesystem/operations.hpp>
-
-#include <stdio.h>
-#include <utility>
-#include <sstream>
-#include <iostream>
-#include <streambuf>
-#include <vector>
-#include <array>
-#include <set>
+#endif
+} // namepsace cuda
+} // namespace icrar

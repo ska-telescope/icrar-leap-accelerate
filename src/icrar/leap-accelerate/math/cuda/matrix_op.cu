@@ -20,9 +20,15 @@
 *    MA 02111-1307  USA
 */
 
-#pragma once
+#include <icrar/leap-accelerate/math/cuda/matrix_op.h>
 
-//#include <icrar/leap-accelerate/math/cuda/matrix_add.h>
-#include <icrar/leap-accelerate/math/cuda/matrix_multiply.h>
-#include <icrar/leap-accelerate/math/cuda/matrix_invert.h>
-
+namespace icrar
+{
+namespace cuda
+{
+    cublasOperation_t ToCublasOp(MatrixOp op)
+    {
+        return static_cast<cublasOperation_t>(op);
+    }
+} // namespace cuda
+} // namespace icrar

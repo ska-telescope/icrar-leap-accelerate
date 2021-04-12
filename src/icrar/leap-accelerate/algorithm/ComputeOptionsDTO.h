@@ -22,29 +22,25 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/tests/math/eigen_helper.h>
+#include <boost/optional.hpp>
 
-#include <casacore/casa/Arrays/Matrix.h>
-#include <casacore/casa/Arrays/Array.h>
+namespace icrar
+{
+    /**
+     * @brief Options received from I/O that optimizes computation performance based on input data and hardware configuration.
+     * Can either be overriden by the user or intelligently determined at runtime if not set.
+     */
+    struct ComputeOptionsDTO
+    {
+        boost::optional<bool> isFileSystemCacheEnabled; ///< Enables caching of expensive calculations to the filesystem
+        boost::optional<bool> useIntermediateBuffer;
+        boost::optional<bool> useCusolver;
 
-#include <Eigen/Core>
-#include <Eigen/LU>
-#include <Eigen/Sparse>
-#include <Eigen/SVD>
-
-#include <cuda_runtime.h>
-#include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
-
-#include <gtest/gtest.h>
-
-#include <boost/filesystem/path.hpp>
-#include <boost/filesystem/operations.hpp>
-
-#include <stdio.h>
-#include <utility>
-#include <sstream>
-#include <iostream>
-#include <streambuf>
-#include <vector>
-#include <array>
-#include <set>
+        bool IsInitialized() const
+        {
+            return isFileSystemCacheEnabled.is_initialized()
+            && useIntermediateBuffer.is_initialized()
+            && useCusolver.is_initialized(); 
+        }
+    };
+} // namespace icrar

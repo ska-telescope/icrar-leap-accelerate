@@ -41,9 +41,10 @@ namespace icrar
 {
 namespace cpu
 {
-    MetaData::MetaData(const icrar::MeasurementSet& ms, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool useCache)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool computeInverse, bool useCache)
     : m_constants({})
     , m_minimumBaselineThreshold(minimumBaselineThreshold)
+    , m_useCache(useCache)
     {
         auto pms = ms.GetMS();
         auto msc = ms.GetMSColumns();
@@ -81,7 +82,7 @@ namespace cpu
         }
 
         m_avgData = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
-        LOG(info) << "avg_data: " << memory_amount(m_avgData.size() * sizeof(std::complex<double>));
+        LOG(trace) << "avg_data: " << memory_amount(m_avgData.size() * sizeof(std::complex<double>));
 
         auto filteredBaselines = ms.GetFilteredBaselines(m_minimumBaselineThreshold);
 
@@ -90,6 +91,7 @@ namespace cpu
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumnRange(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
         
+
         LOG(info) << "Calculating PhaseMatrix A1";
         std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), filteredBaselines, m_constants.referenceAntenna);
         trace_matrix(m_A1, "A1");
@@ -99,20 +101,28 @@ namespace cpu
         std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), filteredBaselines, boost::none);
         trace_matrix(m_A, "A");
 
+        if(computeInverse)
+        {
+            ComputeInverse();
+        }
+    }
+
+    void MetaData::ComputeInverse()
+    {
         auto invertA1 = [](const Eigen::MatrixXd& a)
         {
-            LOG(info) << "Inverting PhaseMatrix A1";
-            return icrar::cpu::PseudoInverse(a);
+            LOG(info) << "Inverting PhaseMatrix A1 (" << a.rows() << ":" << a.cols() << ")";
+            return icrar::cpu::pseudo_inverse(a);
         };
 
         auto invertA = [](const Eigen::MatrixXd& a)
         {
-            LOG(info) << "Inverting PhaseMatrix A";
-            return icrar::cpu::PseudoInverse(a);
+            LOG(info) << "Inverting PhaseMatrix A (" << a.rows() << ":" << a.cols() << ")";
+            return icrar::cpu::pseudo_inverse(a);
         };
 
         m_Ad1 = invertA1(m_A1);
-        if(useCache)
+        if(m_useCache)
         {
             //cache Ad with A hash
             ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
@@ -129,6 +139,11 @@ namespace cpu
         trace_matrix(m_Ad1, "Ad1");
         trace_matrix(m_Ad, "Ad");
 
+        ValidateInverse();
+    }
+
+    void MetaData::ValidateInverse() const
+    {
         if(!(m_Ad * m_A).isApprox(Eigen::MatrixXd::Identity(m_A.cols(), m_A.cols()), 0.001))
         {
             LOG(warning) << "Ad is degenerate";
@@ -139,18 +154,17 @@ namespace cpu
         }
     }
 
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool useCache)
-    : MetaData(ms, refAnt, minimumBaselineThreshold, useCache)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool computeInverse, bool useCache)
+    : MetaData(ms, refAnt, minimumBaselineThreshold, computeInverse, useCache)
     {
         SetUVW(uvws);
     }
 
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool useCache)
-    : MetaData(ms, uvws, refAnt, minimumBaselineThreshold, useCache)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool computeInverse, bool useCache)
+    : MetaData(ms, uvws, refAnt, minimumBaselineThreshold, computeInverse, useCache)
     {
         SetUVW(uvws);
         SetDirection(direction);
-        CalcUVW();
     }
 
     const Constants& MetaData::GetConstants() const
@@ -220,22 +234,10 @@ namespace cpu
         m_UVW = uvw;
     }
 
-    void MetaData::CalcUVW()
-    {
-        auto size = m_UVW.size();
-        m_rotatedUVW.clear();
-        m_rotatedUVW.reserve(m_UVW.size());
-        for(size_t n = 0; n < size; n++)
-        {
-            m_rotatedUVW.emplace_back(m_dd * m_UVW[n]);
-        }
-    }
-
     bool MetaData::operator==(const MetaData& rhs) const
     {
         return m_constants == rhs.m_constants
         && m_UVW == rhs.m_UVW
-        && m_rotatedUVW == rhs.m_rotatedUVW
         && m_A == rhs.m_A
         && m_I == rhs.m_I
         && m_Ad == rhs.m_Ad

@@ -20,12 +20,6 @@
  * MA 02111 - 1307  USA
  */
 
-/**
- * @file
- *
- * Utilities for uniformly formatting values
- */
-
 #pragma once
 
 #include <chrono>
@@ -34,50 +28,56 @@
 
 namespace icrar
 {
-
-namespace detail {
-
+namespace detail
+{
     template <int N, typename T>
-    struct _fixed {
+    struct _fixed
+    {
         T _val;
     };
 
-    template <typename T, int N, typename VT>
-    inline
+    template <typename T, int N, typename VT> inline
     std::basic_ostream<T> &operator<<(std::basic_ostream<T> &os, detail::_fixed<N, VT> v)
     {
         os << std::setprecision(N) << std::fixed << v._val;
         return os;
     }
-
 } // namespace detail
+} // namespace
 
-/**
- * @brief Sent to a stream object, this manipulator will print the given value with a
- * precision of N decimal places. 
- * 
- * @tparam N 
- * @tparam T 
- * @param v The value to send to the stream 
- * @return detail::_fixed<N, T> 
- */
-template <int N, typename T>
-inline detail::_fixed<N, T> fixed(T v) {
-    return {v};
+namespace icrar
+{
+    /**
+     * @brief Sent to a stream object, this manipulator will print the given value with a
+     * precision of N decimal places. 
+     * 
+     * @tparam N 
+     * @tparam T 
+     * @param v The value to send to the stream 
+     * @return detail::_fixed<N, T> 
+     */
+    template <int N, typename T>
+    inline detail::_fixed<N, T> fixed(T v)
+    {
+        return {v};
+    }
 }
 
-namespace detail {
-
-    struct _memory_amount {
+namespace icrar
+{
+namespace detail
+{
+    struct _memory_amount
+    {
         std::size_t _val;
     };
 
-    struct _microseconds_amount {
+    struct _microseconds_amount
+    {
         std::chrono::microseconds::rep _val;
     };
 
-    template <typename T>
-    inline
+    template <typename T> inline
     std::basic_ostream<T> &operator<<(std::basic_ostream<T> &os, const detail::_memory_amount &m)
     {
 		constexpr uint32_t BYTES_TO_KILOBYTES = 1024;
@@ -116,8 +116,7 @@ namespace detail {
         return os;
     }
 
-    template <typename T>
-    inline
+    template <typename T> inline
     std::basic_ostream<T> &operator<<(std::basic_ostream<T> &os, const detail::_microseconds_amount &t)
     {
         constexpr uint32_t KILO = 1000;
@@ -158,27 +157,32 @@ namespace detail {
     }
 
 } // namespace detail
+} // namespace icrar
 
-///
-/// Sent to a stream object, this manipulator will print the given amount of
-/// memory using the correct suffix and 3 decimal places.
-///
-/// @param v The value to send to the stream
-///
-inline
-detail::_memory_amount memory_amount(std::size_t amount) {
-    return {amount};
-}
+namespace icrar
+{
+    /**
+     * @brief Sent to a stream object, this manipulator will print the given amount of
+     * memory using the correct suffix and 3 decimal places.
+     * 
+     * @param amount The value to send to the stream
+     * @return detail::_memory_amount 
+     */
+    inline
+    detail::_memory_amount memory_amount(std::size_t amount) {
+        return {amount};
+    }
 
-///
-/// Sent to a stream object, this manipulator will print the given amount of
-/// nanoseconds using the correct suffix and 3 decimal places.
-///
-/// @param v The value to send to the stream
-///
-inline
-detail::_microseconds_amount us_time(std::chrono::microseconds::rep amount) {
-    return {amount};
-}
+    /**
+     * @brief Sent to a stream object, this manipulator will print the given amount of
+     * nanoseconds using the correct suffix and 3 decimal places.
+     * 
+     * @param amount The value to send to the stream
+     * @return detail::_microseconds_amount 
+     */
+    inline
+    detail::_microseconds_amount us_time(std::chrono::microseconds::rep amount) {
+        return {amount};
+    }
 
 }  // namespace icrar

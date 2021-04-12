@@ -55,7 +55,7 @@ namespace icrar
         }
         else
         {
-            m_stations = m_measurementSet->antenna().nrow();
+            m_stations = boost::numeric_cast<int>(m_measurementSet->antenna().nrow());
         }
 
         Validate();
@@ -104,17 +104,17 @@ namespace icrar
 
     uint32_t MeasurementSet::GetNumRows() const
     {
-        return m_msmc->uvw().nrow();
+        return boost::numeric_cast<uint32_t>(m_msmc->uvw().nrow());
     }
 
     uint32_t MeasurementSet::GetTotalAntennas() const
     {
-        return m_measurementSet->antenna().nrow();
+        return boost::numeric_cast<uint32_t>(m_measurementSet->antenna().nrow());
     }
 
     uint32_t MeasurementSet::GetNumTimesteps() const
     {
-        return (uint32_t)GetNumRows() / GetNumBaselines();
+        return boost::numeric_cast<uint32_t>(GetNumRows() / GetNumBaselines());
     }
 
     std::vector<double> MeasurementSet::GetEpochs() const

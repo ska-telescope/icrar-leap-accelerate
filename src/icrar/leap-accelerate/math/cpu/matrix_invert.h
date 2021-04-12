@@ -41,7 +41,7 @@ namespace icrar
 namespace cpu
 {
     /**
-     * @brief Calculates the PseudoInverse matrix of size N * M for a given M * N matrix.
+     * @brief Calculates the pseudo_inverse matrix of size N * M for a given M * N matrix.
      * Satisfies the equation A = A * Ah * A
      * @param A 
      * @param epsilon 
@@ -69,7 +69,7 @@ namespace cpu
      * @param A
      */
     template<typename T>
-    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> PseudoInverse(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& a)
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> pseudo_inverse(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& a)
     {
         return SVDPseudoInverse(a);
     }

@@ -113,7 +113,7 @@ download_lfs:
     - mkdir build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"
-    - make LeapAccelerate LeapAccelerateCLI LeapAccelerate.Tests LeapAccelerateCLI.Tests sphinx -j2
+    - make -j2
   artifacts:
     when: always
     paths:
@@ -131,7 +131,7 @@ build_debug:
     - mkdir build
     - cd build
     - cmake .. -DWCONVERSION=TRUE -DWERROR=TRUE -DCMAKE_BUILD_TYPE=Release
-    - make LeapAccelerate LeapAccelerateCLI sphinx -j2
+    - make -j2
   artifacts:
     when: always
     paths:
@@ -142,6 +142,19 @@ build_release_minimal:
 
 build_release:
   extends: [.all_dependencies, .build_release]
+
+build_docs:
+  extends: .required_dependencies
+  stage: build
+  script:
+    - mkdir build
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release
+    - make sphinx -j2
+  artifacts:
+    when: always
+    paths:
+      - build
 
 .build_export_compile_commands:
   stage: build
@@ -221,7 +234,6 @@ lint_iwyu:
       -j 2
       --library=googletest 2>&1 | tee cppcheck.xml'
     - cppcheck_junit cppcheck.xml cppcheck-junit.xml
-
   artifacts:
     when: always
     paths:
@@ -316,14 +328,12 @@ pages:
     - cp ../build/clang-tidy-junit.xml build/reports/clang-tidy-junit.xml
     - cp ../build/iwyu-junit.xml build/reports/iwyu-junit.xml
     
-    # Combine XML
+    # Combine Linting XML
     - 'xq -s "{testsuites: { testsuite: [ .[0].testsuite, .[1].testsuite, .[2].testsuite ] } }"
       build/reports/clang-tidy-junit.xml
       build/reports/cppcheck-junit.xml
       build/reports/iwyu-junit.xml
       --xml-output | sponge build/reports/linting.xml'
-
-    # Calculate Metrics
     - 'xq ".testsuites |= {\"@tests\": .testsuite | map(.\"@tests\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
     - 'xq ".testsuites |= {\"@errors\": .testsuite | map(.\"@errors\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
     - 'xq ".testsuites |= {\"@failures\": .testsuite | map(.\"@failures\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
@@ -337,3 +347,4 @@ pages:
     when: always
     paths:
       - public
+  allow_failure: true

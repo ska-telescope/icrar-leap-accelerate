@@ -40,6 +40,9 @@
 //#define EIGEN_CUDACC 1
 #include <Eigen/Core>
 
+#include <cublas_v2.h>
+#include <cusolverDn.h>
+
 #include <boost/noncopyable.hpp>
 #include <vector>
 
@@ -72,6 +75,7 @@ namespace cuda
     class CudaLeapCalibrator : public ILeapCalibrator
     {
         cublasHandle_t m_cublasContext;
+        cusolverDnHandle_t m_cusolverDnContext;
 
     public:
         CudaLeapCalibrator();
@@ -80,7 +84,7 @@ namespace cuda
         /**
          * @copydoc ILeapCalibrator
          * Calibrates by performing phase rotation for each direction in @p directions
-         * by splitting uvws into integration batches per timestep.
+         * by splitting uvws and visibilities into integration batches per timestep.
          */
         void Calibrate(
             std::function<void(const cpu::Calibration&)> outputCallback,
@@ -89,7 +93,39 @@ namespace cuda
             const Slice& solutionInterval,
             double minimumBaselineThreshold,
             boost::optional<unsigned int> referenceAntenna,
-            bool isFileSystemCacheEnabled) override;
+            const ComputeOptionsDTO& computeOptions) override;
+
+        /**
+         * @brief Calculates Ad into deviceAd, writes to cache if @p isFileSystemCacheEnabled is true
+         * 
+         * @param hostA matrix to invert
+         * @param deviceA output device memory of A
+         * @param hostAd output host memory of Ad (optionally written to)
+         * @param deviceAd output device memory of Ad
+         * @param isFileSystemCacheEnabled whether to use file caching
+         * @param useCuda whether to use cuda solvers
+         */
+        void CalculateAd(
+            const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& hostA,
+            device_matrix<double>& deviceA,
+            Eigen::Matrix<double, -1, -1>& hostAd,
+            device_matrix<double>& deviceAd,
+            bool isFileSystemCacheEnabled,
+            bool useCuda);
+
+        /**
+         * @brief Calculates Ad1 into deviceAd1
+         * 
+         * @param hostA1 matrix to invert
+         * @param deviceA1 output device memory of A1
+         * @param hostAd1 output host memory of Ad1 (optionally written to)
+         * @param deviceAd1 output device memory of Ad1
+         */
+        void CalculateAd1(
+            const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& hostA1,
+            device_matrix<double>& deviceA1,
+            Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& hostAd1,
+            device_matrix<double>& deviceAd1);
 
         /**
          * Performs only visibilities rotation on the GPU
@@ -100,18 +136,6 @@ namespace cuda
             const SphericalDirection& direction,
             std::vector<cuda::DeviceIntegration>& input,
             std::vector<cpu::BeamCalibration>& output_calibrations);
-
-        /**
-         * @brief Rotates oldUVW by dd into UVW
-         * 
-         * @param dd the direction matrix
-         * @param oldUVW the unrotated uvw matrix
-         * @param UVW the output rotated uvw matrix 
-         */
-        __host__ void RotateUVW(
-            Eigen::Matrix3d dd,
-            const device_vector<icrar::MVuvw>& oldUVW,
-            device_vector<icrar::MVuvw>& UVW);
 
         /**
          * @brief Calculates avgData in metadata
@@ -162,4 +186,4 @@ namespace cuda
     };
 } // namespace cuda
 } // namespace icrar
-#endif
+#endif // CUDA_ENABLED

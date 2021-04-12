@@ -22,37 +22,38 @@
 
 #pragma once
 
-#include <string>
+#include <icrar/leap-accelerate/algorithm/ComputeOptionsDTO.h>
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
+#include <boost/optional.hpp>
 
 namespace icrar
 {
-/// log
-namespace log
-{
-    /**
-     * @brief Selects the reporting level filter for log messages
-     */
-    enum class Verbosity
+    class CpuComputeOptions
     {
-        fatal = 0, ///< brief Unexpected execution path, report issue to repo owner
-        error = 1, ///< Knwon execution error, address exception message before reporting
-        warn = 2, ///< Automatically resolved user exception 
-        info = 3, ///< Regular execution reporting
-        debug = 4, ///< Debug mode reporting
-        trace = 5 ///< Developer targeted reporting
-    };
-    
-    /**
-     * @brief Parses string argument into an enum, throws an exception otherwise.
-     * 
-     * @param value 
-     * @return ComputeImplementation 
-     */
-    Verbosity ParseVerbosity(const std::string& value);
+        bool m_isFileSystemCacheEnabled; ///< Enables caching of expensive calculations to the filesystem
 
-    /**
-     * @return true if value was converted succesfully, false otherwise.
-     */
-    bool TryParseVerbosity(const std::string& value, Verbosity& out);
-} // namespace log
+    public:
+        /**
+         * @brief Determines ideal calibration compute options for a given MeasurementSet
+         * 
+         * @param computeOptions 
+         * @param ms 
+         */
+        CpuComputeOptions(const ComputeOptionsDTO& dto, const icrar::MeasurementSet& ms)
+        {
+            if(dto.isFileSystemCacheEnabled.is_initialized())
+            {
+                m_isFileSystemCacheEnabled = dto.isFileSystemCacheEnabled.get();
+            }
+            else
+            {
+                m_isFileSystemCacheEnabled = ms.GetNumBaselines() > 128;
+            }
+        }
+
+        bool IsFileSystemCacheEnabled() const
+        {
+            return m_isFileSystemCacheEnabled;
+        }
+    };
 } // namespace icrar

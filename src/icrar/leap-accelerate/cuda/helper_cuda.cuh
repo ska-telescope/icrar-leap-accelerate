@@ -28,6 +28,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // These are CUDA Helper functions for initialization and error checking
 
+#include <cuda_runtime.h>
+
 #ifndef COMMON_HELPER_CUDA_H_
 #define COMMON_HELPER_CUDA_H_
 
@@ -38,6 +40,8 @@
 #if CUBLAS_VER_MAJOR > 9
 #include <cublasLt.h>
 #endif
+
+#include <cusolverDn.h>
 
 #include <cstdint>
 #include <cstdio>
@@ -232,6 +236,7 @@ static const char *_cudaGetErrorEnum(cusolverStatus_t error) {
       return "CUSOLVER_STATUS_ZERO_PIVOT";
     case CUSOLVER_STATUS_INVALID_LICENSE:
       return "CUSOLVER_STATUS_INVALID_LICENSE";
+#if CUSOLVER_VER_MAJOR >= 10 && CUSOLVER_VER_MINOR >= 6
     case CUSOLVER_STATUS_IRS_PARAMS_NOT_INITIALIZED:
       return "CUSOLVER_STATUS_IRS_PARAMS_NOT_INITIALIZED";
     case CUSOLVER_STATUS_IRS_PARAMS_INVALID:
@@ -258,6 +263,7 @@ static const char *_cudaGetErrorEnum(cusolverStatus_t error) {
       return "CUSOLVER_STATUS_IRS_MATRIX_SINGULAR";
     case CUSOLVER_STATUS_INVALID_WORKSPACE:
       return "CUSOLVER_STATUS_INVALID_WORKSPACE";
+#endif
   }
 
   return "<unknown>";

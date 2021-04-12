@@ -39,9 +39,10 @@ namespace icrar
 namespace cuda
 {
     /**
-     * @brief A cuda device buffer object that represents a memory buffer on a cuda device.
+     * @brief A cuda device buffer object that represents a memory buffer on a cuda device. Matrix size is fixed
+     * at construction and can only be resized using move semantics.
      * 
-     * @tparam T 
+     * @tparam T numeric type
      * @note See https://www.quantstart.com/articles/Matrix-Matrix-Multiplication-on-the-GPU-with-Nvidia-CUDA/
      * @note See https://forums.developer.nvidia.com/t/guide-cudamalloc3d-and-cudaarrays/23421
      */
@@ -54,14 +55,24 @@ namespace cuda
 
     public:
         /**
+         * @brief Default constructor
+         * 
+         */
+        device_matrix()
+        : m_rows(0)
+        , m_cols(0)
+        , m_buffer(nullptr)
+        { }
+
+        /**
          * @brief Move Constructor
          * 
          * @param other 
          */
         device_matrix(device_matrix&& other) noexcept 
-            : m_rows(other.m_rows)
-            , m_cols(other.m_cols)
-            , m_buffer(other.m_buffer)
+        : m_rows(other.m_rows)
+        , m_cols(other.m_cols)
+        , m_buffer(other.m_buffer)
         {
             other.m_rows = 0;
             other.m_cols = 0;
@@ -91,7 +102,7 @@ namespace cuda
          * 
          * @param rows number of rows
          * @param cols number of columns
-         * @param data constigous column major data of size rows*cols*sizeof(T)
+         * @param data constigous column major data of size rows*cols*sizeof(T) to copy to device
          */
         device_matrix(size_t rows, size_t cols, const T* data = nullptr)
         : m_rows(rows)
@@ -212,10 +223,30 @@ namespace cuda
             ToHost(out.data());
         }
 
+        __host__ Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ToHost() const
+        {
+            auto result = Eigen::MatrixXd(GetRows(), GetCols());
+            ToHost(result.data());
+            return result;
+        }
+
         __host__ void ToHostAsync(T* out) const
         {
             size_t bytes = GetSize();
             checkCudaErrors(cudaMemcpyAsync(out, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));
+        }
+
+        __host__ void ToHostAsync(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& out) const
+        {
+            out.resize(GetRows(), GetCols());
+            ToHostAsync(out.data());
+        }
+
+        __host__ Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ToHostAsync() const
+        {
+            auto result = Eigen::MatrixXd(GetRows(), GetCols());
+            ToHostAsync(result.data());
+            return result;
         }
     };
 }

@@ -21,8 +21,32 @@
 */
 
 #pragma once
+#ifdef CUDA_ENABLED
 
-//#include <icrar/leap-accelerate/math/cuda/matrix_add.h>
-#include <icrar/leap-accelerate/math/cuda/matrix_multiply.h>
-#include <icrar/leap-accelerate/math/cuda/matrix_invert.h>
+#include <cublas_v2.h>
 
+namespace icrar
+{
+/// cuda
+namespace cuda
+{
+    enum class MatrixOp
+    {
+        normal = CUBLAS_OP_N,
+        transpose = CUBLAS_OP_T,
+        hermitian = CUBLAS_OP_C,
+        conjugate = CUBLAS_OP_T | CUBLAS_OP_C
+    };
+
+    /**
+     * @brief Converts a matrix operation to a cublas operation
+     * 
+     * @param op 
+     * @return cublasOperation_t 
+     */
+    cublasOperation_t ToCublasOp(MatrixOp op);
+
+} // namespace cuda
+} // namespace icrar
+
+#endif // CUDA_ENABLED

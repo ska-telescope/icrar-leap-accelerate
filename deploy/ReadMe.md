@@ -17,7 +17,7 @@ Build command:
 
 ```
 mkdir -p build && cd build
-cmake .. -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_ENABLED=TRUE -DHIGH_GPU_MEMORY=TRUE -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release
+cmake .. -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_ENABLED=TRUE -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release
 make LeapAccelerateCLI -j2
 ```
 
@@ -27,5 +27,5 @@ Alternatively, deploy to hyades03 with the following command:
 
 ```
 cd deploy
-./build.sh -s hyades -c /usr/local/cuda-11.0/ -D "-DCUDA_ENABLED=TRUE -DHIGH_GPU_MEMORY=TRUE"
+./build.sh -s hyades -c /usr/local/cuda-11.0/ -D "-DCUDA_ENABLED=TRUE"
 ```
