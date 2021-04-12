@@ -71,7 +71,7 @@ namespace cpu
         const Slice& solutionInterval,
         double minimumBaselineThreshold,
         boost::optional<unsigned int> referenceAntenna,
-        const ComputeOptionsDTO computeOptions)
+        const ComputeOptionsDTO& computeOptions)
     {
         auto cpuComputeOptions = CpuComputeOptions(computeOptions, ms);
 
