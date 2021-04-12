@@ -109,7 +109,7 @@ namespace cuda
             const Slice& solutionInterval,
             double minimumBaselineThreshold,
             boost::optional<unsigned int> referenceAntenna,
-            const ComputeOptionsDTO computeOptions)
+            const ComputeOptionsDTO& computeOptions)
     {
         auto cudaComputeOptions = CudaComputeOptions(computeOptions, ms);
 

@@ -84,7 +84,7 @@ namespace cuda
         /**
          * @copydoc ILeapCalibrator
          * Calibrates by performing phase rotation for each direction in @p directions
-         * by splitting uvws into integration batches per timestep.
+         * by splitting uvws and visibilities into integration batches per timestep.
          */
         void Calibrate(
             std::function<void(const cpu::Calibration&)> outputCallback,
@@ -93,7 +93,7 @@ namespace cuda
             const Slice& solutionInterval,
             double minimumBaselineThreshold,
             boost::optional<unsigned int> referenceAntenna,
-            const ComputeOptionsDTO computeOptions) override;
+            const ComputeOptionsDTO& computeOptions) override;
 
         /**
          * @brief Calculates Ad into deviceAd, writes to cache if @p isFileSystemCacheEnabled is true

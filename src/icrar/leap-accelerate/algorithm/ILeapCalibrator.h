@@ -70,6 +70,6 @@ namespace icrar
             const Slice& solutionInterval,
             double minimumBaselineThreshold,
             boost::optional<unsigned int> referenceAntenna,
-            const ComputeOptionsDTO computeOptions) = 0;
+            const ComputeOptionsDTO& computeOptions) = 0;
     };
 } // namespace icrar

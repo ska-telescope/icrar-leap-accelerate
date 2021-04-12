@@ -27,6 +27,7 @@
 
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/common/eigen_stringutils.h>
+#include <icrar/leap-accelerate/common/enumutils.h>
 
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/exception/exception.h>
@@ -75,9 +76,8 @@ namespace cuda
             throw invalid_argument_exception(ss.str(), "d_A", __FILE__, __LINE__);
         }
 
-        signed char jobu = static_cast<std::underlying_type<decltype(jobType)>::type>(jobType);
-        signed char jobvt = static_cast<std::underlying_type<decltype(jobType)>::type>(jobType);
-
+        signed char jobu = to_underlying_type(jobType);
+        signed char jobvt = to_underlying_type(jobType);
         int ldu = m;
         int lda = m;
         int ldvt = n;
