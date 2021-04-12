@@ -186,4 +186,4 @@ namespace cuda
     };
 } // namespace cuda
 } // namespace icrar
-#endif
+#endif // CUDA_ENABLED
