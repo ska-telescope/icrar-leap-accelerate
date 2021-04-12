@@ -204,7 +204,6 @@ namespace cuda
         checkCudaErrors(cudaDeviceSynchronize());
         icrar::cuda::multiply(cublasHandle, d_Vt, d_result, d_result, MatrixOp::hermitian, MatrixOp::normal);
         checkCudaErrors(cudaDeviceSynchronize());
-        //icrar::cuda::epsilon(d_result, 0.001);
         return d_result;
     }
 
