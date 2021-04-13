@@ -64,8 +64,7 @@ static const char *_cudaGetErrorEnum(cudaError_t error) {
 }
 #endif
 
-#define CUDA_DRIVER_API 1
-#ifdef CUDA_DRIVER_API
+#ifdef __cuda_cuda_h__
 // CUDA Driver API errors
 static const char *_cudaGetErrorEnum(CUresult error) {
   static char unknown[] = "<unknown>";
