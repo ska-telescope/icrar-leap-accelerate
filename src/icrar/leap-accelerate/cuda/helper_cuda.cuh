@@ -28,6 +28,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // These are CUDA Helper functions for initialization and error checking
 
+#include <cuda.h>
 #include <cuda_runtime.h>
 
 #ifndef COMMON_HELPER_CUDA_H_
@@ -63,7 +64,7 @@ static const char *_cudaGetErrorEnum(cudaError_t error) {
 }
 #endif
 
-#ifdef CUDA_DRIVER_API
+#ifdef __cuda_cuda_h__
 // CUDA Driver API errors
 static const char *_cudaGetErrorEnum(CUresult error) {
   static char unknown[] = "<unknown>";
