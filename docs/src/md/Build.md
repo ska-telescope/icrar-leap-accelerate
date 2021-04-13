@@ -48,6 +48,8 @@ Setting an environment variable of the same name will also override these cmake 
 
 `CUDA_ENABLED` - Enables building with cuda support
 
+`CUDA_LEVEL` - Selects the target cuda streaming multiprocessor and compute levels (default is all)
+
 `WERROR` - Enables warnings as Errors
 
 `WCONVERSION` - Enables warnings on implicit numeric conversions
