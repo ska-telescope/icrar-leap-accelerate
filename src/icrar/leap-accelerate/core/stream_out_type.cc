@@ -22,6 +22,7 @@
 
 #include "stream_out_type.h"
 #include <icrar/leap-accelerate/exception/exception.h>
+#include <stdexcept>
 
 namespace icrar
 {
