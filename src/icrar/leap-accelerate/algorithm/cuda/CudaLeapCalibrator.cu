@@ -269,13 +269,11 @@ namespace cuda
 
     inline void CheckIdentity(const Eigen::MatrixXd& left, const Eigen::MatrixXd& right, const std::string& message)
     {
-#ifndef NDEBUG
         constexpr double TOLERANCE = 0.0001;
         if(!(left * right).isApprox(Eigen::MatrixXd::Identity(left.cols(), right.cols()), TOLERANCE))
         {
             LOG(warning) << message;
         }
-#endif
     }
 
     void CudaLeapCalibrator::CalculateAd(

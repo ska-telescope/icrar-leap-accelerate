@@ -11,6 +11,8 @@ module load isl/default
 export CUDA_HOME=/usr/local/cuda
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
 export PATH=$PATH:$CUDA_HOME/bin
+export CC=/opt/bldr/local/compilers/gcc/6.3.0/bin/gcc
+export CXX=/opt/bldr/local/compilers/gcc/6.3.0/bin/g++
 ```
 
 Build command:
