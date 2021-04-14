@@ -269,10 +269,11 @@ namespace cuda
 
     inline void CheckIdentity(const Eigen::MatrixXd& left, const Eigen::MatrixXd& right, const std::string& message)
     {
-        constexpr double TOLERANCE = 0.0001;
+        constexpr double TOLERANCE = 0.001;
         if(!(left * right).isApprox(Eigen::MatrixXd::Identity(left.cols(), right.cols()), TOLERANCE))
         {
             LOG(warning) << message;
+            LOG(warning) << "got " << pretty_matrix(left * right);
         }
     }
 

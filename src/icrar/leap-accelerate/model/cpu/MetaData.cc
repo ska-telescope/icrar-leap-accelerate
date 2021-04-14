@@ -147,10 +147,12 @@ namespace cpu
         if(!(m_Ad * m_A).isApprox(Eigen::MatrixXd::Identity(m_A.cols(), m_A.cols()), 0.001))
         {
             LOG(warning) << "Ad is degenerate";
+            LOG(warning) << "got " << pretty_matrix(m_Ad * m_A);
         }
         if(!(m_Ad1 * m_A1).isApprox(Eigen::MatrixXd::Identity(m_A1.cols(), m_A1.cols()), 0.001))
         {
             LOG(warning) << "Ad1 is degenerate";
+            LOG(warning) << "got " << pretty_matrix(m_Ad1 * m_A1);
         }
     }
 
