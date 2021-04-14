@@ -46,7 +46,7 @@ namespace icrar
      * @param ss the stream to print to
      */
     template<typename RowVector>
-    void pretty_row(const RowVector& row, std::stringstream& ss)
+    void pretty_row(const RowVector& row, std::ostream& ss)
     {
         ss << "[";
 
@@ -85,7 +85,8 @@ namespace icrar
     template<typename Matrix>
     std::string pretty_matrix(const Eigen::MatrixBase<Matrix>& value)
     {
-        std::stringstream ss;
+        //std::stringstream ss;
+        std::ostream& ss = std::cout;
         ss << "Eigen::Matrix [ " << value.rows() << ", " << value.cols() << "]\n";
 
         if(value.rows() < 7)
@@ -120,7 +121,7 @@ namespace icrar
             }
         }
 
-        return ss.str();
+        return "";
     }
 
     /**
