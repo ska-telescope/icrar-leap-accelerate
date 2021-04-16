@@ -62,7 +62,7 @@ namespace cpu
             const Slice& solutionInterval,
             double minimumBaselineThreshold,
             boost::optional<unsigned int> referenceAntenna,
-            const ComputeOptions computeOptions) override;
+            const ComputeOptionsDTO& computeOptions) override;
 
         /**
          * @brief Performs rotation, summing and calibration for @p direction

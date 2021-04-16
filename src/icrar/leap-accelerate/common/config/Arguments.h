@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/algorithm/ComputeOptions.h>
+#include <icrar/leap-accelerate/algorithm/ComputeOptionsDTO.h>
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/common/Slice.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
@@ -40,13 +40,12 @@
 namespace icrar
 {
     class MeasurementSet;
-
     /**
      * @brief Raw arguments received via the command line interface using boost::program_options.
      * Only raw types std::string, bool, int, uint, float and double are allowed here. 
      * 
      */
-    struct CLIArguments
+    struct CLIArgumentsDTO
     {
         boost::optional<std::string> inputType;
         boost::optional<std::string> filePath;
@@ -69,17 +68,17 @@ namespace icrar
         boost::optional<bool> useIntermediateBuffer;
         boost::optional<bool> useCusolver;
 
-        static CLIArguments GetDefaultArguments();
+        static CLIArgumentsDTO GetDefaultArguments();
     };
 
     /**
-     * @brief Typed arguments of \c CLIArguments 
+     * @brief Typed arguments of \c CLIArgumentsDTO 
      * 
      */
-    struct Arguments
+    struct ArgumentsDTO
     {
-        Arguments() = default;
-        Arguments(CLIArguments&& args);
+        ArgumentsDTO() = default;
+        ArgumentsDTO(CLIArgumentsDTO&& args);
 
         boost::optional<InputType> inputType; ///< MeasurementSet source type
         boost::optional<std::string> filePath; ///< MeasurementSet filepath
@@ -126,7 +125,7 @@ namespace icrar
         bool m_mwaSupport; ///< Negates baselines when enabled
         icrar::log::Verbosity m_verbosity; ///< Defines logging level for std::out
 
-        ComputeOptions m_computeOptions; ///< Defines options for compute performance tweaks
+        ComputeOptionsDTO m_computeOptions; ///< Defines options for compute performance tweaks
         
         /**
          * Resources
@@ -134,14 +133,14 @@ namespace icrar
         std::unique_ptr<MeasurementSet> m_measurementSet;
 
     public:
-        ArgumentsValidated(Arguments&& cliArgs);
+        ArgumentsValidated(ArgumentsDTO&& cliArgs);
 
         /**
          * @brief Overwrites the stored set of arguments.
          * 
          * @param args 
          */
-        void ApplyArguments(Arguments&& args);
+        void ApplyArguments(ArgumentsDTO&& args);
 
         void Validate() const;
 
@@ -182,9 +181,9 @@ namespace icrar
         /**
          * @brief Gets configured options related to compute performance
          * 
-         * @return ComputeOptions
+         * @return ComputeOptionsDTO
          */
-        ComputeOptions GetComputeOptions() const;
+        ComputeOptionsDTO GetComputeOptions() const;
 
         /**
          * @brief Gets the configured logging verbosity
@@ -200,7 +199,7 @@ namespace icrar
          * @param configFilepath 
          * @return Config 
          */
-        Arguments ParseConfig(const std::string& configFilepath);
+        ArgumentsDTO ParseConfig(const std::string& configFilepath);
         
         /**
          * @brief Converts a JSON file to a config
@@ -208,6 +207,6 @@ namespace icrar
          * @param configFilepath 
          * @param args 
          */
-        void ParseConfig(const std::string& configFilepath, Arguments& args);
+        void ParseConfig(const std::string& configFilepath, ArgumentsDTO& args);
     };
 } // namespace icrar

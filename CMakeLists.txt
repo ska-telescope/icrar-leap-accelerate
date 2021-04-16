@@ -10,10 +10,11 @@ message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(CUDA_ENABLED "Build with cuda support" OFF)
+set(CUDA_LEVEL "" CACHE STRING "Cuda Compute and Streaming Multiprocessor level")
+option(CMAKE_RUN_CLANG_TIDY "Run clang-tidy with the compiler." OFF)
 option(WERROR "Warnings as Errors" OFF)
 option(WCONVERSION "Conversion warnings" OFF)
 option(TRACE "Trace Data Values" OFF)
-option(CMAKE_RUN_CLANG_TIDY "Run clang-tidy with the compiler." OFF)
 
 # Override config via environment variables
 if(DEFINED ENV{CUDA_ENABLED})
@@ -142,7 +143,7 @@ set(CMAKE_CUDA_COMPILER ${CMAKE_CXX_COMPILER})
 endif()
 
 add_definitions(-DBOOST_ALL_DYN_LINK)
-find_package(Boost REQUIRED COMPONENTS log log_setup program_options)
+find_package(Boost REQUIRED COMPONENTS log log_setup program_options filesystem)
 
 set(CASACORE_FIND_QUIETLY ON)
 find_package(Casacore COMPONENTS ms)

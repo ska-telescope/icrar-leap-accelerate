@@ -85,11 +85,11 @@ namespace icrar
                 calibrations.push_back(cal);
             };
 
-            auto computeOptions = ComputeOptions(
-                false,
-                false,
-                false
-            );
+            auto computeOptions = ComputeOptionsDTO{
+                /*.boostisFileSystemCacheEnabled = */false,
+                /*.useIntermediateBuffer = */false,
+                /*.useCusolver = */false
+            };
             LeapCalibratorFactory::Create(impl)->Calibrate(
                 outputCallback,
                 *ms,

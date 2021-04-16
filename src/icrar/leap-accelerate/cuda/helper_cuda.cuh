@@ -28,6 +28,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // These are CUDA Helper functions for initialization and error checking
 
+#include <cuda.h>
 #include <cuda_runtime.h>
 
 #ifndef COMMON_HELPER_CUDA_H_
@@ -63,7 +64,7 @@ static const char *_cudaGetErrorEnum(cudaError_t error) {
 }
 #endif
 
-#ifdef CUDA_DRIVER_API
+#ifdef __cuda_cuda_h__
 // CUDA Driver API errors
 static const char *_cudaGetErrorEnum(CUresult error) {
   static char unknown[] = "<unknown>";
@@ -236,7 +237,7 @@ static const char *_cudaGetErrorEnum(cusolverStatus_t error) {
       return "CUSOLVER_STATUS_ZERO_PIVOT";
     case CUSOLVER_STATUS_INVALID_LICENSE:
       return "CUSOLVER_STATUS_INVALID_LICENSE";
-#if CUSOLVER_VER_MAJOR >= 10 && CUSOLVER_VER_MINOR >= 6
+#if CUSOLVER_VER_MAJOR > 10 || (CUSOLVER_VER_MAJOR == 10 && CUSOLVER_VER_MINOR >= 6)
     case CUSOLVER_STATUS_IRS_PARAMS_NOT_INITIALIZED:
       return "CUSOLVER_STATUS_IRS_PARAMS_NOT_INITIALIZED";
     case CUSOLVER_STATUS_IRS_PARAMS_INVALID:

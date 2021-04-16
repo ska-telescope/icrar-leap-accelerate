@@ -1,3 +1,4 @@
+
 /**
 *    ICRAR - International Centre for Radio Astronomy Research
 *    (c) UWA - The University of Western Australia
@@ -21,32 +22,21 @@
 */
 
 #pragma once
-#ifdef CUDA_ENABLED
 
-#include <cublas_v2.h>
+#include <type_traits>
 
 namespace icrar
 {
-/// cuda
-namespace cuda
-{
-    enum class MatrixOp
-    {
-        normal = CUBLAS_OP_N,
-        transpose = CUBLAS_OP_T,
-        hermitian = CUBLAS_OP_C,
-        conjugate = CUBLAS_OP_T | CUBLAS_OP_C
-    };
-
     /**
-     * @brief Converts a matrix operation to a cublas operation
+     * @brief Safely casts an enum to its underlying type
      * 
-     * @param op 
-     * @return cublasOperation_t 
+     * @tparam T enum with underlying type
+     * @param e enum value
+     * @return std::underlying_type_t<T> the cast value
      */
-    cublasOperation_t ToCublasOp(MatrixOp op);
-
-} // namespace cuda
+    template<typename T>
+    std::underlying_type_t<T> to_underlying_type(T e)
+    {
+        return static_cast<typename std::underlying_type_t<T>>(e);
+    }
 } // namespace icrar
-
-#endif // CUDA_ENABLED

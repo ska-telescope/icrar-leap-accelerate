@@ -24,8 +24,9 @@
 
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/vector_extensions.h>
+#include <icrar/leap-accelerate/common/eigen_stringutils.h>
 
-#include <icrar/leap-accelerate/algorithm/cuda/ValidatedCudaComputeOptions.h>
+#include <icrar/leap-accelerate/algorithm/cuda/CudaComputeOptions.h>
 
 #include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
 #include <icrar/leap-accelerate/model/cuda/HostMetaData.h>
@@ -48,6 +49,7 @@
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 
+#include <cuda.h>
 #include <cuda_runtime.h>
 #include <math_constants.h>
 #include <cuComplex.h>
@@ -77,6 +79,8 @@ namespace icrar
 {
 namespace cuda
 {
+    __global__ void g_checkKernelSM() { }
+
     CudaLeapCalibrator::CudaLeapCalibrator()
     : m_cublasContext(nullptr)
     , m_cusolverDnContext(nullptr)
@@ -87,6 +91,18 @@ namespace cuda
         {
             throw icrar::exception("CUDA error: no devices supporting CUDA.", __FILE__, __LINE__);
         }
+        g_checkKernelSM<<<1,1>>>();
+        cudaError_t smError = cudaGetLastError();
+        if(smError != cudaError_t::cudaSuccess)
+        {   
+            CUdevice device;
+            checkCudaErrors(cuDeviceGet(&device, 0));
+            int major, minor;
+            checkCudaErrors(cuDeviceGetAttribute(&major, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, device));
+            checkCudaErrors(cuDeviceGetAttribute(&minor, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, device));
+            LOG(warning) << "CUDA error: No suitable kernel found, hardware sm compatibility is sm_" << major << minor;
+        }
+        checkCudaErrors(smError);
 
         checkCudaErrors(cublasCreate(&m_cublasContext));
         checkCudaErrors(cusolverDnCreate(&m_cusolverDnContext));
@@ -94,6 +110,7 @@ namespace cuda
 
     CudaLeapCalibrator::~CudaLeapCalibrator()
     {
+        checkCudaErrors(cudaGetLastError());
         checkCudaErrors(cusolverDnDestroy(m_cusolverDnContext));
         checkCudaErrors(cublasDestroy(m_cublasContext));
 
@@ -108,9 +125,9 @@ namespace cuda
             const Slice& solutionInterval,
             double minimumBaselineThreshold,
             boost::optional<unsigned int> referenceAntenna,
-            const ComputeOptions computeOptions)
+            const ComputeOptionsDTO& computeOptions)
     {
-        auto cudaComputeOptions = ValidatedCudaComputeOptions(computeOptions, ms);
+        auto cudaComputeOptions = CudaComputeOptions(computeOptions, ms);
 
         LOG(info) << "Starting Calibration using cuda";
         LOG(info)
@@ -127,8 +144,9 @@ namespace cuda
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
         << "timesteps: " << ms.GetNumTimesteps() << ", "
+        << "use filesystem cache: " << cudaComputeOptions.isFileSystemCacheEnabled << ", "
         << "use intermediate cuda buffer: " << cudaComputeOptions.useIntermediateBuffer << ", "
-        << "use cosolver: " << cudaComputeOptions.useCusolver;
+        << "use cusolver: " << cudaComputeOptions.useCusolver;
 
         profiling::timer calibration_timer;
 
@@ -145,14 +163,12 @@ namespace cuda
             referenceAntenna,
             minimumBaselineThreshold,
             false,
-            cudaComputeOptions.isFileSystemCacheEnabled);
+            false);
         
-        auto deviceA = device_matrix<double>(0, 0, nullptr);
-        auto deviceAd = device_matrix<double>(0, 0, nullptr);
+        device_matrix<double> deviceA, deviceAd;
         CalculateAd(metadata.GetA(), deviceA, metadata.GetAd(), deviceAd, cudaComputeOptions.isFileSystemCacheEnabled, cudaComputeOptions.useCusolver);
 
-        auto deviceA1 = device_matrix<double>(0, 0, nullptr);
-        auto deviceAd1 = device_matrix<double>(0, 0, nullptr);
+        device_matrix<double> deviceA1, deviceAd1;
         CalculateAd1(metadata.GetA1(), deviceA1, metadata.GetAd1(), deviceAd1);
 
         auto constantBuffer = std::make_shared<ConstantBuffer>(
@@ -171,7 +187,7 @@ namespace cuda
                 metadata.GetAvgData().rows(),
                 metadata.GetAvgData().cols());
         auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
-        LOG(info) << "Metadata Constants loaded in " << metadata_read_timer;
+        LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
         size_t solutions = validatedSolutionInterval.GetSize();
         constexpr unsigned int integrationNumber = 0;
@@ -213,11 +229,6 @@ namespace cuda
                 deviceIntegration = DeviceIntegration(integration);
             }
 
-            size_t free;
-            size_t total;
-            checkCudaErrors(cudaMemGetInfo(&free, &total));
-            LOG(trace) << "free device memory: " << memory_amount(free) << "/" << memory_amount(total);
-
             // Emplace a single zero'd tensor
             input_queue.emplace_back(0, integration.GetVis().dimensions());
 
@@ -256,6 +267,17 @@ namespace cuda
         LOG(info) << "Finished calibration in " << calibration_timer;
     }
 
+    inline void CheckIdentity(const Eigen::MatrixXd& left, const Eigen::MatrixXd& right, const std::string& message)
+    {
+#ifndef NDEBUG
+        constexpr double TOLERANCE = 0.0001;
+        if(!(left * right).isApprox(Eigen::MatrixXd::Identity(left.cols(), right.cols()), TOLERANCE))
+        {
+            LOG(warning) << message;
+        }
+#endif
+    }
+
     void CudaLeapCalibrator::CalculateAd(
         const Eigen::Matrix<double, -1, -1>& hostA,
         device_matrix<double>& deviceA,
@@ -270,18 +292,18 @@ namespace cuda
         }
         if(useCusolver)
         {
+            auto invertA = [&](const Eigen::MatrixXd& a)
+            {
+                LOG(info) << "Inverting PhaseMatrix A with cuda (" << a.rows() << ":" << a.cols() << ")";
+                deviceA = device_matrix<double>(a);
+                deviceAd = cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, deviceA, JobType::S);
+                // Write to host to update disk cache
+                return deviceAd.ToHost();
+            };
+
             // Compute Ad using Cusolver
             if(isFileSystemCacheEnabled)
             {
-                auto invertA = [&](const Eigen::MatrixXd& a)
-                {
-                    LOG(info) << "Inverting PhaseMatrix A with cuda (" << a.rows() << ":" << a.cols() << ")";
-                    deviceA = device_matrix<double>(a);
-                    deviceAd = cuda::PseudoInverse(m_cusolverDnContext, m_cublasContext, deviceA, JobType::S);
-                    // Write to host to update disk cache
-                    return deviceAd.ToHost();
-                };
-
                 // Load cache into hostAd then deviceAd,
                 // or load hostA into deviceA, compute deviceAd then load into hostAd
                 ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
@@ -289,16 +311,18 @@ namespace cuda
                     hostA, hostAd,
                     "A.hash", "Ad.cache",
                     invertA);
-                deviceA = device_matrix<double>(hostA);
+
+                //TODO(calgray) only copy to deviceAd if loading from cache
                 deviceAd = device_matrix<double>(hostAd);
+
+                deviceA = device_matrix<double>(hostA);
             }
             else
             {
-                // Compute deviceA then deviceAd and skip writing to hostAd and diskAd
-                LOG(info) << "Inverting PhaseMatrix A with cuda (" << hostA.rows() << ":" << hostA.cols() << ")";
+                hostAd = invertA(hostA);
                 deviceA = device_matrix<double>(hostA);
-                deviceAd = cuda::PseudoInverse(m_cusolverDnContext, m_cublasContext, deviceA, JobType::S);
             }
+
         }
         else
         {
@@ -306,7 +330,7 @@ namespace cuda
             auto invertA = [](const Eigen::MatrixXd& a)
             {
                 LOG(info) << "Inverting PhaseMatrix A with cpu (" << a.rows() << ":" << a.cols() << ")";
-                return icrar::cpu::PseudoInverse(a);
+                return icrar::cpu::pseudo_inverse(a);
             };
 
             if(isFileSystemCacheEnabled)
@@ -325,6 +349,7 @@ namespace cuda
             deviceAd = device_matrix<double>(hostAd);
             deviceA = device_matrix<double>(hostA);
         }
+        CheckIdentity(hostAd, hostA, "Ad is degenerate");
     }
 
     void CudaLeapCalibrator::CalculateAd1(
@@ -335,8 +360,9 @@ namespace cuda
     {
         // This matrix is not always m > n, compute on cpu until cuda supports this
         deviceA1 = device_matrix<double>(hostA1);
-        hostAd1 = cpu::PseudoInverse(hostA1);
+        hostAd1 = cpu::pseudo_inverse(hostA1);
         deviceAd1 = device_matrix<double>(hostAd1);
+        CheckIdentity(hostAd1, hostA1, "Ad1 is degenerate");
     }
 
     void CudaLeapCalibrator::PhaseRotate(
@@ -360,11 +386,9 @@ namespace cuda
         auto cal1 = Eigen::VectorXd(metadata.GetA1().cols());
 
         AvgDataToPhaseAngles(deviceMetadata.GetConstantBuffer().GetI1(), deviceMetadata.GetAvgData(), devicePhaseAnglesI1);
-        LOG(info) << "devicePhaseAnglesI1";
         cuda::multiply(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd1(), devicePhaseAnglesI1, deviceCal1);
         CalcDeltaPhase(deviceMetadata.GetConstantBuffer().GetA(), deviceCal1, deviceMetadata.GetAvgData(), devicedeltaPhase);
         GenerateDeltaPhaseColumn(devicedeltaPhase, deviceDeltaPhaseColumn);
-        LOG(info) << "deviceDeltaPhaseColumn";
         cuda::multiply_add<double>(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd(), deviceDeltaPhaseColumn, deviceCal1);
         deviceCal1.ToHost(cal1);
         output_calibrations.emplace_back(direction, cal1);
@@ -390,7 +414,8 @@ namespace cuda
         const int integration_baselines = integrationData.dimension(1);
         const int integration_channels = integrationData.dimension(2);
         const int md_baselines = constants.nbaselines; //metadata baselines
-        const int polarizations = constants.num_pols; //TODO
+        const int polarizations = constants.num_pols;
+        constexpr double two_pi = 2 * CUDART_PI;
 
         //parallel execution per channel
         int baseline = blockDim.x * blockIdx.x + threadIdx.x; //baseline amongst all time smeared baselines
@@ -398,10 +423,7 @@ namespace cuda
 
         if(baseline < integration_baselines && channel < integration_channels)
         {
-            int md_baseline = baseline % md_baselines; //baseline within
-
-            // loop over baselines
-            constexpr double two_pi = 2 * CUDART_PI;
+            int md_baseline = baseline % md_baselines; 
 
             Eigen::Vector3d rotatedUVW = dd * UVWs.col(baseline);
             double shiftFactor = -two_pi * (rotatedUVW.z() - UVWs.col(baseline).z());
@@ -425,7 +447,6 @@ namespace cuda
             {
                 for(int polarization = 0; polarization < polarizations; ++polarization)
                 {
-                    
                     atomicAdd(&avgData(md_baseline, polarization).x, integrationData(polarization, baseline, channel).x);
                     atomicAdd(&avgData(md_baseline, polarization).y, integrationData(polarization, baseline, channel).y);
                 }

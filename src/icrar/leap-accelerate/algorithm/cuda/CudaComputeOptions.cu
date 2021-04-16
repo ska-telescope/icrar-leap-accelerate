@@ -22,7 +22,7 @@
 
 #if CUDA_ENABLED
 
-#include <icrar/leap-accelerate/algorithm/cuda/ValidatedCudaComputeOptions.h>
+#include <icrar/leap-accelerate/algorithm/cuda/CudaComputeOptions.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/ioutils.h>
@@ -36,16 +36,17 @@
 
 namespace icrar
 {
-    ValidatedCudaComputeOptions::ValidatedCudaComputeOptions(const ComputeOptions& computeOptions, const icrar::MeasurementSet& ms)
+    CudaComputeOptions::CudaComputeOptions(const ComputeOptionsDTO& computeOptions, const icrar::MeasurementSet& ms)
     {
+        LOG(info) << "Determining cuda compute options";
+
         size_t free = 0;
         size_t total = 0;
         if(GetCudaDeviceCount() != 0)
         {
             checkCudaErrors(cudaMemGetInfo(&free, &total));
         }
-        LOG(info) << "available cuda memory: " << memory_amount(free);
-        size_t VisSize = ms.GetNumBaselines() * ms.GetNumChannels() * sizeof(std::complex<double>);
+        size_t VisSize = ms.GetNumPols() * ms.GetNumBaselines() * ms.GetNumChannels() * sizeof(std::complex<double>);
         size_t AdSize = ms.GetNumStations() * ms.GetNumBaselines() * sizeof(double);
         double safetyFactor = 1.3;
 
@@ -64,16 +65,16 @@ namespace icrar
         }
         else // determine from available memory
         {
-            //check Ad matrix size
-            size_t required = 3 * AdSize * safetyFactor; // A, Ad and SVD buffers required to compute inverse
+            // A, Ad and SVD buffers required to compute inverse
+            size_t required = 3 * AdSize * safetyFactor;
             if(required < free)
             {
-                LOG(info) << memory_amount(free) << " > " << memory_amount(required) << ". Enabling cusolver";
+                LOG(info) << memory_amount(free) << " > " << memory_amount(required) << ". Enabling Cusolver";
                 useCusolver = true;
             }
             else
             {
-                LOG(info) << memory_amount(free) << " < " << memory_amount(required) << ". Disabling cusolver";
+                LOG(info) << memory_amount(free) << " < " << memory_amount(required) << ". Disabling Cusolver";
                 useCusolver = false;
             }
         }
@@ -84,7 +85,8 @@ namespace icrar
         }
         else // determine from available memory
         {
-            size_t required = (2 * AdSize + 2 * VisSize) * safetyFactor; // A, Ad and 2x visibilities required to calibrate
+            // A, Ad and 2x visibilities required to calibrate
+            size_t required = (2 * AdSize + 2 * VisSize) * safetyFactor;
             if(required < free)
             {
                 LOG(info) << memory_amount(free) << " > " << memory_amount(required) << ". Enabling IntermediateBuffer";

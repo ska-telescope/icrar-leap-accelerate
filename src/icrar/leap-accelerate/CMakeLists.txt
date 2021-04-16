@@ -68,7 +68,7 @@ set(cuda_sources
     
     model/cuda/DeviceMetaData.cu
     model/cuda/DeviceIntegration.cu
-    algorithm/cuda/ValidatedCudaComputeOptions.cu
+    algorithm/cuda/CudaComputeOptions.cu
     algorithm/cuda/CudaLeapCalibrator.cu
 )
 
@@ -115,12 +115,13 @@ if(CUDA_ENABLED)
     configure_nvcc_cuda_compiler(${TARGET_NAME})
     configure_cuda_warnings(${TARGET_NAME})
   endif()
-  
+
   #Set Cuda Stream Setting
   #set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -lineinfo --default-stream per-thread)
   #message("CUDA_NVCC_FLAGS = ${CUDA_NVCC_FLAGS}")
   target_include_directories(${TARGET_NAME} SYSTEM PUBLIC ${CUDA_INCLUDE_DIRS})
   target_link_libraries(${TARGET_NAME} ${CUDA_LIBRARIES})
+  target_link_libraries(${TARGET_NAME} cuda)
   target_link_libraries(${TARGET_NAME} cublas)
   if(CUDA_VERSION_MAJOR VERSION_GREATER 9)
     target_link_libraries(${TARGET_NAME} cublasLt)

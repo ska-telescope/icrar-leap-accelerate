@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/algorithm/ComputeOptions.h>
+#include <icrar/leap-accelerate/algorithm/ComputeOptionsDTO.h>
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/common/Slice.h>
 #include <icrar/leap-accelerate/model/cpu/calibration/Calibration.h>
@@ -70,6 +70,6 @@ namespace icrar
             const Slice& solutionInterval,
             double minimumBaselineThreshold,
             boost::optional<unsigned int> referenceAntenna,
-            const ComputeOptions computeOptions) = 0;
+            const ComputeOptionsDTO& computeOptions) = 0;
     };
 } // namespace icrar

@@ -23,8 +23,10 @@
 
 #include "CpuLeapCalibrator.h"
 
+#include <icrar/leap-accelerate/common/eigen_stringutils.h>
+
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
-#include <icrar/leap-accelerate/algorithm/cpu/ValidatedCpuComputeOptions.h>
+#include <icrar/leap-accelerate/algorithm/cpu/CpuComputeOptions.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/model/cpu/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
@@ -43,6 +45,7 @@
 
 #include <boost/math/constants/constants.hpp>
 #include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
 #include <boost/thread.hpp>
 
 #include <istream>
@@ -68,9 +71,9 @@ namespace cpu
         const Slice& solutionInterval,
         double minimumBaselineThreshold,
         boost::optional<unsigned int> referenceAntenna,
-        const ComputeOptions computeOptions)
+        const ComputeOptionsDTO& computeOptions)
     {
-        auto cpuComputeOptions = ValidatedCpuComputeOptions(computeOptions, ms);
+        auto cpuComputeOptions = CpuComputeOptions(computeOptions, ms);
 
         LOG(info) << "Starting calibration using cpu";
         LOG(info)
@@ -78,6 +81,7 @@ namespace cpu
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "solutionInterval: [" << solutionInterval.GetStart() << "," << solutionInterval.GetInterval() << "," << solutionInterval.GetEnd() << "], "
+        << "reference antenna: " << referenceAntenna << ", "
         << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
         << "baseline threshold: " << minimumBaselineThreshold << "m, "
         << "short baselines: " << ms.GetNumShortBaselines(minimumBaselineThreshold) << ", "
@@ -99,8 +103,8 @@ namespace cpu
             referenceAntenna,
             minimumBaselineThreshold,
             true,
-            cpuComputeOptions.isFileSystemCacheEnabled);
-        LOG(info) << "Read metadata in " << metadata_read_timer;
+            cpuComputeOptions.IsFileSystemCacheEnabled());
+        LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
         size_t solutions = validatedSolutionInterval.GetSize();
         auto output_calibrations = std::vector<cpu::Calibration>(); // Reserve memory
@@ -139,7 +143,6 @@ namespace cpu
             {
                 LOG(info) << "Processing direction " << i;
                 metadata.SetDirection(directions[i]);
-                metadata.CalcUVW();
                 metadata.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
                 PhaseRotate(
                     metadata,
@@ -197,7 +200,7 @@ namespace cpu
         using namespace std::literals::complex_literals;
         Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.GetVis();
 
-        // loop over smeared baselines
+        // loop over smeared baselines ('md_baseline' is always 'baseline' when timesteps = 1)
         for(size_t baseline = 0; baseline < integration.GetBaselines(); ++baseline)
         {
             auto md_baseline = static_cast<int>(baseline % static_cast<size_t>(metadata.GetConstants().nbaselines)); // metadata baseline

@@ -22,34 +22,38 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/algorithm/ComputeOptions.h>
+#include <icrar/leap-accelerate/algorithm/ComputeOptionsDTO.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <boost/optional.hpp>
 
 namespace icrar
 {
-    class ValidatedCpuComputeOptions
+    class CpuComputeOptions
     {
-    public:
-        bool isFileSystemCacheEnabled; ///< Enables caching of expensive calculations to the filesystem
+        bool m_isFileSystemCacheEnabled; ///< Enables caching of expensive calculations to the filesystem
 
+    public:
         /**
          * @brief Determines ideal calibration compute options for a given MeasurementSet
          * 
          * @param computeOptions 
          * @param ms 
          */
-        ValidatedCpuComputeOptions(const ComputeOptions& computeOptions, const icrar::MeasurementSet& ms)
+        CpuComputeOptions(const ComputeOptionsDTO& dto, const icrar::MeasurementSet& ms)
         {
-            if(computeOptions.isFileSystemCacheEnabled.is_initialized())
+            if(dto.isFileSystemCacheEnabled.is_initialized())
             {
-                isFileSystemCacheEnabled = computeOptions.isFileSystemCacheEnabled.get();
+                m_isFileSystemCacheEnabled = dto.isFileSystemCacheEnabled.get();
             }
             else
             {
-                isFileSystemCacheEnabled = ms.GetNumBaselines() > 128;
-                
+                m_isFileSystemCacheEnabled = ms.GetNumBaselines() > 128;
             }
+        }
+
+        bool IsFileSystemCacheEnabled() const
+        {
+            return m_isFileSystemCacheEnabled;
         }
     };
 } // namespace icrar

@@ -27,24 +27,20 @@
 namespace icrar
 {
     /**
-     * @brief Options that affect how computation performance based on input and hardware configuration.
-     * Can either be overriden or determined at runtime.
+     * @brief Options received from I/O that optimizes computation performance based on input data and hardware configuration.
+     * Can either be overriden by the user or intelligently determined at runtime if not set.
      */
-    struct ComputeOptions
+    struct ComputeOptionsDTO
     {
         boost::optional<bool> isFileSystemCacheEnabled; ///< Enables caching of expensive calculations to the filesystem
         boost::optional<bool> useIntermediateBuffer;
         boost::optional<bool> useCusolver;
 
-        ComputeOptions(){}
-
-        ComputeOptions(
-            boost::optional<bool> isFileSystemCacheEnabled,
-            boost::optional<bool> useIntermediateBuffer,
-            boost::optional<bool> useCusolver)
-        : isFileSystemCacheEnabled(isFileSystemCacheEnabled)
-        , useIntermediateBuffer(useIntermediateBuffer)
-        , useCusolver(useCusolver)
-        {}
+        bool IsInitialized() const
+        {
+            return isFileSystemCacheEnabled.is_initialized()
+            && useIntermediateBuffer.is_initialized()
+            && useCusolver.is_initialized(); 
+        }
     };
 } // namespace icrar

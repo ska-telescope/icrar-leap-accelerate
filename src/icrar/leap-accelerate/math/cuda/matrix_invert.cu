@@ -22,19 +22,24 @@
 
 #include "icrar/leap-accelerate/math/cuda/matrix_invert.h"
 
-#include <cusolver_common.h>
-#include <cusolverDn.h>
+#include <icrar/leap-accelerate/cuda/device_matrix.h>
+#include <icrar/leap-accelerate/cuda/device_vector.h>
+
+#include <icrar/leap-accelerate/core/log/logging.h>
+#include <icrar/leap-accelerate/common/eigen_stringutils.h>
+#include <icrar/leap-accelerate/common/enumutils.h>
+
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/core/ioutils.h>
-
-#include <icrar/leap-accelerate/cuda/device_matrix.h>
-#include <icrar/leap-accelerate/cuda/device_vector.h>
 
 #include <icrar/leap-accelerate/math/cuda/matrix_multiply.h>
 
 #include <Eigen/Dense>
 #include <Eigen/LU>
+
+#include <cusolver_common.h>
+#include <cusolverDn.h>
 
 #include <iostream>
 #include <string>
@@ -43,9 +48,6 @@
 #include <complex>
 #include <queue>
 #include <limits>
-
-#include <icrar/leap-accelerate/core/log/logging.h>
-#include <icrar/leap-accelerate/common/eigen_stringutils.h>
 
 namespace icrar
 {
@@ -59,7 +61,7 @@ namespace cuda
      * @param jobType 
      * @return std::tuple<device_matrix<double>, device_vector<double>, device_matrix<double>> 
      */
-    std::tuple<device_matrix<double>, device_vector<double>, device_matrix<double>> SVD(
+    std::tuple<device_matrix<double>, device_vector<double>, device_matrix<double>> svd(
         cusolverDnHandle_t cusolverHandle,
         const device_matrix<double>& d_A,
         const JobType jobType)
@@ -74,9 +76,8 @@ namespace cuda
             throw invalid_argument_exception(ss.str(), "d_A", __FILE__, __LINE__);
         }
 
-        signed char jobu = static_cast<std::underlying_type<decltype(jobType)>::type>(jobType);
-        signed char jobvt = static_cast<std::underlying_type<decltype(jobType)>::type>(jobType);
-        
+        signed char jobu = to_underlying_type(jobType);
+        signed char jobvt = to_underlying_type(jobType);
         int ldu = m;
         int lda = m;
         int ldvt = n;
@@ -126,7 +127,7 @@ namespace cuda
         // https://stackoverflow.com/questions/17401765/parallel-implementation-for-multiple-svds-using-cuda
 
         int* d_devInfo;
-        size_t d_devInfoSize = sizeof(std::remove_pointer_t<decltype(d_devInfo)>());
+        size_t d_devInfoSize = sizeof(int);
         checkCudaErrors(cudaMalloc(&d_devInfo, d_devInfoSize));
 
         int workSize = 0;
@@ -142,7 +143,7 @@ namespace cuda
             cusolverHandle,
             jobu, jobvt,
             m, n,
-            (double*)d_A.Get(), // TODO cast may be deprecated in newer function
+            const_cast<double*>(d_A.Get()),
             lda,
             d_S.Get(),
             d_U.Get(),
@@ -158,7 +159,7 @@ namespace cuda
         if(h_devInfo != 0)
         {
             std::stringstream ss;
-            ss << "devInfo: " << h_devInfo;
+            ss << "devInfo=" << h_devInfo;
             throw icrar::exception(ss.str(), __FILE__, __LINE__);
         }
 
@@ -170,10 +171,10 @@ namespace cuda
     /**
      * @brief Combines SVD components using multiplcation and transposition to create a pseudoinverse
      * 
-     * @param d_U 
-     * @param d_S 
-     * @param d_Vt 
-     * @return const device_matrix<double> 
+     * @param d_U the device U matrix
+     * @param d_S the device S eigen values
+     * @param d_Vt the device V' matrix
+     * @return const device_matrix<double>
      */
     device_matrix<double> SVDCombineInverse(
         cublasHandle_t cublasHandle,
@@ -182,13 +183,12 @@ namespace cuda
         const device_matrix<double>& d_Vt,
         const JobType jobType)
     {
-        //cudaThreadSynchronize();
         size_t m = d_U.GetRows();
         size_t n = d_Vt.GetRows();
         size_t k = std::min(m, n);
 
         auto S = Eigen::VectorXd(d_S.GetRows());
-        d_S.ToHostAsync(S.data());
+        d_S.ToHost(S.data());
 
         Eigen::MatrixXd Sd = Eigen::MatrixXd::Zero(n, d_U.GetCols());
 
@@ -198,43 +198,50 @@ namespace cuda
 
         auto d_Sd = device_matrix<double>(Sd);
         auto d_result = device_matrix<double>(n, m);
-        
-        // result = V * (S * Ut)
+
+        // result = V * (S * Uh)
         icrar::cuda::multiply(cublasHandle, d_Sd, d_U, d_result, MatrixOp::normal, MatrixOp::hermitian);
-        icrar::cuda::multiply(cublasHandle, d_Vt, d_result, d_result, MatrixOp::transpose, MatrixOp::normal);
+        checkCudaErrors(cudaDeviceSynchronize());
+        icrar::cuda::multiply(cublasHandle, d_Vt, d_result, d_result, MatrixOp::hermitian, MatrixOp::normal);
+        checkCudaErrors(cudaDeviceSynchronize());
         return d_result;
     }
 
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> PseudoInverse(
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> pseudo_inverse(
         cusolverDnHandle_t cusolverHandle,
         cublasHandle_t cublasHandle,
         const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& matrix,
         const JobType jobType)
     {
-        device_matrix<double> d_U(0, 0, nullptr);
-        device_vector<double> d_S(0, nullptr);
-        device_matrix<double> d_Vt(0, 0, nullptr);
+        device_matrix<double> d_U;
+        device_vector<double> d_S;
+        device_matrix<double> d_Vt;
         {
             auto d_A = device_matrix<double>(matrix);
-            std::tie(d_U, d_S, d_Vt) = SVD(cusolverHandle, d_A, jobType);
+            checkCudaErrors(cudaDeviceSynchronize());
+            std::tie(d_U, d_S, d_Vt) = svd(cusolverHandle, d_A, jobType);
         }
+        checkCudaErrors(cudaDeviceSynchronize());
         device_matrix<double> d_VSUt = SVDCombineInverse(cublasHandle, d_U, d_S, d_Vt, jobType);
+        checkCudaErrors(cudaDeviceSynchronize());
 
         auto VSUt = Eigen::MatrixXd(matrix.cols(), matrix.rows());
         d_VSUt.ToHostAsync(VSUt.data());
+
+        checkCudaErrors(cudaDeviceSynchronize());
         return VSUt;
     }
 
-    device_matrix<double> PseudoInverse(
+    device_matrix<double> pseudo_inverse(
         cusolverDnHandle_t cusolverHandle,
         cublasHandle_t cublasHandle,
         const device_matrix<double>& d_A,
         const JobType jobType)
     {
-        device_matrix<double> d_U(0, 0, nullptr);
-        device_vector<double> d_S(0, nullptr);
-        device_matrix<double> d_Vt(0, 0, nullptr);
-        std::tie(d_U, d_S, d_Vt) = SVD(cusolverHandle, d_A, jobType);
+        device_matrix<double> d_U;
+        device_vector<double> d_S;
+        device_matrix<double> d_Vt;
+        std::tie(d_U, d_S, d_Vt) = svd(cusolverHandle, d_A, jobType);
         return SVDCombineInverse(cublasHandle, d_U, d_S, d_Vt, jobType);
     }
 } // namespace cuda

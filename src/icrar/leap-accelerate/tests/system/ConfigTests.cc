@@ -65,14 +65,13 @@ public:
 
     void TestDefaultConfig(boost::filesystem::path outputPath)
     {
-
         std::string path = (getexedir() / outputPath).string();
         std::ifstream expectedStream(path);
         std::cout << path << std::endl;
         ASSERT_TRUE(expectedStream.good());
         auto expected = std::string(std::istreambuf_iterator<char>(expectedStream), std::istreambuf_iterator<char>());
     
-        auto rawArgs = CLIArguments::GetDefaultArguments();
+        auto rawArgs = CLIArgumentsDTO::GetDefaultArguments();
         rawArgs.filePath = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
         rawArgs.directions = "[[0,0]]";
         auto args = ArgumentsValidated(std::move(rawArgs));

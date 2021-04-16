@@ -45,7 +45,7 @@ namespace cuda
     /**
      * @brief A cuda device buffer object that represents a memory buffer on a cuda device.
      * 
-     * @tparam T 
+     * @tparam T numeric type
      * @note See https://www.quantstart.com/articles/Matrix-Matrix-Multiplication-on-the-GPU-with-Nvidia-CUDA/
      * @note See https://forums.developer.nvidia.com/t/guide-cudamalloc3d-and-cudaarrays/23421
      */
@@ -58,6 +58,15 @@ namespace cuda
     public:
         //device_vector(const device_vector&) = delete;
         //device_vector& operator=(const device_vector&) = delete;
+
+
+        /**
+         * @brief Default constructor
+         */
+        device_vector()
+        : m_count(0)
+        , m_buffer(nullptr)
+        { }
 
         __host__ device_vector(device_vector&& other) noexcept
             : m_count(other.m_count)

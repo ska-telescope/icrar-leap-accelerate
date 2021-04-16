@@ -26,6 +26,7 @@
 
 namespace icrar
 {
+/// log
 namespace log
 {
     /**
