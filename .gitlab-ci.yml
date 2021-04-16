@@ -64,7 +64,7 @@ variables:
 
 .cuda_dependencies:
   extends: .common
-  image: nallack/bullseye-cuda:latest
+  image: nallack/buster-cuda:latest
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
