@@ -64,17 +64,19 @@ variables:
 
 .cuda_dependencies:
   extends: .common
-  image: nexus.engageska-portugal.pt/ska-docker/dspsr-build:latest
+  image: nallack/bullseye-cuda:latest
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
   before_script:
-    - apt update 
+    - apt update
     - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck python3-pip
     - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev rapidjson-dev
     - pip3 install -U sphinx breathe exhale sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary recommonmark
     - apt install -y gnupg2 software-properties-common
-    - source ./.gitlab-ci/cuda_install_debian.sh
+    - export CUDA_HOME=/usr/local/cuda
+    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
+    - export PATH=$PATH:$CUDA_HOME/bin
 
 .all_dependencies:
   extends: .cuda_dependencies
