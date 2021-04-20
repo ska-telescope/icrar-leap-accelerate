@@ -208,7 +208,6 @@ namespace cuda
             std::shared_ptr<SolutionIntervalBuffer> SolutionIntervalBuffer,
             std::shared_ptr<DirectionBuffer> directionBuffer);
 
-
         const icrar::cpu::Constants& GetConstants() const;
 
         const device_vector<icrar::MVuvw>& GetUVW() const { return m_solutionIntervalBuffer->GetUVW(); }
