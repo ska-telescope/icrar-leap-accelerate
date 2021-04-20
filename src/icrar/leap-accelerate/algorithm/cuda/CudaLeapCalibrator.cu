@@ -156,7 +156,7 @@ namespace cuda
         size_t timesteps = ms.GetNumTimesteps();
         Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
         std::vector<double> epochs = ms.GetEpochs();
-
+        
         profiling::timer metadata_read_timer;
         auto metadata = icrar::cuda::HostMetaData(
             ms,
@@ -164,12 +164,14 @@ namespace cuda
             minimumBaselineThreshold,
             false,
             false);
-        
+
         device_matrix<double> deviceA, deviceAd;
-        CalculateAd(metadata.GetA(), deviceA, metadata.GetAd(), deviceAd, cudaComputeOptions.isFileSystemCacheEnabled, cudaComputeOptions.useCusolver);
+        CalculateAd(metadata.GetA(), deviceA, metadata.GetAd(), deviceAd, cudaComputeOptions.isFileSystemCacheEnabled, false);
+        cudaHostRegister(metadata.GetAd().data(), metadata.GetAd().size() * sizeof(decltype(*metadata.GetAd().data())), cudaHostRegisterPortable);
 
         device_matrix<double> deviceA1, deviceAd1;
         CalculateAd1(metadata.GetA1(), deviceA1, metadata.GetAd1(), deviceAd1);
+        cudaHostRegister(metadata.GetAd1().data(), metadata.GetAd1().size() * sizeof(decltype(*metadata.GetAd1().data())), cudaHostRegisterPortable);
 
         auto constantBuffer = std::make_shared<ConstantBuffer>(
             metadata.GetConstants(),
