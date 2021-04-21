@@ -96,6 +96,19 @@ cache:
 
 # Build
 
+# This will test whether the gitlab-runner is capable of running cuda
+# run via sudo gitlab-runner exec docker .run_cuda_bullseye --docker-runtime=nvidia --env NVIDIA_VISIBILE_DEVICES=1
+.run_cuda_bullseye:
+  image: nallack/bullseye-cuda:latest
+  variables:
+    NVIDIA_VISIBLE_DEVICES: "all"
+  script:
+    - nvidia-smi
+    - echo $NVIDIA_VISIBLE_DEVICES
+    - cd /usr/local/cuda-11.2/samples/0_Simple/vectorAdd
+    - make
+    - ./vectorAdd
+
 download_lfs:
   extends: .common
   image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
@@ -126,7 +139,6 @@ build_debug_minimal:
 
 build_debug:
   extends: [.all_dependencies, .build_debug]
-  tags: ["cuda", "docker"]
 
 .build_release:
   stage: build
@@ -293,6 +305,10 @@ test_debug_all:
   extends: [.all_dependencies, .test]
   needs: ["download_lfs", "build_debug"]
   tags: ["cuda", "docker"]
+  variables:
+    DEBIAN_FRONTEND: "noninteractive"
+    CUDA_ENABLED: "ON"
+    NVIDIA_VISIBLE_DEVICES: "all"
   script:
     - cd build
     - nvidia-smi
