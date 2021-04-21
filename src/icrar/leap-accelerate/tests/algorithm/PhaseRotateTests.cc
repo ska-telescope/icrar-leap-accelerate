@@ -50,7 +50,6 @@
 
 #if CUDA_ENABLED
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
-#include <cuda_runtime.h>
 #endif
 
 #include <boost/log/trivial.hpp>

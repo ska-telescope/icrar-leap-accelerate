@@ -274,10 +274,6 @@ lint_cppcheck:
 
 .test:
   stage: test
-  script:
-    - cd build
-    - nvidia-smi
-    - ctest -T test --no-compress-output --verbose
   after_script:
     - cd build
     - ctest2junit > ctest.xml
@@ -294,12 +290,19 @@ test_debug_minimal:
   needs: ["download_lfs", "build_debug_minimal"]
   variables:
     GTEST_FILTER: "-*Cuda*:*cuda*:*Gpu*:*gpu*:*SKA*"
+  script:
+    - cd build
+    - ctest -T test --no-compress-output --verbose
 
 # Needs cuda enabled runner
 test_debug_all:
   extends: [.all_dependencies, .test]
   needs: ["download_lfs", "build_debug"]
   tags: ["cuda", "docker"]
+  script:
+    - cd build
+    - nvidia-smi
+    - ctest -T test --no-compress-output --verbose
 
 # A job that runs the tests under valgrid
 # It might take a while, so not always run by default

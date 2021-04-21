@@ -32,7 +32,10 @@
 #include <Eigen/Sparse>
 #include <Eigen/SVD>
 
+#if CUDA_ENABLED
 #include <cuda_runtime.h>
+#endif
+
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 
 #include <gtest/gtest.h>
