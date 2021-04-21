@@ -126,6 +126,7 @@ build_debug_minimal:
 
 build_debug:
   extends: [.all_dependencies, .build_debug]
+  tags: ["cuda", "docker"]
 
 .build_release:
   stage: build
