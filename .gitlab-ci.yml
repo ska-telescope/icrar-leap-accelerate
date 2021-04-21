@@ -70,9 +70,11 @@ variables:
     CUDA_ENABLED: "ON"
   before_script:
     - apt update
-    - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck python3-pip
-    - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev rapidjson-dev
-    - pip3 install -U sphinx breathe exhale sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary recommonmark
+    - apt install -y git cmake # generator packages
+    - apt install -y clang clang-tidy clang-tools iwyu cppcheck # lint packages
+    - apt install -y wget casacore-dev libboost-all-dev rapidjson-dev # project packages
+    - apt install -y python3-pip jq moreutils doxygen graphviz # docs packages
+    - pip3 install -U sphinx breathe exhale recommonmark sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary # docs python packages
     - apt install -y gnupg2 software-properties-common
     - export CUDA_HOME=/usr/local/cuda
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
@@ -105,7 +107,6 @@ download_lfs:
     - bash install.sh
     - cd ..
   artifacts:
-    when: always
     paths:
       - testdata
 
@@ -117,7 +118,6 @@ download_lfs:
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"
     - make -j2
   artifacts:
-    when: always
     paths:
       - build
 
@@ -135,7 +135,6 @@ build_debug:
     - cmake .. -DWCONVERSION=TRUE -DWERROR=TRUE -DCMAKE_BUILD_TYPE=Release
     - make -j2
   artifacts:
-    when: always
     paths:
       - build
 
@@ -154,7 +153,6 @@ build_docs:
     - cmake .. -DCMAKE_BUILD_TYPE=Release
     - make sphinx -j2
   artifacts:
-    when: always
     paths:
       - build
 
@@ -167,7 +165,6 @@ build_docs:
     # This filters out external source file dependencies such as gtest
     - jq '[ . - map(select(.file | contains("/external/"))) | .[] ]' compile_commands.json | sponge compile_commands.json
   artifacts:
-    when: always
     paths:
       - build
 
@@ -189,7 +186,6 @@ build_export_compile_commands:
     - cd ..
     - cat build/clang-tidy.log | python3 .clang-tidy-to-junit.py $PWD/ clang-tidy > build/clang-tidy-junit.xml
   artifacts:
-    when: always
     paths:
       - build
 
@@ -237,7 +233,6 @@ lint_iwyu:
       --library=googletest 2>&1 | tee cppcheck.xml'
     - cppcheck_junit cppcheck.xml cppcheck-junit.xml
   artifacts:
-    when: always
     paths:
       - build
 
@@ -257,7 +252,6 @@ lint_iwyu:
       -i $PWD/../src/icrar/leap-accelerate-cli/tests 2>&1 | tee cppcheck.xml'
     - cppcheck_junit cppcheck.xml cppcheck-junit.xml
   artifacts:
-    when: always
     paths:
       - build
 
@@ -279,7 +273,6 @@ lint_cppcheck:
     - ctest2junit > ctest.xml
   timeout: 1h
   artifacts:
-    when: always
     paths:
       - build/
     reports:

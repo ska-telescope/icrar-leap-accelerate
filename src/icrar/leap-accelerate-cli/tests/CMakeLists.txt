@@ -32,3 +32,5 @@ add_test(
   NAME ${TEST_TARGET_NAME}
   COMMAND ${TEST_TARGET_NAME}
 )
+
+message(STATUS "Configured ${TEST_TARGET_NAME}")
