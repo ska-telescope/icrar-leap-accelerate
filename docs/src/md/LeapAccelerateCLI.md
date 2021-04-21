@@ -32,7 +32,7 @@ leap-accelerate-cli is a command line interface to performing leap calibration t
 
 `LeapAccelerateCLI --help`
 
-`LeapAccelerateCLI --config "./askap.json"`
+`LeapAccelerateCLI --config testdata/mwa_test.json`
 
 ## Logging
 
@@ -90,9 +90,8 @@ Note: Properties are not required when specified in as CLI arguments with a conf
 
 ```
 {
-    "filePath": "../..//testdata/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.ms",
+    "filePath": "/testdata/ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.ms",
     "outputFilePath": "ska_low_cal",
-    "readAutoCorrelations": false,
     "computeImplementation": "cpu",
     "directions": [
         [-0.4606549305661674,-0.29719233792392513],
