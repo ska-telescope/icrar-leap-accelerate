@@ -34,6 +34,7 @@ Leap Accelerate consists of:
     :glob:
 
     md/Build
+    md/Docker
 
 .. toctree::
     :caption: Usage
