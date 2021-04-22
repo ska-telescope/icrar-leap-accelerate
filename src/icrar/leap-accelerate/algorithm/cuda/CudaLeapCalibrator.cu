@@ -576,7 +576,9 @@ namespace cuda
         g_CalcDeltaPhase<<<blockSize,gridSize>>>(AMap, cal1Map, avgDataMap, deltaPhaseMap);
     }
 
-    __global__ void g_GenerateDeltaPhaseColumn(const Eigen::Map<const Eigen::MatrixXd> deltaPhase, Eigen::Map<Eigen::VectorXd> deltaPhaseColumn)
+    __global__ void g_GenerateDeltaPhaseColumn(
+        const Eigen::Map<const Eigen::MatrixXd> deltaPhase,
+        Eigen::Map<Eigen::VectorXd> deltaPhaseColumn)
     {
         int row = blockDim.x * blockIdx.x + threadIdx.x;
         if(row < deltaPhase.rows())
@@ -589,7 +591,9 @@ namespace cuda
         }
     }
 
-    __host__ void CudaLeapCalibrator::GenerateDeltaPhaseColumn(const device_matrix<double>& deltaPhase, device_vector<double>& deltaPhaseColumn)
+    __host__ void CudaLeapCalibrator::GenerateDeltaPhaseColumn(
+        const device_matrix<double>& deltaPhase,
+        device_vector<double>& deltaPhaseColumn)
     {
         if(deltaPhase.GetRows()+1 != deltaPhaseColumn.GetRows())
         {

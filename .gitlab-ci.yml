@@ -119,20 +119,9 @@ cache:
   paths:
     - testdata
 
+########
 # Build
-
-# This will test whether the gitlab-runner is capable of running cuda
-# run via sudo gitlab-runner exec docker .run_cuda_bullseye --docker-runtime=nvidia --env NVIDIA_VISIBILE_DEVICES=1
-.run_cuda_bullseye:
-  image: nallack/bullseye-cuda:latest
-  variables:
-    NVIDIA_VISIBLE_DEVICES: "all"
-  script:
-    - nvidia-smi
-    - echo $NVIDIA_VISIBLE_DEVICES
-    - cd /usr/local/cuda-11.2/samples/0_Simple/vectorAdd
-    - make
-    - ./vectorAdd
+########
 
 download_lfs:
   extends: .common
@@ -206,14 +195,12 @@ build_docs:
     paths:
       - build
 
-# Use build_export_compile_commands
-.build_export_compile_commands_minimal:
-  extends: [.minimal_build_dependencies, .build_export_compile_commands]
-
 build_export_compile_commands:
-  extends: [.complete_build_dependencies, .build_export_compile_commands]
+  extends: [.lint_dependencies, .build_export_compile_commands]
 
+#######
 # Lint
+#######
 
 .lint_clang_tidy:
   stage: linting
@@ -302,7 +289,9 @@ lint_cppcheck:
   extends: [.complete_build_dependencies, .lint_cppcheck_no_tests]
   needs: ["build_export_compile_commands"]
 
+#######
 # Test
+#######
 
 .test:
   stage: test
