@@ -52,19 +52,6 @@ namespace cuda
         const device_vector<int>& I1,
         const device_matrix<std::complex<double>>& avgData,
         device_vector<double>& phaseAnglesI1);
-
-    /**
-     * @brief 
-     * 
-     * @param I1 
-     * @param avgData 
-     * @param phaseAnglesI1 
-     * @return __global__ 
-     */
-    __global__ void g_AvgDataToPhaseAngles(
-        const Eigen::Map<const Eigen::VectorXi> I1,
-        const Eigen::Map<const Eigen::Matrix<thrust::complex<double>, -1, -1>> avgData,
-        Eigen::Map<Eigen::VectorXd> phaseAnglesI1);
 } // namespace cuda
 } // namespace icrar
 #endif // CUDA_ENABLED

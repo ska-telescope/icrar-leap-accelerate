@@ -27,17 +27,18 @@ namespace icrar
 {
 namespace cuda
 {
+    /**
+     * @brief Copies the argument of the 1st column/polarization in avgData to phaseAnglesI1
+     * 
+     * @param I1 
+     * @param avgData 
+     * @param phaseAnglesI1 
+     * @return __global__ 
+     */
     __global__ void g_AvgDataToPhaseAngles(
         const Eigen::Map<const Eigen::VectorXi> I1,
         const Eigen::Map<const Eigen::Matrix<thrust::complex<double>, -1, -1>> avgData,
-        Eigen::Map<Eigen::VectorXd> phaseAnglesI1)
-    {
-        int row = blockDim.x * blockIdx.x + threadIdx.x;
-        if(row < I1.rows())
-        {
-            phaseAnglesI1(row) = thrust::arg(avgData(I1(row), 0));
-        }
-    }
+        Eigen::Map<Eigen::VectorXd> phaseAnglesI1);
 
     __host__ void AvgDataToPhaseAngles(const device_vector<int>& I1, const device_matrix<std::complex<double>>& avgData, device_vector<double>& phaseAnglesI1)
     {
@@ -54,6 +55,18 @@ namespace cuda
         auto avgDataMap = Eigen::Map<const MatrixXcd>((thrust::complex<double>*)avgData.Get(), avgData.GetRows(), avgData.GetCols());
         auto phaseAnglesI1Map = Eigen::Map<Eigen::VectorXd>(phaseAnglesI1.Get(), phaseAnglesI1.GetRows());
         g_AvgDataToPhaseAngles<<<blockSize, gridSize>>>(I1Map, avgDataMap, phaseAnglesI1Map);
+    }
+
+    __global__ void g_AvgDataToPhaseAngles(
+        const Eigen::Map<const Eigen::VectorXi> I1,
+        const Eigen::Map<const Eigen::Matrix<thrust::complex<double>, -1, -1>> avgData,
+        Eigen::Map<Eigen::VectorXd> phaseAnglesI1)
+    {
+        int row = blockDim.x * blockIdx.x + threadIdx.x;
+        if(row < I1.rows())
+        {
+            phaseAnglesI1(row) = thrust::arg(avgData(I1(row), 0));
+        }
     }
 } // namespace cuda
 } // namespace icrar

@@ -29,18 +29,7 @@ namespace cuda
 {
     __global__ void g_GenerateDeltaPhaseColumn(
         const Eigen::Map<const Eigen::MatrixXd> deltaPhase,
-        Eigen::Map<Eigen::VectorXd> deltaPhaseColumn)
-    {
-        int row = blockDim.x * blockIdx.x + threadIdx.x;
-        if(row < deltaPhase.rows())
-        {
-            deltaPhaseColumn(row) = deltaPhase(row, 0); // 1st pol only
-        }
-        else if (row < deltaPhaseColumn.rows())
-        {
-            deltaPhaseColumn(row) = 0; // deltaPhaseColumn is of size deltaPhaseRows+1 where the last/extra row = 0
-        }
-    }
+        Eigen::Map<Eigen::VectorXd> deltaPhaseColumn);
 
     __host__ void GenerateDeltaPhaseColumn(
         const device_matrix<double>& deltaPhase,
@@ -57,6 +46,21 @@ namespace cuda
         auto deltaPhaseMap = Eigen::Map<const Eigen::MatrixXd>(deltaPhase.Get(), deltaPhase.GetRows(), deltaPhase.GetCols());
         auto deltaPhaseColumnMap = Eigen::Map<Eigen::VectorXd>(deltaPhaseColumn.Get(), deltaPhaseColumn.GetRows());
         g_GenerateDeltaPhaseColumn<<<blockSize,gridSize>>>(deltaPhaseMap, deltaPhaseColumnMap);
+    }
+
+    __global__ void g_GenerateDeltaPhaseColumn(
+        const Eigen::Map<const Eigen::MatrixXd> deltaPhase,
+        Eigen::Map<Eigen::VectorXd> deltaPhaseColumn)
+    {
+        int row = blockDim.x * blockIdx.x + threadIdx.x;
+        if(row < deltaPhase.rows())
+        {
+            deltaPhaseColumn(row) = deltaPhase(row, 0); // 1st pol only
+        }
+        else if (row < deltaPhaseColumn.rows())
+        {
+            deltaPhaseColumn(row) = 0; // deltaPhaseColumn is of size deltaPhaseRows+1 where the last/extra row = 0
+        }
     }
 } // namespace cuda
 } // namespace icrar

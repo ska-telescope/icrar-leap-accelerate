@@ -52,20 +52,6 @@ namespace cuda
         const device_vector<double>& cal1,
         const device_matrix<std::complex<double>>& avgData,
         device_matrix<double>& deltaPhase);
-
-    /**
-     * @brief Computes the phase delta vector for the first polarization of avgData
-     * 
-     * @param A Antenna matrix
-     * @param cal1 cal1 matrix
-     * @param avgData averaged visibilities
-     * @param deltaPhase output deltaPhase vector 
-     */
-    __global__ void g_CalcDeltaPhase(
-        const Eigen::Map<const Eigen::MatrixXd> A,
-        const Eigen::Map<const Eigen::VectorXd> cal1,
-        const Eigen::Map<const Eigen::Matrix<thrust::complex<double>, -1, -1>> avgData,
-        Eigen::Map<Eigen::VectorXd> deltaPhase);
 } // namespace cuda
 } // namespace icrar
 #endif //CUDA_ENABLED

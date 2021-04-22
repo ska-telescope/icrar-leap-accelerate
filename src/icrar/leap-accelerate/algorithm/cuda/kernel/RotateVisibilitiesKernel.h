@@ -52,23 +52,6 @@ namespace cuda
     __host__ void RotateVisibilities(
         DeviceIntegration& integration,
         DeviceMetaData& metadata);
-
-    /**
-     * @brief Rotates visibilities in parallel for baselines and channels
-     * @note Atomic operator required for writing to @p pAvgData
-     * 
-     * @param constants measurement set constants
-     * @param dd direction dependent rotation 
-     * @param UVW unrotated uvws
-     * @param integrationData inout integration data 
-     * @param avgData output avgData to increment
-     */
-    __global__ void g_RotateVisibilities(
-        const icrar::cpu::Constants constants,
-        const Eigen::Matrix3d dd,
-        const Eigen::Map<Eigen::Matrix<double, 3, Eigen::Dynamic>> UVWs,
-        Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>> integrationData,
-        Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> avgData);
 } // namespace cuda
 } // namespace icrar
 #endif // CUDA_ENABLED

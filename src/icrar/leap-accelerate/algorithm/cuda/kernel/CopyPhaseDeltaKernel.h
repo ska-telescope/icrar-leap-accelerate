@@ -48,17 +48,6 @@ namespace cuda
     __host__ void GenerateDeltaPhaseColumn(
         const device_matrix<double>& deltaPhase,
         device_vector<double>& deltaPhaseColumn);
-
-    /**
-     * @brief 
-     * 
-     * @param deltaPhase 
-     * @param deltaPhaseColumn 
-     * @return __global__ 
-     */
-    __global__ void g_GenerateDeltaPhaseColumn(
-        const Eigen::Map<const Eigen::MatrixXd> deltaPhase,
-        Eigen::Map<Eigen::VectorXd> deltaPhaseColumn);
 } // namespace cuda
 } // namespace icrar
 #endif // CUDA_ENABLED
