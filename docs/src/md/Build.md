@@ -1,7 +1,4 @@
-
-# Installation
-
-## Compiling from Source
+# Compiling from Source
 
 leap-accelerate compilation is compatible with g++ and clang++ on debian or ubuntu. Support for compiling on other operating systems is currently experimental.
 

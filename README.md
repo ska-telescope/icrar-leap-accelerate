@@ -15,7 +15,9 @@ See the [online documentation](https://developer.skatelescope.org/projects/icrar
 
 ## Installation
 
-See the [build](docs/src/Build.md) documentation for instructions on platform specific compilation.
+See the [docker](docs/src/md/Docker.md) documentation for instructions about how to create a docker image.
+
+See the [build](docs/src/md/Build.md) documentation for instructions on platform specific compilation.
 
 ## Usage
 
