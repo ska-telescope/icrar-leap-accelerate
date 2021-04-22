@@ -136,53 +136,6 @@ namespace cuda
             const SphericalDirection& direction,
             std::vector<cuda::DeviceIntegration>& input,
             std::vector<cpu::BeamCalibration>& output_calibrations);
-
-        /**
-         * @brief Calculates avgData in metadata
-         * 
-         * @param integration the input visibilities to integrate
-         * @param metadata the metadata container
-         */
-        __host__ void RotateVisibilities(
-            DeviceIntegration& integration,
-            DeviceMetaData& metadata);
-
-    private:
-        /**
-         * @brief Copies the argument of the 1st polarization in avgData to phaseAnglesI1
-         * 
-         * @param I1 the index vector for unflagged antennas
-         * @param avgData the averaged data matrix
-         * @param phaseAnglesI1 the output phaseAngles vector
-         */
-        __host__ void AvgDataToPhaseAngles(
-            const device_vector<int>& I1,
-            const device_matrix<std::complex<double>>& avgData,
-            device_vector<double>& phaseAnglesI1);
-
-        /**
-         * @brief Calculates the delta phase matrix
-         * 
-         * @param A Antenna matrix
-         * @param cal1 cal1 matrix
-         * @param avgData averaged visibilities
-         * @param deltaPhase output deltaPhase matrix 
-         */
-        __host__ void CalcDeltaPhase(
-            const device_matrix<double>& A,
-            const device_vector<double>& cal1,
-            const device_matrix<std::complex<double>>& avgData,
-            device_matrix<double>& deltaPhase);
-
-        /**
-         * @brief Copies the first column of deltaPhase into deltaPhaseColumn
-         * 
-         * @param deltaPhase The delta phase matrix 
-         * @param deltaPhaseColumn The output delta phase vector/column
-         */
-        __host__ void GenerateDeltaPhaseColumn(
-            const device_matrix<double>& deltaPhase,
-            device_vector<double>& deltaPhaseColumn);
     };
 } // namespace cuda
 } // namespace icrar
