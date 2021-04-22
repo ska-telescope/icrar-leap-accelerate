@@ -226,8 +226,10 @@ lint_clang_tidy:
 .lint_iwyu:
   stage: linting
   script:
+    # iwyu pre 0.12
     - iwyu_tool -j 2 -p ./build -- --transitive_includes_only 2>&1 | tee build/iwyu.log
-    # iwyu 0.12+ iwyu_tool -j 2 -p ./build -- -Xiwyu --transitive_includes_only 2>&1 | tee build/iwyu.log
+    # iwyu 0.12+
+    # iwyu_tool -j 2 -p ./build -- -Xiwyu --transitive_includes_only 2>&1 | tee build/iwyu.log
     - cat build/iwyu.log | python3 .clang-tidy-to-junit.py $PWD/ iwyu > build/iwyu-junit.xml
   artifacts:
     when: always
