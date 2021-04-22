@@ -71,7 +71,7 @@ namespace icrar
 namespace cpu
 {
     /**
-     * @brief Container of fixed sized variables that do not change during calibration
+     * @brief Container of variables that do not change throughout calibration
      */
     struct Constants
     {
@@ -177,6 +177,10 @@ namespace cpu
          * @brief The pseudoinverse of A with shape [stations, baselines]
          */
         const Eigen::MatrixXd& GetAd() const;
+
+        /**
+         * @brief Gets a mutable reference to Ad. Host references may need to reregister after resize.
+         */
         Eigen::MatrixXd& GetAd() { return m_Ad; }
 
         /**
@@ -187,6 +191,10 @@ namespace cpu
         const Eigen::VectorXi& GetI1() const;
 
         const Eigen::MatrixXd& GetAd1() const;
+
+        /**
+         * @brief Gets a mutable reference to Ad1. Host references may need to reregister after resize.
+         */
         Eigen::MatrixXd& GetAd1() { return m_Ad1; }
 
         const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
