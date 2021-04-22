@@ -50,7 +50,21 @@ variables:
 .common:
   tags: [engageska, docker]
 
-.required_dependencies:
+.generator_packages: &generator_packages
+  - apt install -y git wget cmake xsltproc
+  - apt install -y gnupg2 software-properties-common
+
+.project_packages: &project_packages
+  - apt install -y wget casacore-dev libboost-all-dev rapidjson-dev
+
+.doc_packages: &doc_packages
+  - apt install -y python3-pip jq moreutils doxygen graphviz
+  - pip3 install -U sphinx breathe exhale recommonmark sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary
+
+.lint_packages: &lint_packages
+  - apt install -y clang clang-tidy clang-tools iwyu cppcheck
+
+.minimal_build_dependencies:
   extends: .common
   image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
   variables:
@@ -58,30 +72,41 @@ variables:
     CUDA_ENABLED: "OFF"
   before_script:
     - apt update
-    - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck python3-pip
-    - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev rapidjson-dev
-    - pip3 install -U sphinx breathe exhale sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary recommonmark
+    - *generator_packages
+    - *project_packages
 
-.cuda_dependencies:
+.cuda_build_dependencies:
   extends: .common
   image: nallack/bullseye-cuda:latest
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
-  before_script:
+  before_script: &cuda_build_dependencies
     - apt update
-    - apt install -y git cmake # generator packages
-    - apt install -y clang clang-tidy clang-tools iwyu cppcheck # lint packages
-    - apt install -y wget casacore-dev libboost-all-dev rapidjson-dev # project packages
-    - apt install -y python3-pip jq moreutils doxygen graphviz # docs packages
-    - pip3 install -U sphinx breathe exhale recommonmark sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary # docs python packages
-    - apt install -y gnupg2 software-properties-common
+    - *generator_packages
+    - *project_packages
     - export CUDA_HOME=/usr/local/cuda
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
     - export PATH=$PATH:$CUDA_HOME/bin
 
-.all_dependencies:
-  extends: .cuda_dependencies
+.complete_build_dependencies:
+  extends: .cuda_build_dependencies
+
+.docs_dependencies:
+  extends: .minimal_build_dependencies
+  before_script:
+    - apt update
+    - *generator_packages
+    - *project_packages
+    - *doc_packages
+
+.lint_dependencies:
+  extends: .complete_build_dependencies
+  before_script:
+    - apt update
+    - *generator_packages
+    - *project_packages
+    - *lint_packages
 
 stages:
   - build
@@ -135,10 +160,10 @@ download_lfs:
       - build
 
 build_debug_minimal:
-  extends: [.required_dependencies, .build_debug]
+  extends: [.minimal_build_dependencies, .build_debug]
 
 build_debug:
-  extends: [.all_dependencies, .build_debug]
+  extends: [.complete_build_dependencies, .build_debug]
 
 .build_release:
   stage: build
@@ -152,13 +177,13 @@ build_debug:
       - build
 
 build_release_minimal:
-  extends: [.required_dependencies, .build_release]
+  extends: [.minimal_build_dependencies, .build_release]
 
 build_release:
-  extends: [.all_dependencies, .build_release]
+  extends: [.complete_build_dependencies, .build_release]
 
 build_docs:
-  extends: .required_dependencies
+  extends: .docs_dependencies
   stage: build
   script:
     - mkdir build
@@ -183,10 +208,10 @@ build_docs:
 
 # Use build_export_compile_commands
 .build_export_compile_commands_minimal:
-  extends: [.required_dependencies, .build_export_compile_commands]
+  extends: [.minimal_build_dependencies, .build_export_compile_commands]
 
 build_export_compile_commands:
-  extends: [.all_dependencies, .build_export_compile_commands]
+  extends: [.complete_build_dependencies, .build_export_compile_commands]
 
 # Lint
 
@@ -204,11 +229,11 @@ build_export_compile_commands:
 
 # Use lint_clang_tidy
 .lint_clang_tidy_minimal:
-  extends: [.required_dependencies, .lint_clang_tidy]
+  extends: [.minimal_build_dependencies, .lint_clang_tidy]
   needs: ["build_export_compile_commands_minimal"]
 
 lint_clang_tidy:
-  extends: [.all_dependencies, .lint_clang_tidy]
+  extends: [.complete_build_dependencies, .lint_clang_tidy]
   needs: ["build_export_compile_commands"]
 
 .lint_iwyu:
@@ -224,11 +249,11 @@ lint_clang_tidy:
 
 # Use lint_iwyu
 .lint_iwyu_minimal:
-  extends: [.required_dependencies, .lint_iwyu]
+  extends: [.minimal_build_dependencies, .lint_iwyu]
   needs: ["build_export_compile_commands_minimal"]
 
 lint_iwyu:
-  extends: [.all_dependencies, .lint_iwyu]
+  extends: [.complete_build_dependencies, .lint_iwyu]
   needs: ["build_export_compile_commands"]
 
 .lint_cppcheck:
@@ -270,11 +295,11 @@ lint_iwyu:
 
 # Use lint_cppcheck
 .lint_cppcheck_minimal:
-  extends: [.all_dependencies, .lint_cppcheck]
+  extends: [.complete_build_dependencies, .lint_cppcheck]
   needs: ["build_export_compile_commands_minimal"]
 
 lint_cppcheck:
-  extends: [.all_dependencies, .lint_cppcheck_no_tests]
+  extends: [.complete_build_dependencies, .lint_cppcheck_no_tests]
   needs: ["build_export_compile_commands"]
 
 # Test
@@ -292,7 +317,7 @@ lint_cppcheck:
       junit: build/ctest.xml
 
 test_debug_minimal:
-  extends: [.required_dependencies, .test]
+  extends: [.minimal_build_dependencies, .test]
   needs: ["download_lfs", "build_debug_minimal"]
   variables:
     GTEST_FILTER: "-*Cuda*:*cuda*:*Gpu*:*gpu*:*SKA*"
@@ -302,7 +327,7 @@ test_debug_minimal:
 
 # Needs cuda enabled runner
 test_debug_all:
-  extends: [.all_dependencies, .test]
+  extends: [.complete_build_dependencies, .test]
   needs: ["download_lfs", "build_debug"]
   tags: ["cuda", "docker"]
   variables:
@@ -317,7 +342,7 @@ test_debug_all:
 # A job that runs the tests under valgrid
 # It might take a while, so not always run by default
 .test_memcheck:
-  extends: .required_dependencies
+  extends: .minimal_build_dependencies
   stage: test
   needs: ["download_lfs", "build_debug_minimal"]
   before_script:
@@ -330,7 +355,7 @@ test_debug_all:
     - schedules
 
 pages:
-  extends: .required_dependencies
+  extends: .minimal_build_dependencies
   stage: pages
   needs: ["test_debug_minimal", "lint_clang_tidy", "lint_cppcheck", "lint_iwyu"]
   script:
