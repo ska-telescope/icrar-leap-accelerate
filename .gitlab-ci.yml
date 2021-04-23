@@ -217,13 +217,8 @@ build_export_compile_commands:
     paths:
       - build
 
-# Use lint_clang_tidy
-.lint_clang_tidy_minimal:
-  extends: [.minimal_build_dependencies, .lint_clang_tidy]
-  needs: ["build_export_compile_commands_minimal"]
-
 lint_clang_tidy:
-  extends: [.complete_build_dependencies, .lint_clang_tidy]
+  extends: [.lint_dependencies, .lint_clang_tidy]
   needs: ["build_export_compile_commands"]
 
 .lint_iwyu:
@@ -239,13 +234,8 @@ lint_clang_tidy:
     paths:
       - build
 
-# Use lint_iwyu
-.lint_iwyu_minimal:
-  extends: [.minimal_build_dependencies, .lint_iwyu]
-  needs: ["build_export_compile_commands_minimal"]
-
 lint_iwyu:
-  extends: [.complete_build_dependencies, .lint_iwyu]
+  extends: [.lint_dependencies, .lint_iwyu]
   needs: ["build_export_compile_commands"]
 
 .lint_cppcheck:
@@ -266,6 +256,7 @@ lint_iwyu:
     paths:
       - build
 
+# clang pre-11.0 cannot parse gunit tests
 .lint_cppcheck_no_tests:
   stage: linting
   script:
@@ -285,13 +276,8 @@ lint_iwyu:
     paths:
       - build
 
-# Use lint_cppcheck
-.lint_cppcheck_minimal:
-  extends: [.complete_build_dependencies, .lint_cppcheck]
-  needs: ["build_export_compile_commands_minimal"]
-
 lint_cppcheck:
-  extends: [.complete_build_dependencies, .lint_cppcheck_no_tests]
+  extends: [.lint_dependencies, .lint_cppcheck_no_tests]
   needs: ["build_export_compile_commands"]
 
 #######
