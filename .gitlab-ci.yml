@@ -52,13 +52,13 @@ variables:
 
 .generator_packages: &generator_packages
   - apt install -y git wget cmake xsltproc
-  - apt install -y gnupg2 software-properties-common
+  - apt install -y gnupg2 software-properties-common jq moreutils
 
 .project_packages: &project_packages
   - apt install -y wget casacore-dev libboost-all-dev rapidjson-dev
 
 .doc_packages: &doc_packages
-  - apt install -y python3-pip jq moreutils doxygen graphviz
+  - apt install -y python3-pip doxygen graphviz
   - pip3 install -U sphinx breathe exhale recommonmark sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary
 
 .lint_packages: &lint_packages

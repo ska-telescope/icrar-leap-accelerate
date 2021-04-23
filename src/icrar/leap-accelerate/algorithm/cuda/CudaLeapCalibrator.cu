@@ -380,11 +380,5 @@ namespace cuda
         deviceCal1.ToHost(cal1);
         output_calibrations.emplace_back(direction, cal1);
     }
-    __global__ void g_GenerateDeltaPhaseColumn(const Eigen::Map<const Eigen::MatrixXd> deltaPhase, Eigen::Map<Eigen::VectorXd> deltaPhaseColumn)
-        const Eigen::Map<const Eigen::MatrixXd> deltaPhase,
-        Eigen::Map<Eigen::VectorXd> deltaPhaseColumn)
-    __host__ void CudaLeapCalibrator::GenerateDeltaPhaseColumn(const device_matrix<double>& deltaPhase, device_vector<double>& deltaPhaseColumn)
-        const device_matrix<double>& deltaPhase,
-        device_vector<double>& deltaPhaseColumn)
 } // namespace cuda
 } // namespace icrar
