@@ -209,7 +209,7 @@ build_export_compile_commands:
   stage: linting
   script:
     - cd build
-    - pip install pyyaml
+    - pip3 install pyyaml
     - python3 -u /usr/bin/run-clang-tidy-11.py -quiet 2>&1 | tee clang-tidy.log
     - cd ..
     - cat build/clang-tidy.log | python3 .clang-tidy-to-junit.py $PWD/ clang-tidy > build/clang-tidy-junit.xml
@@ -251,7 +251,7 @@ lint_iwyu:
 .lint_cppcheck:
   stage: linting
   script:
-    - pip install cppcheck-junit
+    - pip3 install cppcheck-junit
     - cd build
     - 'cppcheck
       --xml-version=2
@@ -269,7 +269,7 @@ lint_iwyu:
 .lint_cppcheck_no_tests:
   stage: linting
   script:
-    - pip install cppcheck-junit
+    - pip3 install cppcheck-junit
     - cd build
     - 'cppcheck
       --xml-version=2
