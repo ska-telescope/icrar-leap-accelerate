@@ -334,8 +334,8 @@ namespace icrar
     TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverse42A) { TestPseudoInverse42(cuda::JobType::A); }
     TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverse42S) { TestPseudoInverse42(cuda::JobType::S); }
     TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverseMWA) { TestPseudoInverseMWA(cuda::JobType::S); }
-    TEST_F(CudaMatrixEigenTests, TestCudaSVDMatmulAskap) { TestCudaSVDMatmulAskap(); }
-    TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverseAskap) { TestPseudoInverseAskap(); }
+    TEST_F(CudaMatrixEigenTests, DISABLED_TestCudaSVDMatmulAskap) { TestCudaSVDMatmulAskap(); }
+    TEST_F(CudaMatrixEigenTests, DISABLED_TestCudaPseudoInverseAskap) { TestPseudoInverseAskap(); }
     TEST_F(CudaMatrixEigenTests, TestPseudoInverseLarge) { TestPseudoInverseLarge(ComputeImplementation::cpu); }
     TEST_F(CudaMatrixEigenTests, DISABLED_TestCudaPseudoInverseLarge) { TestPseudoInverseLarge(ComputeImplementation::cuda); }
     TEST_F(CudaMatrixEigenTests, DISABLED_TestPseudoInverseSKA) { TestPseudoInverseSKA(ComputeImplementation::cpu); }
