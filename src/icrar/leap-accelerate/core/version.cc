@@ -34,9 +34,9 @@
 namespace icrar
 {
 
-static std::string _version = std::to_string(LEAP_ACCELERATE_VERSION_MAJOR) + "." +
-                              std::to_string(LEAP_ACCELERATE_VERSION_MINOR) + "." +
-                              std::to_string(LEAP_ACCELERATE_VERSION_PATCH);
+static const std::string _version = std::to_string(LEAP_ACCELERATE_VERSION_MAJOR) + "." +
+                                    std::to_string(LEAP_ACCELERATE_VERSION_MINOR) + "." +
+                                    std::to_string(LEAP_ACCELERATE_VERSION_PATCH);
 
 std::string version()
 {

@@ -210,7 +210,7 @@ build_export_compile_commands:
   script:
     - cd build
     - pip3 install pyyaml
-    - python3 -u /usr/bin/run-clang-tidy-11.py -quiet 2>&1 | tee clang-tidy.log
+    - python3 -u /usr/bin/run-clang-tidy-11.py -quiet 2>&1 | tee clang-tidy.log || true
     - cd ..
     - cat build/clang-tidy.log | python3 .clang-tidy-to-junit.py $PWD/ clang-tidy > build/clang-tidy-junit.xml
   artifacts:
