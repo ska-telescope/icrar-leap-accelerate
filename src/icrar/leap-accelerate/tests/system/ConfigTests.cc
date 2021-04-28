@@ -31,28 +31,12 @@
 
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
+#include <boost/dll/runtime_symbol_info.hpp>
 #include <iostream>
 #include <array>
 #include <sstream>
 #include <streambuf>
 
-#if __linux__
-#include <string>
-#include <limits.h>
-#include <unistd.h>
-
-boost::filesystem::path getexepath()
-{
-  char result[PATH_MAX];
-  ssize_t count = readlink( "/proc/self/exe", result, PATH_MAX );
-  return std::string(result, (count > 0) ? count : 0);
-}
-
-boost::filesystem::path getexedir()
-{
-    return getexepath().parent_path();
-}
-#endif
 
 using namespace icrar;
 
@@ -63,11 +47,10 @@ class ConfigTests : public testing::Test
 public:
     ConfigTests() = default;
 
-    void TestDefaultConfig(boost::filesystem::path outputPath)
+    void TestDefaultConfig(const boost::filesystem::path outputPath)
     {
-        std::string path = (getexedir() / outputPath).string();
+        std::string path = (boost::dll::program_location().parent_path() / outputPath).string();
         std::ifstream expectedStream(path);
-        std::cout << path << std::endl;
         ASSERT_TRUE(expectedStream.good());
         auto expected = std::string(std::istreambuf_iterator<char>(expectedStream), std::istreambuf_iterator<char>());
     
@@ -76,8 +59,6 @@ public:
         rawArgs.directions = "[[0,0]]";
         auto args = ArgumentsValidated(std::move(rawArgs));
         auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
-
-        LOG(info) << "printing";
         std::stringstream output;
         auto outputCallback = [&](const cpu::Calibration& cal)
         {
@@ -92,10 +73,88 @@ public:
             args.GetReferenceAntenna(),
             args.GetComputeOptions());
 
-        auto actualFile = std::ofstream(getexedir().append("testdata/DefaultOutput_ACTUAL.json").string());
+        auto actualPath = outputPath.parent_path() / (outputPath.stem().string() + "_ACTUAL" + outputPath.extension().string());
+        auto actualFile = std::ofstream(actualPath.string());
         actualFile << output.str();
         ASSERT_EQ(expected, output.str());
+    }
+
+    void TestConfig(CLIArgumentsDTO&& rawArgs, double threshold)
+    {
+        ASSERT_TRUE(rawArgs.outputFilePath.is_initialized()) << "outputFilePath not set";
+        boost::filesystem::path outputPath = rawArgs.outputFilePath.get();
+        std::string path = (boost::dll::program_location().parent_path() / outputPath).string();
+        std::ifstream expectedStream(path);
+        auto args = ArgumentsValidated(std::move(rawArgs));
+        auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
+        std::stringstream output;
+        auto outputCallback = [&](const cpu::Calibration& cal)
+        {
+            cal.Serialize(output, true);
+        };
+        calibrator->Calibrate(
+            outputCallback,
+            args.GetMeasurementSet(),
+            args.GetDirections(),
+            args.GetSolutionInterval(),
+            args.GetMinimumBaselineThreshold(),
+            args.GetReferenceAntenna(),
+            args.GetComputeOptions());
+
+        auto actualPath = boost::dll::program_location().parent_path() / outputPath.parent_path()
+        / (outputPath.stem().string() + "_ACTUAL" + outputPath.extension().string());
+        auto actualFile = std::ofstream(actualPath.string());
+        actualFile << output.str();
+        actualFile.flush();
+        auto actual = cpu::Calibration::Parse(output.str());
+
+        auto expectedStr = std::string(std::istreambuf_iterator<char>(expectedStream), std::istreambuf_iterator<char>());
+        ASSERT_TRUE(expectedStream.good()) << path << " does not exist";
+
+        auto expected = cpu::Calibration::Parse(expectedStr);
+        ASSERT_TRUE(expected.IsApprox(actual, threshold)) << actualPath << " does not match " << path;
     }
 };
 
 TEST_F(ConfigTests, TestDefaultConfig) { TestDefaultConfig("testdata/DefaultOutput.json"); }
+TEST_F(ConfigTests, TestMWACpuConfig)
+{
+    CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
+    rawArgs.filePath = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
+    rawArgs.outputFilePath = "testdata/MWACpuOutput.json";
+    rawArgs.directions = "[\
+        [-0.4606549305661674,-0.29719233792392513],\
+        [-0.753231018062671,-0.44387635324622354],\
+        [-0.6207547100721282,-0.2539086572881469],\
+        [-0.41958660604621867,-0.03677626900108552],\
+        [-0.41108685258900596,-0.08638012622791202],\
+        [-0.7782459495668798,-0.4887860989684432],\
+        [-0.17001324965728973,-0.28595644149463484],\
+        [-0.7129444556035118,-0.365286407171852],\
+        [-0.1512764129166089,-0.21161026349648748]\
+    ]";
+    rawArgs.computeImplementation = "cpu";
+    rawArgs.useFileSystemCache = false;
+    TestConfig(std::move(rawArgs), 1e-15);
+}
+TEST_F(ConfigTests, TestMWACudaConfig)
+{
+    CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
+    rawArgs.filePath = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
+    rawArgs.outputFilePath = "testdata/MWACudaOutput.json";
+    rawArgs.directions = "[\
+        [-0.4606549305661674,-0.29719233792392513],\
+        [-0.753231018062671,-0.44387635324622354],\
+        [-0.6207547100721282,-0.2539086572881469],\
+        [-0.41958660604621867,-0.03677626900108552],\
+        [-0.41108685258900596,-0.08638012622791202],\
+        [-0.7782459495668798,-0.4887860989684432],\
+        [-0.17001324965728973,-0.28595644149463484],\
+        [-0.7129444556035118,-0.365286407171852],\
+        [-0.1512764129166089,-0.21161026349648748]\
+    ]";
+    rawArgs.computeImplementation = "cuda";
+    rawArgs.useCusolver = "true";
+    rawArgs.useFileSystemCache = false;
+    TestConfig(std::move(rawArgs), 1e-10);
+}

@@ -53,6 +53,8 @@ namespace icrar
         args.minimumBaselineThreshold = 0.0;
         args.mwaSupport = false;
         args.useFileSystemCache = true;
+        //args.useIntermediateBuffer = determined from device memory
+        //args.useCusolver = determined from device memory
         args.verbosity = static_cast<int>(log::DEFAULT_VERBOSITY);
         return args;
     }
@@ -67,6 +69,8 @@ namespace icrar
         , readAutocorrelations(args.readAutocorrelations)
         , mwaSupport(args.mwaSupport)
         , useFileSystemCache(args.useFileSystemCache)
+        , useIntermediateBuffer(args.useIntermediateBuffer)
+        , useCusolver(args.useCusolver)
     {
         //Perform type conversions
         if(args.inputType.is_initialized())
@@ -138,7 +142,7 @@ namespace icrar
         Validate();
 
         // Load resources
-        icrar::log::Initialize(GetVerbosity()); //TODO: Arguments tests already intiializes verbosity
+        icrar::log::Initialize(GetVerbosity());
         switch (m_inputType)
         {
         case InputType::file:
@@ -235,14 +239,14 @@ namespace icrar
             m_computeOptions.isFileSystemCacheEnabled = std::move(args.useFileSystemCache.get());
         }
 
-        if(args.useCusolver.is_initialized())
-        {
-            m_computeOptions.useCusolver = std::move(args.useCusolver.get());
-        }
-
         if(args.useIntermediateBuffer.is_initialized())
         {
             m_computeOptions.useIntermediateBuffer = std::move(args.useIntermediateBuffer.get());
+        }
+
+        if(args.useCusolver.is_initialized())
+        {
+            m_computeOptions.useCusolver = std::move(args.useCusolver.get());
         }
 
         if(args.verbosity.is_initialized())
@@ -462,17 +466,6 @@ namespace icrar
                         throw json_exception("minimumBaselineThreshold must be of type double", __FILE__, __LINE__);
                     }
                 }
-                else if(key == "useFileSystemCache")
-                {
-                    if(it->value.IsBool())
-                    {
-                        args.useFileSystemCache = it->value.GetBool();
-                    }
-                    else
-                    {
-                        throw json_exception("useFileSystemCache must be of type bool", __FILE__, __LINE__);
-                    }
-                }
                 else if(key == "mwaSupport")
                 {
                     if(it->value.IsBool())
@@ -493,6 +486,39 @@ namespace icrar
                     else
                     {
                         throw json_exception("readAutoCorrelations must be of type bool", __FILE__, __LINE__);
+                    }
+                }
+                else if(key == "useFileSystemCache")
+                {
+                    if(it->value.IsBool())
+                    {
+                        args.useFileSystemCache = it->value.GetBool();
+                    }
+                    else
+                    {
+                        throw json_exception("useFileSystemCache must be of type bool", __FILE__, __LINE__);
+                    }
+                }
+                else if(key == "useIntermediateBuffer")
+                {
+                    if(it->value.IsBool())
+                    {
+                        args.useIntermediateBuffer = it->value.GetBool();
+                    }
+                    else
+                    {
+                        throw json_exception("useIntermediateBuffer must be of type bool", __FILE__, __LINE__);
+                    }
+                }
+                else if(key == "useCusolver")
+                {
+                    if(it->value.IsBool())
+                    {
+                        args.useCusolver = it->value.GetBool();
+                    }
+                    else
+                    {
+                        throw json_exception("useCusolver must be of type bool", __FILE__, __LINE__);
                     }
                 }
                 else if(key == "verbosity")

@@ -49,6 +49,8 @@ set(sources
 
     model/cpu/Integration.cc
     model/cpu/MetaData.cc
+    model/cpu/calibration/Calibration.cc
+    model/cpu/calibration/BeamCalibration.cc
 
     algorithm/LeapCalibratorFactory.cc
     algorithm/cpu/CpuLeapCalibrator.cc

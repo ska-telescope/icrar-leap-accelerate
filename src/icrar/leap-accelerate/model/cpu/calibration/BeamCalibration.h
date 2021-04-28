@@ -23,10 +23,12 @@
 #pragma once
 
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
+#include <icrar/leap-accelerate/exception/exception.h>
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
+#include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/stringbuffer.h>
@@ -54,73 +56,36 @@ namespace cpu
          * @param direction direciton of calibration
          * @param calibration calibration of each antenna for the given direction 
          */
-        BeamCalibration(
-            SphericalDirection direction,
-            Eigen::MatrixXd calibration)
-            : m_direction(std::move(direction))
-            , m_calibration(std::move(calibration))
-        {
-        }
+        BeamCalibration(SphericalDirection direction, Eigen::MatrixXd calibration);
 
-        BeamCalibration(const std::pair<SphericalDirection, Eigen::MatrixXd>& beamCalibration)
-        {
-            std::tie(m_direction, m_calibration) = beamCalibration;
-        }
+        BeamCalibration(const std::pair<SphericalDirection, Eigen::MatrixXd>& beamCalibration);
+
+        bool IsApprox(const BeamCalibration& beamCalibration, double threshold);
 
         /**
          * @brief Gets the calibration direction
          * 
          * @return const SphericalDirection 
          */
-        const SphericalDirection& GetDirection() const { return m_direction; }
+        const SphericalDirection& GetDirection() const;
 
         /**
          * @brief Get the phase calibration Vector for the antenna array in the specified direction
          * 
          * @return const Eigen::MatrixXd 
          */
-        const Eigen::MatrixXd& GetPhaseCalibration() const { return m_calibration; }
+        const Eigen::MatrixXd& GetPhaseCalibration() const;
 
-        void Serialize(std::ostream& os) const
-        {
-            constexpr uint32_t PRECISION = 15;
-            os.precision(PRECISION);
-            os.setf(std::ios::fixed);
+        /**
+         * @brief Serializes the beam calibration to JSON format
+         * 
+         * @param os JSON output stream
+         */
+        void Serialize(std::ostream& os, bool pretty = false) const;
 
-            rapidjson::StringBuffer s;
+        void Write(rapidjson::Writer<rapidjson::StringBuffer>& writer) const;
 
-#ifdef PRETTY_WRITER
-            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
-#else
-            rapidjson::Writer<rapidjson::StringBuffer> writer(s);
-#endif
-            Write(writer);
-            os << s.GetString() << std::endl;
-        }
-
-        template<typename Writer>
-        void Write(Writer& writer) const
-        {
-            assert(m_calibration.cols() == 1);
-
-            writer.StartObject();
-            writer.String("direction");
-            writer.StartArray();
-            for(auto& v : m_direction)
-            {
-                writer.Double(v);
-            }
-            writer.EndArray();
-
-            writer.String("beamCalibration");
-            writer.StartArray();
-            for(int i = 0; i < m_calibration.rows(); ++i)
-            {
-                writer.Double(m_calibration(i,0));
-            }
-            writer.EndArray();
-            writer.EndObject();
-        }
+        static BeamCalibration Parse(const rapidjson::Value& doc);
     };
 }
 }

@@ -177,7 +177,7 @@ namespace icrar
             }
         }
 
-        void RotateVisibilitiesTest(ComputeImplementation impl)
+        void RotateVisibilitiesTest(const ComputeImplementation impl)
         {
             using namespace std::complex_literals;
             const double THRESHOLD = 0.0001;
@@ -279,7 +279,7 @@ namespace icrar
             ASSERT_EQCD(-251.31739125869 + 39.6303072927434i, metadataOutput.GetAvgData()(1,3), THRESHOLD);
         }
 
-        void PhaseMatrixFunction0Test(ComputeImplementation impl)
+        void PhaseMatrixFunction0Test(const ComputeImplementation impl)
         {
             int refAnt = 0;
 
@@ -307,7 +307,7 @@ namespace icrar
             }
         }
 
-        void PhaseMatrixFunctionDataTest(ComputeImplementation impl)
+        void PhaseMatrixFunctionDataTest(const ComputeImplementation impl)
         {
             auto msmc = ms->GetMSMainColumns();
 

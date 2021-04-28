@@ -104,8 +104,8 @@ int main(int argc, char** argv)
         ("autoCorrelations,a", po::value<boost::optional<bool>>(&rawArgs.readAutocorrelations), "Set to true if measurement set rows store autocorrelations")
         ("minimumBaselineThreshold,m", po::value<boost::optional<double>>(&rawArgs.minimumBaselineThreshold), "Minimum baseline length in meters")
         ("useFileSystemCache,u", po::value<boost::optional<bool>>(&rawArgs.useFileSystemCache), "Use filesystem caching between calls")
-        //("useCusolver")
-        //("useIntermediateBuffer")
+        ("useCusolver", po::value<boost::optional<bool>>(&rawArgs.useCusolver), "Use cusolver for fast matrix inversion")
+        ("useIntermediateBuffer", po::value<boost::optional<bool>>(&rawArgs.useIntermediateBuffer), "Use extra device buffers as cache")
         ("verbosity", po::value<boost::optional<int>>(&rawArgs.verbosity), "Verbosity (0=fatal, 1=error, 2=warn, 3=info, 4=debug, 5=trace), defaults to info");
 
     try
