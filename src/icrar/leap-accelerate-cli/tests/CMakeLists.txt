@@ -13,8 +13,7 @@ add_executable(${TEST_TARGET_NAME}
   ${sources}
 )
 
-if(${CMAKE_VERSION} VERSION_GREATER "3.16.0" AND NOT CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
-  # clang-tidy analysis does not support precompiled headers  
+if(USE_PCH)
   target_precompile_headers(${TEST_TARGET_NAME}
     PRIVATE
     [[pch.h]]
