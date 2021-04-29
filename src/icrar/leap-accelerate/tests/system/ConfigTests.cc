@@ -73,7 +73,8 @@ public:
             args.GetReferenceAntenna(),
             args.GetComputeOptions());
 
-        auto actualPath = outputPath.parent_path() / (outputPath.stem().string() + "_ACTUAL" + outputPath.extension().string());
+        auto actualPath = boost::dll::program_location().parent_path() / outputPath.parent_path()
+        / (outputPath.stem().string() + "_ACTUAL" + outputPath.extension().string());
         auto actualFile = std::ofstream(actualPath.string());
         actualFile << output.str();
         ASSERT_EQ(expected, output.str());
@@ -154,7 +155,48 @@ TEST_F(ConfigTests, TestMWACudaConfig)
         [-0.1512764129166089,-0.21161026349648748]\
     ]";
     rawArgs.computeImplementation = "cuda";
-    rawArgs.useCusolver = "true";
+    rawArgs.useCusolver = true;
     rawArgs.useFileSystemCache = false;
     TestConfig(std::move(rawArgs), 1e-10);
+}
+TEST_F(ConfigTests, TestAA3CpuConfig)
+{
+    CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
+    rawArgs.filePath = std::string(TEST_DATA_DIR) + "/aa3/aa3-SS-300.ms";
+    rawArgs.outputFilePath = "testdata/AA3CpuOutput.json";
+    rawArgs.directions = "[\
+        [-0.4606549305661674,-0.29719233792392513],\
+        [-0.753231018062671,-0.44387635324622354],\
+        [-0.6207547100721282,-0.2539086572881469],\
+        [-0.41958660604621867,-0.03677626900108552],\
+        [-0.41108685258900596,-0.08638012622791202],\
+        [-0.7782459495668798,-0.4887860989684432],\
+        [-0.17001324965728973,-0.28595644149463484],\
+        [-0.7129444556035118,-0.365286407171852],\
+        [-0.1512764129166089,-0.21161026349648748]\
+    ]";
+    rawArgs.computeImplementation = "cpu";
+    rawArgs.useFileSystemCache = false;
+    TestConfig(std::move(rawArgs), 1e-15);
+}
+TEST_F(ConfigTests, TestAA3CudaConfig)
+{
+    CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
+    rawArgs.filePath = std::string(TEST_DATA_DIR) + "/aa3/aa3-SS-300.ms";
+    rawArgs.outputFilePath = "testdata/AA3CudaOutput.json";
+    rawArgs.directions = "[\
+        [-0.4606549305661674,-0.29719233792392513],\
+        [-0.753231018062671,-0.44387635324622354],\
+        [-0.6207547100721282,-0.2539086572881469],\
+        [-0.41958660604621867,-0.03677626900108552],\
+        [-0.41108685258900596,-0.08638012622791202],\
+        [-0.7782459495668798,-0.4887860989684432],\
+        [-0.17001324965728973,-0.28595644149463484],\
+        [-0.7129444556035118,-0.365286407171852],\
+        [-0.1512764129166089,-0.21161026349648748]\
+    ]";
+    rawArgs.computeImplementation = "cuda";
+    rawArgs.useCusolver = true;
+    rawArgs.useFileSystemCache = false;
+    TestConfig(std::move(rawArgs), 1e-5);
 }

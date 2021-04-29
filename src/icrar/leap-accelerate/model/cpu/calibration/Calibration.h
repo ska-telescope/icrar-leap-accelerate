@@ -70,7 +70,22 @@ namespace cpu
 
         void Serialize(std::ostream& os, bool pretty = false) const;
 
-        void Write(rapidjson::Writer<rapidjson::StringBuffer>& writer) const;
+        template<typename Writer>
+        void Write(Writer& writer) const
+        {
+            writer.StartObject();
+                writer.String("epoch"); writer.StartObject();
+                    writer.String("start"); writer.Double(m_startEpoch);
+                    writer.String("end"); writer.Double(m_endEpoch);
+                writer.EndObject();
+                writer.String("calibration"); writer.StartArray();
+                    for(auto& beamCalibration : m_beamCalibrations)
+                    {
+                        beamCalibration.Write(writer);
+                    }
+                writer.EndArray();
+            writer.EndObject();
+        }
 
         static Calibration Parse(const std::string& json);
 

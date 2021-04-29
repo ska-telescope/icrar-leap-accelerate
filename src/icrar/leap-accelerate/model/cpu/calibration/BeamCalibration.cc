@@ -48,6 +48,7 @@ namespace cpu
         if(!equal)
         {
             std::cout << "beamcal not equal" << std::endl;
+            std::cout << std::setprecision(15);
             std::cout << beamCalibration.m_direction << std::endl;
             std::cout << std::endl;
             std::cout << beamCalibration.m_calibration << std::endl;
@@ -76,8 +77,8 @@ namespace cpu
         rapidjson::StringBuffer s;
         if(pretty)
         {
-                rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
-                Write(writer);
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
+            Write(writer);
         }
         else
         {
@@ -86,30 +87,6 @@ namespace cpu
         }
         
         os << s.GetString() << std::endl;
-    }
-
-    void BeamCalibration::Write(rapidjson::Writer<rapidjson::StringBuffer>& writer) const
-    {
-        assert(m_calibration.cols() == 1);
-
-        writer.StartObject();
-        writer.String("direction");
-        writer.StartArray();
-
-        for(auto& v : m_direction)
-        {
-            writer.Double(v);
-        }
-        writer.EndArray();
-
-        writer.String("beamCalibration");
-        writer.StartArray();
-        for(int i = 0; i < m_calibration.rows(); ++i)
-        {
-            writer.Double(m_calibration(i,0));
-        }
-        writer.EndArray();
-        writer.EndObject();
     }
 
     BeamCalibration BeamCalibration::Parse(const rapidjson::Value& doc)

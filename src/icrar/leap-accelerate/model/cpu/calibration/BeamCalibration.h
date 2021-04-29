@@ -47,7 +47,7 @@ namespace cpu
     class BeamCalibration
     {
         SphericalDirection m_direction;
-        Eigen::MatrixXd m_calibration;
+        Eigen::VectorXd m_calibration;
 
     public:
         /**
@@ -83,7 +83,30 @@ namespace cpu
          */
         void Serialize(std::ostream& os, bool pretty = false) const;
 
-        void Write(rapidjson::Writer<rapidjson::StringBuffer>& writer) const;
+        template<typename Writer>
+        void Write(Writer& writer) const
+        {
+            assert(m_calibration.cols() == 1);
+
+            writer.StartObject();
+            writer.String("direction");
+            writer.StartArray();
+
+            for(auto& v : m_direction)
+            {
+                writer.Double(v);
+            }
+            writer.EndArray();
+
+            writer.String("beamCalibration");
+            writer.StartArray();
+            for(int i = 0; i < m_calibration.rows(); ++i)
+            {
+                writer.Double(m_calibration(i));
+            }
+            writer.EndArray();
+            writer.EndObject();
+        }
 
         static BeamCalibration Parse(const rapidjson::Value& doc);
     };

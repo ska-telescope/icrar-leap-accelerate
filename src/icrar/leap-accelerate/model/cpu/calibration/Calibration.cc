@@ -81,8 +81,8 @@ namespace cpu
         rapidjson::StringBuffer s;
         if(pretty)
         {
-                rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
-                Write(writer);
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
+            Write(writer);
         }
         else
         {
@@ -92,22 +92,6 @@ namespace cpu
 
         os << s.GetString() << std::endl;
     }
-
-    void Calibration::Write(rapidjson::Writer<rapidjson::StringBuffer>& writer) const
-        {
-            writer.StartObject();
-                writer.String("epoch"); writer.StartObject();
-                    writer.String("start"); writer.Double(m_startEpoch);
-                    writer.String("end"); writer.Double(m_endEpoch);
-                writer.EndObject(); 
-                writer.String("calibration"); writer.StartArray();
-                    for(auto& calibration : m_beamCalibrations)
-                    {
-                        calibration.Write(writer);
-                    }
-                writer.EndArray();
-            writer.EndObject();
-        }
 
     Calibration Calibration::Parse(const std::string& json)
     {
