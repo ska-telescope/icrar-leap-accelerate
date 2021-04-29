@@ -103,6 +103,13 @@ add_library(
 )
 endif()
 
+# set_target_properties(${TARGET_NAME}
+#   PROPERTIES
+#   ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+#   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+#   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+# )
+
 if(${CMAKE_VERSION} VERSION_GREATER "3.16.0" AND NOT CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
   # clang-tidy analysis does not support precompiled headers
   target_precompile_headers(${TARGET_NAME}
