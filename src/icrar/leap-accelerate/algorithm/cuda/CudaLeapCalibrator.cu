@@ -22,11 +22,14 @@
 
 #include "CudaLeapCalibrator.h"
 
-#include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/common/eigen_stringutils.h>
 
 #include <icrar/leap-accelerate/algorithm/cuda/CudaComputeOptions.h>
+#include <icrar/leap-accelerate/algorithm/cuda/kernel/RotateVisibilitiesKernel.h>
+#include <icrar/leap-accelerate/algorithm/cuda/kernel/PolarizationsToPhaseAnglesKernel.h>
+#include <icrar/leap-accelerate/algorithm/cuda/kernel/ComputePhaseDeltaKernel.h>
+#include <icrar/leap-accelerate/algorithm/cuda/kernel/CopyPhaseDeltaKernel.h>
 
 #include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
 #include <icrar/leap-accelerate/model/cuda/HostMetaData.h>
@@ -34,7 +37,6 @@
 #include <icrar/leap-accelerate/model/cuda/HostIntegration.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
 
-#include <icrar/leap-accelerate/math/cuda/math.cuh>
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
 #include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 
@@ -46,33 +48,17 @@
 #include <icrar/leap-accelerate/core/profiling/timer.h>
 
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
-#include <icrar/leap-accelerate/cuda/device_matrix.h>
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+#include <icrar/leap-accelerate/cuda/device_matrix.h>
+#include <icrar/leap-accelerate/cuda/device_vector.h>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include <math_constants.h>
-#include <cuComplex.h>
-#include <cusolverDn.h>
-#include <cublas_v2.h>
-#include <thrust/complex.h>
-#include <thrust/device_vector.h>
 
-#include <boost/math/constants/constants.hpp>
 #include <boost/optional/optional_io.hpp>
-#include <boost/thread.hpp>
 
-#include <complex>
-#include <istream>
-#include <iostream>
-#include <iterator>
 #include <string>
-#include <queue>
-#include <exception>
-#include <memory>
-#include <set>
 
-using Radians = double;
 using namespace boost::math::constants;
 
 namespace icrar
@@ -201,7 +187,6 @@ namespace cuda
                 epochs[(solution+1) * validatedSolutionInterval.GetInterval() - 1]);
             input_queue.clear();
 
-            // Flooring to remove incomplete measurements
             int integrations = ms.GetNumTimesteps();
             if(integrations == 0)
             {
@@ -395,214 +380,5 @@ namespace cuda
         deviceCal1.ToHost(cal1);
         output_calibrations.emplace_back(direction, cal1);
     }
-
-    /**
-     * @brief Rotates visibilities in parallel for baselines and channels
-     * @note Atomic operator required for writing to @p pAvgData
-     * 
-     * @param constants measurement set constants
-     * @param dd direction dependent rotation 
-     * @param UVW unrotated uvws
-     * @param integrationData inout integration data 
-     * @param avgData output avgData to increment
-     */
-    __global__ void g_RotateVisibilities(
-        const icrar::cpu::Constants constants,
-        const Eigen::Matrix3d dd,
-        const Eigen::Map<Eigen::Matrix<double, 3, Eigen::Dynamic>> UVWs,
-        Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>> integrationData,
-        Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> avgData)
-    {
-        const int integration_baselines = integrationData.dimension(1);
-        const int integration_channels = integrationData.dimension(2);
-        const int md_baselines = constants.nbaselines; //metadata baselines
-        const int polarizations = constants.num_pols;
-        constexpr double two_pi = 2 * CUDART_PI;
-
-        //parallel execution per channel
-        int baseline = blockDim.x * blockIdx.x + threadIdx.x; //baseline amongst all time smeared baselines
-        int channel = blockDim.y * blockIdx.y + threadIdx.y;
-
-        if(baseline < integration_baselines && channel < integration_channels)
-        {
-            int md_baseline = baseline % md_baselines; 
-
-            Eigen::Vector3d rotatedUVW = dd * UVWs.col(baseline);
-            double shiftFactor = -two_pi * (rotatedUVW.z() - UVWs.col(baseline).z());
-
-            // loop over channels
-            double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
-            cuDoubleComplex exp = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
-
-            for(int polarization = 0; polarization < polarizations; polarization++)
-            {
-                integrationData(polarization, baseline, channel) = cuCmul(integrationData(polarization, baseline, channel), exp);
-            }
-            bool hasNaN = false;
-            for(int polarization = 0; polarization < polarizations; polarization++)
-            {
-                cuDoubleComplex n = integrationData(polarization, baseline, channel);
-                hasNaN |= isnan(n.x) || isnan(n.y);
-            }
-
-            if(!hasNaN)
-            {
-                for(int polarization = 0; polarization < polarizations; ++polarization)
-                {
-                    atomicAdd(&avgData(md_baseline, polarization).x, integrationData(polarization, baseline, channel).x);
-                    atomicAdd(&avgData(md_baseline, polarization).y, integrationData(polarization, baseline, channel).y);
-                }
-            }
-        }
-    }
-
-    __host__ void CudaLeapCalibrator::RotateVisibilities(
-        DeviceIntegration& integration,
-        DeviceMetaData& metadata)
-    {
-        const auto& constants = metadata.GetConstants(); 
-        assert(constants.channels == integration.GetChannels() && integration.GetChannels() == integration.GetVis().GetDimensionSize(2));
-        assert(constants.nbaselines == metadata.GetAvgData().GetRows() && integration.GetBaselines() == integration.GetVis().GetDimensionSize(1));
-        assert(constants.num_pols == integration.GetVis().GetDimensionSize(0));
-
-        dim3 blockSize = dim3(128, 8, 1); // block size can be any value where the product is 1024
-        dim3 gridSize = dim3(
-            (int)ceil((float)integration.GetBaselines() / blockSize.x),
-            (int)ceil((float)integration.GetChannels() / blockSize.y),
-            1
-        );
-
-        auto integrationDataMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>>(
-            (cuDoubleComplex*)integration.GetVis().Get(),
-            (int)integration.GetVis().GetDimensionSize(0), // inferring (const int) causes error
-            (int)integration.GetVis().GetDimensionSize(1), // inferring (const int) causes error
-            (int)integration.GetVis().GetDimensionSize(2) // inferring (const int) causes error
-        );
-
-        auto avgDataMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>>(
-            (cuDoubleComplex*)metadata.GetAvgData().Get(),
-            (int)metadata.GetAvgData().GetRows(), // inferring (const int) causes error
-            (int)metadata.GetAvgData().GetCols() // inferring (const int) causes error
-        );
-
-        auto UVWMap = Eigen::Map<Eigen::Matrix<double, 3, -1>>(
-            (double*)metadata.GetUVW().Get(),
-            3,
-            metadata.GetUVW().GetCount()
-        );
-
-        g_RotateVisibilities<<<gridSize, blockSize>>>(
-            constants,
-            metadata.GetDD(),
-            UVWMap,
-            integrationDataMap,
-            avgDataMap);
-    }
-
-    /**
-     * @brief Copies the arg of the 1st column of avgData into phaseAnglesI1
-     * 
-     * @param I1 
-     * @param avgData 
-     * @param phaseAnglesI1 
-     */
-    __global__ void g_AvgDataToPhaseAngles(
-        const Eigen::Map<const Eigen::VectorXi> I1,
-        const Eigen::Map<const Eigen::Matrix<thrust::complex<double>, -1, -1>> avgData,
-        Eigen::Map<Eigen::VectorXd> phaseAnglesI1)
-    {
-        int row = blockDim.x * blockIdx.x + threadIdx.x;
-        if(row < I1.rows())
-        {
-            phaseAnglesI1(row) = thrust::arg(avgData(I1(row), 0));
-        }
-    }
-
-    __host__ void CudaLeapCalibrator::AvgDataToPhaseAngles(const device_vector<int>& I1, const device_matrix<std::complex<double>>& avgData, device_vector<double>& phaseAnglesI1)
-    {
-        if(I1.GetRows()+1 != phaseAnglesI1.GetRows())
-        {
-            throw invalid_argument_exception("incorrect number of columns", "phaseAnglesI1", __FILE__, __LINE__);
-        }
-
-        dim3 blockSize = dim3(1024, 1, 1);
-        dim3 gridSize = dim3(static_cast<int>(ceil(static_cast<double>(I1.GetRows()) / blockSize.x)), 1, 1);
-
-        using MatrixXcd = Eigen::Matrix<thrust::complex<double>, -1, -1>;
-        auto I1Map = Eigen::Map<const Eigen::VectorXi>(I1.Get(), I1.GetRows());
-        auto avgDataMap = Eigen::Map<const MatrixXcd>((thrust::complex<double>*)avgData.Get(), avgData.GetRows(), avgData.GetCols());
-        auto phaseAnglesI1Map = Eigen::Map<Eigen::VectorXd>(phaseAnglesI1.Get(), phaseAnglesI1.GetRows());
-        g_AvgDataToPhaseAngles<<<blockSize, gridSize>>>(I1Map, avgDataMap, phaseAnglesI1Map);
-    }
-
-    __global__ void g_CalcDeltaPhase(
-        const Eigen::Map<const Eigen::MatrixXd> A,
-        const Eigen::Map<const Eigen::VectorXd> cal1,
-        const Eigen::Map<const Eigen::Matrix<thrust::complex<double>, -1, -1>> avgData,
-        Eigen::Map<Eigen::VectorXd> deltaPhase)
-    {
-        constexpr double two_pi = 2 * CUDART_PI;
-        int n = blockDim.x * blockIdx.x + threadIdx.x;
-
-        if(n < A.rows())
-        {
-            double sum = A.row(n) * cal1;
-            deltaPhase.row(n) = (thrust::exp(thrust::complex<double>(0, -two_pi * sum)) * avgData.row(n))
-            .unaryExpr([](const thrust::complex<double>& v){ return thrust::arg(v); });
-        }
-    }
-
-    __host__ void CudaLeapCalibrator::CalcDeltaPhase(
-        const device_matrix<double>& A,
-        const device_vector<double>& cal1,
-        const device_matrix<std::complex<double>>& avgData,
-        device_matrix<double>& deltaPhase)
-    {
-        if(A.GetCols() != cal1.GetRows())
-        {
-            std::stringstream ss;
-            ss << "a columns (" << A.GetCols() << ") does not match cal1 rows (" << cal1.GetRows() << ")";
-            throw invalid_argument_exception(ss.str(), "A", __FILE__, __LINE__);
-        }
-
-        dim3 blockSize = dim3(1024, 1, 1);
-        dim3 gridSize = dim3((int)ceil(static_cast<double>(A.GetRows()) / blockSize.x), 1, 1);
-
-        auto AMap = Eigen::Map<const Eigen::MatrixXd>(A.Get(), A.GetRows(), A.GetCols());
-        auto cal1Map = Eigen::Map<const Eigen::VectorXd>(cal1.Get(), cal1.GetRows());
-        auto avgDataMap = Eigen::Map<const Eigen::Matrix<thrust::complex<double>, -1, -1>>(
-            (thrust::complex<double>*)avgData.Get(), avgData.GetRows(), avgData.GetCols());
-        auto deltaPhaseMap = Eigen::Map<Eigen::VectorXd>(deltaPhase.Get(), deltaPhase.GetRows());
-        g_CalcDeltaPhase<<<blockSize,gridSize>>>(AMap, cal1Map, avgDataMap, deltaPhaseMap);
-    }
-
-    __global__ void g_GenerateDeltaPhaseColumn(const Eigen::Map<const Eigen::MatrixXd> deltaPhase, Eigen::Map<Eigen::VectorXd> deltaPhaseColumn)
-    {
-        int row = blockDim.x * blockIdx.x + threadIdx.x;
-        if(row < deltaPhase.rows())
-        {
-            deltaPhaseColumn(row) = deltaPhase(row, 0); // 1st pol only
-        }
-        else if (row < deltaPhaseColumn.rows())
-        {
-            deltaPhaseColumn(row) = 0; // deltaPhaseColumn is of size deltaPhaseRows+1 where the last/extra row = 0
-        }
-    }
-
-    __host__ void CudaLeapCalibrator::GenerateDeltaPhaseColumn(const device_matrix<double>& deltaPhase, device_vector<double>& deltaPhaseColumn)
-    {
-        if(deltaPhase.GetRows()+1 != deltaPhaseColumn.GetRows())
-        {
-            throw invalid_argument_exception("incorrect number of columns", "deltaPhaseColumn", __FILE__, __LINE__);
-        }
-
-        dim3 blockSize = dim3(1024, 1, 1);
-        dim3 gridSize = dim3((int)ceil(static_cast<double>(deltaPhaseColumn.GetRows()) / blockSize.x), 1, 1);
-
-        auto deltaPhaseMap = Eigen::Map<const Eigen::MatrixXd>(deltaPhase.Get(), deltaPhase.GetRows(), deltaPhase.GetCols());
-        auto deltaPhaseColumnMap = Eigen::Map<Eigen::VectorXd>(deltaPhaseColumn.Get(), deltaPhaseColumn.GetRows());
-        g_GenerateDeltaPhaseColumn<<<blockSize,gridSize>>>(deltaPhaseMap, deltaPhaseColumnMap);
-    }
-
 } // namespace cuda
 } // namespace icrar
