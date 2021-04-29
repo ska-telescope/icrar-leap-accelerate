@@ -70,6 +70,10 @@ set(cuda_sources
     model/cuda/DeviceIntegration.cu
     algorithm/cuda/CudaComputeOptions.cu
     algorithm/cuda/CudaLeapCalibrator.cu
+    algorithm/cuda/kernel/RotateVisibilitiesKernel.cu
+    algorithm/cuda/kernel/PolarizationsToPhaseAnglesKernel.cu
+    algorithm/cuda/kernel/ComputePhaseDeltaKernel.cu
+    algorithm/cuda/kernel/CopyPhaseDeltaKernel.cu
 )
 
 # Libraries
