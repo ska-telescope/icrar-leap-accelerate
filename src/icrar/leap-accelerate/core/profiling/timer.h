@@ -23,7 +23,7 @@
 #pragma once
 
 #include <icrar/leap-accelerate/math/math_conversion.h>
-#include <icrar/leap-accelerate/core/ioutils.h>
+#include <icrar/leap-accelerate/core/memory/ioutils.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 
 #include <chrono>

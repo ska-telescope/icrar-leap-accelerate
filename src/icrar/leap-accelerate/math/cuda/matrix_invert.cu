@@ -31,7 +31,7 @@
 
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/exception/exception.h>
-#include <icrar/leap-accelerate/core/ioutils.h>
+#include <icrar/leap-accelerate/core/memory/ioutils.h>
 
 #include <icrar/leap-accelerate/math/cuda/matrix_multiply.h>
 

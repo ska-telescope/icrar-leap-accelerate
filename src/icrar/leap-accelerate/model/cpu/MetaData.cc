@@ -32,7 +32,7 @@
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/common/eigen_stringutils.h>
 #include <icrar/leap-accelerate/common/eigen_cache.h>
-#include <icrar/leap-accelerate/core/ioutils.h>
+#include <icrar/leap-accelerate/core/memory/ioutils.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 
 #include <boost/math/constants/constants.hpp>

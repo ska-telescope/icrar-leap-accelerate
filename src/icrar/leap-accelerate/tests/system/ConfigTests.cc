@@ -29,6 +29,9 @@
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
 #include <icrar/leap-accelerate/model/cpu/calibration/Calibration.h>
 
+#include <icrar/leap-accelerate/core/memory/system_memory.h>
+#include <icrar/leap-accelerate/core/memory/ioutils.h>
+
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/dll/runtime_symbol_info.hpp>
@@ -36,7 +39,6 @@
 #include <array>
 #include <sstream>
 #include <streambuf>
-
 
 using namespace icrar;
 
@@ -188,6 +190,16 @@ public:
 
     void TestAA4CpuConfig()
     {
+        size_t availableMemory = GetTotalAvailableSystemVirtualMemory();
+
+        size_t VisSize = 4 * 512*511/2 * 33 * sizeof(std::complex<double>); // polarizations * baselines * channels * sizeof(std::complex<double>)
+        size_t AdSize = 512 * 512*511/2 * sizeof(double); // stations * baselines * sizeof(double);
+        if(availableMemory < (VisSize + AdSize))
+        {
+            GTEST_SKIP() << memory_amount(VisSize + AdSize)
+            << " system memory required but only " << memory_amount(availableMemory) << " available";
+        }
+
         CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
         rawArgs.filePath = std::string(TEST_DATA_DIR) + "/aa4/aa4-SS-33-120.ms";
         rawArgs.outputFilePath = "testdata/AA4CpuOutput.json";
@@ -195,11 +207,23 @@ public:
         rawArgs.computeImplementation = "cpu";
         rawArgs.useCusolver = true;
         rawArgs.useFileSystemCache = false;
+        rawArgs.solutionInterval = "[0,1,1]";
         TestConfig(std::move(rawArgs), 1e-15);
     }
 
     void TestAA4CudaConfig()
     {
+        size_t cudaAvailable = GetTotalAvailableCudaPhysicalMemory();
+
+        size_t VisSize = 4 * 512*511/2 * 33 * sizeof(std::complex<double>); // polarizations * baselines * channels * sizeof(std::complex<double>)
+        size_t AdSize = 512 * 512*511/2 * sizeof(double); // stations * baselines * sizeof(double);
+        size_t AdWorkSize = 1170 * 1024 * 1024;
+        if(cudaAvailable < (VisSize + AdSize + AdWorkSize))
+        {
+            GTEST_SKIP() << memory_amount(VisSize + AdSize + AdWorkSize)
+            << " device memory required but only " << memory_amount(cudaAvailable) << " available";
+        }
+
         CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
         rawArgs.filePath = std::string(TEST_DATA_DIR) + "/aa4/aa4-SS-33-120.ms";
         rawArgs.outputFilePath = "testdata/AA4CudaOutput.json";
@@ -207,6 +231,7 @@ public:
         rawArgs.computeImplementation = "cuda";
         rawArgs.useCusolver = true;
         rawArgs.useFileSystemCache = false;
+        rawArgs.solutionInterval = "[0,1,1]";
         TestConfig(std::move(rawArgs), 1e-5);
     }
 };
@@ -216,7 +241,9 @@ TEST_F(ConfigTests, TestMWACpuConfig) { TestMWACpuConfig(); }
 TEST_F(ConfigTests, TestAA3CpuConfig) { TestAA3CpuConfig(); }
 TEST_F(ConfigTests, TestAA4CpuConfig) { TestAA4CpuConfig(); }
 
+#if CUDA_ENABLED
 TEST_F(ConfigTests, TestMWACudaConfig) { TestMWACudaConfig(); }
 TEST_F(ConfigTests, TestMWACudaConfig2) { TestMWACudaConfig2(); }
 TEST_F(ConfigTests, TestAA3CudaConfig) { TestAA3CudaConfig(); } 
 TEST_F(ConfigTests, TestAA4CudaConfig) { TestAA4CudaConfig(); }
+#endif // CUDA_ENABLED

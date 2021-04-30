@@ -34,9 +34,8 @@
 
 #if CUDA_ENABLED
 #include <cuda_runtime.h>
-#endif
-
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+#endif
 
 #include <gtest/gtest.h>
 

@@ -20,6 +20,8 @@
  * MA 02111 - 1307  USA
  */
 
+#if CUDA_ENABLED
+
 #include "DeviceMetaData.h"
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
@@ -171,3 +173,4 @@ namespace cuda
     }
 }
 }
+#endif // CUDA_ENABLED
