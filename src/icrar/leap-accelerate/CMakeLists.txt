@@ -51,10 +51,12 @@ set(sources
     model/cpu/MetaData.cc
     model/cpu/calibration/Calibration.cc
     model/cpu/calibration/BeamCalibration.cc
+    model/cuda/DeviceMetaData.cc
 
     algorithm/LeapCalibratorFactory.cc
     algorithm/cpu/CpuLeapCalibrator.cc
     algorithm/cpu/PhaseMatrixFunction.cc
+    algorithm/cuda/CudaComputeOptions.cc
 )
 set(cuda_headers
     cuda/cuda_info.h
@@ -68,9 +70,7 @@ set(cuda_sources
     math/cuda/matrix_multiply.cu
     math/cuda/matrix_invert.cu
     
-    model/cuda/DeviceMetaData.cu
     model/cuda/DeviceIntegration.cu
-    algorithm/cuda/CudaComputeOptions.cu
     algorithm/cuda/CudaLeapCalibrator.cu
     algorithm/cuda/kernel/RotateVisibilitiesKernel.cu
     algorithm/cuda/kernel/PolarizationsToPhaseAnglesKernel.cu

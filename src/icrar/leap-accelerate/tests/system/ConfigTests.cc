@@ -44,6 +44,18 @@ class ConfigTests : public testing::Test
 {
     const double TOLERANCE = 0.0001;
 
+    const std::string m_mwaDirections = "[\
+        [-0.4606549305661674,-0.29719233792392513],\
+        [-0.753231018062671,-0.44387635324622354],\
+        [-0.6207547100721282,-0.2539086572881469],\
+        [-0.41958660604621867,-0.03677626900108552],\
+        [-0.41108685258900596,-0.08638012622791202],\
+        [-0.7782459495668798,-0.4887860989684432],\
+        [-0.17001324965728973,-0.28595644149463484],\
+        [-0.7129444556035118,-0.365286407171852],\
+        [-0.1512764129166089,-0.21161026349648748]\
+    ]";
+
 public:
     ConfigTests() = default;
 
@@ -115,88 +127,96 @@ public:
         auto expected = cpu::Calibration::Parse(expectedStr);
         ASSERT_TRUE(expected.IsApprox(actual, threshold)) << actualPath << " does not match " << path;
     }
+
+    void TestMWACpuConfig()
+    {
+        CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
+        rawArgs.filePath = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
+        rawArgs.outputFilePath = "testdata/MWACpuOutput.json";
+        rawArgs.directions = m_mwaDirections;
+        rawArgs.computeImplementation = "cpu";
+        rawArgs.useFileSystemCache = false;
+        TestConfig(std::move(rawArgs), 1e-15);
+    }
+
+    void TestMWACudaConfig()
+    {
+        CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
+        rawArgs.filePath = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
+        rawArgs.outputFilePath = "testdata/MWACudaOutput.json";
+        rawArgs.directions = m_mwaDirections;
+        rawArgs.computeImplementation = "cuda";
+        rawArgs.useCusolver = false;
+        rawArgs.useFileSystemCache = false;
+        TestConfig(std::move(rawArgs), 1e-10);
+    }
+
+    void TestMWACudaConfig2()
+    {
+        CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
+        rawArgs.filePath = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
+        rawArgs.outputFilePath = "testdata/MWACudaOutput.json";
+        rawArgs.directions = m_mwaDirections;
+        rawArgs.computeImplementation = "cuda";
+        rawArgs.useCusolver = true;
+        rawArgs.useFileSystemCache = false;
+        TestConfig(std::move(rawArgs), 1e-1);
+    }
+
+    void TestAA3CpuConfig()
+    {
+        CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
+        rawArgs.filePath = std::string(TEST_DATA_DIR) + "/aa3/aa3-SS-300.ms";
+        rawArgs.outputFilePath = "testdata/AA3CpuOutput.json";
+        rawArgs.directions = m_mwaDirections;
+        rawArgs.computeImplementation = "cpu";
+        rawArgs.useFileSystemCache = false;
+        TestConfig(std::move(rawArgs), 1e-15);
+    }
+
+    void TestAA3CudaConfig()
+    {
+        CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
+        rawArgs.filePath = std::string(TEST_DATA_DIR) + "/aa3/aa3-SS-300.ms";
+        rawArgs.outputFilePath = "testdata/AA3CudaOutput.json";
+        rawArgs.directions = m_mwaDirections;
+        rawArgs.computeImplementation = "cuda";
+        rawArgs.useCusolver = true;
+        rawArgs.useFileSystemCache = false;
+        TestConfig(std::move(rawArgs), 1e-5);
+    }
+
+    void TestAA4CpuConfig()
+    {
+        CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
+        rawArgs.filePath = std::string(TEST_DATA_DIR) + "/aa4/aa4-SS-33-120.ms";
+        rawArgs.outputFilePath = "testdata/AA4CpuOutput.json";
+        rawArgs.directions = "[[0.0, -0.471238898],[0.4537856055, -0.4537856055]]";
+        rawArgs.computeImplementation = "cpu";
+        rawArgs.useCusolver = true;
+        rawArgs.useFileSystemCache = false;
+        TestConfig(std::move(rawArgs), 1e-15);
+    }
+
+    void TestAA4CudaConfig()
+    {
+        CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
+        rawArgs.filePath = std::string(TEST_DATA_DIR) + "/aa4/aa4-SS-33-120.ms";
+        rawArgs.outputFilePath = "testdata/AA4CudaOutput.json";
+        rawArgs.directions = "[[0.0, -0.471238898],[0.4537856055, -0.4537856055]]";
+        rawArgs.computeImplementation = "cuda";
+        rawArgs.useCusolver = true;
+        rawArgs.useFileSystemCache = false;
+        TestConfig(std::move(rawArgs), 1e-5);
+    }
 };
 
 TEST_F(ConfigTests, TestDefaultConfig) { TestDefaultConfig("testdata/DefaultOutput.json"); }
-TEST_F(ConfigTests, TestMWACpuConfig)
-{
-    CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
-    rawArgs.filePath = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
-    rawArgs.outputFilePath = "testdata/MWACpuOutput.json";
-    rawArgs.directions = "[\
-        [-0.4606549305661674,-0.29719233792392513],\
-        [-0.753231018062671,-0.44387635324622354],\
-        [-0.6207547100721282,-0.2539086572881469],\
-        [-0.41958660604621867,-0.03677626900108552],\
-        [-0.41108685258900596,-0.08638012622791202],\
-        [-0.7782459495668798,-0.4887860989684432],\
-        [-0.17001324965728973,-0.28595644149463484],\
-        [-0.7129444556035118,-0.365286407171852],\
-        [-0.1512764129166089,-0.21161026349648748]\
-    ]";
-    rawArgs.computeImplementation = "cpu";
-    rawArgs.useFileSystemCache = false;
-    TestConfig(std::move(rawArgs), 1e-15);
-}
-TEST_F(ConfigTests, TestMWACudaConfig)
-{
-    CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
-    rawArgs.filePath = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
-    rawArgs.outputFilePath = "testdata/MWACudaOutput.json";
-    rawArgs.directions = "[\
-        [-0.4606549305661674,-0.29719233792392513],\
-        [-0.753231018062671,-0.44387635324622354],\
-        [-0.6207547100721282,-0.2539086572881469],\
-        [-0.41958660604621867,-0.03677626900108552],\
-        [-0.41108685258900596,-0.08638012622791202],\
-        [-0.7782459495668798,-0.4887860989684432],\
-        [-0.17001324965728973,-0.28595644149463484],\
-        [-0.7129444556035118,-0.365286407171852],\
-        [-0.1512764129166089,-0.21161026349648748]\
-    ]";
-    rawArgs.computeImplementation = "cuda";
-    rawArgs.useCusolver = true;
-    rawArgs.useFileSystemCache = false;
-    TestConfig(std::move(rawArgs), 1e-10);
-}
-TEST_F(ConfigTests, TestAA3CpuConfig)
-{
-    CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
-    rawArgs.filePath = std::string(TEST_DATA_DIR) + "/aa3/aa3-SS-300.ms";
-    rawArgs.outputFilePath = "testdata/AA3CpuOutput.json";
-    rawArgs.directions = "[\
-        [-0.4606549305661674,-0.29719233792392513],\
-        [-0.753231018062671,-0.44387635324622354],\
-        [-0.6207547100721282,-0.2539086572881469],\
-        [-0.41958660604621867,-0.03677626900108552],\
-        [-0.41108685258900596,-0.08638012622791202],\
-        [-0.7782459495668798,-0.4887860989684432],\
-        [-0.17001324965728973,-0.28595644149463484],\
-        [-0.7129444556035118,-0.365286407171852],\
-        [-0.1512764129166089,-0.21161026349648748]\
-    ]";
-    rawArgs.computeImplementation = "cpu";
-    rawArgs.useFileSystemCache = false;
-    TestConfig(std::move(rawArgs), 1e-15);
-}
-TEST_F(ConfigTests, TestAA3CudaConfig)
-{
-    CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
-    rawArgs.filePath = std::string(TEST_DATA_DIR) + "/aa3/aa3-SS-300.ms";
-    rawArgs.outputFilePath = "testdata/AA3CudaOutput.json";
-    rawArgs.directions = "[\
-        [-0.4606549305661674,-0.29719233792392513],\
-        [-0.753231018062671,-0.44387635324622354],\
-        [-0.6207547100721282,-0.2539086572881469],\
-        [-0.41958660604621867,-0.03677626900108552],\
-        [-0.41108685258900596,-0.08638012622791202],\
-        [-0.7782459495668798,-0.4887860989684432],\
-        [-0.17001324965728973,-0.28595644149463484],\
-        [-0.7129444556035118,-0.365286407171852],\
-        [-0.1512764129166089,-0.21161026349648748]\
-    ]";
-    rawArgs.computeImplementation = "cuda";
-    rawArgs.useCusolver = true;
-    rawArgs.useFileSystemCache = false;
-    TestConfig(std::move(rawArgs), 1e-5);
-}
+TEST_F(ConfigTests, TestMWACpuConfig) { TestMWACpuConfig(); }
+TEST_F(ConfigTests, TestAA3CpuConfig) { TestAA3CpuConfig(); }
+TEST_F(ConfigTests, TestAA4CpuConfig) { TestAA4CpuConfig(); }
+
+TEST_F(ConfigTests, TestMWACudaConfig) { TestMWACudaConfig(); }
+TEST_F(ConfigTests, TestMWACudaConfig2) { TestMWACudaConfig2(); }
+TEST_F(ConfigTests, TestAA3CudaConfig) { TestAA3CudaConfig(); } 
+TEST_F(ConfigTests, TestAA4CudaConfig) { TestAA4CudaConfig(); }

@@ -45,12 +45,12 @@ add_executable(${TEST_TARGET_NAME}
   ${sources}
 )
 
-# set_target_properties(${TEST_TARGET_NAME}
-#   PROPERTIES
-#   ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-#   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-#   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/tests"
-# )
+set_target_properties(${TEST_TARGET_NAME}
+  PROPERTIES
+  ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIR}
+)
 
 if(${CMAKE_VERSION} VERSION_GREATER "3.16.0" AND NOT CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
   # clang-tidy analysis does not support precompiled headers
@@ -81,7 +81,7 @@ set(test_data
 add_custom_target(${TEST_TARGET_NAME}.Data ALL
   COMMAND ${CMAKE_COMMAND}
   -Dsrc_dir=${CMAKE_CURRENT_SOURCE_DIR}/testdata
-  -Ddst_dir=${CMAKE_CURRENT_BINARY_DIR}/testdata
+  -Ddst_dir=${TEST_OUTPUT_DIR}/testdata
   -P ${PROJECT_SOURCE_DIR}/cmake/update_directory.cmake
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )

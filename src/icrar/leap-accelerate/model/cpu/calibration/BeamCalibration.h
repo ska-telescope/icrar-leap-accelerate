@@ -47,7 +47,7 @@ namespace cpu
     class BeamCalibration
     {
         SphericalDirection m_direction;
-        Eigen::VectorXd m_calibration;
+        Eigen::MatrixXd m_calibration; //TODO(calgray) refactor to Eigen::VectorXd
 
     public:
         /**
