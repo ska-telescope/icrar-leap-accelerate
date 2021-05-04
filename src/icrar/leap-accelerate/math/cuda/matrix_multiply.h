@@ -80,7 +80,7 @@ namespace cuda
         size_t arows = at ? a.GetCols() : a.GetRows();
         size_t acols = at ? a.GetRows() : a.GetCols();
         size_t brows = bt ? 1 : b.GetRows();
-        size_t bcols = bt ? b.GetRows() : 1;
+        //size_t bcols = bt ? b.GetRows() : 1;
 
         if(acols != brows)
         {

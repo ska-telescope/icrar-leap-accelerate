@@ -21,6 +21,7 @@
  */
 
 #include "eigen_extensions.h"
+#include <icrar/leap-accelerate/core/log/logging.h>
 
 namespace icrar
 {
@@ -29,6 +30,30 @@ namespace icrar
         Eigen::MatrixXd arg(const Eigen::Ref<const Eigen::MatrixXcd>& a)
         {
             return a.unaryExpr([](std::complex<double> v){ return std::arg(v); });
+        }
+
+        bool near(const Eigen::Ref<const Eigen::MatrixXd> left, const Eigen::Ref<const Eigen::MatrixXd> right, double tolerance)
+        {
+            bool equal = left.rows() == right.rows() && left.cols() == right.cols();
+            if(equal)
+            { 
+                for(std::int64_t row = 0; row < left.rows(); row++)
+                {
+                    for(std::int64_t col = 0; col < left.cols(); col++)
+                    {
+                        if(std::abs(left(row, col) - right(row, col)) > tolerance)
+                        {
+                            LOG(trace) << "matrix differs at " << row << "," << col;
+                            #ifndef NDEBUG
+                            equal = false;
+                            #else
+                            return false;
+                            #endif
+                        }
+                    }
+                }
+            }
+            return equal;
         }
     }
 }

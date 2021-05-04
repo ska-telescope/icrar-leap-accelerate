@@ -154,13 +154,11 @@ namespace cuda
 
         /**
          * @brief Constructs a new Direction Buffer object for late initialization
-         * 
-         * @param uvwSize 
+         *  
          * @param avgDataRows 
          * @param avgDataCols 
          */
         DirectionBuffer(
-            int uvwSize,
             int avgDataRows,
             int avgDataCols);
 

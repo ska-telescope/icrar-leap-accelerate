@@ -162,7 +162,7 @@ public:
         rawArgs.computeImplementation = "cuda";
         rawArgs.useCusolver = true;
         rawArgs.useFileSystemCache = false;
-        TestConfig(std::move(rawArgs), 1e-1);
+        TestConfig(std::move(rawArgs), 1e-10);
     }
 
     void TestAA3CpuConfig()
@@ -185,7 +185,7 @@ public:
         rawArgs.computeImplementation = "cuda";
         rawArgs.useCusolver = true;
         rawArgs.useFileSystemCache = false;
-        TestConfig(std::move(rawArgs), 1e-5);
+        TestConfig(std::move(rawArgs), 1e-5); //TODO: reach 10
     }
 
     void TestAA4CpuConfig()

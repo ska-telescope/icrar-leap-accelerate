@@ -104,5 +104,16 @@ namespace icrar
          * @return Eigen::MatrixXd 
          */
         Eigen::MatrixXd arg(const Eigen::Ref<const Eigen::MatrixXcd>& a);
+
+        /**
+         * @brief Performs an elementwise com
+         * 
+         * @param left 
+         * @param right 
+         * @param tolerance 
+         * @return true 
+         * @return false 
+         */
+        bool near(const Eigen::Ref<const Eigen::MatrixXd> left, const Eigen::Ref<const Eigen::MatrixXd> right, double tolerance);
     }
 } // namespace icrar

@@ -191,6 +191,14 @@ namespace icrar
          */
         uint32_t GetNumFilteredBaselines(double minimumBaselineThreshold = 0.0) const;
 
+        /**
+         * @brief Gets a flag vector of filtered stations
+         * 
+         * @param minimumBaselineThreshold 
+         * @return Eigen::Matrix<bool, -1, 1> 
+         */
+        //Eigen::Matrix<bool, -1, 1> GetFilteredStations(double minimumBaselineThreshold) const;
+
         //std::vector<casacore::MVuvw> MeasurementSet::GetCoordsCasa(uint32_t start_row) const;
         Eigen::MatrixX3d GetCoords() const;
         Eigen::MatrixX3d GetCoords(uint32_t start_row, uint32_t nBaselines) const;

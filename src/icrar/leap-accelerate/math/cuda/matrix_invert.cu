@@ -138,6 +138,7 @@ namespace cuda
         LOG(info) << "inverse matrix cuda rworksize: " << memory_amount((m-1) * sizeof(double));
         double* d_rwork; checkCudaErrors(cudaMalloc(&d_rwork, (m-1) * sizeof(double)));
 
+        cudaDeviceSynchronize();
         int h_devInfo = 0;
         checkCudaErrors(cusolverDnDgesvd(
             cusolverHandle,
@@ -198,6 +199,7 @@ namespace cuda
 
         auto d_Sd = device_matrix<double>(Sd);
         auto d_result = device_matrix<double>(n, m);
+        cudaDeviceSynchronize();
 
         // result = V * (S * Uh)
         icrar::cuda::multiply(cublasHandle, d_Sd, d_U, d_result, MatrixOp::normal, MatrixOp::hermitian);
@@ -210,7 +212,7 @@ namespace cuda
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> pseudo_inverse(
         cusolverDnHandle_t cusolverHandle,
         cublasHandle_t cublasHandle,
-        const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& matrix,
+        const Eigen::MatrixXd& matrix,
         const JobType jobType)
     {
         device_matrix<double> d_U;
@@ -226,7 +228,7 @@ namespace cuda
         checkCudaErrors(cudaDeviceSynchronize());
 
         auto VSUt = Eigen::MatrixXd(matrix.cols(), matrix.rows());
-        d_VSUt.ToHostAsync(VSUt.data());
+        d_VSUt.ToHost(VSUt.data());
 
         checkCudaErrors(cudaDeviceSynchronize());
         return VSUt;

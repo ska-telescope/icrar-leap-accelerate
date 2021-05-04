@@ -39,11 +39,11 @@
 
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
 #include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
+#include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 #include <icrar/leap-accelerate/common/eigen_cache.h>
-#include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/timer.h>
 
@@ -65,7 +65,7 @@ namespace icrar
 {
 namespace cuda
 {
-    __global__ void g_checkKernelSM() { }
+    //__global__ void g_checkKernelSM() { }
 
     CudaLeapCalibrator::CudaLeapCalibrator()
     : m_cublasContext(nullptr)
@@ -77,18 +77,18 @@ namespace cuda
         {
             throw icrar::exception("CUDA error: no devices supporting CUDA.", __FILE__, __LINE__);
         }
-        g_checkKernelSM<<<1,1>>>();
-        cudaError_t smError = cudaGetLastError();
-        if(smError != cudaError_t::cudaSuccess)
-        {   
-            CUdevice device;
-            checkCudaErrors(cuDeviceGet(&device, 0));
-            int major, minor;
-            checkCudaErrors(cuDeviceGetAttribute(&major, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, device));
-            checkCudaErrors(cuDeviceGetAttribute(&minor, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, device));
-            LOG(warning) << "CUDA error: No suitable kernel found, hardware sm compatibility is sm_" << major << minor;
-        }
-        checkCudaErrors(smError);
+        //g_checkKernelSM<<<1,1>>>();
+        // cudaError_t smError = cudaGetLastError();
+        // if(smError != cudaError_t::cudaSuccess)
+        // {   
+        //     CUdevice device;
+        //     checkCudaErrors(cuDeviceGet(&device, 0));
+        //     int major, minor;
+        //     checkCudaErrors(cuDeviceGetAttribute(&major, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, device));
+        //     checkCudaErrors(cuDeviceGetAttribute(&minor, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, device));
+        //     LOG(warning) << "CUDA error: No suitable kernel found, hardware sm compatibility is sm_" << major << minor;
+        // }
+        // checkCudaErrors(smError);
 
         checkCudaErrors(cublasCreate(&m_cublasContext));
         checkCudaErrors(cusolverDnCreate(&m_cusolverDnContext));
@@ -96,7 +96,7 @@ namespace cuda
 
     CudaLeapCalibrator::~CudaLeapCalibrator()
     {
-        checkCudaErrors(cudaGetLastError());
+        //checkCudaErrors(cudaGetLastError());
         checkCudaErrors(cusolverDnDestroy(m_cusolverDnContext));
         checkCudaErrors(cublasDestroy(m_cublasContext));
 
@@ -152,6 +152,7 @@ namespace cuda
             false);
 
         device_matrix<double> deviceA, deviceAd;
+        
         CalculateAd(metadata.GetA(), deviceA, metadata.GetAd(), deviceAd, cudaComputeOptions.isFileSystemCacheEnabled, cudaComputeOptions.useCusolver);
         cudaHostRegister(metadata.GetAd().data(), metadata.GetAd().size() * sizeof(decltype(*metadata.GetAd().data())), cudaHostRegisterPortable);
 
@@ -171,7 +172,6 @@ namespace cuda
 
         auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetConstants().nbaselines * validatedSolutionInterval.GetInterval());
         auto directionBuffer = std::make_shared<DirectionBuffer>(
-                metadata.GetConstants().nbaselines * validatedSolutionInterval.GetInterval(),
                 metadata.GetAvgData().rows(),
                 metadata.GetAvgData().cols());
         auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
@@ -179,7 +179,7 @@ namespace cuda
 
         size_t solutions = validatedSolutionInterval.GetSize();
         constexpr unsigned int integrationNumber = 0;
-        for(int solution = 0; solution < solutions; solution++)
+        for(size_t solution = 0; solution < solutions; solution++)
         {
             profiling::timer solution_timer;
             output_calibrations.emplace_back(
@@ -220,7 +220,7 @@ namespace cuda
             input_queue.emplace_back(0, integration.GetVis().dimensions());
 
             profiling::timer phase_rotate_timer;
-            for(int i = 0; i < directions.size(); ++i)
+            for(size_t i = 0; i < directions.size(); ++i)
             {
                 LOG(info) << "Processing direction " << i;
                 LOG(info) << "Setting Metadata Direction";
@@ -254,21 +254,33 @@ namespace cuda
         LOG(info) << "Finished calibration in " << calibration_timer;
     }
 
-    inline void CheckIdentity(const Eigen::MatrixXd& left, const Eigen::MatrixXd& right, const std::string& message)
+    inline bool IsDegenerate(const Eigen::MatrixXd& identity, double tolerance)
     {
-#ifndef NDEBUG
-        constexpr double TOLERANCE = 0.0001;
-        if(!(left * right).isApprox(Eigen::MatrixXd::Identity(left.cols(), right.cols()), TOLERANCE))
+        return icrar::cpu::near(identity, Eigen::MatrixXd::Identity(identity.rows(), identity.cols()), tolerance);
+    }
+
+    inline bool IsDiagonal(const Eigen::MatrixXd& diagonal, double tolerance)
+    {
+        // IsApprox uses frobenius L2 norm which can't be compared to a zero matrix
+        //if(!diagonal.isApprox(Eigen::MatrixXd::Zero(diagonal.cols(), diagonal.cols()), tolerance))
+        for(std::int64_t row = 0; row < diagonal.rows(); row++)
         {
-            LOG(warning) << message;
+            for(std::int64_t col = 0; col < diagonal.cols(); col++)
+            {
+                if(row != col && std::abs(diagonal(row, col)) > tolerance)
+                {
+                    LOG(trace) << "matrix differs at " << row << ":" << col;
+                    return false;
+                }
+            }
         }
-#endif
+        return true;
     }
 
     void CudaLeapCalibrator::CalculateAd(
-        const Eigen::Matrix<double, -1, -1>& hostA,
+        const Eigen::MatrixXd& hostA,
         device_matrix<double>& deviceA,
-        Eigen::Matrix<double, -1, -1>& hostAd,
+        Eigen::MatrixXd& hostAd,
         device_matrix<double>& deviceAd,
         bool isFileSystemCacheEnabled,
         bool useCusolver)
@@ -283,7 +295,9 @@ namespace cuda
             {
                 LOG(info) << "Inverting PhaseMatrix A with cuda (" << a.rows() << ":" << a.cols() << ")";
                 deviceA = device_matrix<double>(a);
+                cudaDeviceSynchronize();
                 deviceAd = cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, deviceA, JobType::S);
+                cudaDeviceSynchronize();
                 // Write to host to update disk cache
                 return deviceAd.ToHost();
             };
@@ -299,26 +313,46 @@ namespace cuda
                     "A.hash", "Ad.cache",
                     invertA);
 
-                //TODO(calgray) only copy to deviceAd if loading from cache
                 deviceAd = device_matrix<double>(hostAd);
-
                 deviceA = device_matrix<double>(hostA);
+                if(IsDegenerate(hostAd * hostA, 1e-5))
+                {
+                    LOG(warning) <<  "Ad is degenerate";
+                }
             }
             else
             {
-                hostAd = invertA(hostA);
-                deviceA = device_matrix<double>(hostA);
+                // TODO(calgray): in some cases pseudo-inversion fails to produce a diagonal matrix
+                // due to a cusolver bug. In testing this happens rarely (about 10% chance) and can
+                // temporarily worked around by running again.
+                auto CheckDiagonal = [&]()
+                {
+                    bool isDiagonal = IsDiagonal(hostAd * hostA, 1e-10);
+                    if(!isDiagonal)
+                    {
+                        LOG(warning) << "Ad is non-diagonal";
+                    }
+                    return isDiagonal;
+                };
+                do
+                {
+                    hostAd = invertA(hostA);
+                    cudaDeviceSynchronize();
+                    deviceA = device_matrix<double>(hostA);
+                    cudaDeviceSynchronize();
+                }
+                while(!CheckDiagonal());
             }
-
         }
         else
         {
-            //Compute Ad into host
+            //Compute Ad on host
             auto invertA = [](const Eigen::MatrixXd& a)
             {
                 LOG(info) << "Inverting PhaseMatrix A with cpu (" << a.rows() << ":" << a.cols() << ")";
                 return icrar::cpu::pseudo_inverse(a);
             };
+
 
             if(isFileSystemCacheEnabled)
             {
@@ -335,21 +369,27 @@ namespace cuda
 
             deviceAd = device_matrix<double>(hostAd);
             deviceA = device_matrix<double>(hostA);
+            if(IsDegenerate(hostAd * hostA, 1e-5))
+            {
+                LOG(warning) << "Ad is degenerate";
+            }
         }
-        CheckIdentity(hostAd, hostA, "Ad is degenerate");
     }
 
     void CudaLeapCalibrator::CalculateAd1(
-        const Eigen::Matrix<double, -1, -1>& hostA1,
+        const Eigen::MatrixXd& hostA1,
         device_matrix<double>& deviceA1,
-        Eigen::Matrix<double, -1, -1>& hostAd1,
+        Eigen::MatrixXd& hostAd1,
         device_matrix<double>& deviceAd1)
     {
         // This matrix is not always m > n, compute on cpu until cuda supports this
         deviceA1 = device_matrix<double>(hostA1);
         hostAd1 = cpu::pseudo_inverse(hostA1);
         deviceAd1 = device_matrix<double>(hostAd1);
-        CheckIdentity(hostAd1, hostA1, "Ad1 is degenerate");
+        if(IsDegenerate(hostAd1 * hostA1, 1e-5))
+        {
+            LOG(warning) << "Ad1 is degenerate";
+        }
     }
 
     void CudaLeapCalibrator::PhaseRotate(

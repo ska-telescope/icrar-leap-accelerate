@@ -52,6 +52,7 @@ namespace icrar
             LOG(warning) << "using unique antennas";
 
             m_stations = boost::numeric_cast<int>(m_antennas.size());
+
         }
         else
         {
@@ -244,6 +245,12 @@ namespace icrar
         auto filteredBaselines = GetFilteredBaselines(minimumBaselineThreshold);
         return boost::numeric_cast<uint32_t>(std::count(filteredBaselines.cbegin(), filteredBaselines.cend(), true));
 	}
+
+    // Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFilteredStations(double minimumBaselineThreshold) const
+    // {
+    //     auto filteredBaselines = GetFilteredBaselines(minimumBaselineThreshold);
+    //     return filteredBaselines(Eigen::seqN(0, GetNumStations()));
+    // }
 
     Eigen::MatrixX3d MeasurementSet::GetCoords() const
     {
