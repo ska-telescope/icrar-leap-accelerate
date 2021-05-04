@@ -72,16 +72,6 @@ namespace cuda
         const JobType jobType);
 
     /**
-     * @brief TODO(calgray): test!
-     */
-    device_matrix<double> SVDCombineInverse(
-        cublasHandle_t cublasHandle,
-        const device_matrix<double>& d_U,
-        const device_vector<double>& d_S,
-        const device_matrix<double>& d_Vt,
-        const JobType jobType);
-
-    /**
      * @brief Performs matrix inversion using cusolver and cublas 
      * 
      * @param cusolverHandle 

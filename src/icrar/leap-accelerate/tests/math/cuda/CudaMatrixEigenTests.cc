@@ -232,33 +232,11 @@ namespace icrar
             Eigen::MatrixXi I;
             std::tie(A, I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), ms.GetFilteredBaselines(0.0), boost::none);
 
-            cuda::device_matrix<double> dUe;
-            cuda::device_vector<double> dSe;
-            cuda::device_matrix<double> dVte;
-            std::tie(dUe, dSe, dVte) = icrar::cuda::svd(m_cusolverDnContext, cuda::device_matrix<double>(A), cuda::JobType::S);
-
-            Eigen::MatrixXd Ue;
-            Eigen::VectorXd Se;
-            Eigen::MatrixXd Vte;
-            dUe.ToHost(Ue);
-            dSe.ToHost(Se);
-            dVte.ToHost(Vte);
-
-            cuda::device_matrix<double> dU;
-            cuda::device_vector<double> dS;
-            cuda::device_matrix<double> dVt;
-            std::tie(dU, dS, dVt) = icrar::cuda::svd(m_cusolverDnContext, cuda::device_matrix<double>(A), cuda::JobType::S);
-
-            Eigen::MatrixXd U;
-            Eigen::VectorXd S;
-            Eigen::MatrixXd Vt;
-            dU.ToHost(U);
-            dS.ToHost(S);
-            dVt.ToHost(Vt);
-
-            ASSERT_MEQD(Ue, U, TOLERANCE);
-            ASSERT_MEQD(Se, S, TOLERANCE);
-            ASSERT_MEQD(Vte, Vt, TOLERANCE);
+            Eigen::MatrixXd Ad = icrar::cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, A, cuda::JobType::S);
+            
+            //Note: for large matrices the smaller intermediate matrix is required to avoid std::bad_alloc issues
+            ASSERT_MEQD(A, A * (Ad * A), TOLERANCE);
+            ASSERT_MEQD(Eigen::MatrixXd::Identity(A.cols(), A.cols()), Ad * A, TOLERANCE);
         }
 
         void TestPseudoInverseAskap()
@@ -274,43 +252,10 @@ namespace icrar
             Eigen::MatrixXi I;
             std::tie(A, I) = cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), ms.GetFilteredBaselines(0.0), boost::none);
 
-            // Construct inverse using Eigen
-            Eigen::MatrixXd Adcpu = cpu::pseudo_inverse(A);
+            Eigen::MatrixXd Ad = icrar::cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, A, cuda::JobType::S);
 
-            // Construct inverse using cpu matmul (SVD components not necessarily the same)
-            cuda::device_matrix<double> dUe;
-            cuda::device_vector<double> dSe;
-            cuda::device_matrix<double> dVte;
-            std::tie(dUe, dSe, dVte) = cuda::svd(m_cusolverDnContext, cuda::device_matrix<double>(A), cuda::JobType::S);
-            Eigen::MatrixXd Ue; dUe.ToHost(Ue);
-            Eigen::VectorXd Se; dSe.ToHost(Se);
-            Eigen::MatrixXd Vte; dVte.ToHost(Vte);
-
-            // always correct!
-            //std::cout << "U: " << Ue << std::endl;
-            //std::cout << "Sigma: " << Se << std::endl;
-            //std::cout << "Vt: " << Vte << std::endl;
-        
-
-            //CPU multiply method
-            size_t m = Ue.rows();
-            size_t n = Vte.rows();
-            size_t k = std::min(m, n);
-            Eigen::MatrixXd Sd = Eigen::MatrixXd::Zero(n, Ue.cols());
-            double epsilon = std::numeric_limits<typename Eigen::MatrixXd::Scalar>::epsilon();
-            double tolerance = epsilon * std::max(m, n) * Se.array().abs()(0);
-            Sd.topLeftCorner(k, k) = (Se.array().abs() > tolerance).select(Se.array().inverse(), 0).matrix().asDiagonal();
-            Eigen::MatrixXd Ade = Vte.adjoint() * (Sd * Ue.adjoint());
-
-            // CUDA multiply method
-            //cuda::device_matrix<double> dAde = cuda::SVDCombineInverse(m_cublasContext, dUe, dSe, dVte, cuda::JobType::S);
-            //Eigen::MatrixXd Ade; dAde.ToHost(Ade);
-
-            //ASSERT_MEQD(Adexpected, Ad, TOLERANCE);
-            //ASSERT_MEQD(Adcpu, Ad, TOLERANCE);
-
-            ASSERT_MEQD(Eigen::MatrixXd::Identity(A.cols(), A.cols()), Ade * A, TOLERANCE);
-            //ASSERT_MEQD(A,  A * (Ad * A), TOLERANCE);
+            ASSERT_MEQD(A,  A * (Ad * A), TOLERANCE);
+            ASSERT_MEQD(Eigen::MatrixXd::Identity(A.cols(), A.cols()), Ad * A, TOLERANCE);
         }
 
         void TestPseudoInverseSKA(ComputeImplementation impl)
@@ -349,7 +294,7 @@ namespace icrar
     TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverseMWA) { TestPseudoInverseMWA(cuda::JobType::S); }
     TEST_F(CudaMatrixEigenTests, TestCudaSVDMatmulAskap) { TestCudaSVDMatmulAskap(); }
     TEST_F(CudaMatrixEigenTests, TestCudaPseudoInverseAskap) { TestPseudoInverseAskap(); }
-    TEST_F(CudaMatrixEigenTests, TestPseudoInverseLarge) { TestPseudoInverseLarge(ComputeImplementation::cpu); }
+    TEST_F(CudaMatrixEigenTests, DISABLED_TestPseudoInverseLarge) { TestPseudoInverseLarge(ComputeImplementation::cpu); }
     TEST_F(CudaMatrixEigenTests, DISABLED_TestCudaPseudoInverseLarge) { TestPseudoInverseLarge(ComputeImplementation::cuda); }
     TEST_F(CudaMatrixEigenTests, DISABLED_TestPseudoInverseSKA) { TestPseudoInverseSKA(ComputeImplementation::cpu); }
     TEST_F(CudaMatrixEigenTests, DISABLED_TestCudaPseudoInverseSKA) { TestPseudoInverseSKA(ComputeImplementation::cuda); }

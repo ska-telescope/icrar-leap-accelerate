@@ -47,7 +47,7 @@ namespace icrar
             checkCudaErrors(cudaMemGetInfo(&free, &total));
         }
         size_t VisSize = ms.GetNumPols() * ms.GetNumBaselines() * ms.GetNumChannels() * sizeof(std::complex<double>);
-        size_t AdSize = ms.GetNumStations() * ms.GetNumBaselines() * sizeof(double);
+        size_t ASize = ms.GetNumStations() * ms.GetNumBaselines() * sizeof(double);
         double safetyFactor = 1.3;
 
         if(computeOptions.isFileSystemCacheEnabled.is_initialized())
@@ -66,7 +66,7 @@ namespace icrar
         else // determine from available memory
         {
             // A, Ad and SVD buffers required to compute inverse
-            size_t required = 3 * AdSize * safetyFactor;
+            size_t required = 3 * ASize * safetyFactor;
             if(required < free)
             {
                 LOG(info) << memory_amount(free) << " > " << memory_amount(required) << ". Enabling Cusolver";
@@ -86,7 +86,7 @@ namespace icrar
         else // determine from available memory
         {
             // A, Ad and 2x visibilities required to calibrate
-            size_t required = (2 * AdSize + 2 * VisSize) * safetyFactor;
+            size_t required = (2 * ASize + 2 * VisSize) * safetyFactor;
             if(required < free)
             {
                 LOG(info) << memory_amount(free) << " > " << memory_amount(required) << ". Enabling IntermediateBuffer";

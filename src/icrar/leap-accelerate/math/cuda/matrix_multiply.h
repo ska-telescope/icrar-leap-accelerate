@@ -145,6 +145,10 @@ namespace cuda
         {
             throw invalid_argument_exception("c matrix has invalid dimensions", "c", __FILE__, __LINE__);
         }
+        if(a == c || b == c)
+        {
+            throw invalid_argument_exception("input buffer cannot be used as output", "c", __FILE__, __LINE__);
+        }
         mat_mul(handle, transa, transb, a.GetRows(), b.GetCols(), a.GetCols(), a.Get(), b.Get(), c.Get());
     }
 

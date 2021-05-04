@@ -277,11 +277,9 @@ namespace cuda
             {
                 LOG(info) << "Inverting PhaseMatrix A with cuda (" << a.rows() << ":" << a.cols() << ")";
                 deviceA = device_matrix<double>(a);
-                cudaDeviceSynchronize();
                 deviceAd = cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, deviceA, JobType::S);
-                cudaDeviceSynchronize();
                 // Write to host to update disk cache
-                return deviceAd.ToHost();
+                return deviceAd.ToHostAsync();
             };
 
             // Compute Ad using Cusolver
@@ -304,26 +302,13 @@ namespace cuda
             }
             else
             {
-                // TODO(calgray): in some cases pseudo-inversion fails to produce a diagonal matrix
-                // due to a cusolver bug. In testing this happens rarely (about 10% chance) and can
-                // temporarily worked around by running again.
-                auto CheckDiagonal = [&]()
+                hostAd = invertA(hostA);
+                deviceA = device_matrix<double>(hostA);
+
+                if(!((hostAd * hostA).eval()).isDiagonal(1e-10))
                 {
-                    bool isDiagonal = ((hostAd * hostA).eval()).isDiagonal(1e-10);
-                    if(!isDiagonal)
-                    {
-                        LOG(warning) << "Ad is non-diagonal";
-                    }
-                    return isDiagonal;
-                };
-                do
-                {
-                    hostAd = invertA(hostA);
-                    cudaDeviceSynchronize();
-                    deviceA = device_matrix<double>(hostA);
-                    cudaDeviceSynchronize();
+                    throw icrar::exception("Ad is non-diagonal", __FILE__, __LINE__);
                 }
-                while(!CheckDiagonal());
             }
         }
         else
