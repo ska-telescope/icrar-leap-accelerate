@@ -259,24 +259,6 @@ namespace cuda
         return icrar::cpu::near(identity, Eigen::MatrixXd::Identity(identity.rows(), identity.cols()), tolerance);
     }
 
-    inline bool IsDiagonal(const Eigen::MatrixXd& diagonal, double tolerance)
-    {
-        // IsApprox uses frobenius L2 norm which can't be compared to a zero matrix
-        //if(!diagonal.isApprox(Eigen::MatrixXd::Zero(diagonal.cols(), diagonal.cols()), tolerance))
-        for(std::int64_t row = 0; row < diagonal.rows(); row++)
-        {
-            for(std::int64_t col = 0; col < diagonal.cols(); col++)
-            {
-                if(row != col && std::abs(diagonal(row, col)) > tolerance)
-                {
-                    LOG(trace) << "matrix differs at " << row << ":" << col;
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
     void CudaLeapCalibrator::CalculateAd(
         const Eigen::MatrixXd& hostA,
         device_matrix<double>& deviceA,
@@ -327,7 +309,7 @@ namespace cuda
                 // temporarily worked around by running again.
                 auto CheckDiagonal = [&]()
                 {
-                    bool isDiagonal = IsDiagonal(hostAd * hostA, 1e-10);
+                    bool isDiagonal = ((hostAd * hostA).eval()).isDiagonal(1e-10);
                     if(!isDiagonal)
                     {
                         LOG(warning) << "Ad is non-diagonal";

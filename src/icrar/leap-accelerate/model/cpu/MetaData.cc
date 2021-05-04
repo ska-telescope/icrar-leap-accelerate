@@ -146,23 +146,11 @@ namespace cpu
     void MetaData::ValidateInverse() const
     {
         constexpr double TOLERANCE = 1e-10;
-        Eigen::MatrixXd identity = m_Ad * m_A;
-        for(int i = 0; i < identity.rows(); i++)
-        {
-            identity(i,i) = 0;
-        }
-        
-        if(!(identity).isApprox(Eigen::MatrixXd::Zero(m_A.cols(), m_A.cols()), TOLERANCE))
+        if(!((m_Ad * m_A).eval()).isDiagonal(TOLERANCE))
         {
             LOG(warning) << "Ad is degenerate";
         }
-
-        Eigen::MatrixXd identity1 = m_Ad1 * m_A1;
-        for(int i = 0; i < identity1.rows(); i++)
-        {
-            identity1(i,i) = 0;
-        }
-        if(!(identity1).isApprox(Eigen::MatrixXd::Zero(m_A1.cols(), m_A1.cols()), TOLERANCE))
+        if(!((m_Ad1 * m_A1).eval()).isDiagonal(TOLERANCE))
         {
             LOG(warning) << "Ad1 is degenerate";
         }
