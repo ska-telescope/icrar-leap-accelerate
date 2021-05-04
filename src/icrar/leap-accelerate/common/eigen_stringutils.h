@@ -137,11 +137,11 @@ namespace icrar
         {
             LOG(trace) << name << ": " << pretty_matrix(value);
         }
-//#ifdef TRACE
+#ifdef TRACE
         {
             std::ofstream file(name + ".txt");
             file << value << std::endl;
         }
-//#endif
+#endif
     }
 } // namespace icrar
