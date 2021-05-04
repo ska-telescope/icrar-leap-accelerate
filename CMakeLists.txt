@@ -15,6 +15,7 @@ option(CMAKE_RUN_CLANG_TIDY "Run clang-tidy with the compiler." OFF)
 option(WERROR "Warnings as Errors" OFF)
 option(WCONVERSION "Conversion warnings" OFF)
 option(TRACE "Trace Data Values" OFF)
+option(USE_PCH "Use pre-compile headers internally when possible" ON)
 
 # Override config via environment variables
 if(DEFINED ENV{CUDA_ENABLED})
@@ -36,6 +37,12 @@ endif()
 
 if(TRACE)
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DTRACE")
+endif()
+
+# Pre-compile headers are only supported in cmake >= 3.16
+if(NOT ${CMAKE_VERSION} VERSION_GREATER "3.16.0")
+  message(STATUS "Disabling pre-compile headers (cmake version < 3.16)")
+  set(USE_PCH OFF)
 endif()
 
 # Enable Linting with build
