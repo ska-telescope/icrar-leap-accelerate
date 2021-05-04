@@ -40,6 +40,7 @@ namespace log
     void Initialize(Verbosity verbosity=DEFAULT_VERBOSITY);
 
     /// The logging level set on the application
+    extern bool logging_initialized;
     extern ::boost::log::trivial::severity_level logging_level;
 } // namespace log
 } //namespace icrar
