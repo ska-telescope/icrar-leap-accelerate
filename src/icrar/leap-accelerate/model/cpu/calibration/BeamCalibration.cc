@@ -45,16 +45,6 @@ namespace cpu
         && m_calibration.rows() == beamCalibration.m_calibration.rows()
         && m_calibration.cols() == beamCalibration.m_calibration.cols()
         && m_calibration.isApprox(beamCalibration.m_calibration, threshold);
-        if(!equal)
-        {
-            std::cout << "beamcal not equal" << std::endl;
-            std::cout << std::setprecision(15);
-            std::cout << beamCalibration.m_direction << std::endl;
-            std::cout << std::endl;
-            std::cout << beamCalibration.m_calibration << std::endl;
-            std::cout << std::endl;
-            std::cout << m_calibration << std::endl;
-        }
         return equal;
     }
 
