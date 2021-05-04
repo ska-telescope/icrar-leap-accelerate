@@ -21,6 +21,7 @@ set(sources
 
   math/MathConversionTests.cc
   math/EigenExtensionsTests.cc
+  math/cuda/CudaMatrixEigenTests.cc
 
   ms/MSUtilsTests.cc
 
@@ -33,7 +34,6 @@ set(sources
 
 set(cuda_sources
   math/cuda/CudaMatrixTests.cu
-  math/cuda/CudaMatrixEigenTests.cu
 )
 
 # Only CUDA 10+ is capable of compiling gtest
