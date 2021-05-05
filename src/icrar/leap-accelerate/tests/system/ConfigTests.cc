@@ -231,11 +231,11 @@ public:
 
 TEST_F(ConfigTests, TestDefaultConfig) { TestDefaultConfig("testdata/DefaultOutput.json"); }
 TEST_F(ConfigTests, TestMWACpuConfig) { TestMWACpuConfig(); }
-TEST_F(ConfigTests, TestAA3CpuConfig) { TestAA3CpuConfig(); }
-TEST_F(ConfigTests, TestAA4CpuConfig) { TestAA4CpuConfig(); }
+TEST_F(ConfigTests, DISABLED_TestAA3CpuConfig) { TestAA3CpuConfig(); } // Large download
+TEST_F(ConfigTests, DISABLED_TestAA4CpuConfig) { TestAA4CpuConfig(); } // Large download
 
 #if CUDA_ENABLED
 TEST_F(ConfigTests, TestMWACudaConfig) { TestMWACudaConfig(); }
-TEST_F(ConfigTests, TestAA3CudaConfig) { TestAA3CudaConfig(); }
-TEST_F(ConfigTests, TestAA4CudaConfig) { TestAA4CudaConfig(); }
+TEST_F(ConfigTests, DISABLED_TestAA3CudaConfig) { TestAA3CudaConfig(); } // Large download
+TEST_F(ConfigTests, DISABLED_TestAA4CudaConfig) { TestAA4CudaConfig(); } // Large download
 #endif // CUDA_ENABLED
