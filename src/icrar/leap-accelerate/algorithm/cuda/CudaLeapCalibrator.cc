@@ -53,10 +53,10 @@
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
 #include <icrar/leap-accelerate/cuda/device_vector.h>
-
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+#include <boost/numeric/conversion/cast.hpp>
 #include <boost/optional/optional_io.hpp>
 
 #include <string>
@@ -141,7 +141,7 @@ namespace cuda
         auto output_calibrations = std::vector<cpu::Calibration>();
         auto input_queue = std::vector<cuda::DeviceIntegration>();
 
-        size_t timesteps = ms.GetNumTimesteps();
+        uint32_t timesteps = ms.GetNumTimesteps();
         Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
         std::vector<double> epochs = ms.GetEpochs();
         
@@ -179,9 +179,9 @@ namespace cuda
         auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
         LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
-        size_t solutions = validatedSolutionInterval.GetSize();
+        uint32_t solutions = boost::numeric_cast<uint32_t>(validatedSolutionInterval.GetSize());
         constexpr unsigned int integrationNumber = 0;
-        for(size_t solution = 0; solution < solutions; solution++)
+        for(uint32_t solution = 0; solution < solutions; solution++)
         {
             profiling::timer solution_timer;
             output_calibrations.emplace_back(

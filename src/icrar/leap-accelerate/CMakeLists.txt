@@ -34,6 +34,7 @@ set(sources
     core/stream_out_type.cc
     core/log/logging.cc
     core/log/Verbosity.cc
+    core/memory/system_memory.cc
     core/profiling/resource_usage.cc
     core/profiling/UsageReporter.cc
     core/version.cc

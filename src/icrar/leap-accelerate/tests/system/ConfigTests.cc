@@ -206,7 +206,7 @@ public:
 
     void TestAA4CudaConfig()
     {
-        size_t cudaAvailable = GetTotalAvailableCudaPhysicalMemory();
+        size_t cudaAvailable = GetAvailableCudaPhysicalMemory();
 
         size_t VisSize = 4 * 512*511/2 * 33 * sizeof(std::complex<double>); // polarizations * baselines * channels * sizeof(std::complex<double>)
         size_t AdSize = 512 * 512*511/2 * sizeof(double); // stations * baselines * sizeof(double);

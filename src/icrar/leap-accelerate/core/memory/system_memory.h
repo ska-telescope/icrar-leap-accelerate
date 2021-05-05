@@ -22,61 +22,26 @@
 
 #pragma once
 
-#if __linux__
-#include <sys/types.h>
-#include <sys/sysinfo.h>
-#endif
-
-#if CUDA_ENABLED
-#include <cuda.h>
-#include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
-#endif
-
 namespace icrar
 {
-    // from https://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
-    struct sysinfo memInfo;
+    size_t GetTotalSystemVirtualMemory();
 
-    size_t GetTotalSystemVirtualMemory()
-    {
-        sysinfo (&memInfo);
-        size_t totalVirtualMem = memInfo.totalram;
-        //Add other values in next statement to avoid int overflow on right hand side...
-        totalVirtualMem += memInfo.totalswap;
-        totalVirtualMem *= memInfo.mem_unit;
-        return totalVirtualMem;
-    }
+    size_t GetTotalUsedSystemVirtualMemory();
 
-    size_t GetTotalUsedSystemVirtualMemory()
-    {
-        sysinfo (&memInfo);
-        size_t virtualMemUsed = memInfo.totalram - memInfo.freeram;
-        //Add other values in next statement to avoid int overflow on right hand side...
-        virtualMemUsed += memInfo.totalswap - memInfo.freeswap;
-        virtualMemUsed *= memInfo.mem_unit;
-        return virtualMemUsed;
-    }
+    size_t GetTotalAvailableSystemVirtualMemory();
 
-    size_t GetTotalAvailableSystemVirtualMemory()
-    {
-        return GetTotalSystemVirtualMemory() - GetTotalUsedSystemVirtualMemory();
-    }
+    /**
+     * @brief Gets the total physical cuda memory on the current cuda device.
+     * 
+     * @return size_t 
+     */
+    size_t GetTotalCudaPhysicalMemory();
 
-    size_t GetTotalCudaPhysicalMemory()
-    {
-        size_t cudaTotal = 0;
-#ifdef CUDA_ENABLED
-        checkCudaErrors(cudaMemGetInfo(nullptr, &cudaTotal));
-#endif
-        return cudaTotal;
-    }
-
-    size_t GetTotalAvailableCudaPhysicalMemory()
-    {
-        size_t cudaAvailable = 0;
-#ifdef CUDA_ENABLED
-        checkCudaErrors(cudaMemGetInfo(&cudaAvailable, nullptr));
-#endif
-        return cudaAvailable;
-    }
+    /**
+     * @brief Gets the currently available/free physical cuda memory of the current cuda device.
+     * This excludes the memory used by the current process. 
+     * 
+     * @return size_t 
+     */
+    size_t GetAvailableCudaPhysicalMemory();
 } // namespace icrar
