@@ -73,6 +73,7 @@ set(cuda_sources
     math/cuda/matrix_invert.cu
     
     model/cuda/DeviceIntegration.cu
+    algorithm/cuda/kernel/EmptyKernel.cu
     algorithm/cuda/kernel/RotateVisibilitiesKernel.cu
     algorithm/cuda/kernel/PolarizationsToPhaseAnglesKernel.cu
     algorithm/cuda/kernel/ComputePhaseDeltaKernel.cu

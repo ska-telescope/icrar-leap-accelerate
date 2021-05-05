@@ -28,6 +28,7 @@
 #include <icrar/leap-accelerate/common/eigen_stringutils.h>
 
 #include <icrar/leap-accelerate/algorithm/cuda/CudaComputeOptions.h>
+#include <icrar/leap-accelerate/algorithm/cuda/kernel/EmptyKernel.h>
 #include <icrar/leap-accelerate/algorithm/cuda/kernel/RotateVisibilitiesKernel.h>
 #include <icrar/leap-accelerate/algorithm/cuda/kernel/PolarizationsToPhaseAnglesKernel.h>
 #include <icrar/leap-accelerate/algorithm/cuda/kernel/ComputePhaseDeltaKernel.h>
@@ -67,8 +68,6 @@ namespace icrar
 {
 namespace cuda
 {
-    //__global__ void g_checkKernelSM() { }
-
     CudaLeapCalibrator::CudaLeapCalibrator()
     : m_cublasContext(nullptr)
     , m_cusolverDnContext(nullptr)
@@ -79,18 +78,18 @@ namespace cuda
         {
             throw icrar::exception("CUDA error: no devices supporting CUDA.", __FILE__, __LINE__);
         }
-        //g_checkKernelSM<<<1,1>>>();
-        // cudaError_t smError = cudaGetLastError();
-        // if(smError != cudaError_t::cudaSuccess)
-        // {   
-        //     CUdevice device;
-        //     checkCudaErrors(cuDeviceGet(&device, 0));
-        //     int major, minor;
-        //     checkCudaErrors(cuDeviceGetAttribute(&major, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, device));
-        //     checkCudaErrors(cuDeviceGetAttribute(&minor, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, device));
-        //     LOG(warning) << "CUDA error: No suitable kernel found, hardware sm compatibility is sm_" << major << minor;
-        // }
-        // checkCudaErrors(smError);
+        Empty();
+        cudaError_t smError = cudaGetLastError();
+        if(smError != cudaError_t::cudaSuccess)
+        {   
+            CUdevice device;
+            checkCudaErrors(cuDeviceGet(&device, 0));
+            int major, minor;
+            checkCudaErrors(cuDeviceGetAttribute(&major, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, device));
+            checkCudaErrors(cuDeviceGetAttribute(&minor, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, device));
+            LOG(warning) << "CUDA error: No suitable kernel found, hardware sm compatibility is sm_" << major << minor;
+        }
+        checkCudaErrors(smError);
 
         checkCudaErrors(cublasCreate(&m_cublasContext));
         checkCudaErrors(cusolverDnCreate(&m_cusolverDnContext));
