@@ -22,26 +22,34 @@
 
 #pragma once
 
+#include <cstddef>
+
 namespace icrar
 {
+    /**
+     * @brief Gets the total amount system virtual memory. This includes
+     * the system's dynamic RAM plus swap space.
+     */
     size_t GetTotalSystemVirtualMemory();
 
+    /**
+     * @brief Gets the total amount of used system virtual memory.
+     */
     size_t GetTotalUsedSystemVirtualMemory();
 
+    /**
+     * @brief Gets the currently available/free virtual system memory.
+     */
     size_t GetTotalAvailableSystemVirtualMemory();
 
     /**
      * @brief Gets the total physical cuda memory on the current cuda device.
-     * 
-     * @return size_t 
      */
     size_t GetTotalCudaPhysicalMemory();
 
     /**
      * @brief Gets the currently available/free physical cuda memory of the current cuda device.
-     * This excludes the memory used by the current process. 
-     * 
-     * @return size_t 
+     * This excludes the memory used by the current process.
      */
     size_t GetAvailableCudaPhysicalMemory();
 } // namespace icrar
