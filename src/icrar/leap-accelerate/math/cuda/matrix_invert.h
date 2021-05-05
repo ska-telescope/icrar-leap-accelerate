@@ -22,6 +22,8 @@
 
 #pragma once
 
+#ifdef CUDA_ENABLED
+
 #include <icrar/leap-accelerate/cuda/device_vector.h>
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
 
@@ -94,3 +96,5 @@ namespace cuda
     //     const JobType jobType = JobType::S);
 } // namespace cuda
 } // namespace icrar
+
+#endif // CUDA_ENABLED

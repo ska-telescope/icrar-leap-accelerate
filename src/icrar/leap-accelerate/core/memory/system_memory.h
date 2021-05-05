@@ -64,20 +64,18 @@ namespace icrar
 
     size_t GetTotalCudaPhysicalMemory()
     {
-        size_t cudaAvailable = 0;
         size_t cudaTotal = 0;
 #ifdef CUDA_ENABLED
-        checkCudaErrors(cudaMemGetInfo(&cudaAvailable, &cudaTotal));
+        checkCudaErrors(cudaMemGetInfo(nullptr, &cudaTotal));
 #endif
-        return cudaAvailable;
+        return cudaTotal;
     }
 
     size_t GetTotalAvailableCudaPhysicalMemory()
     {
         size_t cudaAvailable = 0;
-        size_t cudaTotal = 0;
 #ifdef CUDA_ENABLED
-        checkCudaErrors(cudaMemGetInfo(&cudaAvailable, &cudaTotal));
+        checkCudaErrors(cudaMemGetInfo(&cudaAvailable, nullptr));
 #endif
         return cudaAvailable;
     }

@@ -20,6 +20,8 @@
  * MA 02111 - 1307  USA
  */
 
+#ifdef CUDA_ENABLED
+
 #include "CudaLeapCalibrator.h"
 
 #include <icrar/leap-accelerate/math/vector_extensions.h>
@@ -389,3 +391,4 @@ namespace cuda
     }
 } // namespace cuda
 } // namespace icrar
+#endif // CUDA_ENABLED
