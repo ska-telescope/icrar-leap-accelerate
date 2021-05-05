@@ -117,11 +117,6 @@ stages:
   - test
   - pages
 
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
-  paths:
-    - testdata
-
 ########
 # Build
 ########
