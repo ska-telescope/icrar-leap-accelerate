@@ -131,7 +131,7 @@ download_lfs:
   image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
   stage: build
   before_script:
-    - apt update && apt install -y wget
+    - apt update && apt install -y wget gzip
   script:
     - cd testdata
     - bash install.sh
