@@ -30,7 +30,7 @@ namespace icrar
 namespace cuda
 {
     /**
-     * @brief Copies the argument of the 1st column/polarization in avgData to phaseAnglesI1
+     * @brief An empty kernel for testing cuda configurations
      */
     __host__ void Empty();
 } // namespace cuda

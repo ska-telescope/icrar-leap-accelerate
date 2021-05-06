@@ -26,9 +26,6 @@ namespace icrar
 {
 namespace cuda
 {
-    /**
-     * @brief An empty kernel for testing cuda configurations
-     */
     __global__ void g_Empty() { }
 
     __host__ void Empty()
