@@ -89,3 +89,5 @@ add_dependencies(LeapAccelerate.Tests LeapAccelerate.Tests.Data)
 #  TEST_PREFIX "*"
 #  EXTRA_ARGS --gtest_stack_trace_depth=10
 #)
+
+message(STATUS "Configured ${TEST_TARGET_NAME}")

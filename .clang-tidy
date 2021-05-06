@@ -1,5 +1,6 @@
 # TODO(calgray):
 # -cppcoreguidelines-avoid-magic-numbers does not ignore test constants
+# -cppcoreguidelines-avoid-non-const-global-variables gtest 1.8.1 does not suppress this
 # -cppcoreguidelines-owning-memory is a GTEST limitation
 # -google-build-using-namespace not ideal with modern namespaces like boost::literals
 # -google-runtime-references references in interfaces are more concise than raw pointers
@@ -15,6 +16,7 @@ Checks:
     misc-*,
     google-*,
     -cppcoreguidelines-avoid-magic-numbers,
+    -cppcoreguidelines-avoid-non-const-global-variables,
     -cppcoreguidelines-owning-memory,
     -google-build-using-namespace,
     -google-runtime-references,
@@ -29,6 +31,7 @@ WarningsAsErrors:
     misc-*,
     google-*,
     -cppcoreguidelines-avoid-magic-numbers,
+    -cppcoreguidelines-avoid-non-const-global-variables,
     -cppcoreguidelines-owning-memory,
     -google-build-using-namespace,
     -google-runtime-references,
@@ -76,7 +79,7 @@ CheckOptions:
   - key:             cppcoreguidelines-pro-bounds-constant-array-index.GslHeader
     value:           ''
   - key:             cppcoreguidelines-pro-bounds-constant-array-index.IncludeStyle
-    value:           '0'
+    value:           llvm
   - key:             cppcoreguidelines-pro-type-member-init.IgnoreArrays
     value:           '0'
   - key:             cppcoreguidelines-pro-type-member-init.UseAssignment
@@ -136,7 +139,7 @@ CheckOptions:
   - key:             modernize-make-shared.IgnoreMacros
     value:           '1'
   - key:             modernize-make-shared.IncludeStyle
-    value:           '0'
+    value:           llvm
   - key:             modernize-make-shared.MakeSmartPtrFunction
     value:           'std::make_shared'
   - key:             modernize-make-shared.MakeSmartPtrFunctionHeader
@@ -144,7 +147,7 @@ CheckOptions:
   - key:             modernize-make-unique.IgnoreMacros
     value:           '1'
   - key:             modernize-make-unique.IncludeStyle
-    value:           '0'
+    value:           llvm
   - key:             modernize-make-unique.MakeSmartPtrFunction
     value:           'std::make_unique'
   - key:             modernize-make-unique.MakeSmartPtrFunctionHeader

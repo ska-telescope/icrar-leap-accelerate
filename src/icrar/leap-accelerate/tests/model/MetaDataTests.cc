@@ -221,7 +221,6 @@ namespace icrar
             meta.SetDirection(direction);
 
             auto expectedhostMetadata = icrar::cuda::HostMetaData(*ms, boost::none, 0.0, true, false);
-            //direction, ToUVWVector(uvw)
 
             auto constantBuffer = std::make_shared<icrar::cuda::ConstantBuffer>(
                 expectedhostMetadata.GetConstants(),
@@ -248,6 +247,7 @@ namespace icrar
             icrar::cpu::MetaData hostMetadata = deviceMetadata.ToHost();
             
             ASSERT_MDEQ(expectedhostMetadata, hostMetadata, THRESHOLD);
+            DebugCudaErrors();
         }
 #endif
     };

@@ -40,7 +40,6 @@
 namespace icrar
 {
     class MeasurementSet;
-
     /**
      * @brief Raw arguments received via the command line interface using boost::program_options.
      * Only raw types std::string, bool, int, uint, float and double are allowed here. 

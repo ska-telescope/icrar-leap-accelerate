@@ -50,7 +50,21 @@ variables:
 .common:
   tags: [engageska, docker]
 
-.required_dependencies:
+.generator_packages: &generator_packages
+  - apt install -y git wget cmake xsltproc
+  - apt install -y gnupg2 software-properties-common jq moreutils
+
+.project_packages: &project_packages
+  - apt install -y wget casacore-dev libboost-all-dev rapidjson-dev
+
+.doc_packages: &doc_packages
+  - apt install -y python3-pip doxygen graphviz
+  - pip3 install -U sphinx breathe exhale recommonmark sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary
+
+.lint_packages: &lint_packages
+  - apt install -y python3-pip clang clang-tidy clang-tools iwyu cppcheck
+
+.minimal_build_dependencies:
   extends: .common
   image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
   variables:
@@ -58,26 +72,44 @@ variables:
     CUDA_ENABLED: "OFF"
   before_script:
     - apt update
-    - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck python3-pip
-    - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev rapidjson-dev
-    - pip3 install -U sphinx breathe exhale sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary recommonmark
+    - *generator_packages
+    - *project_packages
 
-.cuda_dependencies:
+.cuda_build_dependencies:
   extends: .common
-  image: nexus.engageska-portugal.pt/ska-docker/dspsr-build:latest
+  image: nallack/bullseye-cuda:latest
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
-  before_script:
-    - apt update 
-    - apt install -y cmake clang clang-tidy clang-tools iwyu cppcheck python3-pip
-    - apt install -y git jq moreutils wget doxygen graphviz casacore-dev libboost-all-dev rapidjson-dev
-    - pip3 install -U sphinx breathe exhale sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary recommonmark
-    - apt install -y gnupg2 software-properties-common
-    - source ./.gitlab-ci/cuda_install_debian.sh
+  before_script: &cuda_build_dependencies
+    - apt update
+    - *generator_packages
+    - *project_packages
+    - export CUDA_HOME=/usr/local/cuda
+    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
+    - export PATH=$PATH:$CUDA_HOME/bin
 
-.all_dependencies:
-  extends: .cuda_dependencies
+.complete_build_dependencies:
+  extends: .cuda_build_dependencies
+
+.docs_dependencies:
+  extends: .minimal_build_dependencies
+  before_script:
+    - apt update
+    - *generator_packages
+    - *project_packages
+    - *doc_packages
+
+.lint_dependencies:
+  extends: .complete_build_dependencies
+  before_script:
+    - apt update
+    - *generator_packages
+    - *project_packages
+    - *lint_packages
+    - export CUDA_HOME=/usr/local/cuda
+    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
+    - export PATH=$PATH:$CUDA_HOME/bin
 
 stages:
   - build
@@ -90,7 +122,9 @@ cache:
   paths:
     - testdata
 
+########
 # Build
+########
 
 download_lfs:
   extends: .common
@@ -103,7 +137,6 @@ download_lfs:
     - bash install.sh
     - cd ..
   artifacts:
-    when: always
     paths:
       - testdata
 
@@ -115,15 +148,14 @@ download_lfs:
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"
     - make -j2
   artifacts:
-    when: always
     paths:
       - build
 
 build_debug_minimal:
-  extends: [.required_dependencies, .build_debug]
+  extends: [.minimal_build_dependencies, .build_debug]
 
 build_debug:
-  extends: [.all_dependencies, .build_debug]
+  extends: [.complete_build_dependencies, .build_debug]
 
 .build_release:
   stage: build
@@ -133,18 +165,17 @@ build_debug:
     - cmake .. -DWCONVERSION=TRUE -DWERROR=TRUE -DCMAKE_BUILD_TYPE=Release
     - make -j2
   artifacts:
-    when: always
     paths:
       - build
 
 build_release_minimal:
-  extends: [.required_dependencies, .build_release]
+  extends: [.minimal_build_dependencies, .build_release]
 
 build_release:
-  extends: [.all_dependencies, .build_release]
+  extends: [.complete_build_dependencies, .build_release]
 
 build_docs:
-  extends: .all_dependencies
+  extends: .docs_dependencies
   stage: build
   script:
     - mkdir build
@@ -152,7 +183,6 @@ build_docs:
     - cmake .. -DCMAKE_BUILD_TYPE=Release
     - make sphinx -j2
   artifacts:
-    when: always
     paths:
       - build
 
@@ -165,65 +195,53 @@ build_docs:
     # This filters out external source file dependencies such as gtest
     - jq '[ . - map(select(.file | contains("/external/"))) | .[] ]' compile_commands.json | sponge compile_commands.json
   artifacts:
-    when: always
     paths:
       - build
 
-# Use build_export_compile_commands
-.build_export_compile_commands_minimal:
-  extends: [.required_dependencies, .build_export_compile_commands]
-
 build_export_compile_commands:
-  extends: [.all_dependencies, .build_export_compile_commands]
+  extends: [.lint_dependencies, .build_export_compile_commands]
 
+#######
 # Lint
+#######
 
 .lint_clang_tidy:
   stage: linting
   script:
     - cd build
-    - pip install pyyaml
-    - python -u /usr/bin/run-clang-tidy-6.0.py -quiet 2>&1 | tee clang-tidy.log
+    - pip3 install pyyaml
+    - python3 -u /usr/bin/run-clang-tidy-11.py -quiet 2>&1 | tee clang-tidy.log || true
     - cd ..
-    - cat build/clang-tidy.log | python .clang-tidy-to-junit.py $PWD/ clang-tidy > build/clang-tidy-junit.xml
+    - cat build/clang-tidy.log | python3 .clang-tidy-to-junit.py $PWD/ clang-tidy > build/clang-tidy-junit.xml
   artifacts:
-    when: always
     paths:
       - build
 
-# Use lint_clang_tidy
-.lint_clang_tidy_minimal:
-  extends: [.required_dependencies, .lint_clang_tidy]
-  needs: ["build_export_compile_commands_minimal"]
-
 lint_clang_tidy:
-  extends: [.all_dependencies, .lint_clang_tidy]
+  extends: [.lint_dependencies, .lint_clang_tidy]
   needs: ["build_export_compile_commands"]
 
 .lint_iwyu:
   stage: linting
   script:
+    # iwyu pre 0.12
     - iwyu_tool -j 2 -p ./build -- --transitive_includes_only 2>&1 | tee build/iwyu.log
-    # iwyu 0.12+ iwyu_tool -j 2 -p ./build -- -Xiwyu --transitive_includes_only 2>&1 | tee build/iwyu.log
-    - cat build/iwyu.log | python .clang-tidy-to-junit.py $PWD/ iwyu > build/iwyu-junit.xml
+    # iwyu 0.12+
+    # iwyu_tool -j 2 -p ./build -- -Xiwyu --transitive_includes_only 2>&1 | tee build/iwyu.log
+    - cat build/iwyu.log | python3 .clang-tidy-to-junit.py $PWD/ iwyu > build/iwyu-junit.xml
   artifacts:
     when: always
     paths:
       - build
 
-# Use lint_iwyu
-.lint_iwyu_minimal:
-  extends: [.required_dependencies, .lint_iwyu]
-  needs: ["build_export_compile_commands_minimal"]
-
 lint_iwyu:
-  extends: [.all_dependencies, .lint_iwyu]
+  extends: [.lint_dependencies, .lint_iwyu]
   needs: ["build_export_compile_commands"]
 
 .lint_cppcheck:
   stage: linting
   script:
-    - pip install cppcheck-junit
+    - pip3 install cppcheck-junit
     - cd build
     - 'cppcheck
       --xml-version=2
@@ -235,14 +253,14 @@ lint_iwyu:
       --library=googletest 2>&1 | tee cppcheck.xml'
     - cppcheck_junit cppcheck.xml cppcheck-junit.xml
   artifacts:
-    when: always
     paths:
       - build
 
+# clang pre-11.0 cannot parse gunit tests
 .lint_cppcheck_no_tests:
   stage: linting
   script:
-    - pip install cppcheck-junit
+    - pip3 install cppcheck-junit
     - cd build
     - 'cppcheck
       --xml-version=2
@@ -255,52 +273,56 @@ lint_iwyu:
       -i $PWD/../src/icrar/leap-accelerate-cli/tests 2>&1 | tee cppcheck.xml'
     - cppcheck_junit cppcheck.xml cppcheck-junit.xml
   artifacts:
-    when: always
     paths:
       - build
 
-# Use lint_cppcheck
-.lint_cppcheck_minimal:
-  extends: [.all_dependencies, .lint_cppcheck]
-  needs: ["build_export_compile_commands_minimal"]
-
 lint_cppcheck:
-  extends: [.all_dependencies, .lint_cppcheck_no_tests]
+  extends: [.lint_dependencies, .lint_cppcheck_no_tests]
   needs: ["build_export_compile_commands"]
 
+#######
 # Test
+#######
 
 .test:
   stage: test
-  variables:
-    GTEST_FILTER: "-*Cuda*:*cuda*:*Gpu*:*gpu*:*SKA*"
-  script:
-    - cd build
-    - ctest -T test --no-compress-output --verbose
   after_script:
     - cd build
     - ctest2junit > ctest.xml
   timeout: 1h
   artifacts:
-    when: always
     paths:
       - build/
     reports:
       junit: build/ctest.xml
 
 test_debug_minimal:
-  extends: [.required_dependencies, .test]
+  extends: [.minimal_build_dependencies, .test]
   needs: ["download_lfs", "build_debug_minimal"]
+  variables:
+    GTEST_FILTER: "-*Cuda*:*cuda*:*Gpu*:*gpu*:*SKA*"
+  script:
+    - cd build
+    - ctest -T test --no-compress-output --verbose
 
 # Needs cuda enabled runner
-.test_debug_all:
-  extends: [.all_dependencies, .test]
+test_debug_all:
+  extends: [.complete_build_dependencies, .test]
   needs: ["download_lfs", "build_debug"]
+  tags: ["cuda", "docker"]
+  variables:
+    DEBIAN_FRONTEND: "noninteractive"
+    CUDA_ENABLED: "ON"
+    NVIDIA_VISIBLE_DEVICES: "all"
+  script:
+    - cd build
+    - nvidia-smi
+    - ctest -T test --no-compress-output --verbose
 
 # A job that runs the tests under valgrid
 # It might take a while, so not always run by default
 .test_memcheck:
-  extends: .required_dependencies
+  extends: .minimal_build_dependencies
   stage: test
   needs: ["download_lfs", "build_debug_minimal"]
   before_script:
@@ -313,7 +335,7 @@ test_debug_minimal:
     - schedules
 
 pages:
-  extends: .required_dependencies
+  extends: .minimal_build_dependencies
   stage: pages
   needs: ["test_debug_minimal", "lint_clang_tidy", "lint_cppcheck", "lint_iwyu"]
   script:
@@ -339,7 +361,7 @@ pages:
     - 'xq ".testsuites |= {\"@failures\": .testsuite | map(.\"@failures\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
 
     # Create and upload GitLab badges
-    - python ../.produce-ci-metrics.py build/reports > ci-metrics.json
+    - python3 ../.produce-ci-metrics.py build/reports > ci-metrics.json
     - curl -s https://gitlab.com/ska-telescope/ci-metrics-utilities/raw/master/scripts/ci-badges-func.sh | sh
     - cd ..
     - mv .public public

@@ -159,10 +159,6 @@ target_include_directories(${TARGET_NAME} PUBLIC
 
 add_library(${SOLUTION_NAME_LOWER}::${TARGET_NAME} ALIAS ${TARGET_NAME})
 
-if (BUILD_TESTING)
-  add_subdirectory(tests)
-endif()
-
 install(
   TARGETS
     ${TARGET_NAME}
@@ -183,3 +179,9 @@ install(
 
 unset(CASA_ENABLED CACHE)
 unset(GSL_ENABLED CACHE)
+
+message(STATUS "Configured ${TARGET_NAME}")
+
+if (BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
