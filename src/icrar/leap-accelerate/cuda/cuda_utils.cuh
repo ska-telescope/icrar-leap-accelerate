@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <cuda_runtime.h>
+
 #ifdef DEBUG_CUDA_ERRORS
 static void DebugCudaErrors()
 {
