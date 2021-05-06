@@ -21,8 +21,7 @@ set_target_properties(${TEST_TARGET_NAME}
   RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIR}
 )
 
-if(${CMAKE_VERSION} VERSION_GREATER "3.16.0" AND NOT CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
-  # clang-tidy analysis does not support precompiled headers  
+if(USE_PCH)
   target_precompile_headers(${TEST_TARGET_NAME}
     PRIVATE
     [[pch.h]]

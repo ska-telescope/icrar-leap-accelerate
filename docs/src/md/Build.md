@@ -55,6 +55,8 @@ Setting an environment variable of the same name will also override these cmake 
 
 `CMAKE_RUN_CLANG_TIDY` - Enables running clang-tidy with the compiler
 
+`USE_PCH` - Use pre-compile headers internally, if possible (defaults to `ON`)
+
 #### Compile Commands
 
 From the repository root folder run:

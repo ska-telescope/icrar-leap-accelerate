@@ -186,7 +186,7 @@ build_docs:
   script:
     - rm -rf build && mkdir build
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_COMPILER=clang++
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_COMPILER=clang++ -DUSE_PCH=OFF
     # This filters out external source file dependencies such as gtest
     - jq '[ . - map(select(.file | contains("/external/"))) | .[] ]' compile_commands.json | sponge compile_commands.json
   artifacts:
