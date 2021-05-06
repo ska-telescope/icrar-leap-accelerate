@@ -193,6 +193,6 @@ unset(GSL_ENABLED CACHE)
 
 message(STATUS "Configured ${TARGET_NAME}")
 
-if (BUILD_TESTING)
+if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
