@@ -300,9 +300,9 @@ namespace icrar
 
     std::set<int32_t> MeasurementSet::CalculateUniqueAntennas() const
     {
-
+        //TODO(calgray): consider detecting autocorrelations when using antenna2
         casacore::Vector<casacore::Int> a1 = m_msmc->antenna1().getColumn();
-        casacore::Vector<casacore::Int> a2 = m_msmc->antenna2().getColumn();
+        casacore::Vector<casacore::Int> a2 = m_msmc->antenna1().getColumn();
         std::set<std::int32_t> antennas;
         std::set_union(a1.cbegin(), a1.cend(), a2.cbegin(), a2.cend(), std::inserter(antennas, antennas.begin()));
         return antennas; 
