@@ -347,6 +347,19 @@ namespace icrar
         return args;
     }
 
+    template<typename T> // rapidjson::GenericObject
+    bool SafeGetBoolean(const T& object, const std::string& message, const std::string& file, int line)
+    {
+        if(object.value.IsBool())
+        {
+            return object.value.GetBool();
+        }
+        else
+        {
+            throw json_exception(message, file, line);
+        }
+    }
+
     void ArgumentsValidated::ParseConfig(const std::string& configFilepath, ArgumentsDTO& args)
     {
         auto ifs = std::ifstream(configFilepath);
@@ -468,58 +481,23 @@ namespace icrar
                 }
                 else if(key == "mwaSupport")
                 {
-                    if(it->value.IsBool())
-                    {
-                        args.mwaSupport = it->value.GetBool();
-                    }
-                    else
-                    {
-                        throw json_exception("mwaSupport must be of type bool", __FILE__, __LINE__);
-                    }
+                    args.mwaSupport = SafeGetBoolean(*it, "mwaSupport must be of type bool", __FILE__, __LINE__);
                 }
                 else if(key == "autoCorrelations")
                 {
-                    if(it->value.IsBool())
-                    {
-                        args.readAutocorrelations = it->value.GetBool();
-                    }
-                    else
-                    {
-                        throw json_exception("readAutoCorrelations must be of type bool", __FILE__, __LINE__);
-                    }
+                     args.readAutocorrelations = SafeGetBoolean(*it, "autoCorrelations must be of type bool", __FILE__, __LINE__);
                 }
                 else if(key == "useFileSystemCache")
                 {
-                    if(it->value.IsBool())
-                    {
-                        args.useFileSystemCache = it->value.GetBool();
-                    }
-                    else
-                    {
-                        throw json_exception("useFileSystemCache must be of type bool", __FILE__, __LINE__);
-                    }
+                     args.useFileSystemCache = SafeGetBoolean(*it, "useFileSystemCache must be of type bool", __FILE__, __LINE__);
                 }
                 else if(key == "useIntermediateBuffer")
                 {
-                    if(it->value.IsBool())
-                    {
-                        args.useIntermediateBuffer = it->value.GetBool();
-                    }
-                    else
-                    {
-                        throw json_exception("useIntermediateBuffer must be of type bool", __FILE__, __LINE__);
-                    }
+                    args.useIntermediateBuffer = SafeGetBoolean(*it, "useIntermediateBuffer must be of type bool", __FILE__, __LINE__);
                 }
                 else if(key == "useCusolver")
                 {
-                    if(it->value.IsBool())
-                    {
-                        args.useCusolver = it->value.GetBool();
-                    }
-                    else
-                    {
-                        throw json_exception("useCusolver must be of type bool", __FILE__, __LINE__);
-                    }
+                    args.useCusolver = SafeGetBoolean(*it, "useCusolver must be of type bool", __FILE__, __LINE__);
                 }
                 else if(key == "verbosity")
                 {
