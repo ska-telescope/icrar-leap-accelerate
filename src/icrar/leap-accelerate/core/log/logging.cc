@@ -40,8 +40,9 @@ namespace icrar
 {
 namespace log
 {
-    /// The logging level set on the application
     static bool logging_initialized = false;
+
+    /// The logging level set on the application
     ::boost::log::trivial::severity_level logging_level;
 
     /**
