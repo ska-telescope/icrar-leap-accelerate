@@ -1,4 +1,4 @@
-# Compiling from Source
+# Build from Source
 
 leap-accelerate compilation is compatible with g++ and clang++ on debian or ubuntu. Support for compiling on other operating systems is currently experimental.
 
@@ -67,31 +67,27 @@ NOTE: pulling exernal submodules is now automated by CMake. When downloading the
 
 ##### Linux
 
+Configure environment variables to find cuda installation:
+
 `export CUDA_HOME=/usr/local/cuda`
-
 `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64`
-
 `export PATH=$PATH:$CUDA_HOME/bin`
 
 ###### Debug
 
-`mkdir -p build/Debug && cd build/Debug`
+Generate configuration, e.g:
 
-`cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCUDA_ENABLED=TRUE -DCMAKE_BUILD_TYPE=Debug`
+`cmake -G "Unix Makefiles" -B build/Debug . -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCUDA_ENABLED=TRUE`
+`cmake -G "Unix Makefiles" -B build/Debug . -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCUDA_ENABLED=TRUE -DTRACE=ON`
+`cmake -G "Unix Makefiles" -B build/Debug . -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"`
 
-With tracing to file:
+Then build:
+`cmake --build build/Debug --target all`
 
-`cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCUDA_ENABLED=TRUE -DTRACE=ON -DCMAKE_BUILD_TYPE=Debug`
+###### Release
 
-With gcovr analysis:
-
-`cmake ../.. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"`
-
-#### Release
-
-`mkdir -p build/Release && cd build/Release`
-
-`cmake ../../ -DCUDA_ENABLED=TRUE -DCMAKE_BUILD_TYPE=Release`
+`cmake -G "Unix Makefiles" -B build/Release . -DCMAKE_BUILD_TYPE=Release -DCUDA_ENABLED=TRUE`
+`cmake --build build/Release --target all`
 
 ## Testing
 
@@ -110,6 +106,14 @@ for verbose output use:
 
 ## Documentation
 
+Doxygen documentation is generated for all C++ and cuda files with the following target:
+
+`make doxygen`
+
+Sphinx/Breath/Exhale docs is a dependent target generated with the following command:
+
+`make sphinx`
+
 Generated documentation is available locally at the following file location:
 
 `docs/sphinx/index.html`
@@ -118,18 +122,15 @@ Once deployed to a branch the docs will be available here:
 
 https://icrar-leap-accelerate.readthedocs.io/
 
-## Test Coverage (Debug Only)
+## Test Coverage (debug only)
 
-`cmake ../.. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"`
+Generate a build configuration with gdb symbols and coverage enabled then build:
 
-`make coverage`
+`cmake -G "Unix Makefiles" -B build/Debug . -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"`
 
-### Building from Source
+`cmake --build build/Debug --target coverage`
 
-Doxygen documentation is generated for all C++ and cuda files with the following target:
+gcovr when run execute tests and scan source files to generate a test coverage report:
 
-`make doxygen`
-
-Sphinx/Breath/Exhale docs is a dependent target generated with the following command:
-
-`make sphinx`
+`cd build/Debug`
+`gcovr -r ../../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o index.html`

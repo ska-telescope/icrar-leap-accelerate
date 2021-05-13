@@ -25,7 +25,7 @@ Leap Accelerate consists of:
     :maxdepth: 2
 
     api.rst
-    cli.rst
+    md/LeapAccelerateCLI
     api/library_root.rst
 
 .. toctree::
@@ -35,13 +35,6 @@ Leap Accelerate consists of:
 
     md/Build
     md/Docker
-
-.. toctree::
-    :caption: Usage
-    :maxdepth: 2
-    :glob:
-
-    md/LeapAccelerateCLI
 
 .. toctree::
     :caption: DocMap
