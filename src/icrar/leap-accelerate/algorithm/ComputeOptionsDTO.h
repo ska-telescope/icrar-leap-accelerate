@@ -27,15 +27,18 @@
 namespace icrar
 {
     /**
-     * @brief Options received from I/O that optimizes computation performance based on input data and hardware configuration.
+     * @brief Container for options received from I/O that optimizes computation performance based on input data and hardware configuration.
      * Can either be overriden by the user or intelligently determined at runtime if not set.
      */
     struct ComputeOptionsDTO
     {
         boost::optional<bool> isFileSystemCacheEnabled; ///< Enables caching of expensive calculations to the filesystem
-        boost::optional<bool> useIntermediateBuffer;
-        boost::optional<bool> useCusolver;
+        boost::optional<bool> useIntermediateBuffer; ///< When enabled, calibration may use gpu memory caching to improve performance
+        boost::optional<bool> useCusolver; ///< Enables the use of gpu accelerated pseudoinverse solving
 
+        /**
+         * @brief Returns true if all contained options have been initialized
+         */
         bool IsInitialized() const
         {
             return isFileSystemCacheEnabled.is_initialized()

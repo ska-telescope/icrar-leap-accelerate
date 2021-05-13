@@ -30,9 +30,9 @@ namespace cuda
     /**
      * @brief Copies the argument of the 1st column/polarization in avgData to phaseAnglesI1
      * 
-     * @param I1 
-     * @param avgData 
-     * @param phaseAnglesI1 
+     * @param I1 the indexes of the antennas that are not flagged
+     * @param avgData the rotated and averaged visibilities
+     * @param phaseAnglesI1 the output angles of I1 antennas
      * @return __global__ 
      */
     __global__ void g_AvgDataToPhaseAngles(
