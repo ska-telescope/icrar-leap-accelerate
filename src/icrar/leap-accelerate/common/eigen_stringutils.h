@@ -133,7 +133,8 @@ namespace icrar
     template<typename Matrix>
     void trace_matrix(const Matrix& value, const std::string &name)
     {
-        if (LOG_ENABLED(trace))
+        using namespace icrar::log;
+        if (LogEnabled(Verbosity::trace))
         {
             LOG(trace) << name << ": " << pretty_matrix(value);
         }

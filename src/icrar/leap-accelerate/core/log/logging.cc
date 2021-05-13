@@ -40,16 +40,19 @@ namespace icrar
 {
 namespace log
 {
-    static bool logging_initialized = false;
-    ::boost::log::trivial::severity_level logging_level;
+    static bool g_loggingInitialized = false;
+    Verbosity g_stdOutVerbosity;
+    Verbosity g_fileVerbosity;
 
-    /**
-     * @brief Initializes logging
-     * 
-     */
-    void Initialize(Verbosity verbosity)
+    ::boost::log::trivial::severity_level ToSeverityLevel(Verbosity verbosity)
     {
-        if(!logging_initialized)
+        // low verbosity values mean higher severity levels
+        return boost::log::trivial::severity_level(5 - static_cast<int>(verbosity));
+    }
+
+    void Initialize(Verbosity stdOutVerbosity, Verbosity fileVerbosity)
+    {
+        if(!g_loggingInitialized)
         {
             boost::log::core::get()->add_global_attribute("TimeStamp", boost::log::attributes::local_clock());
 
@@ -57,7 +60,20 @@ namespace log
                     << "[" << boost::log::expressions::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S.%f") << "]"
                     << " <" << boost::log::trivial::severity
                     << "> " << boost::log::expressions::smessage;
-            boost::log::add_file_log
+
+            // StdOut Logging
+            auto stdOutSink = boost::log::add_console_log(
+                std::cout,
+                boost::log::keywords::format = format
+            );
+
+            stdOutSink->set_filter([=](const boost::log::attribute_value_set &s)
+            {
+                return s["Severity"].extract<boost::log::trivial::severity_level>() >= ToSeverityLevel(stdOutVerbosity);
+            });
+
+            // File Logging
+            auto fileSink = boost::log::add_file_log
             (
                 boost::log::keywords::file_name = "log/leap_%Y-%m-%d_%5N.log",/*< file name pattern >*/
                 boost::log::keywords::rotation_size = 10 * 1024 * 1024, /*< rotate files every 10 MiB... >*/
@@ -66,20 +82,22 @@ namespace log
                 boost::log::keywords::time_based_rotation = boost::log::sinks::file::rotation_at_time_point(0, 0, 0), /*< ...or at midnight >*/
                 boost::log::keywords::format = format
             );
-            boost::log::add_console_log(
-                std::cout,
-                boost::log::keywords::format = format
-            );
-
-            // low verbosity values mean higher severity levels
-            logging_level = boost::log::trivial::severity_level(5 - static_cast<int>(verbosity));
-            boost::log::core::get()->set_filter([](const boost::log::attribute_value_set &s)
+            fileSink->set_filter([=](const boost::log::attribute_value_set &s)
             {
-                return s["Severity"].extract<boost::log::trivial::severity_level>() >= logging_level;
+                return s["Severity"].extract<boost::log::trivial::severity_level>() >= ToSeverityLevel(fileVerbosity);
             });
 
-            logging_initialized = true;
+            g_loggingInitialized = true;
         }
+        else
+        {
+            LOG(warning) << "logging already initialized";
+        }
+    }
+
+    bool LogEnabled(Verbosity verbosity)
+    {
+        return verbosity <= g_stdOutVerbosity || verbosity <= g_fileVerbosity;
     }
 } // namespace log
 } // namespace icrar

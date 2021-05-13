@@ -142,7 +142,7 @@ namespace icrar
         Validate();
 
         // Load resources
-        icrar::log::Initialize(GetVerbosity());
+        icrar::log::Initialize(GetVerbosity(), GetVerbosity());
         switch (m_inputType)
         {
         case InputType::file:

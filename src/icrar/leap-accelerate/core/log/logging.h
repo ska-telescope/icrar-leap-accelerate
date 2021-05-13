@@ -31,18 +31,27 @@ namespace log
 {
     /// The default verbosity level with which the logging system is initialized
     constexpr Verbosity DEFAULT_VERBOSITY = Verbosity::info;
+    /**
+     * @brief Initializes logging level for both standard output and log file.
+     * 
+     * @param stdOutVerbosity the verbosity of the stdout stream
+     * @param logVerbosity the verbosity of the logfile stream
+     */
+    void Initialize(
+        Verbosity stdOutVerbosity=DEFAULT_VERBOSITY,
+        Verbosity logVerbosity=DEFAULT_VERBOSITY);
 
     /**
-     * @brief Initializes logging singletons
-     * @param verbosity The verbosity to initialize the library with, higher
-     * values yield more verbose output.
+     * @brief Returns true if the verbosity level is currently being logged
+     * 
+     * @param verbosity the verbosity level to check 
      */
-    void Initialize(Verbosity verbosity=DEFAULT_VERBOSITY);
+    bool LogEnabled(Verbosity verbosity);
 
     /// The logging level set on the application
-    extern ::boost::log::trivial::severity_level logging_level;
+    extern Verbosity g_stdOutVerbosity;
+    extern Verbosity g_fileVerbosity;
 } // namespace log
 } //namespace icrar
 
 #define LOG(X) BOOST_LOG_TRIVIAL(X) // NOLINT(cppcoreguidelines-macro-usage)
-#define LOG_ENABLED(lvl) (::boost::log::trivial::severity_level::lvl >= ::icrar::log::logging_level) // NOLINT(cppcoreguidelines-macro-usage)
