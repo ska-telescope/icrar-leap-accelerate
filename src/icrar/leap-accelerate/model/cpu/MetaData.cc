@@ -56,7 +56,7 @@ namespace cpu
         m_constants.channels = 0;
         m_constants.freq_start_hz = 0;
         m_constants.freq_inc_hz = 0;
-        assert(pms->spectralWindow().nrow() == 1); //TODO(calgray) Only supporting a single spectral window
+        //assert(pms->spectralWindow().nrow() == 1); //TODO(calgray) Only supporting a single spectral window
         if(pms->spectralWindow().nrow() > 0)
         {
             m_constants.channels = msc->spectralWindow().numChan().get(0);

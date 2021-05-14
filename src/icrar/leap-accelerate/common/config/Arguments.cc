@@ -64,7 +64,7 @@ namespace icrar
         , configFilePath(std::move(args.configFilePath))
         , outputFilePath(std::move(args.outputFilePath))
         , stations(std::move(args.stations))
-        , referenceAntenna(std::move(args.referenceAntenna))
+        , referenceAntenna(args.referenceAntenna)
         , minimumBaselineThreshold(args.minimumBaselineThreshold)
         , readAutocorrelations(args.readAutocorrelations)
         , mwaSupport(args.mwaSupport)
@@ -171,7 +171,7 @@ namespace icrar
     {
         if(args.inputType.is_initialized())
         {
-            m_inputType = std::move(args.inputType.get());
+            m_inputType = args.inputType.get();
         }
 
         if(args.filePath.is_initialized())
@@ -186,7 +186,7 @@ namespace icrar
 
         if(args.streamOutType.is_initialized())
         {
-            m_streamOutType = std::move(args.streamOutType.get());
+            m_streamOutType = args.streamOutType.get();
         }
 
         if(args.outputFilePath.is_initialized())
@@ -251,7 +251,7 @@ namespace icrar
 
         if(args.verbosity.is_initialized())
         {
-            m_verbosity = std::move(args.verbosity.get());
+            m_verbosity = args.verbosity.get();
         }
     }
 

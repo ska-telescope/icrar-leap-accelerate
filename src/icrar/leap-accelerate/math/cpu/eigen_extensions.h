@@ -115,5 +115,5 @@ namespace icrar
          * @return false 
          */
         bool near(const Eigen::Ref<const Eigen::MatrixXd> left, const Eigen::Ref<const Eigen::MatrixXd> right, double tolerance);
-    }
+    } // namespace cpu 
 } // namespace icrar
