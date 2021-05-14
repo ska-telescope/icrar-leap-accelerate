@@ -41,7 +41,7 @@ namespace cuda
         }
 
         dim3 blockSize = dim3(1024, 1, 1);
-        dim3 gridSize = dim3((int)ceil(static_cast<double>(deltaPhaseColumn.GetRows()) / blockSize.x), 1, 1);
+        dim3 gridSize = dim3(static_cast<int>(ceil(static_cast<double>(deltaPhaseColumn.GetRows()) / blockSize.x)), 1, 1);
 
         auto deltaPhaseMap = Eigen::Map<const Eigen::MatrixXd>(deltaPhase.Get(), deltaPhase.GetRows(), deltaPhase.GetCols());
         auto deltaPhaseColumnMap = Eigen::Map<Eigen::VectorXd>(deltaPhaseColumn.Get(), deltaPhaseColumn.GetRows());

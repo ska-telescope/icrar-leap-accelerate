@@ -45,8 +45,9 @@
 
 #include <Eigen/Core>
 #include <gtest/gtest.h>
-#include <stdio.h>
+
 #include <array>
+#include <cstdio>
 
 namespace icrar
 {
@@ -298,6 +299,6 @@ namespace icrar
     TEST_F(CudaMatrixEigenTests, DISABLED_TestCudaPseudoInverseLarge) { TestPseudoInverseLarge(ComputeImplementation::cuda); }
     TEST_F(CudaMatrixEigenTests, DISABLED_TestPseudoInverseSKA) { TestPseudoInverseSKA(ComputeImplementation::cpu); }
     TEST_F(CudaMatrixEigenTests, DISABLED_TestCudaPseudoInverseSKA) { TestPseudoInverseSKA(ComputeImplementation::cuda); }
-}
+} // namespace icrar
 
 #endif // CUDA_ENABLED

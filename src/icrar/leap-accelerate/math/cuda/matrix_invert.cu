@@ -143,7 +143,7 @@ namespace cuda
             cusolverHandle,
             jobu, jobvt,
             m, n,
-            const_cast<double*>(d_A.Get()),
+            const_cast<double*>(d_A.Get()), // NOLINT(cppcoreguidelines-pro-type-const-cast)
             lda,
             d_S.Get(),
             d_U.Get(),
@@ -181,7 +181,7 @@ namespace cuda
         const device_matrix<double>& d_U,
         const device_vector<double>& d_S,
         const device_matrix<double>& d_Vt)
-    {t
+    {
         size_t m = d_U.GetRows();
         size_t n = d_Vt.GetRows();
         size_t k = std::min(m, n);

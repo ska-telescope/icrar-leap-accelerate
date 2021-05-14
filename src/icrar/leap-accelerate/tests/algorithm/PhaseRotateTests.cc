@@ -85,7 +85,7 @@ namespace icrar
 
         }
 
-        void CalibrateTest(ComputeImplementation impl, const ComputeOptionsDTO computeOptions, const Slice solutionInterval, std::function<cpu::CalibrationCollection()> getExpected)
+        void CalibrateTest(ComputeImplementation impl, const ComputeOptionsDTO computeOptions, const Slice solutionInterval, const std::function<cpu::CalibrationCollection()>& getExpected)
         {
             const double THRESHOLD = 1e-11;
 

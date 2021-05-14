@@ -29,15 +29,15 @@
 
 #include <gtest/gtest.h>
 
-#include <stdio.h>
 #include <array>
+#include <cstdio>
 
 namespace icrar
 {
     class CudaMatrixTests : public testing::Test
     {
         const double TOLERANCE = 0.0001;
-        cublasHandle_t m_cublasContext;
+        cublasHandle_t m_cublasContext = nullptr;
 
     public:
         void SetUp() override

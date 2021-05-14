@@ -153,8 +153,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
   #set(CMAKE_CUDA_COMPILE_SEPERABLE_COMPILATION "")
   #message("CMAKE_CUDA_COMPILE_WHOLE_COMPILATION: ${CMAKE_CUDA_COMPILE_WHOLE_COMPILATION}")
   set(CMAKE_CUDA_COMPILE_WHOLE_COMPILATION "<CMAKE_CUDA_COMPILER> --no-cuda-version-check -nocudalib <DEFINES> <INCLUDES> <FLAGS> -x cu -c <SOURCE> -o <OBJECT>")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/home/calgray/Code/icrar/leap-accelerate/external/eigen-3.3.90")
-  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -I/home/calgray/Code/icrar/leap-accelerate/external/eigen-3.3.90")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${PROJECT_SOURCE_DIR}/external/eigen-3.3.90")
+  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -I${PROJECT_SOURCE_DIR}/external/eigen-3.3.90")
 
   # Clang IWYU Configuration
   # Clang will ignore explicit includes of its preconfigured include directory

@@ -55,7 +55,7 @@ namespace cuda
         }
 
         dim3 blockSize = dim3(1024, 1, 1);
-        dim3 gridSize = dim3((int)ceil(static_cast<double>(A.GetRows()) / blockSize.x), 1, 1);
+        dim3 gridSize = dim3(static_cast<int>(ceil(static_cast<double>(A.GetRows()) / blockSize.x)), 1, 1);
 
         auto AMap = Eigen::Map<const Eigen::MatrixXd>(A.Get(), A.GetRows(), A.GetCols());
         auto cal1Map = Eigen::Map<const Eigen::VectorXd>(cal1.Get(), cal1.GetRows());

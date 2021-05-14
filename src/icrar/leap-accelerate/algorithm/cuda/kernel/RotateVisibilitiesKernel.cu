@@ -55,26 +55,26 @@ namespace cuda
 
         dim3 blockSize = dim3(128, 8, 1); // block size can be any value where the product is 1024
         dim3 gridSize = dim3(
-            (int)ceil((float)integration.GetBaselines() / blockSize.x),
-            (int)ceil((float)integration.GetChannels() / blockSize.y),
+            static_cast<int>(ceil((float)integration.GetBaselines() / blockSize.x)),
+            static_cast<int>(ceil((float)integration.GetChannels() / blockSize.y)),
             1
         );
 
         auto integrationDataMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>>(
             (cuDoubleComplex*)integration.GetVis().Get(),
-            (int)integration.GetVis().GetDimensionSize(0), // inferring (const int) causes error
-            (int)integration.GetVis().GetDimensionSize(1), // inferring (const int) causes error
-            (int)integration.GetVis().GetDimensionSize(2) // inferring (const int) causes error
+            static_cast<int>(integration.GetVis().GetDimensionSize(0)), // inferring (const int) causes error
+            static_cast<int>(integration.GetVis().GetDimensionSize(1)), // inferring (const int) causes error
+            static_cast<int>(integration.GetVis().GetDimensionSize(2)) // inferring (const int) causes error
         );
 
         auto avgDataMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>>(
             (cuDoubleComplex*)metadata.GetAvgData().Get(),
-            (int)metadata.GetAvgData().GetRows(), // inferring (const int) causes error
-            (int)metadata.GetAvgData().GetCols() // inferring (const int) causes error
+            static_cast<int>(metadata.GetAvgData().GetRows()), // inferring (const int) causes error
+            static_cast<int>(metadata.GetAvgData().GetCols()) // inferring (const int) causes error
         );
 
         auto UVWMap = Eigen::Map<Eigen::Matrix<double, 3, -1>>(
-            (double*)metadata.GetUVW().Get(),
+            static_cast<double*>(metadata.GetUVW().Get()),
             3,
             metadata.GetUVW().GetCount()
         );
