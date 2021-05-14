@@ -171,5 +171,5 @@ namespace cuda
         m_directionBuffer->GetAvgData().ToHostAsync(metadata.m_avgData);
     }
 } // namespace cuda
-} // namespace eigen
+} // namespace icrar
 #endif // CUDA_ENABLED

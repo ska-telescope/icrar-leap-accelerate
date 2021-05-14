@@ -63,7 +63,7 @@ namespace icrar
         : filePath(std::move(args.filePath))
         , configFilePath(std::move(args.configFilePath))
         , outputFilePath(std::move(args.outputFilePath))
-        , stations(std::move(args.stations))
+        , stations(args.stations)
         , referenceAntenna(args.referenceAntenna)
         , minimumBaselineThreshold(args.minimumBaselineThreshold)
         , readAutocorrelations(args.readAutocorrelations)
@@ -118,6 +118,7 @@ namespace icrar
 
     ArgumentsValidated::ArgumentsValidated(ArgumentsDTO&& cliArgs)
     : m_inputType(InputType::file)
+    , m_streamOutType()
     , m_computeImplementation(ComputeImplementation::cpu)
     , m_solutionInterval()
     , m_minimumBaselineThreshold(0)
@@ -196,12 +197,12 @@ namespace icrar
 
         if(args.stations.is_initialized())
         {
-            m_stations = std::move(args.stations.get());
+            m_stations = args.stations.get();
         }
 
         if(args.referenceAntenna.is_initialized())
         {
-            m_referenceAntenna = std::move(args.referenceAntenna.get());
+            m_referenceAntenna = args.referenceAntenna.get();
         }
 
         if(args.directions.is_initialized())
@@ -211,42 +212,42 @@ namespace icrar
 
         if(args.computeImplementation.is_initialized())
         {
-            m_computeImplementation = std::move(args.computeImplementation.get());
+            m_computeImplementation = args.computeImplementation.get();
         }
 
         if(args.solutionInterval.is_initialized())
         {
-            m_solutionInterval = std::move(args.solutionInterval.get());
+            m_solutionInterval = args.solutionInterval.get();
         }
 
         if(args.minimumBaselineThreshold.is_initialized())
         {
-            m_minimumBaselineThreshold = std::move(args.minimumBaselineThreshold.get());
+            m_minimumBaselineThreshold = args.minimumBaselineThreshold.get();
         }
         
         if(args.readAutocorrelations.is_initialized())
         {
-            m_readAutocorrelations = std::move(args.readAutocorrelations.get());
+            m_readAutocorrelations = args.readAutocorrelations.get();
         }
 
         if(args.mwaSupport.is_initialized())
         {
-            m_mwaSupport = std::move(args.mwaSupport.get());
+            m_mwaSupport = args.mwaSupport.get();
         }
 
         if(args.useFileSystemCache.is_initialized())
         {
-            m_computeOptions.isFileSystemCacheEnabled = std::move(args.useFileSystemCache.get());
+            m_computeOptions.isFileSystemCacheEnabled = args.useFileSystemCache.get();
         }
 
         if(args.useIntermediateBuffer.is_initialized())
         {
-            m_computeOptions.useIntermediateBuffer = std::move(args.useIntermediateBuffer.get());
+            m_computeOptions.useIntermediateBuffer = args.useIntermediateBuffer.get();
         }
 
         if(args.useCusolver.is_initialized())
         {
-            m_computeOptions.useCusolver = std::move(args.useCusolver.get());
+            m_computeOptions.useCusolver = args.useCusolver.get();
         }
 
         if(args.verbosity.is_initialized())
