@@ -86,7 +86,6 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include(lint)
 
 # Testing
-add_definitions(-DTEST_DATA_DIR="${PROJECT_SOURCE_DIR}/testdata")
 include(CTest)
 
 # Gather External Projects
@@ -141,10 +140,23 @@ if(CUDA_ENABLED)
 endif()
 #modify exported compile commands for linting
 if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
-set(CMAKE_CUDA_COMPILER ${CMAKE_CXX_COMPILER})
+  
+  # HACK: CMakeDetermineCUDACompiler.cmake does not appear to identifying clang as the cuda
+  # cuda compiler and does not run Clang-CUDA.cmake yet so this instead manually overrides
+  # NVIDIA-CUDA.cmake output variables. Alternatively it may be possible to use nvcc with 
+  # clang using compile command 'nvcc -ccbin clang++ ...'
+
+  set(CMAKE_CUDA_COMPILER ${CMAKE_CXX_COMPILER})
+  #message("CMAKE_CUDA_COMPILE_PTX_COMPILATION: ${CMAKE_CUDA_COMPILE_PTX_COMPILATION}")
+  #set(CMAKE_CUDA_COMPILE_PTX_COMPILATION "")
+  #message("CMAKE_CUDA_COMPILE_SEPERABLE_COMPILATION: ${CMAKE_CUDA_COMPILE_SEPERABLE_COMPILATION}")
+  #set(CMAKE_CUDA_COMPILE_SEPERABLE_COMPILATION "")
+  #message("CMAKE_CUDA_COMPILE_WHOLE_COMPILATION: ${CMAKE_CUDA_COMPILE_WHOLE_COMPILATION}")
+  set(CMAKE_CUDA_COMPILE_WHOLE_COMPILATION "<CMAKE_CUDA_COMPILER> --no-cuda-version-check -nocudalib <DEFINES> <INCLUDES> <FLAGS> -x cu -c <SOURCE> -o <OBJECT>")
+  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -I/home/calgray/Code/icrar/leap-accelerate/external/eigen-3.3.90")
+
   # Clang IWYU Configuration
   # Clang will ignore explicit includes of its preconfigured include directory
-  #include_directories(SYSTEM "/usr/lib/clang/${CMAKE_CXX_COMPILER_VERSION}/include")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem /usr/lib/clang/${CMAKE_CXX_COMPILER_VERSION}/include")
   set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -isystem /usr/lib/clang/${CMAKE_CXX_COMPILER_VERSION}/include")
 endif()
