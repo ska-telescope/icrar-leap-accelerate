@@ -74,7 +74,7 @@ namespace cuda
         );
 
         auto UVWMap = Eigen::Map<Eigen::Matrix<double, 3, -1>>(
-            static_cast<double*>(metadata.GetUVW().Get()),
+            (double*)(metadata.GetUVW().Get()),
             3,
             metadata.GetUVW().GetCount()
         );
