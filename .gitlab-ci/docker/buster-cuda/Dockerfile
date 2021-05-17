@@ -1,6 +1,7 @@
 FROM debian:buster-slim
 
 RUN apt update &&\
+    apt install -y wget gnupg2 software-properties-common &&\
     apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/debian10/x86_64/7fa2af80.pubsudo &&\
     add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/debian10/x86_64/ /" &&\
     add-apt-repository contrib &&\
