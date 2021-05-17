@@ -40,7 +40,7 @@ namespace cuda
     __global__ void g_RotateVisibilities(
         const icrar::cpu::Constants constants,
         const Eigen::Matrix3d dd,
-        const Eigen::Map<Eigen::Matrix<double, 3, Eigen::Dynamic>> UVWs,
+        const Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>> UVWs,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>> integrationData,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> avgData);
 
@@ -61,20 +61,20 @@ namespace cuda
         );
 
         auto integrationDataMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>>(
-            (cuDoubleComplex*)integration.GetVis().Get(),
+            reinterpret_cast<cuDoubleComplex*>(integration.GetVis().Get()),
             static_cast<int>(integration.GetVis().GetDimensionSize(0)), // inferring (const int) causes error
             static_cast<int>(integration.GetVis().GetDimensionSize(1)), // inferring (const int) causes error
             static_cast<int>(integration.GetVis().GetDimensionSize(2)) // inferring (const int) causes error
         );
 
         auto avgDataMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>>(
-            (cuDoubleComplex*)metadata.GetAvgData().Get(),
+            reinterpret_cast<cuDoubleComplex*>(metadata.GetAvgData().Get()),
             static_cast<int>(metadata.GetAvgData().GetRows()), // inferring (const int) causes error
             static_cast<int>(metadata.GetAvgData().GetCols()) // inferring (const int) causes error
         );
 
-        auto UVWMap = Eigen::Map<Eigen::Matrix<double, 3, -1>>(
-            (double*)(metadata.GetUVW().Get()),
+        const auto UVWMap = Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>>(
+            reinterpret_cast<const double*>(metadata.GetUVW().Get()),
             3,
             metadata.GetUVW().GetCount()
         );
@@ -90,7 +90,7 @@ namespace cuda
     __global__ void g_RotateVisibilities(
         const icrar::cpu::Constants constants,
         const Eigen::Matrix3d dd,
-        const Eigen::Map<Eigen::Matrix<double, 3, Eigen::Dynamic>> UVWs,
+        const Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>> UVWs,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>> integrationData,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> avgData)
     {

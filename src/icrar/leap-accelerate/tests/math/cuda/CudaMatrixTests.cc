@@ -20,6 +20,8 @@
  * MA 02111 - 1307  USA
  */
 
+#ifdef CUDA_ENABLED
+
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/math/cuda/matrix_op.h>
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
@@ -206,3 +208,4 @@ namespace icrar
     TEST_F(CudaMatrixTests, TestMatrixMatrixMultiply32) { TestMatrixMatrixMultiply32<double>(); }
     TEST_F(CudaMatrixTests, TestMatrixVectorMultiply33) { TestMatrixVectorMultiply33<double>(); }
 } // namespace icrar
+#endif // CUDA_ENABLED
