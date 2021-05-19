@@ -103,15 +103,15 @@ namespace icrar
     }
 
     /**
-     * @brief Returns of true if all vector elements of @param lhs are within the threshold difference to @param rhs 
+     * @brief Returns of true if all vector elements of @p lhs are within the tolerance threshold difference to @p rhs 
      * 
-     * @tparam T 
-     * @param lhs 
-     * @param rhs 
-     * @param threshold  
+     * @tparam T numerically comparable type
+     * @param lhs left collection
+     * @param rhs right collection
+     * @param tolerance numeric tolerance inclusive threshold for equality
      */
     template<typename T>
-    bool isApprox(const std::vector<T>& lhs, const std::vector<T>& rhs, T threshold)
+    bool isApprox(const std::vector<T>& lhs, const std::vector<T>& rhs, T tolerance)
     {
         if(lhs.size() != rhs.size())
         {
@@ -119,7 +119,7 @@ namespace icrar
         }
         for(size_t i = 0; i < lhs.size(); ++i)
         {
-            if(std::abs(lhs[i] - rhs[i]) >= threshold)
+            if(std::abs(lhs[i] - rhs[i]) >= tolerance)
             {
                 return false;
             }
@@ -133,6 +133,7 @@ namespace icrar
      * @tparam T The input vector template type
      * @tparam function of signature R(const T&)
      * @param vector 
+     * @param lambda operation to perform for each element
      * @return std::vector<R> 
      */
     template<typename T, typename Op>

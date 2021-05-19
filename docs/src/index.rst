@@ -51,8 +51,11 @@ Leap Accelerate consists of:
     :maxdepth: 2
     :glob:
 
-    md/specs/CMakeStyleGuide
+    Refer to the following styleguides for future project contributions:
+
     md/specs/CPlusPlusStyleGuide
+    md/specs/CMakeStyleGuide
+    md/specs/CudaStyleGuide
 
 .. about.rst
 
