@@ -50,6 +50,7 @@ namespace cuda
             cudaHostRegister(m_I.data(), m_I.size() * sizeof(decltype(*m_I.data())), cudaHostRegisterPortable);
             cudaHostRegister(m_A1.data(), m_A1.size() * sizeof(decltype(*m_A1.data())), cudaHostRegisterPortable);
             cudaHostRegister(m_I1.data(), m_I1.size() * sizeof(decltype(*m_I1.data())), cudaHostRegisterPortable);
+            std::cout << m_I1.size() << std::endl;
             if(m_Ad.size() != 0)
             {
                 cudaHostRegister(m_Ad.data(), m_Ad.size() * sizeof(decltype(*m_Ad.data())), cudaHostRegisterPortable);

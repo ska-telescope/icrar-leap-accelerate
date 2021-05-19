@@ -50,6 +50,8 @@
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/timer.h>
 
+#include <icrar/leap-accelerate/common/stream_extensions.h>
+
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
@@ -72,6 +74,7 @@ namespace cuda
     : m_cublasContext(nullptr)
     , m_cusolverDnContext(nullptr)
     {
+        LOG(warning) << "creating CudaLeapCalibrator";
         int deviceCount = 0;
         checkCudaErrors(cudaGetDeviceCount(&deviceCount));
         if(deviceCount < 1)
@@ -97,6 +100,7 @@ namespace cuda
 
     CudaLeapCalibrator::~CudaLeapCalibrator()
     {
+        LOG(warning) << "destroying CudaLeapCalibrator";
         //checkCudaErrors(cudaGetLastError());
         checkCudaErrors(cusolverDnDestroy(m_cusolverDnContext));
         checkCudaErrors(cublasDestroy(m_cublasContext));
@@ -114,6 +118,7 @@ namespace cuda
             boost::optional<unsigned int> referenceAntenna,
             const ComputeOptionsDTO& computeOptions)
     {
+        checkCudaErrors(cudaGetLastError());
         auto cudaComputeOptions = CudaComputeOptions(computeOptions, ms);
 
         LOG(info) << "Starting Calibration using cuda";
@@ -145,6 +150,7 @@ namespace cuda
         std::vector<double> epochs = ms.GetEpochs();
         
         profiling::timer metadata_read_timer;
+        std::cout << ms.GetFlaggedAntennas().size();
         auto metadata = icrar::cuda::HostMetaData(
             ms,
             referenceAntenna,
@@ -155,11 +161,15 @@ namespace cuda
         device_matrix<double> deviceA, deviceAd;
         
         CalculateAd(metadata.GetA(), deviceA, metadata.GetAd(), deviceAd, cudaComputeOptions.isFileSystemCacheEnabled, cudaComputeOptions.useCusolver);
+        //Hack
         cudaHostRegister(metadata.GetAd().data(), metadata.GetAd().size() * sizeof(decltype(*metadata.GetAd().data())), cudaHostRegisterPortable);
+        checkCudaErrors(cudaGetLastError());
 
         device_matrix<double> deviceA1, deviceAd1;
         CalculateAd1(metadata.GetA1(), deviceA1, metadata.GetAd1(), deviceAd1);
+        //Hack
         cudaHostRegister(metadata.GetAd1().data(), metadata.GetAd1().size() * sizeof(decltype(*metadata.GetAd1().data())), cudaHostRegisterPortable);
+        checkCudaErrors(cudaGetLastError());
 
         auto constantBuffer = std::make_shared<ConstantBuffer>(
             metadata.GetConstants(),
@@ -204,6 +214,7 @@ namespace cuda
                 ms.GetNumChannels(),
                 validatedSolutionInterval.GetInterval() * ms.GetNumBaselines(),
                 ms.GetNumPols());
+            checkCudaErrors(cudaGetLastError());
             LOG(info) << "Read integration data in " << integration_read_timer;
 
             LOG(info) << "Loading Metadata UVW";
@@ -229,6 +240,7 @@ namespace cuda
                 directionBuffer->SetDirection(directions[i]);
                 directionBuffer->SetDD(metadata.GenerateDDMatrix(directions[i]));
                 directionBuffer->GetAvgData().SetZeroAsync();
+                checkCudaErrors(cudaGetLastError());
 
                 if(cudaComputeOptions.useIntermediateBuffer)
                 {
@@ -241,6 +253,7 @@ namespace cuda
                 }
 
                 LOG(info) << "PhaseRotate";
+                checkCudaErrors(cudaGetLastError());
                 PhaseRotate(
                     metadata,
                     deviceMetadata,
@@ -308,7 +321,7 @@ namespace cuda
 
                 if(!((hostAd * hostA).eval()).isDiagonal(1e-10))
                 {
-                    throw icrar::exception("Ad is non-diagonal", __FILE__, __LINE__);
+                    throw icrar::exception("Ad*A is non-diagonal", __FILE__, __LINE__);
                 }
             }
         }
@@ -370,7 +383,9 @@ namespace cuda
         for(DeviceIntegration& integration : input)
         {
             LOG(info) << "Rotating integration " << integration.GetIntegrationNumber();
+            checkCudaErrors(cudaGetLastError());
             RotateVisibilities(integration, deviceMetadata);
+            checkCudaErrors(cudaGetLastError());
         }
 
         LOG(info) << "Calibrating in cuda";

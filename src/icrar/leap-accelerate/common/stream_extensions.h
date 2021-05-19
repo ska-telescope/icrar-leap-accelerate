@@ -41,11 +41,9 @@ template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::set<T>& v)
 {
     os << "{"; 
-    for (auto it : v)
+    for (auto it = v.begin(); it != v.end(); it++)
     {
-        os << it; 
-        if (it != v->rbegin())
-            os << ", "; 
+        os << *it << ", "; 
     } 
     os << "}\n"; 
     return os;

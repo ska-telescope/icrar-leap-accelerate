@@ -95,7 +95,7 @@ namespace icrar
         uint32_t GetTotalAntennas() const;
 
         /**
-         * @brief Gets the number of stations excluding flagged stations. Overridable at construction.
+         * @brief Gets the number of stations excluding flagged stations.
          * 
          * @return uint32_t 
          */
@@ -211,6 +211,23 @@ namespace icrar
             std::uint32_t nPolarizations) const;
         Eigen::Tensor<std::complex<double>, 3> GetVis() const;
 
+        /**
+         * @brief Gets the antennas that are not present in any baselines
+         * 
+         * @return std::set<int32_t>
+         */
+        std::set<int32_t> GetMissingAntennas() const;
+
+        /**
+         * @brief Gets the antenna indexes that are either not present in any baselines
+         * or are flagged in all of it's baselines. 
+         * 
+         * Indexes are out of the total antennas 
+         * 
+         * @return std::set<int32_t> 
+         */
+        std::set<int32_t> GetFlaggedAntennas() const;
+
     private:
 
         void Validate() const;
@@ -223,7 +240,7 @@ namespace icrar
         uint32_t GetNumBaselines(bool useAutocorrelations) const;
 
         /**
-         * @brief Calculates the set of unique antenna indices used in baseline pairs
+         * @brief Calculates the set of unique antenna present in baselines
          * 
          * @return uint32_t 
          */

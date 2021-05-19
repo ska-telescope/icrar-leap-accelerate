@@ -253,12 +253,6 @@ namespace icrar
         return boost::numeric_cast<uint32_t>(std::count(filteredBaselines.cbegin(), filteredBaselines.cend(), true));
 	}
 
-    // Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFilteredStations(double minimumBaselineThreshold) const
-    // {
-    //     auto filteredBaselines = GetFilteredBaselines(minimumBaselineThreshold);
-    //     return filteredBaselines(Eigen::seqN(0, GetNumStations()));
-    // }
-
     Eigen::MatrixX3d MeasurementSet::GetCoords() const
     {
         return GetCoords(0, GetNumBaselines());
@@ -298,13 +292,61 @@ namespace icrar
         return visibilities;
     }
 
+    std::set<int32_t> MeasurementSet::GetMissingAntennas() const
+    {
+        std::set<std::int32_t> antennas;
+        for(size_t i = 0; i < m_antennas.size(); i++)
+        {
+            if(m_antennas.find(i) == m_antennas.end())
+            {
+                antennas.insert(i);
+            }
+        }
+        return antennas;
+    }
+
+    std::set<int32_t> MeasurementSet::GetFlaggedAntennas() const
+    {
+        Eigen::VectorXi a1 = ToVector(m_msmc->antenna1().getColumn());
+        Eigen::VectorXi a2 = ToVector(m_msmc->antenna2().getColumn());
+        Eigen::Matrix<bool, -1, 1> fg = GetFilteredBaselines();
+        
+        int32_t totalStations = GetTotalAntennas();
+        //int32_t blStations = std::max(a1.maxCoeff(), a2.maxCoeff()) + 1; 
+        
+        // std::cout << "totalStations " << totalStations << std::endl;
+        // std::cout << "blStations " << blStations << std::endl;
+        
+        // start with a set of all antennas flagged and unflag the ones 
+        // that contain unflagged baseline data
+        Eigen::VectorXi antennas = Eigen::VectorXi::Ones(totalStations);
+        for(int n = 0; n < a1.size(); n++)
+        {
+            if(!fg(n))
+            {
+                antennas(a1(n)) = 0;
+                antennas(a2(n)) = 0;
+            }
+        }
+        // see https://libigl.github.io/matlab-to-eigen.html
+        std::set<int32_t> indexes;
+        for(Eigen::Index i = 0; i < antennas.size(); ++i)
+        {
+            if(antennas(i))
+            {
+                indexes.insert(i);
+            }
+        }
+        return indexes;
+    }
+
     std::set<int32_t> MeasurementSet::CalculateUniqueAntennas() const
     {
         //TODO(calgray): consider detecting autocorrelations when using antenna2
         casacore::Vector<casacore::Int> a1 = m_msmc->antenna1().getColumn();
-        casacore::Vector<casacore::Int> a2 = m_msmc->antenna1().getColumn();
+        casacore::Vector<casacore::Int> a2 = m_msmc->antenna2().getColumn();
         std::set<std::int32_t> antennas;
         std::set_union(a1.cbegin(), a1.cend(), a2.cbegin(), a2.cend(), std::inserter(antennas, antennas.begin()));
-        return antennas; 
+        return antennas;
     }
 } // namespace icrar

@@ -73,6 +73,7 @@ namespace cpu
          * @param output_calibrations output calibration from summing a function of uvws and visibilities
          */
         static void PhaseRotate(
+            const icrar::MeasurementSet& ms,
             MetaData& metadata,
             const SphericalDirection& direction,
             std::vector<Integration>& input,
