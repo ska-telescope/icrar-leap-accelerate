@@ -307,8 +307,8 @@ namespace icrar
 
     std::set<int32_t> MeasurementSet::GetFlaggedAntennas() const
     {
-        Eigen::VectorXi a1 = ToVector(m_msmc->antenna1().getColumn());
-        Eigen::VectorXi a2 = ToVector(m_msmc->antenna2().getColumn());
+        //Eigen::VectorXi a1 = ToVector(m_msmc->antenna1().getColumn());
+        //Eigen::VectorXi a2 = ToVector(m_msmc->antenna2().getColumn());
         Eigen::Matrix<bool, -1, 1> fg = GetFilteredBaselines();
         
         int32_t totalStations = GetTotalAntennas();
@@ -320,12 +320,12 @@ namespace icrar
         // start with a set of all antennas flagged and unflag the ones 
         // that contain unflagged baseline data
         Eigen::VectorXi antennas = Eigen::VectorXi::Ones(totalStations);
-        for(int n = 0; n < a1.size(); n++)
+        for(int n = 0; n < GetNumBaselines(); n++)
         {
             if(!fg(n))
             {
-                antennas(a1(n)) = 0;
-                antennas(a2(n)) = 0;
+                antennas(m_msmc->antenna1()(n)) = 0;
+                antennas(m_msmc->antenna2()(n)) = 0;
             }
         }
         // see https://libigl.github.io/matlab-to-eigen.html

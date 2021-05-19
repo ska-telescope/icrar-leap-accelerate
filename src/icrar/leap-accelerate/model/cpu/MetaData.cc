@@ -52,12 +52,6 @@ namespace cpu
 
         m_constants.nbaselines = ms.GetNumBaselines();
         m_constants.referenceAntenna = refAnt ? refAnt.get() : ms.GetTotalAntennas() - 1;
-        
-        auto antennaFlags = ms.GetFlaggedAntennas();
-        if(antennaFlags.find(m_constants.referenceAntenna) != antennaFlags.end())
-        {
-            throw invalid_argument_exception("reference antenna invalid", "refAnt", __FILE__, __LINE__);
-        }
 
         m_constants.channels = 0;
         m_constants.freq_start_hz = 0;
@@ -103,11 +97,16 @@ namespace cpu
         std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), filteredBaselines, m_constants.referenceAntenna, false);
         trace_matrix(m_A1, "A1");
         trace_matrix(m_I1, "I1");
+        if(m_A1.rows() == 0 || m_I1.rows() == 0)
+        {
+            // Reference antenna did not appear in any baselines
+            throw invalid_argument_exception("reference antenna invalid", "refAnt", __FILE__, __LINE__);
+        }
 
         LOG(info) << "Calculating PhaseMatrix A";
         //Eigen::Matrix<bool, 1, -1>::Zero(ms.GetNumBaselines())
         std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), filteredBaselines, m_constants.referenceAntenna, true);
-        trace_matrix(m_A, "A");
+        //trace_matrix(m_A, "A");
 
         if(computeInverse)
         {

@@ -149,7 +149,6 @@ namespace cuda
         std::vector<double> epochs = ms.GetEpochs();
         
         profiling::timer metadata_read_timer;
-        std::cout << ms.GetFlaggedAntennas().size();
         auto metadata = icrar::cuda::HostMetaData(
             ms,
             referenceAntenna,

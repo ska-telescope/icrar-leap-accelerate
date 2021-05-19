@@ -51,7 +51,8 @@ namespace cpu
             throw invalid_argument_exception("a1 and a2 must be equal size", "a", __FILE__, __LINE__);
         }
 
-        if(refAnt >= a1.maxCoeff() + 1)
+        const int32_t totalAntennas = std::max(a1.maxCoeff(), a2.maxCoeff()) + 1;
+        if(refAnt >= totalAntennas)
         {
             std::stringstream ss;
             ss << "refAnt " << refAnt << " is out of bounds";
@@ -64,7 +65,7 @@ namespace cpu
             throw invalid_argument_exception(ss.str(), "refAnt", __FILE__, __LINE__);
         }
 
-        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, std::max(a1.maxCoeff(), a2.maxCoeff()) + 1);
+        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, totalAntennas);
         Eigen::VectorXi I = Eigen::VectorXi(a1.size());
         I.setConstant(-1);
 
