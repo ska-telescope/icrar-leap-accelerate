@@ -191,7 +191,6 @@ namespace cpu
         Eigen::VectorXd deltaPhaseColumn = deltaPhase.col(0); // 1st pol only
         deltaPhaseColumn.conservativeResize(deltaPhaseColumn.size() + 1);
         deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0;
-
         output_calibrations.emplace_back(direction, (metadata.GetAd() * deltaPhaseColumn) + cal1);
     }
 
