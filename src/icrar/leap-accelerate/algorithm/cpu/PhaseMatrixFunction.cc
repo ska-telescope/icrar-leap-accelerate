@@ -51,7 +51,7 @@ namespace cpu
             throw invalid_argument_exception("a1 and a2 must be equal size", "a", __FILE__, __LINE__);
         }
 
-        const int32_t totalAntennas = std::max(a1.maxCoeff(), a2.maxCoeff()) + 1;
+        const uint32_t totalAntennas = std::max(a1.maxCoeff(), a2.maxCoeff()) + 1;
         if(refAnt >= totalAntennas)
         {
             std::stringstream ss;
@@ -70,6 +70,7 @@ namespace cpu
         I.setConstant(-1);
 
         int k = 0; // row index
+        int32_t refAntId = boost::numeric_cast<int32_t>(refAnt);
         for(int n = 0; n < a1.size(); n++)
         { 
             if(a1(n) != a2(n))
@@ -78,7 +79,7 @@ namespace cpu
                 if(!fg(n) && 
                 (
                     allBaselines ||
-                    ((!allBaselines) && ((a1(n) == refAnt) || (a2(n) == refAnt)))
+                    ((!allBaselines) && ((a1(n) == refAntId) || (a2(n) == refAntId)))
                 ))
                 {
                     A(k, a1(n)) = 1;

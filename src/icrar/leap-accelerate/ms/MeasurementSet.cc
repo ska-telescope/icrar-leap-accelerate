@@ -37,6 +37,7 @@ namespace icrar
     , m_filepath(filepath)
     , m_readAutocorrelations(readAutocorrelations)
     {
+        //TODO(calgray): consider detecting autocorrelations when using antenna2
         // Check and use unique antennas
         m_antennas = CalculateUniqueAntennas();
 
@@ -295,7 +296,7 @@ namespace icrar
     std::set<int32_t> MeasurementSet::GetMissingAntennas() const
     {
         std::set<std::int32_t> antennas;
-        for(size_t i = 0; i < m_antennas.size(); i++)
+        for(int32_t i = 0; i < boost::numeric_cast<int32_t>(m_antennas.size()); i++)
         {
             if(m_antennas.find(i) == m_antennas.end())
             {
@@ -320,7 +321,7 @@ namespace icrar
         // start with a set of all antennas flagged and unflag the ones 
         // that contain unflagged baseline data
         Eigen::VectorXi antennas = Eigen::VectorXi::Ones(totalStations);
-        for(int n = 0; n < GetNumBaselines(); n++)
+        for(uint32_t n = 0; n < GetNumBaselines(); n++)
         {
             if(!fg(n))
             {
@@ -330,7 +331,7 @@ namespace icrar
         }
         // see https://libigl.github.io/matlab-to-eigen.html
         std::set<int32_t> indexes;
-        for(Eigen::Index i = 0; i < antennas.size(); ++i)
+        for(int32_t i = 0; i < boost::numeric_cast<int32_t>(antennas.size()); ++i)
         {
             if(antennas(i))
             {
@@ -342,7 +343,6 @@ namespace icrar
 
     std::set<int32_t> MeasurementSet::CalculateUniqueAntennas() const
     {
-        //TODO(calgray): consider detecting autocorrelations when using antenna2
         casacore::Vector<casacore::Int> a1 = m_msmc->antenna1().getColumn();
         casacore::Vector<casacore::Int> a2 = m_msmc->antenna2().getColumn();
         std::set<std::int32_t> antennas;
