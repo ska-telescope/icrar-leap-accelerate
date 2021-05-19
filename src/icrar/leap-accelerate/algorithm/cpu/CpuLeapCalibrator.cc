@@ -145,7 +145,6 @@ namespace cpu
                 metadata.SetDirection(directions[i]);
                 metadata.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
                 PhaseRotate(
-                    ms,
                     metadata,
                     directions[i],
                     input_queues[i],
@@ -162,34 +161,7 @@ namespace cpu
         LOG(info) << "Finished calibration in " << calibration_timer;
     }
 
-    void InsertValues(const Eigen::VectorXd& in, const Eigen::VectorXi& indexes, double value, Eigen::VectorXd& out)
-    {
-        Eigen::Index leftIndex = 0;
-        Eigen::Index rightIndex = 0;
-        for(Eigen::Index i = 0; i < out.size(); i++)
-        {
-            if(i == indexes(rightIndex))
-            {
-               out(i) = value;
-               rightIndex++;
-            }
-            else
-            {
-                out(i) = in(leftIndex++);
-            }
-            //std::cout << in(i) << std::endl;
-        }
-    }
-
-    Eigen::VectorXd InsertValues(const Eigen::VectorXd& in, const Eigen::VectorXi& indexes, double value)
-    {
-        Eigen::VectorXd out = Eigen::VectorXd::Zero(in.size() + indexes.size());
-        InsertValues(in, indexes, value, out);
-        return out;
-    }
-
     void CpuLeapCalibrator::PhaseRotate(
-        const icrar::MeasurementSet& ms,
         cpu::MetaData& metadata,
         const SphericalDirection& direction,
         std::vector<cpu::Integration>& input,

@@ -143,7 +143,6 @@ namespace cuda
         profiling::timer calibration_timer;
 
         auto output_calibrations = std::vector<cpu::Calibration>();
-        auto input_queue = std::vector<cuda::DeviceIntegration>();
 
         uint32_t timesteps = ms.GetNumTimesteps();
         Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
@@ -196,7 +195,6 @@ namespace cuda
             output_calibrations.emplace_back(
                 epochs[solution * validatedSolutionInterval.GetInterval()],
                 epochs[(solution+1) * validatedSolutionInterval.GetInterval() - 1]);
-            input_queue.clear();
 
             int integrations = ms.GetNumTimesteps();
             if(integrations == 0)
@@ -229,7 +227,7 @@ namespace cuda
             }
 
             // Emplace a single zero'd tensor
-            input_queue.emplace_back(0, integration.GetVis().dimensions());
+            auto input_vis = cuda::DeviceIntegration(0, integration.GetVis().dimensions());
 
             profiling::timer phase_rotate_timer;
             for(size_t i = 0; i < directions.size(); ++i)
@@ -244,12 +242,12 @@ namespace cuda
 
                 if(cudaComputeOptions.useIntermediateBuffer)
                 {
-                    input_queue[0].Set(deviceIntegration.get());
+                    input_vis.Set(deviceIntegration.get());
                 }
                 else
                 {
                     LOG(info) << "Sending integration to device";
-                    input_queue[0].Set(integration);
+                    input_vis.Set(integration);
                 }
 
                 LOG(info) << "PhaseRotate";
@@ -258,7 +256,7 @@ namespace cuda
                     metadata,
                     deviceMetadata,
                     directions[i],
-                    input_queue,
+                    input_vis,
                     output_calibrations[solution].GetBeamCalibrations());
             }
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
@@ -377,16 +375,14 @@ namespace cuda
         const cpu::MetaData& metadata,
         DeviceMetaData& deviceMetadata,
         const SphericalDirection& direction,
-        std::vector<cuda::DeviceIntegration>& input,
+        cuda::DeviceIntegration& input,
         std::vector<cpu::BeamCalibration>& output_calibrations)
     {
-        for(DeviceIntegration& integration : input)
-        {
-            LOG(info) << "Rotating integration " << integration.GetIntegrationNumber();
-            checkCudaErrors(cudaGetLastError());
-            RotateVisibilities(integration, deviceMetadata);
-            checkCudaErrors(cudaGetLastError());
-        }
+
+        LOG(info) << "Rotating integration " << input.GetIntegrationNumber();
+        checkCudaErrors(cudaGetLastError());
+        RotateVisibilities(input, deviceMetadata);
+        checkCudaErrors(cudaGetLastError());
 
         LOG(info) << "Calibrating in cuda";
         auto devicePhaseAnglesI1 = device_vector<double>(metadata.GetI1().rows() + 1);

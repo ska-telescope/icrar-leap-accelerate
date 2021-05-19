@@ -134,7 +134,7 @@ namespace cuda
             const cpu::MetaData& hostMetadata,
             DeviceMetaData& deviceMetadata,
             const SphericalDirection& direction,
-            std::vector<cuda::DeviceIntegration>& input,
+            cuda::DeviceIntegration& input,
             std::vector<cpu::BeamCalibration>& output_calibrations);
     };
 } // namespace cuda
