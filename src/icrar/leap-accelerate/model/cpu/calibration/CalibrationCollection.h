@@ -52,25 +52,28 @@ namespace cpu
             return m_calibrations;
         }
 
-        void Serialize(std::ostream& os) const
+        void Serialize(std::ostream& os, bool pretty = false) const
         {
             constexpr uint32_t PRECISION = 15;
             os.precision(PRECISION);
             os.setf(std::ios::fixed);
 
             rapidjson::StringBuffer s;
+            if(pretty)
+            {
+                 rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
+                 Write(writer);
+            }
+            else
+            {
+                //rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+                //Write(writer);
+            }
 
-#ifdef PRETTY_WRITER
-            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
-#else
-            rapidjson::Writer<rapidjson::StringBuffer> writer(s);
-#endif
-            Write(writer);
             os << s.GetString() << std::endl;
         }
 
-        template<typename Writer>
-        void Write(Writer& writer) const
+        void Write(rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const
         {
             writer.StartArray();
             for(const auto& calibration : m_calibrations)

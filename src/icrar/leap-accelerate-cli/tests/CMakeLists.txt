@@ -1,16 +1,24 @@
 
 set(TEST_TARGET_NAME LeapAccelerateCLI.Tests)
+set(TEST_OUTPUT_DIR ${PROJECT_BINARY_DIR}/bin/tests)
 
 set(sources
   main.cc
 
   CommandLineTests.cc
-  JSONHelperTests.cc    
+  JSONHelperTests.cc
   E2EPerformanceTests.cc
 )
 
 add_executable(${TEST_TARGET_NAME}
   ${sources}
+)
+
+set_target_properties(${TEST_TARGET_NAME}
+  PROPERTIES
+  ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIR}
 )
 
 if(USE_PCH)
@@ -21,7 +29,7 @@ if(USE_PCH)
 endif()
 
 if(CUDA_ENABLED)
-  target_compile_options(${TEST_TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)
+  configure_nvcc_cuda_compiler(${TEST_TARGET_NAME})
   configure_cuda_warnings(${TEST_TARGET_NAME})
 endif()
 

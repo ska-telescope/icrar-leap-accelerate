@@ -201,15 +201,16 @@ add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-cli)
 add_subdirectory(docs)
 
-#Code Coverage
-#TODO: run make LeapAccelerate.Tests before this
-add_custom_target(coverage
-            COMMAND ${CMAKE_CTEST_COMMAND} -T test --no-compress-output --verbose
-            COMMAND mkdir -p coverage
-            COMMAND gcovr -r ${PROJECT_SOURCE_DIR} -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o coverage/index.html
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-)
-add_dependencies(coverage LeapAccelerate.Tests)
+# Code Coverage
+if(BUILD_TESTING)
+  add_custom_target(coverage
+              COMMAND ${CMAKE_CTEST_COMMAND} -T test --no-compress-output --verbose
+              COMMAND mkdir -p coverage
+              COMMAND gcovr -r ${PROJECT_SOURCE_DIR} -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o coverage/index.html
+              WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  )
+  add_dependencies(coverage LeapAccelerate.Tests)
+endif()
 
 # Install cmake config + version + target files
 include(CMakePackageConfigHelpers)

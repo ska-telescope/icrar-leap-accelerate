@@ -24,7 +24,7 @@
 #include <icrar/leap-accelerate/algorithm/ComputeOptionsDTO.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
-#include <icrar/leap-accelerate/core/ioutils.h>
+#include <icrar/leap-accelerate/core/memory/ioutils.h>
 
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>

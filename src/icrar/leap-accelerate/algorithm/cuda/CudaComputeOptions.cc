@@ -25,12 +25,12 @@
 #include <icrar/leap-accelerate/algorithm/cuda/CudaComputeOptions.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
-#include <icrar/leap-accelerate/core/ioutils.h>
+#include <icrar/leap-accelerate/core/memory/ioutils.h>
 
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
-
-#include <cuda_runtime.h>
+#include <icrar/leap-accelerate/core/memory/system_memory.h>
+#include <boost/numeric/conversion/cast.hpp>
 
 #include <boost/optional.hpp>
 
@@ -40,14 +40,9 @@ namespace icrar
     {
         LOG(info) << "Determining cuda compute options";
 
-        size_t free = 0;
-        size_t total = 0;
-        if(GetCudaDeviceCount() != 0)
-        {
-            checkCudaErrors(cudaMemGetInfo(&free, &total));
-        }
+        size_t free = GetAvailableCudaPhysicalMemory();
         size_t VisSize = ms.GetNumPols() * ms.GetNumBaselines() * ms.GetNumChannels() * sizeof(std::complex<double>);
-        size_t AdSize = ms.GetNumStations() * ms.GetNumBaselines() * sizeof(double);
+        size_t ASize = ms.GetNumStations() * ms.GetNumBaselines() * sizeof(double);
         double safetyFactor = 1.3;
 
         if(computeOptions.isFileSystemCacheEnabled.is_initialized())
@@ -66,7 +61,7 @@ namespace icrar
         else // determine from available memory
         {
             // A, Ad and SVD buffers required to compute inverse
-            size_t required = 3 * AdSize * safetyFactor;
+            size_t required = boost::numeric_cast<size_t>(static_cast<double>(3 * ASize) * safetyFactor);
             if(required < free)
             {
                 LOG(info) << memory_amount(free) << " > " << memory_amount(required) << ". Enabling Cusolver";
@@ -86,7 +81,7 @@ namespace icrar
         else // determine from available memory
         {
             // A, Ad and 2x visibilities required to calibrate
-            size_t required = (2 * AdSize + 2 * VisSize) * safetyFactor;
+            size_t required = boost::numeric_cast<size_t>(static_cast<double>(2 * ASize + 2 * VisSize) * safetyFactor);
             if(required < free)
             {
                 LOG(info) << memory_amount(free) << " > " << memory_amount(required) << ". Enabling IntermediateBuffer";

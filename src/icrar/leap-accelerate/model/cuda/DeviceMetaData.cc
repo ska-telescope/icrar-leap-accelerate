@@ -20,6 +20,8 @@
  * MA 02111 - 1307  USA
  */
 
+#if CUDA_ENABLED
+
 #include "DeviceMetaData.h"
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
@@ -41,11 +43,11 @@ namespace cuda
             device_vector<int>&& I1,
             device_matrix<double>&& Ad1)
         : m_constants(constants)
-        , m_A1(std::move(A1))
         , m_A(std::move(A))
-        , m_I1(std::move(I1))
         , m_I(std::move(I))
         , m_Ad(std::move(Ad))
+        , m_A1(std::move(A1))
+        , m_I1(std::move(I1))
         , m_Ad1(std::move(Ad1))
         { }
 
@@ -91,7 +93,6 @@ namespace cuda
     {}
 
     DirectionBuffer::DirectionBuffer(
-        int uvwSize,
         int avgDataRows,
         int avgDataCols)
     : m_avgData(avgDataRows, avgDataCols)
@@ -171,3 +172,4 @@ namespace cuda
     }
 }
 }
+#endif // CUDA_ENABLED

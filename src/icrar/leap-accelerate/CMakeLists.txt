@@ -34,6 +34,7 @@ set(sources
     core/stream_out_type.cc
     core/log/logging.cc
     core/log/Verbosity.cc
+    core/memory/system_memory.cc
     core/profiling/resource_usage.cc
     core/profiling/UsageReporter.cc
     core/version.cc
@@ -49,10 +50,15 @@ set(sources
 
     model/cpu/Integration.cc
     model/cpu/MetaData.cc
+    model/cpu/calibration/Calibration.cc
+    model/cpu/calibration/BeamCalibration.cc
+    model/cuda/DeviceMetaData.cc
 
     algorithm/LeapCalibratorFactory.cc
     algorithm/cpu/CpuLeapCalibrator.cc
     algorithm/cpu/PhaseMatrixFunction.cc
+    algorithm/cuda/CudaComputeOptions.cc
+    algorithm/cuda/CudaLeapCalibrator.cc
 )
 set(cuda_headers
     cuda/cuda_info.h
@@ -66,10 +72,8 @@ set(cuda_sources
     math/cuda/matrix_multiply.cu
     math/cuda/matrix_invert.cu
     
-    model/cuda/DeviceMetaData.cu
     model/cuda/DeviceIntegration.cu
-    algorithm/cuda/CudaComputeOptions.cu
-    algorithm/cuda/CudaLeapCalibrator.cu
+    algorithm/cuda/kernel/EmptyKernel.cu
     algorithm/cuda/kernel/RotateVisibilitiesKernel.cu
     algorithm/cuda/kernel/PolarizationsToPhaseAnglesKernel.cu
     algorithm/cuda/kernel/ComputePhaseDeltaKernel.cu
@@ -100,6 +104,13 @@ add_library(
     ${public_headers}
 )
 endif()
+
+# set_target_properties(${TARGET_NAME}
+#   PROPERTIES
+#   ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+#   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+#   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+# )
 
 if(USE_PCH)
   target_precompile_headers(${TARGET_NAME}
@@ -182,6 +193,6 @@ unset(GSL_ENABLED CACHE)
 
 message(STATUS "Configured ${TARGET_NAME}")
 
-if (BUILD_TESTING)
+if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()

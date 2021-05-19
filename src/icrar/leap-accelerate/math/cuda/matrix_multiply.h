@@ -80,7 +80,7 @@ namespace cuda
         size_t arows = at ? a.GetCols() : a.GetRows();
         size_t acols = at ? a.GetRows() : a.GetCols();
         size_t brows = bt ? 1 : b.GetRows();
-        size_t bcols = bt ? b.GetRows() : 1;
+        //size_t bcols = bt ? b.GetRows() : 1;
 
         if(acols != brows)
         {
@@ -144,6 +144,10 @@ namespace cuda
         if(a.GetRows() != c.GetRows() || b.GetCols() != c.GetCols())
         {
             throw invalid_argument_exception("c matrix has invalid dimensions", "c", __FILE__, __LINE__);
+        }
+        if(a == c || b == c)
+        {
+            throw invalid_argument_exception("input buffer cannot be used as output", "c", __FILE__, __LINE__);
         }
         mat_mul(handle, transa, transb, a.GetRows(), b.GetCols(), a.GetCols(), a.Get(), b.Get(), c.Get());
     }

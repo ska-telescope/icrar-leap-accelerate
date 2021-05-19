@@ -22,45 +22,34 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/math/math_conversion.h>
-#include <icrar/leap-accelerate/core/memory/ioutils.h>
-#include <icrar/leap-accelerate/core/log/logging.h>
-
-#include <chrono>
-#include <ostream>
-#include <string>
+#include <cstddef>
 
 namespace icrar
 {
-namespace profiling
-{
-    class timer
-    {
+    /**
+     * @brief Gets the total amount system virtual memory. This includes
+     * the system's dynamic RAM plus swap space.
+     */
+    size_t GetTotalSystemVirtualMemory();
 
-    public:
-        using clock = std::chrono::high_resolution_clock;
-        using duration = typename clock::duration;
+    /**
+     * @brief Gets the total amount of used system virtual memory.
+     */
+    size_t GetTotalUsedSystemVirtualMemory();
 
-    private:
-        clock::time_point m_start {clock::now()};
+    /**
+     * @brief Gets the currently available/free virtual system memory.
+     */
+    size_t GetTotalAvailableSystemVirtualMemory();
 
-    public:
-        duration get() const
-        {
-            return clock::now() - m_start;
-        }
-    };
+    /**
+     * @brief Gets the total physical cuda memory on the current cuda device.
+     */
+    size_t GetTotalCudaPhysicalMemory();
 
-
-template <typename CharT, typename Traits>
-std::basic_ostream<CharT, Traits> &operator<<(
-    std::basic_ostream<CharT, Traits> &os, const timer &timer)
-{
-    auto t = std::chrono::duration_cast<std::chrono::microseconds>(
-                 timer.get()).count();
-    os << us_time(t);
-    return os;
-}
-
-} // namespace profiling
+    /**
+     * @brief Gets the currently available/free physical cuda memory of the current cuda device.
+     * This excludes the memory used by the current process.
+     */
+    size_t GetAvailableCudaPhysicalMemory();
 } // namespace icrar

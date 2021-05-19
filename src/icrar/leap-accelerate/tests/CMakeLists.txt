@@ -1,5 +1,6 @@
 
 set(TEST_TARGET_NAME LeapAccelerate.Tests)
+set(TEST_OUTPUT_DIR ${PROJECT_BINARY_DIR}/bin/tests)
 
 set(sources
   main.cc
@@ -20,6 +21,7 @@ set(sources
 
   math/MathConversionTests.cc
   math/EigenExtensionsTests.cc
+  math/cuda/CudaMatrixEigenTests.cc
 
   ms/MSUtilsTests.cc
 
@@ -32,7 +34,6 @@ set(sources
 
 set(cuda_sources
   math/cuda/CudaMatrixTests.cu
-  math/cuda/CudaMatrixEigenTests.cu
 )
 
 # Only CUDA 10+ is capable of compiling gtest
@@ -42,6 +43,13 @@ endif()
 
 add_executable(${TEST_TARGET_NAME}
   ${sources}
+)
+
+set_target_properties(${TEST_TARGET_NAME}
+  PROPERTIES
+  ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIR}
 )
 
 if(USE_PCH)
@@ -72,7 +80,7 @@ set(test_data
 add_custom_target(${TEST_TARGET_NAME}.Data ALL
   COMMAND ${CMAKE_COMMAND}
   -Dsrc_dir=${CMAKE_CURRENT_SOURCE_DIR}/testdata
-  -Ddst_dir=${CMAKE_CURRENT_BINARY_DIR}/testdata
+  -Ddst_dir=${TEST_OUTPUT_DIR}/testdata
   -P ${PROJECT_SOURCE_DIR}/cmake/update_directory.cmake
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )

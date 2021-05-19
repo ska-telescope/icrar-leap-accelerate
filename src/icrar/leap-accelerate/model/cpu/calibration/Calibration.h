@@ -24,9 +24,11 @@
 
 #include <icrar/leap-accelerate/model/cpu/calibration/BeamCalibration.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
+#include <icrar/leap-accelerate/exception/exception.h>
 
 #include <rapidjson/writer.h>
 #include <rapidjson/prettywriter.h>
+#include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 
 #include <vector>
@@ -52,49 +54,21 @@ namespace cpu
          * @param startEpoch 
          * @param endEpoch 
          */
-        Calibration(double startEpoch, double endEpoch)
-        : m_startEpoch(startEpoch)
-        , m_endEpoch(endEpoch)
-        {}
+        Calibration(double startEpoch, double endEpoch);
 
+        Calibration(double startEpoch, double endEpoch, std::vector<cpu::BeamCalibration>&& beamCalibrations);
 
-        Calibration(double startEpoch, double endEpoch, std::vector<cpu::BeamCalibration>&& beamCalibrations)
-        : m_startEpoch(startEpoch)
-        , m_endEpoch(endEpoch)
-        , m_beamCalibrations(std::move(beamCalibrations))
-        {
-        }
-
-        double GetStartEpoch() const { return m_startEpoch; }
+        double GetStartEpoch() const;
         
-        double GetEndEpoch() const { return m_endEpoch; }
+        double GetEndEpoch() const;
 
-        const std::vector<BeamCalibration>& GetBeamCalibrations() const
-        {
-            return m_beamCalibrations;
-        }
+        bool IsApprox(const Calibration& calibration, double threshold);
 
-        std::vector<BeamCalibration>& GetBeamCalibrations()
-        {
-            return m_beamCalibrations;
-        }
+        const std::vector<BeamCalibration>& GetBeamCalibrations() const;
 
-        void Serialize(std::ostream& os) const
-        {
-            constexpr uint32_t PRECISION = 15;
-            os.precision(PRECISION);
-            os.setf(std::ios::fixed);
+        std::vector<BeamCalibration>& GetBeamCalibrations();
 
-            rapidjson::StringBuffer s;
-
-#ifdef PRETTY_WRITER
-            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
-#else
-            rapidjson::Writer<rapidjson::StringBuffer> writer(s);
-#endif
-            Write(writer);
-            os << s.GetString() << std::endl;
-        }
+        void Serialize(std::ostream& os, bool pretty = false) const;
 
         template<typename Writer>
         void Write(Writer& writer) const
@@ -103,15 +77,19 @@ namespace cpu
                 writer.String("epoch"); writer.StartObject();
                     writer.String("start"); writer.Double(m_startEpoch);
                     writer.String("end"); writer.Double(m_endEpoch);
-                writer.EndObject(); 
+                writer.EndObject();
                 writer.String("calibration"); writer.StartArray();
-                    for(auto& calibration : m_beamCalibrations)
+                    for(auto& beamCalibration : m_beamCalibrations)
                     {
-                        calibration.Write(writer);
+                        beamCalibration.Write(writer);
                     }
                 writer.EndArray();
             writer.EndObject();
         }
+
+        static Calibration Parse(const std::string& json);
+
+        static Calibration Parse(const rapidjson::Value& doc);
     };
 }
 }

@@ -23,7 +23,7 @@
 #pragma once
 
 #include <icrar/leap-accelerate/core/log/logging.h>
-#include <icrar/leap-accelerate/core/ioutils.h>
+#include <icrar/leap-accelerate/core/memory/ioutils.h>
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <Eigen/Core>
 #include <boost/numeric/conversion/cast.hpp>
@@ -104,5 +104,15 @@ namespace icrar
          * @return Eigen::MatrixXd 
          */
         Eigen::MatrixXd arg(const Eigen::Ref<const Eigen::MatrixXcd>& a);
+
+        /**
+         * @brief Performs an elementwise comparison between matrices and returns
+         * false if the absolute difference exceeds the tolerance.
+         * 
+         * @param left 
+         * @param right 
+         * @param tolerance 
+         */
+        bool near(const Eigen::Ref<const Eigen::MatrixXd> left, const Eigen::Ref<const Eigen::MatrixXd> right, double tolerance);
     }
 } // namespace icrar

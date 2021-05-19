@@ -37,7 +37,7 @@ namespace icrar
     , m_filepath(filepath)
     , m_readAutocorrelations(readAutocorrelations)
     {
-        // Check and use unique antennas 
+        // Check and use unique antennas
         m_antennas = CalculateUniqueAntennas();
 
         if(overrideNStations.is_initialized())
@@ -47,11 +47,13 @@ namespace icrar
         }
         else if(m_antennas.size() != m_measurementSet->antenna().nrow())
         {
+            // The antenna column may have blank entries for flagged antennas
             LOG(warning) << "total antennas = " << m_measurementSet->antenna().nrow();
             LOG(warning) << "unique antennas = " << m_antennas.size();
             LOG(warning) << "using unique antennas";
 
             m_stations = boost::numeric_cast<int>(m_antennas.size());
+
         }
         else
         {
@@ -187,13 +189,19 @@ namespace icrar
         
         // Selects only the flags of the first channel and polarization
         // TODO(calgray): may want to consider using logical OR over each channel and polarization
-        auto flagSlice = casacore::Slicer(
-            casacore::IPosition(2, 0, 0),
-            casacore::IPosition(2, 1, 1),
-            casacore::IPosition(2, 1, 1));
-        casacore::Vector<bool> flags = m_msmc->flag().getColumnRange(epochIndices, flagSlice);
-
-        return ToVector(flags);
+        if(!m_msmc->flag().isNull() && m_msmc->flag().nrow() > 0 && m_msmc->flag().isDefined(0))
+        {
+            auto flagSlice = casacore::Slicer(
+                casacore::IPosition(2, 0, 0),
+                casacore::IPosition(2, 1, 1),
+                casacore::IPosition(2, 1, 1));
+            return ToVector<bool>(m_msmc->flag().getColumnRange(epochIndices, flagSlice));
+        }
+        else
+        {
+            LOG(warning) << "baseline flags not found";
+            return Eigen::Matrix<bool, -1, 1>::Zero(nBaselines);
+        }
     }
 
     uint32_t MeasurementSet::GetNumFlaggedBaselines() const
@@ -245,6 +253,12 @@ namespace icrar
         return boost::numeric_cast<uint32_t>(std::count(filteredBaselines.cbegin(), filteredBaselines.cend(), true));
 	}
 
+    // Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFilteredStations(double minimumBaselineThreshold) const
+    // {
+    //     auto filteredBaselines = GetFilteredBaselines(minimumBaselineThreshold);
+    //     return filteredBaselines(Eigen::seqN(0, GetNumStations()));
+    // }
+
     Eigen::MatrixX3d MeasurementSet::GetCoords() const
     {
         return GetCoords(0, GetNumBaselines());
@@ -286,6 +300,7 @@ namespace icrar
 
     std::set<int32_t> MeasurementSet::CalculateUniqueAntennas() const
     {
+        //TODO(calgray): consider detecting autocorrelations when using antenna2
         casacore::Vector<casacore::Int> a1 = m_msmc->antenna1().getColumn();
         casacore::Vector<casacore::Int> a2 = m_msmc->antenna1().getColumn();
         std::set<std::int32_t> antennas;

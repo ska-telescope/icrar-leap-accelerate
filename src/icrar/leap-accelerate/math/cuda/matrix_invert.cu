@@ -31,7 +31,7 @@
 
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/exception/exception.h>
-#include <icrar/leap-accelerate/core/ioutils.h>
+#include <icrar/leap-accelerate/core/memory/ioutils.h>
 
 #include <icrar/leap-accelerate/math/cuda/matrix_multiply.h>
 
@@ -154,7 +154,7 @@ namespace cuda
             workSize,
             d_rwork,
             d_devInfo));
-        checkCudaErrors(cudaMemcpy(&h_devInfo, d_devInfo, d_devInfoSize, cudaMemcpyDeviceToHost));
+        checkCudaErrors(cudaMemcpyAsync(&h_devInfo, d_devInfo, d_devInfoSize, cudaMemcpyDeviceToHost));
 
         if(h_devInfo != 0)
         {
@@ -188,7 +188,7 @@ namespace cuda
         size_t k = std::min(m, n);
 
         auto S = Eigen::VectorXd(d_S.GetRows());
-        d_S.ToHost(S.data());
+        d_S.ToHostAsync(S.data());
 
         Eigen::MatrixXd Sd = Eigen::MatrixXd::Zero(n, d_U.GetCols());
 
@@ -198,19 +198,18 @@ namespace cuda
 
         auto d_Sd = device_matrix<double>(Sd);
         auto d_result = device_matrix<double>(n, m);
+        auto d_result2 = device_matrix<double>(n, m);
 
         // result = V * (S * Uh)
         icrar::cuda::multiply(cublasHandle, d_Sd, d_U, d_result, MatrixOp::normal, MatrixOp::hermitian);
-        checkCudaErrors(cudaDeviceSynchronize());
-        icrar::cuda::multiply(cublasHandle, d_Vt, d_result, d_result, MatrixOp::hermitian, MatrixOp::normal);
-        checkCudaErrors(cudaDeviceSynchronize());
-        return d_result;
+        icrar::cuda::multiply(cublasHandle, d_Vt, d_result, d_result2, MatrixOp::hermitian, MatrixOp::normal);
+        return d_result2;
     }
 
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> pseudo_inverse(
         cusolverDnHandle_t cusolverHandle,
         cublasHandle_t cublasHandle,
-        const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& matrix,
+        const Eigen::MatrixXd& matrix,
         const JobType jobType)
     {
         device_matrix<double> d_U;
@@ -218,17 +217,11 @@ namespace cuda
         device_matrix<double> d_Vt;
         {
             auto d_A = device_matrix<double>(matrix);
-            checkCudaErrors(cudaDeviceSynchronize());
             std::tie(d_U, d_S, d_Vt) = svd(cusolverHandle, d_A, jobType);
         }
-        checkCudaErrors(cudaDeviceSynchronize());
         device_matrix<double> d_VSUt = SVDCombineInverse(cublasHandle, d_U, d_S, d_Vt, jobType);
-        checkCudaErrors(cudaDeviceSynchronize());
-
         auto VSUt = Eigen::MatrixXd(matrix.cols(), matrix.rows());
         d_VSUt.ToHostAsync(VSUt.data());
-
-        checkCudaErrors(cudaDeviceSynchronize());
         return VSUt;
     }
 

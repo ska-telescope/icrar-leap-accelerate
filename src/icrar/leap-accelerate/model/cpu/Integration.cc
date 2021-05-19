@@ -26,7 +26,7 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 
-#include <icrar/leap-accelerate/core/ioutils.h>
+#include <icrar/leap-accelerate/core/memory/ioutils.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 
 namespace icrar

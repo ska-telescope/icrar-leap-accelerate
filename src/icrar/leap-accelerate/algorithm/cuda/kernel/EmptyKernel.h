@@ -21,46 +21,18 @@
  */
 
 #pragma once
+#ifdef CUDA_ENABLED
 
-#include <icrar/leap-accelerate/math/math_conversion.h>
-#include <icrar/leap-accelerate/core/memory/ioutils.h>
-#include <icrar/leap-accelerate/core/log/logging.h>
-
-#include <chrono>
-#include <ostream>
-#include <string>
-
+#include <cuda.h>
+#include <cuda_runtime.h>
 namespace icrar
 {
-namespace profiling
+namespace cuda
 {
-    class timer
-    {
-
-    public:
-        using clock = std::chrono::high_resolution_clock;
-        using duration = typename clock::duration;
-
-    private:
-        clock::time_point m_start {clock::now()};
-
-    public:
-        duration get() const
-        {
-            return clock::now() - m_start;
-        }
-    };
-
-
-template <typename CharT, typename Traits>
-std::basic_ostream<CharT, Traits> &operator<<(
-    std::basic_ostream<CharT, Traits> &os, const timer &timer)
-{
-    auto t = std::chrono::duration_cast<std::chrono::microseconds>(
-                 timer.get()).count();
-    os << us_time(t);
-    return os;
-}
-
-} // namespace profiling
+    /**
+     * @brief An empty kernel for testing cuda configurations
+     */
+    __host__ void Empty();
+} // namespace cuda
 } // namespace icrar
+#endif // CUDA_ENABLED

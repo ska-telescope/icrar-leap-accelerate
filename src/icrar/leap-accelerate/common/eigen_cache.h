@@ -24,7 +24,7 @@
 #pragma once
 
 #include <icrar/leap-accelerate/core/log/logging.h>
-#include <icrar/leap-accelerate/core/ioutils.h>
+#include <icrar/leap-accelerate/core/memory/ioutils.h>
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <Eigen/Core>
 #include <fstream>
