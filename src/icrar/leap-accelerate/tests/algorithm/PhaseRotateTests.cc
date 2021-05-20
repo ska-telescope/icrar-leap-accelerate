@@ -71,7 +71,7 @@ namespace icrar
      */
     class PhaseRotateTests : public ::testing::Test
     {
-        constexpr static double TOLERANCE = 1e-11;
+        const double TOLERANCE = 1e-11;
         std::unique_ptr<icrar::MeasurementSet> ms;
 
     protected:
