@@ -252,7 +252,6 @@ namespace icrar
         void RotateVisibilitiesTest(const ComputeImplementation impl)
         {
             using namespace std::complex_literals;
-            //const double TOLERANCE = 0.0001;
             
             auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
 
@@ -477,7 +476,6 @@ namespace icrar
                     50.0,
                     referenceAntenna,
                     ComputeOptionsDTO{false, false, false});
-                checkCudaErrors(cudaGetLastError());
 
                 for(const auto& calibration : calibrationsVector)
                 {
