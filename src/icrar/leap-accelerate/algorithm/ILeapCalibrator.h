@@ -44,7 +44,8 @@ namespace icrar
     }
 
     /**
-     * @brief Interface for Leap calibration implementations.
+     * @brief Interface for performing low-frequency exicision of the atmosphere
+     * in parallel (leap) calibration.
      * 
      */
     class ILeapCalibrator : boost::noncopyable
@@ -55,12 +56,13 @@ namespace icrar
         /**
          * @brief Performs Leap calibration for single or multiple solutions.
          * 
+         * @param outputCallback lambda called with direction calibrations as they are computed
          * @param ms the mesurement set containing all input measurements
          * @param directions the directions to calibrate for
          * @param minimumBaselineThreshold the minimum baseline length to use in calibrations
          * @param solutionInterval the arbitrary interval to calculate solutions for
          * @param referenceAntenna the reference antenna of metrix A1
-         * @param isFileSystemCacheEnabled enable to use the filesystem to cache data between calibration calls
+         * @param computeOptions 
          * @return CalibrationCollection the calibrationn result
          */
         virtual void Calibrate(

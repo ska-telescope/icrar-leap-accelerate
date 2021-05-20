@@ -48,6 +48,15 @@ namespace icrar
         return output;
     }
 
+    /**
+     * @brief Converts a casacore matrix to the equivalent fixed-sized eigen3 matrix
+     * 
+     * @tparam T data type
+     * @tparam R number of rows
+     * @tparam C number of columns
+     * @param value casacore matrix
+     * @return Eigen::Matrix<T, R, C> 
+     */
     template<typename T, int R, int C>
     Eigen::Matrix<T, R, C> ToFixedMatrix(const casacore::Matrix<T>& value)
     {
@@ -123,22 +132,51 @@ namespace icrar
      */
     icrar::MVuvw ToUVW(const casacore::MVuvw& value);
 
+    /**
+     * @brief Converts a vector of casacore MVuvw values to a vector of icrar MVuvw values 
+     * 
+     * @param value 
+     * @return std::vector<icrar::MVuvw> 
+     */
     std::vector<icrar::MVuvw> ToUVWVector(const std::vector<casacore::MVuvw>& value);
     
     /**
      * @brief Converts a column-major matrix of size Nx3 into a vector of UVWs
      */
     std::vector<icrar::MVuvw> ToUVWVector(const Eigen::MatrixXd& value);
+
+    /**
+     * @brief Converts an internal uvw value to the equivalent casacore format
+     */
     casacore::MVuvw ToCasaUVW(const icrar::MVuvw& value);
+
+    /**
+     * @brief Converts an internal uvw value to the equivalent casacore format
+     */
     std::vector<casacore::MVuvw> ToCasaUVWVector(const std::vector<icrar::MVuvw>& value);
+    
+    /**
+     * @brief Converts an internal uvw vector to the equivalent casacore format 
+     */
     std::vector<casacore::MVuvw> ToCasaUVWVector(const Eigen::MatrixX3d& value);
 
     /**
      * @brief Converts a casacore direction to an icrar sperical direction 
      */
     SphericalDirection ToDirection(const casacore::MVDirection& value);
+
+    /**
+     * @brief Converts a vector casacore MVDirections to a vector of SphericalDirections
+     */
     std::vector<SphericalDirection> ToDirectionVector(const std::vector<casacore::MVDirection>& value);
 
+    /**
+     * @brief Converts a spherical direction to casacore MVDirection
+     */
     casacore::MVDirection ToCasaDirection(const SphericalDirection& value);
+
+    /**
+     * @brief Converts a vector of spherical direction to a vector a casacore MVDirections
+     */
     std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<SphericalDirection>& value);
 } // namespace icrar
