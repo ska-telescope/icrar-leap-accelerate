@@ -61,8 +61,8 @@ namespace icrar
          * @param directions the directions to calibrate for
          * @param minimumBaselineThreshold the minimum baseline length to use in calibrations
          * @param solutionInterval the arbitrary interval to calculate solutions for
-         * @param referenceAntenna the reference antenna of metrix A1
-         * @param computeOptions 
+         * @param referenceAntenna the reference antenna of matrix A1
+         * @param computeOptions extra computation algorithm options
          * @return CalibrationCollection the calibrationn result
          */
         virtual void Calibrate(
