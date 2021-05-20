@@ -166,8 +166,6 @@ namespace icrar
                 throw icrar::invalid_argument_exception("invalid PhaseMatrixFunction implementation", "impl", __FILE__, __LINE__);
             }
 
-            double TOLERANCE = 0.00001;
-
             // A
             const int aRows = 4754;
             const int aCols = 128;
