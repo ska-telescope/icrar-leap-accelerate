@@ -38,6 +38,26 @@ namespace icrar
 {
     namespace cpu
     {
+        template<typename Matrix>
+        Eigen::IndexedView<Matrix, Eigen::VectorXi, Eigen::internal::AllRange<-1>>
+        WrappedRangeSelect(
+            Eigen::MatrixBase<Matrix>& matrix,
+            const Eigen::VectorXi& rowIndices)
+        {
+            Eigen::VectorXi correctedIndices = rowIndices;
+
+            // wrap around
+            for(int& i : correctedIndices)
+            {
+                if(i < 0)
+                {
+                    i = boost::numeric_cast<int>(i % matrix.rows());
+                }
+            }
+
+            return matrix(correctedIndices, Eigen::all);
+        }
+
         /**
          * @brief Selects a range of elements from matrix row indices and column index.
          * Negative indexes select from the bottom of the matrix with -1 representing the bottom row.
@@ -50,7 +70,7 @@ namespace icrar
         template<typename Matrix>
         Eigen::IndexedView<Matrix, Eigen::VectorXi, Eigen::internal::SingleRange>
         VectorRangeSelect(
-            Matrix& matrix,
+            Eigen::MatrixBase<Matrix>& matrix,
             const Eigen::VectorXi& rowIndices,
             unsigned int column)
         {
@@ -59,7 +79,6 @@ namespace icrar
             // wrap around
             for(int& i : correctedIndices)
             {
-                
                 if(i < 0)
                 {
                     i = boost::numeric_cast<int>(i % matrix.rows());
@@ -82,8 +101,7 @@ namespace icrar
         Eigen::IndexedView<Matrix, Eigen::VectorXi, Eigen::internal::AllRange<-1>>
         MatrixRangeSelect(
             Matrix& matrix,
-            const Eigen::VectorXi& rowIndices,
-            Eigen::internal::all_t range)
+            const Eigen::VectorXi& rowIndices)
         {
             Eigen::VectorXi correctedIndices = rowIndices;
             for(int& i : correctedIndices)
@@ -94,7 +112,7 @@ namespace icrar
                 }
             }
 
-            return matrix(correctedIndices, range);
+            return matrix(correctedIndices, Eigen::all);
         }
 
         /**
