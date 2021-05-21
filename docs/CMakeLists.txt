@@ -65,5 +65,5 @@ if(Sphinx_FOUND AND Doxygen_FOUND)
   install(DIRECTORY ${SPHINX_BUILD_DIR}
   DESTINATION ${CMAKE_INSTALL_DOCDIR})
 else()
-  message("Sphinx or Doxygen not found - skipped building docs")
+  message("Sphinx or Doxygen not found - skipping docs targets")
 endif()

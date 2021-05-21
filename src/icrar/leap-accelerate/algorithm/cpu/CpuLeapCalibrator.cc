@@ -107,7 +107,7 @@ namespace cpu
         LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
         size_t solutions = validatedSolutionInterval.GetSize();
-        auto output_calibrations = std::vector<cpu::Calibration>(); // Reserve memory
+        auto output_calibrations = std::vector<cpu::Calibration>();
         output_calibrations.reserve(solutions);
 
         constexpr unsigned int integrationNumber = 0;
@@ -174,11 +174,12 @@ namespace cpu
         }
 
         LOG(info) << "Calculating Calibration";
-        // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
-        
-        auto polarizationsI1 = icrar::cpu::WrappedRangeSelect(metadata.GetAvgData(), metadata.GetI1());
-        Eigen::VectorXd phaseAnglesI1 = icrar::cpu::arg(polarizationsI1.col(0)); // 1st pol only
+        auto polarizationsI1 = metadata.GetAvgData().wrapped_row_select(metadata.GetI1());
 
+        Eigen::VectorXd phaseAnglesI1 = polarizationsI1.col(0).arg(); // 1st polarization only
+        //Eigen::VectorXd phaseAnglesI1 = (polarizationsI1.col(0) + polarizationsI1.col(3)).arg(); // arg(XX + YY)
+
+        // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
         phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
         phaseAnglesI1(phaseAnglesI1.rows() - 1) = 0;
 
@@ -188,7 +189,7 @@ namespace cpu
         Eigen::MatrixXd deltaPhase = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
-            deltaPhase.row(n) = icrar::cpu::arg(std::exp(std::complex<double>(0, -two_pi<double>() * ACal1(n))) * metadata.GetAvgData().row(n));
+            deltaPhase.row(n) = (std::exp(std::complex<double>(0, -two_pi<double>() * ACal1(n))) * metadata.GetAvgData().row(n)).arg();
         }
 
         Eigen::VectorXd deltaPhaseColumn = deltaPhase.col(0); // 1st pol only

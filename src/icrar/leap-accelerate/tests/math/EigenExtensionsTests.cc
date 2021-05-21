@@ -42,7 +42,8 @@ namespace icrar
             auto r = Eigen::VectorXi(2);
             r << 0, 2;
 
-            Eigen::MatrixXd v = cpu::VectorRangeSelect(m, r, 0);
+            auto vi = cpu::wrapped_row_select(m, r);
+            Eigen::MatrixXd v = vi.col(0);
 
             auto expected = Eigen::MatrixXd(2,1);
             expected <<
@@ -62,7 +63,7 @@ namespace icrar
             auto r = Eigen::VectorXi(2);
             r << 0, 2;
 
-            Eigen::MatrixXd v = cpu::MatrixRangeSelect(m, r);
+            Eigen::MatrixXd v = cpu::wrapped_row_select(m, r);
             auto expected = Eigen::MatrixXd(2,3);
             expected <<
             0, 1, 2,

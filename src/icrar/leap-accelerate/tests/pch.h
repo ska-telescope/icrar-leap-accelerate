@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/config.h>
+
 #include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 
 #include <casacore/casa/Arrays/Matrix.h>
