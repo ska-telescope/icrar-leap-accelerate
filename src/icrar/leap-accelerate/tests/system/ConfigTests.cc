@@ -42,10 +42,12 @@
 
 using namespace icrar;
 
+/**
+ * @brief Contains system tests 
+ * 
+ */
 class ConfigTests : public testing::Test
 {
-    const double TOLERANCE = 0.0001;
-
     const std::string m_mwaDirections = "[\
         [-0.4606549305661674,-0.29719233792392513],\
         [-0.753231018062671,-0.44387635324622354],\

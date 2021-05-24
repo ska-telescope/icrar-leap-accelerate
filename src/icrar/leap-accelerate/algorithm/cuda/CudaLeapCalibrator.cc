@@ -74,7 +74,7 @@ namespace cuda
     : m_cublasContext(nullptr)
     , m_cusolverDnContext(nullptr)
     {
-        LOG(warning) << "creating CudaLeapCalibrator";
+        LOG(info) << "creating CudaLeapCalibrator";
         int deviceCount = 0;
         checkCudaErrors(cudaGetDeviceCount(&deviceCount));
         if(deviceCount < 1)
@@ -119,7 +119,11 @@ namespace cuda
             const ComputeOptionsDTO& computeOptions)
     {
         checkCudaErrors(cudaGetLastError());
-        auto cudaComputeOptions = CudaComputeOptions(computeOptions, ms);
+
+        uint32_t timesteps = ms.GetNumTimesteps();
+        Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
+
+        auto cudaComputeOptions = CudaComputeOptions(computeOptions, ms, validatedSolutionInterval);
 
         LOG(info) << "Starting Calibration using cuda";
         LOG(info)
@@ -135,7 +139,7 @@ namespace cuda
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
-        << "timesteps: " << ms.GetNumTimesteps() << ", "
+        << "timesteps: " << timesteps << ", "
         << "use filesystem cache: " << cudaComputeOptions.isFileSystemCacheEnabled << ", "
         << "use intermediate cuda buffer: " << cudaComputeOptions.useIntermediateBuffer << ", "
         << "use cusolver: " << cudaComputeOptions.useCusolver;
@@ -144,8 +148,6 @@ namespace cuda
 
         auto output_calibrations = std::vector<cpu::Calibration>();
 
-        uint32_t timesteps = ms.GetNumTimesteps();
-        Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
         std::vector<double> epochs = ms.GetEpochs();
         
         profiling::timer metadata_read_timer;
