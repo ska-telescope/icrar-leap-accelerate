@@ -116,6 +116,25 @@ namespace icrar
         }
 
         /**
+         * @brief Computes the element-wise standard deviation
+         * 
+         * @tparam T 
+         * @param matrix 
+         * @return double 
+         */
+        template<typename T>
+        double standard_deviation(const Eigen::MatrixBase<T>& matrix)
+        {
+            double mean = matrix.sum() / (double)matrix.size();
+            double sumOfSquareDifferences = 0;
+            for(const double& e : matrix.reshaped())
+            {
+                sumOfSquareDifferences += std::pow(e - mean, 2);
+            }
+            return std::sqrt(sumOfSquareDifferences / (double)matrix.size());
+        }
+
+        /**
          * @brief Returns the component-wise arguments of a matrix
          * 
          * @param a 
