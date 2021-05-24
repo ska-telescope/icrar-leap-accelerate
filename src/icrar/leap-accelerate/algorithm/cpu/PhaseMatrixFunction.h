@@ -40,8 +40,10 @@ namespace cpu
      * This function generates and returns the linear matrix for the phase calibration (only)
      * @param a1 indexes of 1st antenna of each baselines
      * @param a2 indexes of 2nd antenna of each baselines
-     * @param refAnt the reference antenna (0, 1), -1 
      * @param fg a flag map of flagged stations to ignore when true
+     * @param refAnt the reference antenna (0, 1, 2)
+     * @param allBaselines includes all non-flagged baselines in output when true, only baselines containing the
+     * reference antenna are included in output when false
      * @return std::pair<Matrixd, Matrixi>
      * for refAnt = none: first matrix is of size [baselines,stations] and seconds of size[baselines,1]
      * for 0 <= refAnt < stations: first matrix is of size [stations,stations] and seconds of size[stations,1]

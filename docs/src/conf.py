@@ -127,10 +127,9 @@ exhale_args = {
     "rootFileTitle":         "Leap Accelerate API Reference",
     "afterTitleDescription": textwrap.dedent('''
         .. note::
-
-        The following documentation presents the C++ API.
+           The following documentation presents the C++ API.
     '''),
-    "doxygenStripFromPath":  "../", #"/home/calgray/Code/icrar/leap-accelerate/src", # use src dir
+    "doxygenStripFromPath":  "../", #"/Code/icrar/leap-accelerate/src", # use src dir
     # Suggested optional arguments
     "createTreeView":        True,
     # TIP: if using the sphinx-bootstrap-theme, you need

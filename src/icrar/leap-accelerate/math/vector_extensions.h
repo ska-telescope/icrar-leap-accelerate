@@ -29,22 +29,6 @@
 #include <functional>
 #include <type_traits>
 
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
-{
-    os << "{";
-    for (size_t i = 0; i < v.size(); ++i)
-    { 
-        os << v[i]; 
-        if (i != v.size() - 1)
-        { 
-            os << ", ";
-        }
-    } 
-    os << "}\n"; 
-    return os;
-}
-
 namespace icrar
 {
     /**
@@ -131,20 +115,20 @@ namespace icrar
      * @brief Performs a std::transform on a newly allocated std::vector 
      * 
      * @tparam T The input vector template type
-     * @tparam function of signature R(const T&)
+     * @tparam Op function of signature R(const T&)
      * @param vector 
-     * @param lambda operation to perform for each element
+     * @param l operation to perform for each element
      * @return std::vector<R> 
      */
     template<typename T, typename Op>
-    std::vector<std::result_of_t<Op(const T&)>> vector_map(const std::vector<T>& vector, Op lambda)
+    std::vector<std::result_of_t<Op(const T&)>> vector_map(const std::vector<T>& vector, Op l)
     {
         using R = std::result_of_t<Op(const T&)>;
-        static_assert(std::is_assignable<std::function<R(const T&)>, Op>::value, "lambda argument must be a function of signature R(const T&)");
+        static_assert(std::is_assignable<std::function<R(const T&)>, Op>::value, "l argument must be a function of signature R(const T&)");
 
         auto result = std::vector<R>();
         result.reserve(vector.size());
-        std::transform(vector.cbegin(), vector.cend(), std::back_inserter(result), lambda);
+        std::transform(vector.cbegin(), vector.cend(), std::back_inserter(result), l);
         return result;
     }
 } // namespace icrar

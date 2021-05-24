@@ -38,7 +38,8 @@ namespace icrar
 namespace cuda
 {
 /**
-     * @brief A cuda device buffer object that represents a memory buffer on a cuda device.
+     * @brief A cuda device buffer object that represents a memory buffer on a cuda device where the
+     * first dimension is the leading/constigeous dimension.
      * 
      * @tparam T 
      * @note See https://www.quantstart.com/articles/Matrix-Matrix-Multiplication-on-the-GPU-with-Nvidia-CUDA/
@@ -53,6 +54,14 @@ namespace cuda
         T* m_buffer = nullptr;
 
     public:
+        /**
+         * @brief Constructs a new device tensor3 object from specified dimensions
+         * 
+         * @param sizeDim0 size of the leading dimension
+         * @param sizeDim1 size if the second dimension
+         * @param sizeDim2 size if the third dimension
+         * @param data pointer to existing tensor memory for copying or null 
+         */
         device_tensor3(size_t sizeDim0, size_t sizeDim1, size_t sizeDim2, const T* data = nullptr)
         : m_sizeDim0(sizeDim0)
         , m_sizeDim1(sizeDim1)

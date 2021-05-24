@@ -30,6 +30,30 @@
 #include <map>
 
 /**
+ * @brief Prints a vector of streamable values
+ * 
+ * @tparam T streamable type 
+ * @param os output stream
+ * @param v set
+ * @return std::ostream& 
+ */
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
+{
+    os << "{";
+    for (size_t i = 0; i < v.size(); ++i)
+    { 
+        os << v[i]; 
+        if (i != v.size() - 1)
+        { 
+            os << ", ";
+        }
+    } 
+    os << "}\n"; 
+    return os;
+}
+
+/**
  * @brief Prints a set of streamable values
  * 
  * @tparam T streamable type 
@@ -49,6 +73,15 @@ std::ostream& operator<<(std::ostream& os, const std::set<T>& v)
     return os;
 }
 
+/**
+ * @brief Prints a set of streamable key value pairs
+ * 
+ * @tparam T streamable key type
+ * @tparam S streamable value type 
+ * @param os output stream
+ * @param v set
+ * @return std::ostream& 
+ */
 template <typename T, typename S> 
 std::ostream& operator<<(std::ostream& os, const std::map<T, S>& v) 
 { 
