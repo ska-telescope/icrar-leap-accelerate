@@ -175,7 +175,10 @@ namespace cpu
 
         LOG(info) << "Calculating Calibration";
         // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
-        Eigen::VectorXd phaseAnglesI1 = icrar::cpu::arg(icrar::cpu::VectorRangeSelect(metadata.GetAvgData(), metadata.GetI1(), 0)); // 1st pol only
+        
+        auto polarizationsI1 = icrar::cpu::WrappedRangeSelect(metadata.GetAvgData(), metadata.GetI1());
+        Eigen::VectorXd phaseAnglesI1 = icrar::cpu::arg(polarizationsI1.col(0)); // 1st pol only
+
         phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
         phaseAnglesI1(phaseAnglesI1.rows() - 1) = 0;
 

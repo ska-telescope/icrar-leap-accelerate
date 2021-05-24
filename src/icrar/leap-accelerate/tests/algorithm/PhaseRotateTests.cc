@@ -71,7 +71,7 @@ namespace icrar
      */
     class PhaseRotateTests : public ::testing::Test
     {
-        constexpr static double TOLERANCE = 1e-11;
+        const double TOLERANCE = 1e-11;
         std::unique_ptr<icrar::MeasurementSet> ms;
 
     protected:
@@ -166,8 +166,6 @@ namespace icrar
                 throw icrar::invalid_argument_exception("invalid PhaseMatrixFunction implementation", "impl", __FILE__, __LINE__);
             }
 
-            double TOLERANCE = 0.00001;
-
             // A
             const int aRows = 4754;
             const int aCols = 128;
@@ -254,7 +252,6 @@ namespace icrar
         void RotateVisibilitiesTest(const ComputeImplementation impl)
         {
             using namespace std::complex_literals;
-            //const double TOLERANCE = 0.0001;
             
             auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
 
@@ -479,7 +476,6 @@ namespace icrar
                     50.0,
                     referenceAntenna,
                     ComputeOptionsDTO{false, false, false});
-                checkCudaErrors(cudaGetLastError());
 
                 for(const auto& calibration : calibrationsVector)
                 {

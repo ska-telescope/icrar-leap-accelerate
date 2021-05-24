@@ -222,8 +222,8 @@ namespace icrar
             auto firstChannelSlicer = casacore::Slicer(casacore::Slice(0, 1));
             casacore::Matrix<double> uv = m_msmc->uvw().getColumn(firstChannelSlicer);
 
-            // TODO(calgray): uv is of size baselines * timesteps, consider throwing a warning if flags change
-            // in later timesteps
+            // TODO(calgray): uv is of size baselines * timesteps, consider throwing a warning if
+            // short baselines change in later timesteps
             for(uint32_t i = 0; i < nBaselines; i++)
             {
                 if(std::sqrt(uv(i, 0) * uv(i, 0) + uv(i, 1) * uv(i, 1)) < minimumBaselineThreshold)

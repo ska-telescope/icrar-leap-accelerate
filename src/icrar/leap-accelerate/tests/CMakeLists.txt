@@ -29,6 +29,8 @@ set(sources
   model/IntegrationTests.cc
   
   algorithm/PhaseRotateTests.cc
+  
+  system/CalibrationTests.cc
   system/ConfigTests.cc
 )
 

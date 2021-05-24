@@ -32,7 +32,8 @@
 namespace icrar
 {
     /**
-     * @brief returns a linear sequence of values from start at step
+     * @brief returns a linear sequence of values from start at step sized
+     * intervals to the stop value inclusive
      * 
      * @tparam IntType 
      * @param start 
@@ -87,13 +88,60 @@ namespace icrar
     }
 
     /**
-     * @brief Returns of true if all vector elements of @p lhs are within the tolerance threshold difference to @p rhs 
+     * @brief Computes the sum of the the collection
+     * 
+     * @tparam T 
+     * @param v 
+     * @return double 
+     */
+    template<typename T>
+    double sum(const std::vector<T>& v)
+    {
+        return std::accumulate(v.begin(), v.end(), 0);
+    }
+
+    /**
+     * @brief Computes the mean of the the collection
+     * 
+     * @tparam T 
+     * @param v 
+     * @return double 
+     */
+    template<typename T>
+    double mean(const std::vector<T>& v)
+    {
+        double sum = std::accumulate(v.begin(), v.end(), 0);
+        return sum / v.size();
+    }
+
+    /**
+     * @brief Computes the standard deviation of the collection
+     * 
+     * @tparam T 
+     * @param v 
+     * @return double 
+     */
+    template<typename T>
+    double standard_deviation(const std::vector<T>& v)
+    {
+        double mean = std::accumulate(v.begin(), v.end(), 0);
+        double sumOfSquareDifferences = 0;
+        for(const double& e : v)
+        {
+            sumOfSquareDifferences += std::pow(e - mean, 2);
+        }
+        return std::sqrt(sumOfSquareDifferences / v.size());
+    }
+
+    /**
+     * @brief Returns of true if all vector elements of @p lhs are within the tolerance
+     * threshold difference to @p rhs
      * 
      * @tparam T numerically comparable type
      * @param lhs left collection
      * @param rhs right collection
      * @param tolerance numeric tolerance inclusive threshold for equality
-     */
+	**/
     template<typename T>
     bool isApprox(const std::vector<T>& lhs, const std::vector<T>& rhs, T tolerance)
     {
@@ -124,11 +172,11 @@ namespace icrar
     std::vector<std::result_of_t<Op(const T&)>> vector_map(const std::vector<T>& vector, Op lambda)
     {
         using R = std::result_of_t<Op(const T&)>;
-        static_assert(std::is_assignable<std::function<R(const T&)>, Op>::value, "l argument must be a function of signature R(const T&)");
+        static_assert(std::is_assignable<std::function<R(const T&)>, Op>::value, "lambda argument must be a function of signature R(const T&)");
 
         auto result = std::vector<R>();
         result.reserve(vector.size());
-        std::transform(vector.cbegin(), vector.cend(), std::back_inserter(result), l);
+        std::transform(vector.cbegin(), vector.cend(), std::back_inserter(result), lambda);
         return result;
     }
 } // namespace icrar
