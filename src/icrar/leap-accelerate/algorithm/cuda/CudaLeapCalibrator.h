@@ -42,9 +42,6 @@
 #include <cublas_v2.h>
 #include <cusolverDn.h>
 
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
-
 #include <boost/noncopyable.hpp>
 #include <vector>
 
