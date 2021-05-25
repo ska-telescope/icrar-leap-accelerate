@@ -363,6 +363,7 @@ namespace cuda
         device_matrix<double>& deviceAd1)
     {
         // This matrix is not always m > n, compute on cpu until cuda supports this
+        LOG(info) << "Inverting PhaseMatrix A1 with cpu (" << hostA1.rows() << ":" << hostA1.cols() << ")";
         deviceA1 = device_matrix<double>(hostA1);
         hostAd1 = cpu::pseudo_inverse(hostA1);
         deviceAd1 = device_matrix<double>(hostAd1);
