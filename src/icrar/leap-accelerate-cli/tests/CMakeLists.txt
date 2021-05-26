@@ -33,6 +33,7 @@ if(CUDA_ENABLED)
   configure_cuda_warnings(${TEST_TARGET_NAME})
 endif()
 
+target_compile_definitions(${TEST_TARGET_NAME} PRIVATE TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/testdata")
 target_link_libraries(${TEST_TARGET_NAME} LeapAccelerate gtest)
 
 add_test(

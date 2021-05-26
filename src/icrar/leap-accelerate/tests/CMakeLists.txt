@@ -62,7 +62,7 @@ endif()
 # CUDA Options
 if(CUDA_ENABLED)
   if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
-    message("generating clang-tidy cuda compatible configuration")
+    message(STATUS "generating clang-tidy cuda compatible configuration")
     configure_clang_cuda_compiler(${TEST_TARGET_NAME})
   else()
     configure_nvcc_cuda_compiler(${TEST_TARGET_NAME})
@@ -70,12 +70,8 @@ if(CUDA_ENABLED)
   endif()
 endif()
 
+target_compile_definitions(${TEST_TARGET_NAME} PRIVATE TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/testdata")
 target_link_libraries(${TEST_TARGET_NAME} LeapAccelerate gtest)
-
-set(test_data
-  testdata/TestSolutionIntervalConfig.json
-  testdata/TestSolutionIntervalOutput.json
-)
 
 add_custom_target(${TEST_TARGET_NAME}.Data ALL
   COMMAND ${CMAKE_COMMAND}
