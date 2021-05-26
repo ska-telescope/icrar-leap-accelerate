@@ -47,15 +47,15 @@ namespace icrar
         args.stations = boost::none;
         args.referenceAntenna = boost::none;
         args.directions = boost::none;
-        args.computeImplementation = std::string("cpu");
-        args.solutionInterval = std::string("[0,-1,-1]"); // Average over all timesteps
-        args.readAutocorrelations = true;
-        args.minimumBaselineThreshold = 0.0;
-        args.mwaSupport = false;
-        args.useFileSystemCache = true;
+        args.computeImplementation.reset(std::string("cpu"));
+        args.solutionInterval.reset(std::string("[0,-1,-1]")); // Average over all timesteps
+        args.readAutocorrelations.reset(true);
+        args.minimumBaselineThreshold.reset(0.0);
+        args.mwaSupport.reset(false);
+        args.useFileSystemCache.reset(true);
         //args.useIntermediateBuffer = determined from device memory
         //args.useCusolver = determined from device memory
-        args.verbosity = static_cast<int>(log::DEFAULT_VERBOSITY);
+        args.verbosity.reset(static_cast<int>(log::DEFAULT_VERBOSITY));
         return args;
     }
 
@@ -102,17 +102,17 @@ namespace icrar
 
         if(args.directions.is_initialized())
         {
-            directions = ParseDirections(args.directions.get());
+            directions.reset(ParseDirections(args.directions.get()));
         }
 
         if(args.solutionInterval.is_initialized())
         {
-            solutionInterval = ParseSlice(args.solutionInterval.get());
+            solutionInterval.reset(ParseSlice(args.solutionInterval.get()));
         }
 
         if(args.verbosity.is_initialized())
         {
-            verbosity = static_cast<icrar::log::Verbosity>(args.verbosity.get());
+            verbosity.reset(static_cast<icrar::log::Verbosity>(args.verbosity.get()));
         }
     }
 
@@ -171,87 +171,87 @@ namespace icrar
     {
         if(args.inputType.is_initialized())
         {
-            m_inputType = std::move(args.inputType.get());
+            m_inputType = args.inputType.get();
         }
 
         if(args.filePath.is_initialized())
         {
-            m_filePath = std::move(args.filePath.get());
+            m_filePath.reset(args.filePath.get());
         }
 
         if(args.configFilePath.is_initialized())
         {
-            m_configFilePath = std::move(args.configFilePath.get());
+            m_configFilePath.reset(args.configFilePath.get());
         }
 
         if(args.streamOutType.is_initialized())
         {
-            m_streamOutType = std::move(args.streamOutType.get());
+            m_streamOutType = args.streamOutType.get();
         }
 
         if(args.outputFilePath.is_initialized())
         {
-            m_outputFilePath = std::move(args.outputFilePath.get());
+            m_outputFilePath.reset(args.outputFilePath.get());
         }
 
         if(args.stations.is_initialized())
         {
-            m_stations = std::move(args.stations.get());
+            m_stations.reset(args.stations.get());
         }
 
         if(args.referenceAntenna.is_initialized())
         {
-            m_referenceAntenna = std::move(args.referenceAntenna.get());
+            m_referenceAntenna.reset(args.referenceAntenna.get());
         }
 
         if(args.directions.is_initialized())
         {
-            m_directions = std::move(args.directions.get());
+            m_directions = args.directions.get();
         }
 
         if(args.computeImplementation.is_initialized())
         {
-            m_computeImplementation = std::move(args.computeImplementation.get());
+            m_computeImplementation = args.computeImplementation.get();
         }
 
         if(args.solutionInterval.is_initialized())
         {
-            m_solutionInterval = std::move(args.solutionInterval.get());
+            m_solutionInterval = args.solutionInterval.get();
         }
 
         if(args.minimumBaselineThreshold.is_initialized())
         {
-            m_minimumBaselineThreshold = std::move(args.minimumBaselineThreshold.get());
+            m_minimumBaselineThreshold = args.minimumBaselineThreshold.get();
         }
         
         if(args.readAutocorrelations.is_initialized())
         {
-            m_readAutocorrelations = std::move(args.readAutocorrelations.get());
+            m_readAutocorrelations = args.readAutocorrelations.get();
         }
 
         if(args.mwaSupport.is_initialized())
         {
-            m_mwaSupport = std::move(args.mwaSupport.get());
+            m_mwaSupport = args.mwaSupport.get();
         }
 
         if(args.useFileSystemCache.is_initialized())
         {
-            m_computeOptions.isFileSystemCacheEnabled = std::move(args.useFileSystemCache.get());
+            m_computeOptions.isFileSystemCacheEnabled.reset(args.useFileSystemCache.get());
         }
 
         if(args.useIntermediateBuffer.is_initialized())
         {
-            m_computeOptions.useIntermediateBuffer = std::move(args.useIntermediateBuffer.get());
+            m_computeOptions.useIntermediateBuffer.reset(args.useIntermediateBuffer.get());
         }
 
         if(args.useCusolver.is_initialized())
         {
-            m_computeOptions.useCusolver = std::move(args.useCusolver.get());
+            m_computeOptions.useCusolver.reset(args.useCusolver.get());
         }
 
         if(args.verbosity.is_initialized())
         {
-            m_verbosity = std::move(args.verbosity.get());
+            m_verbosity = args.verbosity.get();
         }
     }
 
@@ -405,7 +405,7 @@ namespace icrar
                     StreamOutType e;
                     if(TryParseStreamOutType(it->value.GetString(), e))
                     {
-                        args.streamOutType = e;
+                        args.streamOutType.reset(e);
                     }
                     else
                     {
@@ -427,7 +427,7 @@ namespace icrar
                 {
                     if(it->value.IsInt())
                     {
-                        args.stations = it->value.GetInt();
+                        args.stations.reset(it->value.GetInt());
                     }
                     else
                     {
@@ -438,7 +438,7 @@ namespace icrar
                 {
                     if(it->value.IsArray())
                     {
-                        args.solutionInterval = ParseSlice(it->value);
+                        args.solutionInterval.reset(ParseSlice(it->value));
                     }
                 }
                 else if(key == "referenceAntenna")
@@ -454,14 +454,14 @@ namespace icrar
                 }
                 else if(key == "directions")
                 {
-                    args.directions = ParseDirections(it->value);
+                    args.directions.reset(ParseDirections(it->value));
                 }
                 else if(key == "computeImplementation")
                 {
                     ComputeImplementation e;
                     if(TryParseComputeImplementation(it->value.GetString(), e))
                     {
-                        args.computeImplementation = e;
+                        args.computeImplementation.reset(e);
                     }
                     else
                     {
@@ -472,7 +472,7 @@ namespace icrar
                 {
                     if(it->value.IsDouble())
                     {
-                        args.minimumBaselineThreshold = it->value.GetDouble();
+                        args.minimumBaselineThreshold.reset(it->value.GetDouble());
                     }
                     else
                     {
@@ -481,36 +481,36 @@ namespace icrar
                 }
                 else if(key == "mwaSupport")
                 {
-                    args.mwaSupport = SafeGetBoolean(*it, "mwaSupport must be of type bool", __FILE__, __LINE__);
+                    args.mwaSupport.reset(SafeGetBoolean(*it, "mwaSupport must be of type bool", __FILE__, __LINE__));
                 }
                 else if(key == "autoCorrelations")
                 {
-                     args.readAutocorrelations = SafeGetBoolean(*it, "autoCorrelations must be of type bool", __FILE__, __LINE__);
+                     args.readAutocorrelations.reset(SafeGetBoolean(*it, "autoCorrelations must be of type bool", __FILE__, __LINE__));
                 }
                 else if(key == "useFileSystemCache")
                 {
-                     args.useFileSystemCache = SafeGetBoolean(*it, "useFileSystemCache must be of type bool", __FILE__, __LINE__);
+                     args.useFileSystemCache.reset(SafeGetBoolean(*it, "useFileSystemCache must be of type bool", __FILE__, __LINE__));
                 }
                 else if(key == "useIntermediateBuffer")
                 {
-                    args.useIntermediateBuffer = SafeGetBoolean(*it, "useIntermediateBuffer must be of type bool", __FILE__, __LINE__);
+                    args.useIntermediateBuffer.reset(SafeGetBoolean(*it, "useIntermediateBuffer must be of type bool", __FILE__, __LINE__));
                 }
                 else if(key == "useCusolver")
                 {
-                    args.useCusolver = SafeGetBoolean(*it, "useCusolver must be of type bool", __FILE__, __LINE__);
+                    args.useCusolver.reset(SafeGetBoolean(*it, "useCusolver must be of type bool", __FILE__, __LINE__));
                 }
                 else if(key == "verbosity")
                 {
                     if(it->value.IsInt())
                     {
-                        args.verbosity = static_cast<log::Verbosity>(it->value.GetInt());
+                        args.verbosity.reset(static_cast<log::Verbosity>(it->value.GetInt()));
                     }
                     if(it->value.IsString())
                     {
                         log::Verbosity e;
                         if(TryParseVerbosity(it->value.GetString(), e))
                         {
-                            args.verbosity = e;
+                            args.verbosity.reset(e);
                         }
                         else
                         {

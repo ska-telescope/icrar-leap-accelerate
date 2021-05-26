@@ -66,9 +66,11 @@ configure_file(.clang-tidy .clang-tidy COPYONLY)
 # Project configuration, specifying version, languages,
 # and the C++ standard to use for the whole project
 project(${SOLUTION_NAME} LANGUAGES C CXX VERSION ${SOLUTION_VERSION})
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIE")
 if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
   if(WERROR)
@@ -133,6 +135,10 @@ endif()
 # else (DOXYGEN_FOUND)
 #   message("Doxygen needs to be installed to generate the doxygen documentation")
 # endif (DOXYGEN_FOUND)
+
+if(HIPSYCL_ENABLED)
+  find_package(hipSYCL CONFIG REQUIRED)
+endif()
 
 if(CUDA_ENABLED)
   find_package(CUDA 9.0)

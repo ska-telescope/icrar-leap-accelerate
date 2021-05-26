@@ -13,7 +13,12 @@ RUN add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/r
 RUN apt update &&\
     DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install cuda-11-1
 
-#
+RUN git clone https://github.com/illuhad/hipSYCL.git &&\
+    cd hipSYCL/install/scripts &&\
+    bash add-hipsycl-repo/ubuntu-20.04.sh &&\
+    bash packaging/make-ubuntu-cuda-pkg.sh &&\
+    apt install -y hipsycl-cuda-nightly
+
 # Get the LEAP sources and install them in the system
 COPY / /leap-accelerate
 RUN cd /leap-accelerate && git submodule update --init --recursive &&\

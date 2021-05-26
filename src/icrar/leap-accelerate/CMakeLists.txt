@@ -88,21 +88,24 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 if(CUDA_ENABLED)
-add_library(
-  ${TARGET_NAME} STATIC
-    ${sources}
-    ${cuda_sources}
-    ${private_headers}
-    ${public_headers}
-    ${cuda_headers}
-)
+  add_library(
+    ${TARGET_NAME} STATIC
+      ${sources}
+      ${cuda_sources}
+      ${private_headers}
+      ${public_headers}
+      ${cuda_headers}
+  )
 else()
-add_library(
-  ${TARGET_NAME} STATIC
-    ${sources}
-    ${private_headers}
-    ${public_headers}
-)
+  add_library(
+    ${TARGET_NAME} STATIC
+      ${sources}
+      ${private_headers}
+      ${public_headers}
+  )
+endif()
+if(HIPSYCL_ENABLED)
+  add_sycl_to_target(TARGET ${TARGET_NAME} SOURCES ${sources})
 endif()
 
 # set_target_properties(${TARGET_NAME}
@@ -143,15 +146,17 @@ if(CUDA_ENABLED)
   endif()
 endif()
 
-target_link_libraries(${TARGET_NAME} Threads::Threads)
-target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
+target_link_libraries(${TARGET_NAME} PUBLIC Threads::Threads)
+target_link_libraries(${TARGET_NAME} PUBLIC ${Boost_LIBRARIES})
+
+
 #target_link_libraries(${TARGET_NAME} ${BLAS_LIBRARIES})
 #target_link_libraries(${TARGET_NAME} ${LAPACK_LIBRARIES})
-target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
-target_link_libraries(${TARGET_NAME} RapidJSON::RapidJSON)
+target_link_libraries(${TARGET_NAME} PUBLIC Eigen3::Eigen)
+target_link_libraries(${TARGET_NAME} PUBLIC RapidJSON::RapidJSON)
 
 if(CASA_ENABLED)
-  target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
+  target_link_libraries(${TARGET_NAME} PUBLIC ${CASACORE_LIBRARIES})
   target_include_directories(${TARGET_NAME} PUBLIC ${CASACORE_INCLUDES})
 endif()
 if(GSL_ENABLED)

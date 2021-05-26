@@ -73,8 +73,8 @@ namespace profiling
         return os;
     }
 
-    template std::basic_ostream<char> &operator<<<char>(std::basic_ostream<char> &os, const ResourceUsage &ru);
-    template std::basic_ostream<wchar_t> &operator<<<wchar_t>(std::basic_ostream<wchar_t> &os, const ResourceUsage &ru);
+    template std::basic_ostream<char> &operator<< <char>(std::basic_ostream<char> &os, const ResourceUsage &ru);
+    template std::basic_ostream<wchar_t> &operator<< <wchar_t>(std::basic_ostream<wchar_t> &os, const ResourceUsage &ru);
 
 } // namespace profiling
 } // namespace icrar
