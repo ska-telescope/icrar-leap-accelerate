@@ -33,6 +33,7 @@
 
 #include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 
+#include <utility>
 #include <iostream>
 #include <array>
 #include <sstream>
@@ -46,6 +47,8 @@ using namespace icrar;
  */
 class CalibrationTests : public testing::Test
 {
+    const double TOLERANCE = 1e-5;
+
     const std::string m_simulationDirections = "[\
         [0.0, -0.471238898],\
         [0.017453293, -0.4537856055]\
@@ -58,7 +61,7 @@ public:
      * 
      * @param outputPath 
      */
-    void TestAA3ClearCalibration()
+    void TestAA3ClearCalibration(std::string impl, const std::vector<std::pair<double, double>>& expected)
     {
         auto rawArgs = CLIArgumentsDTO::GetDefaultArguments();
         rawArgs.filePath = std::string(TEST_DATA_DIR) + "/aa3/aa3-SS-300.ms";
@@ -66,7 +69,7 @@ public:
         rawArgs.readAutocorrelations = false;
         rawArgs.referenceAntenna = 210;
         rawArgs.minimumBaselineThreshold = 1000.0;
-        rawArgs.computeImplementation = "cuda";
+        rawArgs.computeImplementation = impl;
         rawArgs.useFileSystemCache = false;
         auto args = ArgumentsValidated(std::move(rawArgs));
 
@@ -88,11 +91,28 @@ public:
         const auto& calibration = calibrations[0];
 
         // 0 values are better
-        EXPECT_DOUBLE_EQ(0.0031753870255758166, calibration.GetBeamCalibrations()[0].GetPhaseCalibration().mean());
-        EXPECT_DOUBLE_EQ(0.049746623893558939, icrar::cpu::standard_deviation(calibration.GetBeamCalibrations()[0].GetPhaseCalibration()));
-        EXPECT_DOUBLE_EQ(-0.023484514309303432, calibration.GetBeamCalibrations()[1].GetPhaseCalibration().mean());
-        EXPECT_DOUBLE_EQ( 0.15345042701215042, icrar::cpu::standard_deviation(calibration.GetBeamCalibrations()[1].GetPhaseCalibration()));
+        EXPECT_NEAR(calibration.GetBeamCalibrations()[0].GetPhaseCalibration().mean(),                          std::get<0>(expected[0]), TOLERANCE);
+        EXPECT_NEAR(icrar::cpu::standard_deviation(calibration.GetBeamCalibrations()[0].GetPhaseCalibration()), std::get<1>(expected[0]), TOLERANCE);
+        EXPECT_NEAR(calibration.GetBeamCalibrations()[1].GetPhaseCalibration().mean(),                          std::get<0>(expected[1]), TOLERANCE);
+        EXPECT_NEAR(icrar::cpu::standard_deviation(calibration.GetBeamCalibrations()[1].GetPhaseCalibration()), std::get<1>(expected[1]), TOLERANCE);
     }
 };
 
-TEST_F(CalibrationTests, TestAA3ClearCalibration) { TestAA3ClearCalibration(); }
+TEST_F(CalibrationTests, TestAA3ClearCpuCalibration)
+{
+    TestAA3ClearCalibration(ComputeImplementationToString(ComputeImplementation::cpu),
+    {
+        { 0.0031753870255758166, 0.049746623893558904 },
+        { -0.023484514309303432, 0.1534504270121704 }
+    });
+}
+#if CUDA_ENABLED
+TEST_F(CalibrationTests, TestAA3ClearCudaCalibration)
+{
+    TestAA3ClearCalibration(ComputeImplementationToString(ComputeImplementation::cuda),
+    {
+        { 0.0031753870255758166, 0.049746623893558939 },
+        { -0.023484514309303432, 0.15345042701215036 }
+    });
+}
+#endif // CUDA_ENABLED
