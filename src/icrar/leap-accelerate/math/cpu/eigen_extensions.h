@@ -106,13 +106,12 @@ namespace icrar
         Eigen::MatrixXd arg(const Eigen::Ref<const Eigen::MatrixXcd>& a);
 
         /**
-         * @brief Performs an elementwise com
+         * @brief Performs an elementwise comparison between matrices and returns
+         * false if the absolute difference exceeds the tolerance.
          * 
          * @param left 
          * @param right 
          * @param tolerance 
-         * @return true 
-         * @return false 
          */
         bool near(const Eigen::Ref<const Eigen::MatrixXd>& left, const Eigen::Ref<const Eigen::MatrixXd>& right, double tolerance);
     } // namespace cpu 
