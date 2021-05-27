@@ -23,7 +23,7 @@
 #pragma once
 
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
-#include <vector>
+#include <numeric>
 #include <iostream>
 #include <vector>
 #include <functional>

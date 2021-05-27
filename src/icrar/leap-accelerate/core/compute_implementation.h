@@ -37,6 +37,19 @@ namespace icrar
     };
 
     /**
+     * @brief Converts an enum @p value to a string
+     */
+    std::string ComputeImplementationToString(ComputeImplementation value);
+
+    /**
+     * @brief Parses string argument into an enum, throws an exception otherwise.
+     * 
+     * @param value 
+     * @return ComputeImplementation 
+     */
+    ComputeImplementation ParseComputeImplementation(const std::string& value);
+
+    /**
      * @return true if value was converted succesfully, false otherwise
      */
     bool TryParseComputeImplementation(const std::string& value, ComputeImplementation& out);
