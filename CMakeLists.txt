@@ -116,7 +116,8 @@ endif()
 
 # Global Libraries
 find_package(PythonLibs 3 REQUIRED) # required for PYTHON_ADD_MODULE macro
-find_package(Python COMPONENTS Interpreter Development REQUIRED)
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+message("python libs: ${PYTHON_INCLUDE_DIRS}")
 
 if(HIPSYCL_ENABLED)
   find_package(hipSYCL CONFIG REQUIRED)
@@ -151,7 +152,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
 endif()
 
 add_definitions(-DBOOST_ALL_DYN_LINK)
-find_package(Boost REQUIRED COMPONENTS log log_setup program_options filesystem python)
+find_package(Boost REQUIRED COMPONENTS log log_setup program_options filesystem python numpy)
 
 set(CASACORE_FIND_QUIETLY ON)
 find_package(Casacore COMPONENTS ms)

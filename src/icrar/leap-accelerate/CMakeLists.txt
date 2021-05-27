@@ -151,7 +151,13 @@ endif()
 
 target_link_libraries(${TARGET_NAME} PUBLIC Threads::Threads)
 target_link_libraries(${TARGET_NAME} PUBLIC ${Boost_LIBRARIES})
-target_link_libraries(${TARGET_NAME} PUBLIC Python::Python)
+target_link_libraries(${TARGET_NAME} PUBLIC Python3::Python)
+
+
+message("numpy: ${Boost_LIBRARIES}")
+target_link_libraries(${TARGET_NAME} PUBLIC Python3::Python)
+target_include_directories(${TARGET_NAME} SYSTEM PUBLIC /usr/lib/python3/dist-packages/numpy/core/include)
+#target_link_libraries(${TARGET_NAME} PUBLIC Python3::NumPy)
 
 #target_link_libraries(${TARGET_NAME} ${BLAS_LIBRARIES})
 #target_link_libraries(${TARGET_NAME} ${LAPACK_LIBRARIES})
