@@ -135,6 +135,8 @@ endif()
 #   message("Doxygen needs to be installed to generate the doxygen documentation")
 # endif (DOXYGEN_FOUND)
 
+find_package(PythonInterp 3)
+find_package(PythonLibs 3 REQUIRED)
 find_package(Python3 COMPONENTS Development)
 
 if(HIPSYCL_ENABLED)
@@ -170,7 +172,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
 endif()
 
 add_definitions(-DBOOST_ALL_DYN_LINK)
-find_package(Boost REQUIRED COMPONENTS log log_setup program_options filesystem)
+find_package(Boost REQUIRED COMPONENTS log log_setup program_options filesystem python)
 
 set(CASACORE_FIND_QUIETLY ON)
 find_package(Casacore COMPONENTS ms)

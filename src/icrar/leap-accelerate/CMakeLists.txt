@@ -110,12 +110,12 @@ if(HIPSYCL_ENABLED)
   add_sycl_to_target(TARGET ${TARGET_NAME} SOURCES ${sources})
 endif()
 
-# set_target_properties(${TARGET_NAME}
-#   PROPERTIES
-#   ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-#   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-#   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-# )
+set_target_properties(${TARGET_NAME}
+  PROPERTIES
+  ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
 
 if(USE_PCH)
   target_precompile_headers(${TARGET_NAME}
@@ -139,9 +139,9 @@ if(CUDA_ENABLED)
   #set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -lineinfo --default-stream per-thread)
   #message("CUDA_NVCC_FLAGS = ${CUDA_NVCC_FLAGS}")
   target_include_directories(${TARGET_NAME} SYSTEM PUBLIC ${CUDA_INCLUDE_DIRS})
-  target_link_libraries(${TARGET_NAME} PUBLIC ${CUDA_LIBRARIES})
   target_link_libraries(${TARGET_NAME} PUBLIC cuda)
-  target_link_libraries(${TARGET_NAME} PUBLIC cublas)
+  target_link_libraries(${TARGET_NAME} PUBLIC ${CUDA_LIBRARIES})
+  target_link_libraries(${TARGET_NAME} PUBLIC ${CUDA_CUBLAS_LIBRARIES})
   if(CUDA_VERSION_MAJOR VERSION_GREATER 9)
     target_link_libraries(${TARGET_NAME} PUBLIC cublasLt)
     target_link_libraries(${TARGET_NAME} PUBLIC ${CUDA_cusolver_LIBRARY})
@@ -150,8 +150,9 @@ endif()
 
 target_link_libraries(${TARGET_NAME} PUBLIC Threads::Threads)
 target_link_libraries(${TARGET_NAME} PUBLIC ${Boost_LIBRARIES})
-target_link_libraries(${TARGET_NAME} PUBLIC Python3::Python)
 
+target_link_libraries(${TARGET_NAME} PUBLIC Python3::Python)
+target_link_libraries(${TARGET_NAME} PUBLIC ${PYTHON_LIBRARIES})
 
 #target_link_libraries(${TARGET_NAME} ${BLAS_LIBRARIES})
 #target_link_libraries(${TARGET_NAME} ${LAPACK_LIBRARIES})
@@ -205,3 +206,33 @@ message(STATUS "Configured ${TARGET_NAME}")
 if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
+
+
+###
+# PyLeapAccelerate
+###
+
+PYTHON_ADD_MODULE(leap_accelerate
+  ${sources}
+  ${private_headers}
+  ${public_headers}
+)
+target_include_directories(leap_accelerate PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>
+  $<INSTALL_INTERFACE:include>
+)
+
+target_link_libraries(leap_accelerate PUBLIC Python3::Python)
+target_link_libraries(leap_accelerate PUBLIC ${PYTHON_LIBRARIES})
+target_link_libraries(leap_accelerate PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(leap_accelerate PUBLIC Eigen3::Eigen)
+target_link_libraries(leap_accelerate PUBLIC RapidJSON::RapidJSON)
+target_link_libraries(leap_accelerate PUBLIC ${CASACORE_LIBRARIES})
+target_include_directories(leap_accelerate PUBLIC ${CASACORE_INCLUDES})
+set_target_properties(leap_accelerate
+  PROPERTIES
+  ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
