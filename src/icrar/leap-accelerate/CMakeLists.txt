@@ -59,6 +59,8 @@ set(sources
     algorithm/cpu/PhaseMatrixFunction.cc
     algorithm/cuda/CudaComputeOptions.cc
     algorithm/cuda/CudaLeapCalibrator.cc
+
+    python/PyLeapCalibrator.cc
 )
 set(cuda_headers
     cuda/cuda_info.h
@@ -137,21 +139,23 @@ if(CUDA_ENABLED)
   #set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -lineinfo --default-stream per-thread)
   #message("CUDA_NVCC_FLAGS = ${CUDA_NVCC_FLAGS}")
   target_include_directories(${TARGET_NAME} SYSTEM PUBLIC ${CUDA_INCLUDE_DIRS})
-  target_link_libraries(${TARGET_NAME} ${CUDA_LIBRARIES})
-  target_link_libraries(${TARGET_NAME} cuda)
-  target_link_libraries(${TARGET_NAME} cublas)
+  target_link_libraries(${TARGET_NAME} PUBLIC ${CUDA_LIBRARIES})
+  target_link_libraries(${TARGET_NAME} PUBLIC cuda)
+  target_link_libraries(${TARGET_NAME} PUBLIC cublas)
   if(CUDA_VERSION_MAJOR VERSION_GREATER 9)
-    target_link_libraries(${TARGET_NAME} cublasLt)
-    target_link_libraries(${TARGET_NAME} ${CUDA_cusolver_LIBRARY})
+    target_link_libraries(${TARGET_NAME} PUBLIC cublasLt)
+    target_link_libraries(${TARGET_NAME} PUBLIC ${CUDA_cusolver_LIBRARY})
   endif()
 endif()
 
 target_link_libraries(${TARGET_NAME} PUBLIC Threads::Threads)
 target_link_libraries(${TARGET_NAME} PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(${TARGET_NAME} PUBLIC Python3::Python)
 
 
 #target_link_libraries(${TARGET_NAME} ${BLAS_LIBRARIES})
 #target_link_libraries(${TARGET_NAME} ${LAPACK_LIBRARIES})
+
 target_link_libraries(${TARGET_NAME} PUBLIC Eigen3::Eigen)
 target_link_libraries(${TARGET_NAME} PUBLIC RapidJSON::RapidJSON)
 

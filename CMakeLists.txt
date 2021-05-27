@@ -69,9 +69,8 @@ project(${SOLUTION_NAME} LANGUAGES C CXX VERSION ${SOLUTION_VERSION})
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIE")
 if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIE")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
   if(WERROR)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
@@ -135,6 +134,8 @@ endif()
 # else (DOXYGEN_FOUND)
 #   message("Doxygen needs to be installed to generate the doxygen documentation")
 # endif (DOXYGEN_FOUND)
+
+find_package(Python3 COMPONENTS Development)
 
 if(HIPSYCL_ENABLED)
   find_package(hipSYCL CONFIG REQUIRED)
