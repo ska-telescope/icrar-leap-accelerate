@@ -68,11 +68,12 @@ namespace icrar
 
     Range Slice::Evaluate(int collectionSize) const
     {
-        return Range(
+        return Range
+        {
             (m_start == -1) ? collectionSize : m_start,
             (m_interval == -1) ? collectionSize : m_interval,
             (m_end == -1) ? collectionSize : m_end
-        );
+        };
     }
 
     Slice ParseSlice(const std::string& json)
@@ -84,7 +85,7 @@ namespace icrar
 
     Slice ParseSlice(const rapidjson::Value& doc)
     {
-        Slice result;
+        Slice result = {};
 
         //Validate Schema
         if(doc.IsInt())
@@ -103,13 +104,13 @@ namespace icrar
             }
             else
             {
-                throw icrar::exception("expected 3 integers", __FILE__, __LINE__);
+                throw icrar::json_exception("expected 3 integers", __FILE__, __LINE__);
             }
             
         }
         else
         {
-            throw icrar::exception("expected an integer or array of integers", __FILE__, __LINE__);
+            throw icrar::json_exception("expected an integer or array of integers", __FILE__, __LINE__);
         }
 
         return result;

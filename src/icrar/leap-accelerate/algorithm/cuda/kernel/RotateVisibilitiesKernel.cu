@@ -22,11 +22,19 @@
 
 #include "RotateVisibilitiesKernel.h"
 #include <icrar/leap-accelerate/math/cuda/math.cuh>
+#include <icrar/leap-accelerate/math/cpu/math.h>
+
 
 namespace icrar
 {
 namespace cuda
 {
+    template<typename T>
+    constexpr int64_t CeilDiv(int x, int y)
+    {
+        return (x + y - T(1)) / y;
+    }
+
     /**
      * @brief Rotates visibilities in parallel for baselines and channels
      * @note Atomic operator required for writing to @p pAvgData
@@ -40,7 +48,7 @@ namespace cuda
     __global__ void g_RotateVisibilities(
         const icrar::cpu::Constants constants,
         const Eigen::Matrix3d dd,
-        const Eigen::Map<Eigen::Matrix<double, 3, Eigen::Dynamic>> UVWs,
+        const Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>> UVWs,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>> integrationData,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> avgData);
 
@@ -53,32 +61,31 @@ namespace cuda
         assert(constants.nbaselines == metadata.GetAvgData().GetRows() && integration.GetBaselines() == integration.GetVis().GetDimensionSize(1));
         assert(constants.num_pols == integration.GetVis().GetDimensionSize(0));
 
-        dim3 blockSize = dim3(128, 8, 1); // block size can be any value where the product is 1024
-        dim3 gridSize = dim3(
-            (int)ceil((float)integration.GetBaselines() / blockSize.x),
-            (int)ceil((float)integration.GetChannels() / blockSize.y),
-            1
-        );
-
         auto integrationDataMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>>(
-            (cuDoubleComplex*)integration.GetVis().Get(),
-            (int)integration.GetVis().GetDimensionSize(0), // inferring (const int) causes error
-            (int)integration.GetVis().GetDimensionSize(1), // inferring (const int) causes error
-            (int)integration.GetVis().GetDimensionSize(2) // inferring (const int) causes error
+            reinterpret_cast<cuDoubleComplex*>(integration.GetVis().Get()),
+            static_cast<int>(integration.GetVis().GetDimensionSize(0)), // inferring (const int) causes error
+            static_cast<int>(integration.GetVis().GetDimensionSize(1)), // inferring (const int) causes error
+            static_cast<int>(integration.GetVis().GetDimensionSize(2)) // inferring (const int) causes error
         );
 
         auto avgDataMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>>(
-            (cuDoubleComplex*)metadata.GetAvgData().Get(),
-            (int)metadata.GetAvgData().GetRows(), // inferring (const int) causes error
-            (int)metadata.GetAvgData().GetCols() // inferring (const int) causes error
+            reinterpret_cast<cuDoubleComplex*>(metadata.GetAvgData().Get()),
+            static_cast<int>(metadata.GetAvgData().GetRows()), // inferring (const int) causes error
+            static_cast<int>(metadata.GetAvgData().GetCols()) // inferring (const int) causes error
         );
 
-        auto UVWMap = Eigen::Map<Eigen::Matrix<double, 3, -1>>(
-            (double*)metadata.GetUVW().Get(),
+        const auto UVWMap = Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>>(
+            reinterpret_cast<const double*>(metadata.GetUVW().Get()),
             3,
             metadata.GetUVW().GetCount()
         );
 
+        dim3 blockSize = dim3(128, 8, 1); // block size can be any value where the product is 1024
+        dim3 gridSize = dim3(
+            cpu::ceil_div<int64_t>(integration.GetBaselines(), blockSize.x),
+            cpu::ceil_div<int64_t>(integration.GetChannels(), blockSize.y),
+            1
+        );
         g_RotateVisibilities<<<gridSize, blockSize>>>(
             constants,
             metadata.GetDD(),
@@ -90,7 +97,7 @@ namespace cuda
     __global__ void g_RotateVisibilities(
         const icrar::cpu::Constants constants,
         const Eigen::Matrix3d dd,
-        const Eigen::Map<Eigen::Matrix<double, 3, Eigen::Dynamic>> UVWs,
+        const Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>> UVWs,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>> integrationData,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> avgData)
     {

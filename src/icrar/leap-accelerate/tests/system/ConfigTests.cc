@@ -44,8 +44,6 @@ using namespace icrar;
 
 class ConfigTests : public testing::Test
 {
-    const double TOLERANCE = 0.0001;
-
     const std::string m_mwaDirections = "[\
         [-0.4606549305661674,-0.29719233792392513],\
         [-0.753231018062671,-0.44387635324622354],\
@@ -66,7 +64,7 @@ class ConfigTests : public testing::Test
 public:
     ConfigTests() = default;
 
-    void TestDefaultConfig(const boost::filesystem::path outputPath)
+    void TestDefaultConfig(const boost::filesystem::path& outputPath)
     {
         std::string path = (boost::dll::program_location().parent_path() / outputPath).string();
         std::ifstream expectedStream(path);
