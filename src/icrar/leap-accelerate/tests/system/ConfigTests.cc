@@ -68,7 +68,7 @@ class ConfigTests : public testing::Test
 public:
     ConfigTests() = default;
 
-    void TestDefaultConfig(const boost::filesystem::path outputPath)
+    void TestDefaultConfig(const boost::filesystem::path& outputPath)
     {
         std::string path = (boost::dll::program_location().parent_path() / outputPath).string();
         std::ifstream expectedStream(path);

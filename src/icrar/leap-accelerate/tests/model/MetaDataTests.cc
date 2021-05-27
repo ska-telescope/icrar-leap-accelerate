@@ -190,8 +190,8 @@ namespace icrar
         void TestReferenceAntenna()
         {
             auto meta = icrar::cpu::MetaData(*ms, SphericalDirection(), std::vector<icrar::MVuvw>(), boost::none);
-            uint32_t k = boost::numeric_cast<uint32_t>(meta.GetA1().rows() - 1);
-            uint32_t n = boost::numeric_cast<uint32_t>(meta.GetA1().cols() - 1);
+            auto k = boost::numeric_cast<uint32_t>(meta.GetA1().rows() - 1);
+            auto n = boost::numeric_cast<uint32_t>(meta.GetA1().cols() - 1);
             ASSERT_EQ(0, meta.GetA1()(k, 0));
             ASSERT_EQ(1, meta.GetA1()(k, n));
 

@@ -69,4 +69,4 @@ namespace icrar
                 throw std::invalid_argument("invalid stream out type");
         }
     }
-}
+} // namespace icrar

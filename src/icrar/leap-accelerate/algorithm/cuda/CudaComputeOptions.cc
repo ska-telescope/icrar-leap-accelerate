@@ -62,7 +62,7 @@ namespace icrar
         else // determine from available memory
         {
             // A, Ad and SVD buffers required to compute inverse
-            size_t required = boost::numeric_cast<size_t>(static_cast<double>(3 * ASize) * safetyFactor);
+            auto required = boost::numeric_cast<size_t>(static_cast<double>(3 * ASize) * safetyFactor);
             if(required < free)
             {
                 LOG(info) << memory_amount(free) << " > " << memory_amount(required) << ". Enabling Cusolver";
@@ -82,7 +82,7 @@ namespace icrar
         else // determine from available memory
         {
             // A, Ad and 2x visibilities required to calibrate
-            size_t required = boost::numeric_cast<size_t>(static_cast<double>(2 * ASize + 2 * VisSize) * safetyFactor);
+            auto required = boost::numeric_cast<size_t>(static_cast<double>(2 * ASize + 2 * VisSize) * safetyFactor);
             if(required < free)
             {
                 LOG(info) << memory_amount(free) << " > " << memory_amount(required) << ". Enabling IntermediateBuffer";

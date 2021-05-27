@@ -21,6 +21,7 @@
  */
 
 #include "CopyPhaseDeltaKernel.h"
+#include <icrar/leap-accelerate/math/cpu/math.h>
 #include <icrar/leap-accelerate/exception/exception.h>
 
 namespace icrar
@@ -39,12 +40,11 @@ namespace cuda
         {
             throw invalid_argument_exception("incorrect number of columns", "deltaPhaseColumn", __FILE__, __LINE__);
         }
-
-        dim3 blockSize = dim3(1024, 1, 1);
-        dim3 gridSize = dim3((int)ceil(static_cast<double>(deltaPhaseColumn.GetRows()) / blockSize.x), 1, 1);
-
         auto deltaPhaseMap = Eigen::Map<const Eigen::MatrixXd>(deltaPhase.Get(), deltaPhase.GetRows(), deltaPhase.GetCols());
         auto deltaPhaseColumnMap = Eigen::Map<Eigen::VectorXd>(deltaPhaseColumn.Get(), deltaPhaseColumn.GetRows());
+        
+        dim3 blockSize = dim3(1024, 1, 1);
+        dim3 gridSize = dim3(cpu::ceil_div<int64_t>(deltaPhaseColumn.GetRows(),  blockSize.x), 1, 1);
         g_GenerateDeltaPhaseColumn<<<blockSize,gridSize>>>(deltaPhaseMap, deltaPhaseColumnMap);
     }
 
