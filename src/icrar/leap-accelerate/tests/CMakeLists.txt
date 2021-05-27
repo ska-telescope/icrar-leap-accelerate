@@ -33,15 +33,6 @@ set(sources
   system/ConfigTests.cc
 )
 
-set(cuda_sources
-  ""
-)
-
-# Only CUDA 10+ is capable of compiling gtest
-if(CUDA_VERSION_MAJOR GREATER 9)
-  list(APPEND sources ${cuda_sources})
-endif()
-
 add_executable(${TEST_TARGET_NAME}
   ${sources}
 )

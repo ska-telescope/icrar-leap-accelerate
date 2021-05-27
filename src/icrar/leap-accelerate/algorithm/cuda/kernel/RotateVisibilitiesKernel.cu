@@ -22,11 +22,19 @@
 
 #include "RotateVisibilitiesKernel.h"
 #include <icrar/leap-accelerate/math/cuda/math.cuh>
+#include <icrar/leap-accelerate/math/cpu/math.h>
+
 
 namespace icrar
 {
 namespace cuda
 {
+    template<typename T>
+    constexpr int64_t CeilDiv(int x, int y)
+    {
+        return (x + y - T(1)) / y;
+    }
+
     /**
      * @brief Rotates visibilities in parallel for baselines and channels
      * @note Atomic operator required for writing to @p pAvgData
@@ -53,13 +61,6 @@ namespace cuda
         assert(constants.nbaselines == metadata.GetAvgData().GetRows() && integration.GetBaselines() == integration.GetVis().GetDimensionSize(1));
         assert(constants.num_pols == integration.GetVis().GetDimensionSize(0));
 
-        dim3 blockSize = dim3(128, 8, 1); // block size can be any value where the product is 1024
-        dim3 gridSize = dim3(
-            static_cast<int>(ceil((float)integration.GetBaselines() / blockSize.x)),
-            static_cast<int>(ceil((float)integration.GetChannels() / blockSize.y)),
-            1
-        );
-
         auto integrationDataMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>>(
             reinterpret_cast<cuDoubleComplex*>(integration.GetVis().Get()),
             static_cast<int>(integration.GetVis().GetDimensionSize(0)), // inferring (const int) causes error
@@ -79,6 +80,12 @@ namespace cuda
             metadata.GetUVW().GetCount()
         );
 
+        dim3 blockSize = dim3(128, 8, 1); // block size can be any value where the product is 1024
+        dim3 gridSize = dim3(
+            cpu::ceil_div<int64_t>(integration.GetBaselines(), blockSize.x),
+            cpu::ceil_div<int64_t>(integration.GetChannels(), blockSize.y),
+            1
+        );
         g_RotateVisibilities<<<gridSize, blockSize>>>(
             constants,
             metadata.GetDD(),

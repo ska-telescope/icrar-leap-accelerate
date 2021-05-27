@@ -22,6 +22,7 @@
 
 #include "ComputePhaseDeltaKernel.h"
 #include <icrar/leap-accelerate/exception/exception.h>
+#include <icrar/leap-accelerate/math/cpu/math.h>
 
 namespace icrar
 {
@@ -54,14 +55,14 @@ namespace cuda
             throw invalid_argument_exception(ss.str(), "A", __FILE__, __LINE__);
         }
 
-        dim3 blockSize = dim3(1024, 1, 1);
-        dim3 gridSize = dim3(static_cast<int>(ceil(static_cast<double>(A.GetRows()) / blockSize.x)), 1, 1);
-
         auto AMap = Eigen::Map<const Eigen::MatrixXd>(A.Get(), A.GetRows(), A.GetCols());
         auto cal1Map = Eigen::Map<const Eigen::VectorXd>(cal1.Get(), cal1.GetRows());
         auto avgDataMap = Eigen::Map<const Eigen::Matrix<thrust::complex<double>, -1, -1>>(
             (thrust::complex<double>*)avgData.Get(), avgData.GetRows(), avgData.GetCols());
         auto deltaPhaseMap = Eigen::Map<Eigen::VectorXd>(deltaPhase.Get(), deltaPhase.GetRows());
+
+        dim3 blockSize = dim3(1024, 1, 1);
+        dim3 gridSize = dim3(cpu::ceil_div<int64_t>(A.GetRows() , blockSize.x), 1, 1);
         g_CalcDeltaPhase<<<blockSize,gridSize>>>(AMap, cal1Map, avgDataMap, deltaPhaseMap);
     }
 
