@@ -34,6 +34,12 @@
 #include <functional>
 #include <type_traits>
 
+namespace Eigen
+{
+    using MatrixXb = Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic>;
+    using VectorXb = Eigen::Vector<bool, Eigen::Dynamic>;
+}
+
 namespace icrar
 {
     namespace cpu

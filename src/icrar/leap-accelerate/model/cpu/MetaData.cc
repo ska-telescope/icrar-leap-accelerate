@@ -104,9 +104,8 @@ namespace cpu
         }
 
         LOG(info) << "Calculating PhaseMatrix A";
-        //Eigen::Matrix<bool, 1, -1>::Zero(ms.GetNumBaselines())
         std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), filteredBaselines, m_constants.referenceAntenna, true);
-        //trace_matrix(m_A, "A");
+        trace_matrix(m_A, "A");
 
         if(computeInverse)
         {

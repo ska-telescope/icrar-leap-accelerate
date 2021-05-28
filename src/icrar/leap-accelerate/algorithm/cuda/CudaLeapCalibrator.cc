@@ -100,8 +100,7 @@ namespace cuda
 
     CudaLeapCalibrator::~CudaLeapCalibrator()
     {
-        LOG(warning) << "destroying CudaLeapCalibrator";
-        //checkCudaErrors(cudaGetLastError());
+        LOG(trace) << "destroying CudaLeapCalibrator";
         checkCudaErrors(cusolverDnDestroy(m_cusolverDnContext));
         checkCudaErrors(cublasDestroy(m_cublasContext));
 
