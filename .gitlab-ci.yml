@@ -411,8 +411,7 @@ docker_build:
         DOCKER_TAG=latest
       fi
     - >
-      docker build -t $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG
-      --build-arg PYPI_REPOSITORY_URL=$PYPI_REPOSITORY_URL .
+      docker build -t $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG .
     - docker save $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG > docker_image.tar
   artifacts:
     paths:
