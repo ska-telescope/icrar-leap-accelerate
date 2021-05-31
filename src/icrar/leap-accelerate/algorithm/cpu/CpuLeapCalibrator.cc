@@ -176,8 +176,8 @@ namespace cpu
         LOG(info) << "Calculating Calibration";
         auto polarizationsI1 = metadata.GetAvgData().wrapped_row_select(metadata.GetI1());
 
-        Eigen::VectorXd phaseAnglesI1 = polarizationsI1.col(0).arg(); // 1st polarization only
-        //Eigen::VectorXd phaseAnglesI1 = (polarizationsI1.col(0) + polarizationsI1.col(3)).arg(); // arg(XX + YY)
+        Eigen::Index lastPolarization = polarizationsI1.cols() - 1;
+        Eigen::VectorXd phaseAnglesI1 = (polarizationsI1.col(0) + polarizationsI1.col(lastPolarization)).arg(); // arg(XX + YY)
 
         // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
         phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
