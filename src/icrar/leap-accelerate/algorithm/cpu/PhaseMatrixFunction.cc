@@ -28,6 +28,8 @@
 #include <sstream>
 #include <set>
 
+#include <icrar/leap-accelerate/common/eigen_stringutils.h>
+
 namespace icrar
 {
 namespace cpu
@@ -35,40 +37,50 @@ namespace cpu
     std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
-        const Eigen::Matrix<bool, Eigen::Dynamic, 1>& fg,
-        boost::optional<uint32_t> refAnt)
+        const Eigen::VectorXb& fg,
+        uint32_t refAnt,
+        bool allBaselines)
     {
-        if(a1.size() != a2.size() && a1.size() != fg.size())
+        if(a1.size() == 0)
         {
-            throw invalid_argument_exception("a1 and a2 must be equal size", "a", __FILE__, __LINE__);
+            throw invalid_argument_exception("a1 and a2 must not be empty", "a", __FILE__, __LINE__);
         }
 
-        if(refAnt.is_initialized() && refAnt.get() >= a1.size())
+        if(a1.size() != a2.size() || a1.size() != fg.size())
+        {
+            throw invalid_argument_exception("a1, a2, and fg must be equal size", "a", __FILE__, __LINE__);
+        }
+
+        const uint32_t totalAntennas = std::max(a1.maxCoeff(), a2.maxCoeff()) + 1;
+        if(refAnt >= totalAntennas)
         {
             std::stringstream ss;
-            ss << "refAnt " << refAnt.get() << " is out of bounds";
+            ss << "refAnt " << refAnt << " is out of bounds";
             throw invalid_argument_exception(ss.str(), "refAnt", __FILE__, __LINE__);
         }
-        if(refAnt.is_initialized() && fg(refAnt.get()))
+        if(fg(refAnt))
         {
             std::stringstream ss;
-            ss << "refAnt " << refAnt.get() << " is flagged";
+            ss << "refAnt " << refAnt << " is flagged";
             throw invalid_argument_exception(ss.str(), "refAnt", __FILE__, __LINE__);
         }
 
-        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, std::max(a1.maxCoeff(), a2.maxCoeff()) + 1);
+        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, totalAntennas);
         Eigen::VectorXi I = Eigen::VectorXi(a1.size());
         I.setConstant(-1);
 
-        int k = 0;
-
+        int k = 0; // row index
+        int32_t refAntId = boost::numeric_cast<int32_t>(refAnt);
         for(int n = 0; n < a1.size(); n++)
-        {
+        { 
             if(a1(n) != a2(n))
             {
                 // skip entry if data not flagged
-                if(!fg(n) && ((!refAnt.is_initialized())
-                || ((refAnt.is_initialized()) && ((static_cast<unsigned int>(a1(n)) == refAnt.get()) || (static_cast<unsigned int>(a2(n)) == refAnt.get())))))
+                if(!fg(n) && 
+                (
+                    allBaselines ||
+                    ((!allBaselines) && ((a1(n) == refAntId) || (a2(n) == refAntId)))
+                ))
                 {
                     A(k, a1(n)) = 1;
                     A(k, a2(n)) = -1;
@@ -78,12 +90,8 @@ namespace cpu
             }
         }
 
-        if(!refAnt.is_initialized())
-        {
-            refAnt = 0;
-        }
-
-        A(k, refAnt.get()) = 1;
+        // reference antenna should be a 0 calibration
+        A(k, refAnt) = 1;
         k++;
         
         A.conservativeResize(k, Eigen::NoChange);

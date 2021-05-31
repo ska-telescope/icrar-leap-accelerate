@@ -69,10 +69,10 @@ namespace cuda
         size_t m = d_A.GetRows();
         size_t n = d_A.GetCols();
         size_t k = std::min(m, n);
-        if(m <= n)
+        if(m < n)
         {
             std::stringstream ss;
-            ss << "matrix inverse (" << m << "," << n << ") " << "m<=n not supported";
+            ss << "matrix inverse (" << m << "," << n << ") " << "m<n not supported";
             throw invalid_argument_exception(ss.str(), "d_A", __FILE__, __LINE__);
         }
 
@@ -112,8 +112,8 @@ namespace cuda
         }
         Eigen::VectorXd S = Eigen::VectorXd::Zero(k);
 
-        size_t free;
-        size_t total;
+        size_t free = 0;
+        size_t total = 0;
         checkCudaErrors(cudaMemGetInfo(&free, &total));
         LOG(trace) << "free device memory: " << memory_amount(free) << "/" << memory_amount(total); 
         LOG(trace) << "cuda svd allocation (" << m << ", " << n << "): "
@@ -126,24 +126,24 @@ namespace cuda
         // Solve U, S, Vt with A
         // https://stackoverflow.com/questions/17401765/parallel-implementation-for-multiple-svds-using-cuda
 
-        int* d_devInfo;
+        int* d_devInfo = nullptr;
         size_t d_devInfoSize = sizeof(int);
         checkCudaErrors(cudaMalloc(&d_devInfo, d_devInfoSize));
 
         int workSize = 0;
         checkCudaErrors(cusolverDnDgesvd_bufferSize(cusolverHandle, m, n, &workSize));
         LOG(info) << "inverse matrix cuda worksize: " << memory_amount(workSize * sizeof(double));
-        double* d_work; checkCudaErrors(cudaMalloc(&d_work, workSize * sizeof(double)));
+        double* d_work = nullptr; checkCudaErrors(cudaMalloc(&d_work, workSize * sizeof(double)));
 
         LOG(info) << "inverse matrix cuda rworksize: " << memory_amount((m-1) * sizeof(double));
-        double* d_rwork; checkCudaErrors(cudaMalloc(&d_rwork, (m-1) * sizeof(double)));
+        double* d_rwork = nullptr; checkCudaErrors(cudaMalloc(&d_rwork, (m-1) * sizeof(double)));
 
         int h_devInfo = 0;
         checkCudaErrors(cusolverDnDgesvd(
             cusolverHandle,
             jobu, jobvt,
             m, n,
-            const_cast<double*>(d_A.Get()),
+            const_cast<double*>(d_A.Get()), // NOLINT(cppcoreguidelines-pro-type-const-cast)
             lda,
             d_S.Get(),
             d_U.Get(),
@@ -180,8 +180,7 @@ namespace cuda
         cublasHandle_t cublasHandle,
         const device_matrix<double>& d_U,
         const device_vector<double>& d_S,
-        const device_matrix<double>& d_Vt,
-        const JobType jobType)
+        const device_matrix<double>& d_Vt)
     {
         size_t m = d_U.GetRows();
         size_t n = d_Vt.GetRows();
@@ -219,7 +218,7 @@ namespace cuda
             auto d_A = device_matrix<double>(matrix);
             std::tie(d_U, d_S, d_Vt) = svd(cusolverHandle, d_A, jobType);
         }
-        device_matrix<double> d_VSUt = SVDCombineInverse(cublasHandle, d_U, d_S, d_Vt, jobType);
+        device_matrix<double> d_VSUt = SVDCombineInverse(cublasHandle, d_U, d_S, d_Vt);
         auto VSUt = Eigen::MatrixXd(matrix.cols(), matrix.rows());
         d_VSUt.ToHostAsync(VSUt.data());
         return VSUt;
@@ -235,7 +234,7 @@ namespace cuda
         device_vector<double> d_S;
         device_matrix<double> d_Vt;
         std::tie(d_U, d_S, d_Vt) = svd(cusolverHandle, d_A, jobType);
-        return SVDCombineInverse(cublasHandle, d_U, d_S, d_Vt, jobType);
+        return SVDCombineInverse(cublasHandle, d_U, d_S, d_Vt);
     }
 } // namespace cuda
 } // namespace icrar

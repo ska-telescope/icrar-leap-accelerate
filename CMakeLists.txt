@@ -36,7 +36,7 @@ if(DEFINED ENV{CMAKE_RUN_CLANG_TIDY})
 endif()
 
 if(TRACE)
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DTRACE")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DTRACE")
 endif()
 
 # Pre-compile headers are only supported in cmake >= 3.16
@@ -117,7 +117,6 @@ endif()
 # Global Libraries
 find_package(PythonLibs 3 REQUIRED) # required for PYTHON_ADD_MODULE macro
 find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
-message("python libs: ${PYTHON_INCLUDE_DIRS}")
 
 if(HIPSYCL_ENABLED)
   find_package(hipSYCL CONFIG REQUIRED)

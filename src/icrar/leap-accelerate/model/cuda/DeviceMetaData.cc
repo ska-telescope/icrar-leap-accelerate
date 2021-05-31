@@ -170,6 +170,6 @@ namespace cuda
         metadata.m_dd = m_directionBuffer->GetDD();
         m_directionBuffer->GetAvgData().ToHostAsync(metadata.m_avgData);
     }
-}
-}
+} // namespace cuda
+} // namespace icrar
 #endif // CUDA_ENABLED

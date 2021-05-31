@@ -63,8 +63,8 @@ namespace icrar
         : filePath(std::move(args.filePath))
         , configFilePath(std::move(args.configFilePath))
         , outputFilePath(std::move(args.outputFilePath))
-        , stations(std::move(args.stations))
-        , referenceAntenna(std::move(args.referenceAntenna))
+        , stations(args.stations)
+        , referenceAntenna(args.referenceAntenna)
         , minimumBaselineThreshold(args.minimumBaselineThreshold)
         , readAutocorrelations(args.readAutocorrelations)
         , mwaSupport(args.mwaSupport)
@@ -118,6 +118,7 @@ namespace icrar
 
     ArgumentsValidated::ArgumentsValidated(ArgumentsDTO&& cliArgs)
     : m_inputType(InputType::file)
+    , m_streamOutType()
     , m_computeImplementation(ComputeImplementation::cpu)
     , m_solutionInterval()
     , m_minimumBaselineThreshold(0)

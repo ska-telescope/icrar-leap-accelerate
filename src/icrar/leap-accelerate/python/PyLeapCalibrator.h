@@ -24,6 +24,7 @@
 
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
 #include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
+#include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <Eigen/Core>
@@ -31,10 +32,24 @@
 #include <boost/python.hpp>
 #include <boost/python/call.hpp>
 #include <boost/python/numpy.hpp>
+#include <boost/python/object.hpp>
 
 #include <iostream>
 
 namespace np = boost::python::numpy;
+namespace bp = boost::python;
+
+template<typename T>
+inline T ternary(bool condition, T trueValue, T falseValue)
+{
+    return condition ? trueValue : falseValue;
+}
+
+template<typename T>
+inline std::optional<T> PythonToOptional(boost::python::object& o)
+{
+    return ternary<std::optional<T>>(o.is_none(), std::optional<T>(), bp::extract<T>(o));
+} 
 
 namespace icrar
 {
@@ -46,102 +61,32 @@ namespace python
      */
     class PyLeapCalibrator
     {
-        std::unique_ptr<MeasurementSet> m_measurementSet;
-        std::unique_ptr<ILeapCalibrator> m_calibrator;
+        std::shared_ptr<MeasurementSet> m_measurementSet;
+        std::shared_ptr<ILeapCalibrator> m_calibrator;
 
     public:
-        PyLeapCalibrator(ComputeImplementation impl)
-        {
-            m_calibrator = LeapCalibratorFactory::Create(impl);
-        }
-
-        PyLeapCalibrator(std::string impl)
-        {
-            m_calibrator = LeapCalibratorFactory::Create(ParseComputeImplementation(impl));
-        }
-
-        PyLeapCalibrator(const PyLeapCalibrator& other) {}
-
-        // void Calibrate(
-        //     std::function<void(const cpu::Calibration&)> outputCallback,
-        //     const icrar::MeasurementSet& ms,
-        //     const std::vector<SphericalDirection>& directions,
-        //     const Slice& solutionInterval,
-        //     double minimumBaselineThreshold,
-        //     boost::optional<unsigned int> referenceAntenna,
-        //     const ComputeOptionsDTO& computeOptions) override
-        // {
-        //     m_calibrator->Calibrate(
-        //         outputCallback,
-        //         ms,
-        //         directions,
-        //         solutionInterval,
-        //         minimumBaselineThreshold,
-        //         referenceAntenna,
-        //         computeOptions);
-        // }
-
-        std::vector<SphericalDirection> ToSphericalDirectionVector(const np::ndarray& array)
-        {
-            assert(array.get_nd() == 2);
-            assert(array.shape(0) == 2);
-            assert(array.get_dtype().get_itemsize() == 8); // double
-            auto directionMatrix = Eigen::Map<const Eigen::Matrix<double, -1, -1, Eigen::RowMajor>>(
-                reinterpret_cast<double*>(array.get_data()), array.shape(0), array.shape(1)
-            );
-
-            auto output = std::vector<SphericalDirection>();
-            output.reserve(directionMatrix.rows());
-            for(int row = 0; row < directionMatrix.rows(); ++row)
-            {
-                output.push_back(directionMatrix(row, Eigen::all));
-            }
-            return output;
-        }
+        PyLeapCalibrator(ComputeImplementation impl);
+        PyLeapCalibrator(std::string impl);
+        PyLeapCalibrator(const PyLeapCalibrator& other);
 
         void Calibrate(
             PyObject* callback,
             std::string msPath,
             bool useAutoCorrelations,
-            const np::ndarray& directions)
-        {
-            m_measurementSet = std::make_unique<MeasurementSet>(
-                    msPath,
-                    boost::none,
-                    useAutoCorrelations);
-            auto validatedDirections = ToSphericalDirectionVector(directions);
-            auto solutionInterval = Slice(0,1,1);
-            double minimumBaselineThreshold = 0.0;
-            int referenceAntenna = 0;
-            ComputeOptionsDTO computeOptions = {false, false, false};
+            const np::ndarray& directions,
+            std::optional<std::string> outputPath);
 
-            m_calibrator->Calibrate(
-                [&](const cpu::Calibration& cal)
-                {
-                    boost::python::call<void>(callback);
-                },
-                *m_measurementSet,
-                validatedDirections,
-                solutionInterval,
-                minimumBaselineThreshold,
-                referenceAntenna,
-                computeOptions);
-        }
+        /**
+         * @brief A boost python interop compatible signature
+         */
+        void PythonCalibrate(
+            PyObject* callback,
+            boost::python::object& msPath,
+            boost::python::object& useAutoCorrelations,
+            const np::ndarray& directions,
+            boost::python::object& outputPath);
     };
 } // namespace python
 } // namespace icrar
 
-
-BOOST_PYTHON_MODULE(LeapAccelerate)
-{
-    boost::python::numpy::initialize();
-
-    boost::python::class_<icrar::python::PyLeapCalibrator>("LeapCalibrator", boost::python::init<icrar::ComputeImplementation>())
-        .def(boost::python::init<std::string>())
-        .def("Calibrate", &icrar::python::PyLeapCalibrator::Calibrate);
-
-    boost::python::enum_<icrar::ComputeImplementation>("ComputeImplementation")
-        .value("cpu", icrar::ComputeImplementation::cpu)
-        .value("cuda", icrar::ComputeImplementation::cuda);
-}
 

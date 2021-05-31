@@ -32,7 +32,7 @@ namespace icrar
             return a.unaryExpr([](std::complex<double> v){ return std::arg(v); });
         }
 
-        bool near(const Eigen::Ref<const Eigen::MatrixXd> left, const Eigen::Ref<const Eigen::MatrixXd> right, double tolerance)
+        bool near(const Eigen::Ref<const Eigen::MatrixXd>& left, const Eigen::Ref<const Eigen::MatrixXd>& right, double tolerance)
         {
             bool equal = left.rows() == right.rows() && left.cols() == right.cols();
             if(equal)
@@ -55,5 +55,5 @@ namespace icrar
             }
             return equal;
         }
-    }
-}
+    } // namespace cpu
+} // namespace icrar

@@ -37,7 +37,9 @@ int GetCudaDeviceCount()
 
 void printCudaVersion()
 {
-    std::cout << "CUDA Compiled version: " << __CUDACC_VER_MAJOR__ << __CUDACC_VER_MINOR__ << __CUDACC_VER_BUILD__ << std::endl;
+#ifdef __NVCC__
+    std::cout << "CUDA NVCC Compiler version: " << __CUDACC_VER_MAJOR__ << __CUDACC_VER_MINOR__ << __CUDACC_VER_BUILD__ << std::endl;
+#endif
 
     int runtime_ver = 0;
     cudaRuntimeGetVersion(&runtime_ver);

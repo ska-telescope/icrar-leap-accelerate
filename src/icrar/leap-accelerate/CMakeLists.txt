@@ -143,33 +143,30 @@ if(CUDA_ENABLED)
   target_link_libraries(${TARGET_NAME} PUBLIC cuda)
   target_link_libraries(${TARGET_NAME} PUBLIC ${CUDA_LIBRARIES})
   target_link_libraries(${TARGET_NAME} PUBLIC ${CUDA_CUBLAS_LIBRARIES})
-  if(CUDA_VERSION_MAJOR VERSION_GREATER 9)
-    #target_link_libraries(${TARGET_NAME} PUBLIC cublasLt)
+  if(CUDA_VERSION_MAJOR VERSION_GREATER_EQUAL "10.0")
     target_link_libraries(${TARGET_NAME} PUBLIC ${CUDA_cusolver_LIBRARY})
+    #target_link_libraries(${TARGET_NAME} PUBLIC cublasLt)
   endif()
 endif()
 
 target_link_libraries(${TARGET_NAME} PUBLIC Threads::Threads)
 target_link_libraries(${TARGET_NAME} PUBLIC ${Boost_LIBRARIES})
-target_link_libraries(${TARGET_NAME} PUBLIC Python3::Python)
-
-
-message("numpy: ${Boost_LIBRARIES}")
-target_link_libraries(${TARGET_NAME} PUBLIC Python3::Python)
-target_include_directories(${TARGET_NAME} SYSTEM PUBLIC /usr/lib/python3/dist-packages/numpy/core/include)
-#target_link_libraries(${TARGET_NAME} PUBLIC Python3::NumPy)
-
-#target_link_libraries(${TARGET_NAME} ${BLAS_LIBRARIES})
-#target_link_libraries(${TARGET_NAME} ${LAPACK_LIBRARIES})
-
 target_link_libraries(${TARGET_NAME} PUBLIC Eigen3::Eigen)
-target_link_libraries(${TARGET_NAME} PUBLIC RapidJSON::RapidJSON)
+
+target_link_libraries(${TARGET_NAME} PUBLIC Python3::Python)
+if(Python3_NumPy_FOUND)
+  target_link_libraries(${TARGET_NAME} PUBLIC Python3::NumPy)
+else()
+  target_include_directories(${TARGET_NAME} SYSTEM PUBLIC /usr/lib/python3/dist-packages/numpy/core/include)
+endif()
 
 if(CASA_ENABLED)
-  target_link_libraries(${TARGET_NAME} PUBLIC ${CASACORE_LIBRARIES})
   target_include_directories(${TARGET_NAME} PUBLIC ${CASACORE_INCLUDES})
+  target_link_libraries(${TARGET_NAME} PUBLIC ${CASACORE_LIBRARIES})
 endif()
 if(GSL_ENABLED)
+  #target_link_libraries(${TARGET_NAME} ${BLAS_LIBRARIES})
+  #target_link_libraries(${TARGET_NAME} ${LAPACK_LIBRARIES})
   target_link_libraries(${TARGET_NAME} GSL::gsl)
 endif()
 
@@ -211,33 +208,3 @@ message(STATUS "Configured ${TARGET_NAME}")
 if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
-
-
-###
-# PyLeapAccelerate
-###
-
-# PYTHON_ADD_MODULE(leap_accelerate
-#   ${sources}
-#   ${private_headers}
-#   ${public_headers}
-# )
-# target_include_directories(leap_accelerate PUBLIC
-#   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
-#   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>
-#   $<INSTALL_INTERFACE:include>
-# )
-
-# target_link_libraries(leap_accelerate PUBLIC Python3::Python)
-# target_link_libraries(leap_accelerate PUBLIC ${PYTHON_LIBRARIES})
-# target_link_libraries(leap_accelerate PUBLIC ${Boost_LIBRARIES})
-# target_link_libraries(leap_accelerate PUBLIC Eigen3::Eigen)
-# target_link_libraries(leap_accelerate PUBLIC RapidJSON::RapidJSON)
-# target_link_libraries(leap_accelerate PUBLIC ${CASACORE_LIBRARIES})
-# target_include_directories(leap_accelerate PUBLIC ${CASACORE_INCLUDES})
-# set_target_properties(leap_accelerate
-#   PROPERTIES
-#   ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-#   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-#   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-# )

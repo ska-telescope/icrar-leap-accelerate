@@ -37,6 +37,7 @@ namespace icrar
     , m_filepath(filepath)
     , m_readAutocorrelations(readAutocorrelations)
     {
+        //TODO(calgray): consider detecting autocorrelations when using antenna2
         // Check and use unique antennas
         m_antennas = CalculateUniqueAntennas();
 
@@ -200,7 +201,7 @@ namespace icrar
         else
         {
             LOG(warning) << "baseline flags not found";
-            return Eigen::Matrix<bool, -1, 1>::Zero(nBaselines);
+            return Eigen::VectorXb::Zero(nBaselines);
         }
     }
 
@@ -210,10 +211,10 @@ namespace icrar
         return boost::numeric_cast<uint32_t>(std::count(flaggedBaselines.cbegin(), flaggedBaselines.cend(), true));
     }
 	
-	Eigen::Matrix<bool, -1, 1> MeasurementSet::GetShortBaselines(double minimumBaselineThreshold) const
+	Eigen::VectorXb MeasurementSet::GetShortBaselines(double minimumBaselineThreshold) const
     {
         auto nBaselines = GetNumBaselines();
-        Eigen::Matrix<bool, -1, 1> baselineFlags = Eigen::Matrix<bool, -1, 1>::Zero(nBaselines); 
+        Eigen::VectorXb baselineFlags = Eigen::VectorXb::Zero(nBaselines); 
 
         // Filter short baselines
         if(minimumBaselineThreshold > 0.0)
@@ -221,8 +222,8 @@ namespace icrar
             auto firstChannelSlicer = casacore::Slicer(casacore::Slice(0, 1));
             casacore::Matrix<double> uv = m_msmc->uvw().getColumn(firstChannelSlicer);
 
-            // TODO(calgray): uv is of size baselines * timesteps, consider throwing a warning if flags change
-            // in later timesteps
+            // TODO(calgray): uv is of size baselines * timesteps, consider throwing a warning if
+            // short baselines change in later timesteps
             for(uint32_t i = 0; i < nBaselines; i++)
             {
                 if(std::sqrt(uv(i, 0) * uv(i, 0) + uv(i, 1) * uv(i, 1)) < minimumBaselineThreshold)
@@ -241,9 +242,9 @@ namespace icrar
         return boost::numeric_cast<uint32_t>(std::count(shortBaselines.cbegin(), shortBaselines.cend(), true));
     }
 
-    Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFilteredBaselines(double minimumBaselineThreshold) const
+    Eigen::VectorXb MeasurementSet::GetFilteredBaselines(double minimumBaselineThreshold) const
     {
-        Eigen::Matrix<bool, -1, 1> result = GetFlaggedBaselines() || GetShortBaselines(minimumBaselineThreshold);
+        Eigen::VectorXb result = GetFlaggedBaselines() || GetShortBaselines(minimumBaselineThreshold);
         return result;
     }
 
@@ -252,12 +253,6 @@ namespace icrar
         auto filteredBaselines = GetFilteredBaselines(minimumBaselineThreshold);
         return boost::numeric_cast<uint32_t>(std::count(filteredBaselines.cbegin(), filteredBaselines.cend(), true));
 	}
-
-    // Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFilteredStations(double minimumBaselineThreshold) const
-    // {
-    //     auto filteredBaselines = GetFilteredBaselines(minimumBaselineThreshold);
-    //     return filteredBaselines(Eigen::seqN(0, GetNumStations()));
-    // }
 
     Eigen::MatrixX3d MeasurementSet::GetCoords() const
     {
@@ -298,13 +293,53 @@ namespace icrar
         return visibilities;
     }
 
+    std::set<int32_t> MeasurementSet::GetMissingAntennas() const
+    {
+        std::set<std::int32_t> antennas;
+        for(int32_t i = 0; i < boost::numeric_cast<int32_t>(m_antennas.size()); i++)
+        {
+            if(m_antennas.find(i) == m_antennas.end())
+            {
+                antennas.insert(i);
+            }
+        }
+        return antennas;
+    }
+
+    std::set<int32_t> MeasurementSet::GetFlaggedAntennas() const
+    {
+        auto fg = GetFilteredBaselines();        
+        int32_t totalStations = GetTotalAntennas();
+
+        // start with a set of all antennas flagged and unflag the ones 
+        // that contain unflagged baseline data
+        Eigen::VectorXi antennas = Eigen::VectorXi::Ones(totalStations);
+        for(uint32_t n = 0; n < GetNumBaselines(); n++)
+        {
+            if(!fg(n))
+            {
+                antennas(m_msmc->antenna1()(n)) = 0;
+                antennas(m_msmc->antenna2()(n)) = 0;
+            }
+        }
+        // see https://libigl.github.io/matlab-to-eigen.html
+        std::set<int32_t> indexes;
+        for(int32_t i = 0; i < boost::numeric_cast<int32_t>(antennas.size()); ++i)
+        {
+            if(antennas(i))
+            {
+                indexes.insert(i);
+            }
+        }
+        return indexes;
+    }
+
     std::set<int32_t> MeasurementSet::CalculateUniqueAntennas() const
     {
-        //TODO(calgray): consider detecting autocorrelations when using antenna2
         casacore::Vector<casacore::Int> a1 = m_msmc->antenna1().getColumn();
-        casacore::Vector<casacore::Int> a2 = m_msmc->antenna1().getColumn();
+        casacore::Vector<casacore::Int> a2 = m_msmc->antenna2().getColumn();
         std::set<std::int32_t> antennas;
         std::set_union(a1.cbegin(), a1.cend(), a2.cbegin(), a2.cend(), std::inserter(antennas, antennas.begin()));
-        return antennas; 
+        return antennas;
     }
 } // namespace icrar

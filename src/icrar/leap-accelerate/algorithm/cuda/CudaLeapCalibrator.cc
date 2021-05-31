@@ -50,6 +50,8 @@
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/timer.h>
 
+#include <icrar/leap-accelerate/common/stream_extensions.h>
+
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
@@ -72,6 +74,7 @@ namespace cuda
     : m_cublasContext(nullptr)
     , m_cusolverDnContext(nullptr)
     {
+        LOG(info) << "creating CudaLeapCalibrator";
         int deviceCount = 0;
         checkCudaErrors(cudaGetDeviceCount(&deviceCount));
         if(deviceCount < 1)
@@ -82,9 +85,9 @@ namespace cuda
         cudaError_t smError = cudaGetLastError();
         if(smError != cudaError_t::cudaSuccess)
         {   
-            CUdevice device;
+            CUdevice device = 0;
             checkCudaErrors(cuDeviceGet(&device, 0));
-            int major, minor;
+            int major = 0, minor = 0;
             checkCudaErrors(cuDeviceGetAttribute(&major, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, device));
             checkCudaErrors(cuDeviceGetAttribute(&minor, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, device));
             LOG(warning) << "CUDA error: No suitable kernel found, hardware sm compatibility is sm_" << major << minor;
@@ -97,7 +100,7 @@ namespace cuda
 
     CudaLeapCalibrator::~CudaLeapCalibrator()
     {
-        //checkCudaErrors(cudaGetLastError());
+        LOG(trace) << "destroying CudaLeapCalibrator";
         checkCudaErrors(cusolverDnDestroy(m_cusolverDnContext));
         checkCudaErrors(cublasDestroy(m_cublasContext));
 
@@ -114,7 +117,12 @@ namespace cuda
             boost::optional<unsigned int> referenceAntenna,
             const ComputeOptionsDTO& computeOptions)
     {
-        auto cudaComputeOptions = CudaComputeOptions(computeOptions, ms);
+        checkCudaErrors(cudaGetLastError());
+
+        uint32_t timesteps = ms.GetNumTimesteps();
+        Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
+
+        auto cudaComputeOptions = CudaComputeOptions(computeOptions, ms, validatedSolutionInterval);
 
         LOG(info) << "Starting Calibration using cuda";
         LOG(info)
@@ -130,7 +138,7 @@ namespace cuda
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
-        << "timesteps: " << ms.GetNumTimesteps() << ", "
+        << "timesteps: " << timesteps << ", "
         << "use filesystem cache: " << cudaComputeOptions.isFileSystemCacheEnabled << ", "
         << "use intermediate cuda buffer: " << cudaComputeOptions.useIntermediateBuffer << ", "
         << "use cusolver: " << cudaComputeOptions.useCusolver;
@@ -138,10 +146,7 @@ namespace cuda
         profiling::timer calibration_timer;
 
         auto output_calibrations = std::vector<cpu::Calibration>();
-        auto input_queue = std::vector<cuda::DeviceIntegration>();
 
-        uint32_t timesteps = ms.GetNumTimesteps();
-        Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
         std::vector<double> epochs = ms.GetEpochs();
         
         profiling::timer metadata_read_timer;
@@ -155,11 +160,15 @@ namespace cuda
         device_matrix<double> deviceA, deviceAd;
         
         CalculateAd(metadata.GetA(), deviceA, metadata.GetAd(), deviceAd, cudaComputeOptions.isFileSystemCacheEnabled, cudaComputeOptions.useCusolver);
+        //Hack
         cudaHostRegister(metadata.GetAd().data(), metadata.GetAd().size() * sizeof(decltype(*metadata.GetAd().data())), cudaHostRegisterPortable);
+        checkCudaErrors(cudaGetLastError());
 
         device_matrix<double> deviceA1, deviceAd1;
         CalculateAd1(metadata.GetA1(), deviceA1, metadata.GetAd1(), deviceAd1);
+        //Hack
         cudaHostRegister(metadata.GetAd1().data(), metadata.GetAd1().size() * sizeof(decltype(*metadata.GetAd1().data())), cudaHostRegisterPortable);
+        checkCudaErrors(cudaGetLastError());
 
         auto constantBuffer = std::make_shared<ConstantBuffer>(
             metadata.GetConstants(),
@@ -178,15 +187,14 @@ namespace cuda
         auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
         LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
-        uint32_t solutions = boost::numeric_cast<uint32_t>(validatedSolutionInterval.GetSize());
-        constexpr unsigned int integrationNumber = 0;
+        auto solutions = boost::numeric_cast<uint32_t>(validatedSolutionInterval.GetSize());
+        constexpr uint32_t integrationNumber = 0;
         for(uint32_t solution = 0; solution < solutions; solution++)
         {
             profiling::timer solution_timer;
             output_calibrations.emplace_back(
                 epochs[solution * validatedSolutionInterval.GetInterval()],
                 epochs[(solution+1) * validatedSolutionInterval.GetInterval() - 1]);
-            input_queue.clear();
 
             int integrations = ms.GetNumTimesteps();
             if(integrations == 0)
@@ -204,6 +212,7 @@ namespace cuda
                 ms.GetNumChannels(),
                 validatedSolutionInterval.GetInterval() * ms.GetNumBaselines(),
                 ms.GetNumPols());
+            checkCudaErrors(cudaGetLastError());
             LOG(info) << "Read integration data in " << integration_read_timer;
 
             LOG(info) << "Loading Metadata UVW";
@@ -218,7 +227,7 @@ namespace cuda
             }
 
             // Emplace a single zero'd tensor
-            input_queue.emplace_back(0, integration.GetVis().dimensions());
+            auto input_vis = cuda::DeviceIntegration(0, integration.GetVis().dimensions());
 
             profiling::timer phase_rotate_timer;
             for(size_t i = 0; i < directions.size(); ++i)
@@ -229,23 +238,25 @@ namespace cuda
                 directionBuffer->SetDirection(directions[i]);
                 directionBuffer->SetDD(metadata.GenerateDDMatrix(directions[i]));
                 directionBuffer->GetAvgData().SetZeroAsync();
+                checkCudaErrors(cudaGetLastError());
 
                 if(cudaComputeOptions.useIntermediateBuffer)
                 {
-                    input_queue[0].Set(deviceIntegration.get());
+                    input_vis.Set(deviceIntegration.get());
                 }
                 else
                 {
                     LOG(info) << "Sending integration to device";
-                    input_queue[0].Set(integration);
+                    input_vis.Set(integration);
                 }
 
                 LOG(info) << "PhaseRotate";
+                checkCudaErrors(cudaGetLastError());
                 PhaseRotate(
                     metadata,
                     deviceMetadata,
                     directions[i],
-                    input_queue,
+                    input_vis,
                     output_calibrations[solution].GetBeamCalibrations());
             }
             LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
@@ -308,7 +319,7 @@ namespace cuda
 
                 if(!((hostAd * hostA).eval()).isDiagonal(1e-10))
                 {
-                    throw icrar::exception("Ad is non-diagonal", __FILE__, __LINE__);
+                    throw icrar::exception("Ad*A is non-diagonal", __FILE__, __LINE__);
                 }
             }
         }
@@ -351,6 +362,7 @@ namespace cuda
         device_matrix<double>& deviceAd1)
     {
         // This matrix is not always m > n, compute on cpu until cuda supports this
+        LOG(info) << "Inverting PhaseMatrix A1 with cpu (" << hostA1.rows() << ":" << hostA1.cols() << ")";
         deviceA1 = device_matrix<double>(hostA1);
         hostAd1 = cpu::pseudo_inverse(hostA1);
         deviceAd1 = device_matrix<double>(hostAd1);
@@ -364,14 +376,14 @@ namespace cuda
         const cpu::MetaData& metadata,
         DeviceMetaData& deviceMetadata,
         const SphericalDirection& direction,
-        std::vector<cuda::DeviceIntegration>& input,
+        cuda::DeviceIntegration& input,
         std::vector<cpu::BeamCalibration>& output_calibrations)
     {
-        for(DeviceIntegration& integration : input)
-        {
-            LOG(info) << "Rotating integration " << integration.GetIntegrationNumber();
-            RotateVisibilities(integration, deviceMetadata);
-        }
+
+        LOG(info) << "Rotating integration " << input.GetIntegrationNumber();
+        checkCudaErrors(cudaGetLastError());
+        RotateVisibilities(input, deviceMetadata);
+        checkCudaErrors(cudaGetLastError());
 
         LOG(info) << "Calibrating in cuda";
         auto devicePhaseAnglesI1 = device_vector<double>(metadata.GetI1().rows() + 1);
