@@ -402,6 +402,8 @@ docker_build:
     #  * "latest" when building the master branch
     #  * Other branches do not yield a docker image
     - IMAGE_NAME=icrar-leap-accelerate
+    # Registry folder not system defined
+    - DOCKER_REGISTRY_FOLDER=ska-docker
     - BRANCH=${CI_COMMIT_TAG:-${CI_COMMIT_BRANCH}}
     - DOCKER_TAG=${BRANCH##v}
     - >
