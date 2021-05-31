@@ -373,5 +373,58 @@ pages:
       - public
     reports:
       junit: build/reports/*.xml
-
   allow_failure: true
+
+###
+# Docker
+###
+
+.docker_common:
+  image: docker:stable
+  tags:
+    - docker-executor
+  before_script:
+    - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
+    - docker info
+
+
+docker_build:
+  stage: build
+  extends: .docker_common
+  #only:
+  #  - tags
+  #  - master
+  script:
+    # The docker image tag is:
+    #  * The git tag (without the initial "v") if building a git tag
+    #  * "latest" when building the master branch
+    #  * Other branches do not yield a docker image
+    - IMAGE_NAME=icrar-leap-accelerate
+    - BRANCH=${CI_COMMIT_TAG:-${CI_COMMIT_BRANCH}}
+    - DOCKER_TAG=${BRANCH##v}
+    - >
+      if [ "$CI_COMMIT_BRANCH" = master ]; then
+        DOCKER_TAG=latest
+      fi
+    - >
+      docker build -t $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG
+      --build-arg PYPI_REPOSITORY_URL=$PYPI_REPOSITORY_URL
+    - docker save $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG > docker_image.tar
+  artifacts:
+    paths:
+      - docker_image.tar
+    expire_in: 1 day
+
+docker_publish:
+  stage: docker_deploy
+  extends: .docker_common
+  needs: docker_build
+  # only:
+  #   - tags
+  #   - master
+  script:
+    - image_id=`docker load < docker_image.tar | sed -n '/Loaded image:/ { s/Loaded image://p }'`
+    - echo $image_id
+    - docker push $image_id
+
+  
