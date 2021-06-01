@@ -158,17 +158,10 @@ namespace cuda
             false);
 
         device_matrix<double> deviceA, deviceAd;
-        
         CalculateAd(metadata.GetA(), deviceA, metadata.GetAd(), deviceAd, cudaComputeOptions.isFileSystemCacheEnabled, cudaComputeOptions.useCusolver);
-        //Hack
-        cudaHostRegister(metadata.GetAd().data(), metadata.GetAd().size() * sizeof(decltype(*metadata.GetAd().data())), cudaHostRegisterPortable);
-        checkCudaErrors(cudaGetLastError());
 
         device_matrix<double> deviceA1, deviceAd1;
         CalculateAd1(metadata.GetA1(), deviceA1, metadata.GetAd1(), deviceAd1);
-        //Hack
-        cudaHostRegister(metadata.GetAd1().data(), metadata.GetAd1().size() * sizeof(decltype(*metadata.GetAd1().data())), cudaHostRegisterPortable);
-        checkCudaErrors(cudaGetLastError());
 
         auto constantBuffer = std::make_shared<ConstantBuffer>(
             metadata.GetConstants(),
@@ -353,6 +346,9 @@ namespace cuda
                 LOG(warning) << "Ad is degenerate";
             }
         }
+        // TODO(calgray): hack
+        cudaHostRegister(hostAd.data(), hostAd.size() * sizeof(decltype(*hostAd.data())), cudaHostRegisterPortable);
+        checkCudaErrors(cudaGetLastError());
     }
 
     void CudaLeapCalibrator::CalculateAd1(
@@ -364,7 +360,12 @@ namespace cuda
         // This matrix is not always m > n, compute on cpu until cuda supports this
         LOG(info) << "Inverting PhaseMatrix A1 with cpu (" << hostA1.rows() << ":" << hostA1.cols() << ")";
         deviceA1 = device_matrix<double>(hostA1);
+        
+        // TODO(calgray): hack
         hostAd1 = cpu::pseudo_inverse(hostA1);
+        cudaHostRegister(hostAd1.data(), hostAd1.size() * sizeof(decltype(*hostAd1.data())), cudaHostRegisterPortable);
+        checkCudaErrors(cudaGetLastError());
+
         deviceAd1 = device_matrix<double>(hostAd1);
         if(IsDegenerate(hostAd1 * hostA1, 1e-5))
         {
