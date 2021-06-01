@@ -1,2 +1,2 @@
-testdata/ska/*
-testdata/mwa/*
+build/*
+testdata/*
