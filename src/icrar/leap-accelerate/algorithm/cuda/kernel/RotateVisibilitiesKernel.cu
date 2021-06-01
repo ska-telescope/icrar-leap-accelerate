@@ -101,10 +101,10 @@ namespace cuda
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>> integrationData,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> avgData)
     {
+        const int integration_polarizations = integrationData.dimension(0);
         const int integration_baselines = integrationData.dimension(1);
         const int integration_channels = integrationData.dimension(2);
         const int md_baselines = constants.nbaselines; //metadata baselines
-        const int polarizations = constants.num_pols;
         constexpr double two_pi = 2 * CUDART_PI;
 
         //parallel execution per channel
@@ -122,12 +122,12 @@ namespace cuda
             double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
             cuDoubleComplex exp = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
 
-            for(int polarization = 0; polarization < polarizations; polarization++)
+            for(int polarization = 0; polarization < integration_polarizations; polarization++)
             {
                 integrationData(polarization, baseline, channel) = cuCmul(integrationData(polarization, baseline, channel), exp);
             }
             bool hasNaN = false;
-            for(int polarization = 0; polarization < polarizations; polarization++)
+            for(int polarization = 0; polarization < integration_polarizations; polarization++)
             {
                 cuDoubleComplex n = integrationData(polarization, baseline, channel);
                 hasNaN |= isnan(n.x) || isnan(n.y);
@@ -135,11 +135,11 @@ namespace cuda
 
             if(!hasNaN)
             {
-                for(int polarization = 0; polarization < polarizations; ++polarization)
-                {
-                    atomicAdd(&avgData(md_baseline, polarization).x, integrationData(polarization, baseline, channel).x);
-                    atomicAdd(&avgData(md_baseline, polarization).y, integrationData(polarization, baseline, channel).y);
-                }
+                // XX + YY
+                atomicAdd(&avgData(md_baseline, 0).x, integrationData(0, baseline, channel).x);
+                atomicAdd(&avgData(md_baseline, 0).y, integrationData(0, baseline, channel).y);
+                atomicAdd(&avgData(md_baseline, 0).x, integrationData(integration_polarizations - 1, baseline, channel).x);
+                atomicAdd(&avgData(md_baseline, 0).y, integrationData(integration_polarizations - 1, baseline, channel).y);
             }
         }
     }

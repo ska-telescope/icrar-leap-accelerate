@@ -111,8 +111,8 @@ TEST_F(CalibrationTests, TestAA3ClearCudaCalibration)
 {
     TestAA3ClearCalibration(ComputeImplementationToString(ComputeImplementation::cuda),
     {
-        { 0.0031753870255758166, 0.049746623893558939 },
-        { -0.023484514309303432, 0.15345042701215036 }
+        { 0.0031753870255758166, 0.049623509161058815 },
+        { -0.023547715680594751, 0.1535990459579227 }
     });
 }
 #endif // CUDA_ENABLED
