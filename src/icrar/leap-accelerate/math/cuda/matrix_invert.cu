@@ -69,10 +69,10 @@ namespace cuda
         size_t m = d_A.GetRows();
         size_t n = d_A.GetCols();
         size_t k = std::min(m, n);
-        if(m <= n)
+        if(m < n)
         {
             std::stringstream ss;
-            ss << "matrix inverse (" << m << "," << n << ") " << "m<=n not supported";
+            ss << "matrix inverse (" << m << "," << n << ") " << "m<n not supported";
             throw invalid_argument_exception(ss.str(), "d_A", __FILE__, __LINE__);
         }
 

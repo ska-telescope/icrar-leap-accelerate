@@ -140,14 +140,15 @@ namespace icrar
 
             auto m1 = Eigen::MatrixXd(M, N);
             m1 <<
-            1, 2, 3,
-            4, 5, 6,
-            7, 8, 9;
+            3, 0, 2,
+            2, 0, -2,
+            0, 1, 1;
 
-            ASSERT_THROW(icrar::cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, m1, jobType), icrar::invalid_argument_exception);
-            //auto m1d = icrar::cuda::pseudo_inverse(m_cusolverDnContext, m1, jobType);
-            //ASSERT_MEQD(m1, m1 * m1d * m1, TOLERANCE);
-            //ASSERT_MEQD(Eigen::MatrixXd::Identity(3,3), m1 * m1d, TOLERANCE);
+            //ASSERT_THROW(icrar::cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, m1, jobType), icrar::invalid_argument_exception);
+            auto m1d = icrar::cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, m1, jobType);
+            ASSERT_MEQD(m1, m1 * m1d * m1, TOLERANCE);
+            ASSERT_MEQD(Eigen::MatrixXd::Identity(3,3), m1d * m1, TOLERANCE);
+            ASSERT_MEQD(Eigen::MatrixXd::Identity(3,3), m1 * m1d, TOLERANCE);
         }
 
         void TestPseudoInverse32(cuda::JobType jobType)
@@ -223,7 +224,7 @@ namespace icrar
             // Tests whether cuda SVD on ASKAP gives consistant results
 
             std::string filename = std::string(TEST_DATA_DIR) + "/askap/askap-SS-1100.ms";
-            auto ms = icrar::MeasurementSet(filename, boost::none, true);
+            auto ms = icrar::MeasurementSet(filename, boost::none, false);
             auto msmc = ms.GetMSMainColumns();
 
             auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1); //TODO(calgray): assuming epoch indices are sorted
@@ -231,7 +232,7 @@ namespace icrar
             casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
             Eigen::MatrixXd A;
             Eigen::MatrixXi I;
-            std::tie(A, I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), ms.GetFilteredBaselines(0.0), boost::none);
+            std::tie(A, I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), ms.GetFilteredBaselines(0.0), 0, true);
 
             Eigen::MatrixXd Ad = icrar::cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, A, cuda::JobType::S);
             
@@ -243,7 +244,7 @@ namespace icrar
         void TestPseudoInverseAskap()
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/askap/askap-SS-1100.ms";
-            auto ms = icrar::MeasurementSet(filename, boost::none, true);
+            auto ms = icrar::MeasurementSet(filename, boost::none, false);
             auto msmc = ms.GetMSMainColumns();
 
             auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1);
@@ -251,7 +252,7 @@ namespace icrar
             casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
             Eigen::MatrixXd A;
             Eigen::MatrixXi I;
-            std::tie(A, I) = cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), ms.GetFilteredBaselines(0.0), boost::none);
+            std::tie(A, I) = cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), ms.GetFilteredBaselines(0.0), true, 0);
 
             Eigen::MatrixXd Ad = icrar::cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, A, cuda::JobType::S);
 

@@ -26,6 +26,7 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/memory/ioutils.h>
+#include <icrar/leap-accelerate/common/Range.h>
 
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
@@ -36,12 +37,12 @@
 
 namespace icrar
 {
-    CudaComputeOptions::CudaComputeOptions(const ComputeOptionsDTO& computeOptions, const icrar::MeasurementSet& ms)
+    CudaComputeOptions::CudaComputeOptions(const ComputeOptionsDTO& computeOptions, const icrar::MeasurementSet& ms, const Range& solutionRange)
     {
         LOG(info) << "Determining cuda compute options";
 
         size_t free = GetAvailableCudaPhysicalMemory();
-        size_t VisSize = ms.GetNumPols() * ms.GetNumBaselines() * ms.GetNumChannels() * sizeof(std::complex<double>);
+        size_t VisSize = solutionRange.GetInterval() * ms.GetNumPols() * ms.GetNumBaselines() * ms.GetNumChannels() * sizeof(std::complex<double>);
         size_t ASize = ms.GetNumStations() * ms.GetNumBaselines() * sizeof(double);
         double safetyFactor = 1.3;
 

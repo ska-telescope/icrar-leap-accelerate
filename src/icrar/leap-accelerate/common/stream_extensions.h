@@ -41,23 +41,21 @@ template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::set<T>& v)
 {
     os << "{"; 
-    for (auto it : v)
+    for (const auto& e : v)
     {
-        os << it; 
-        if (it != v->rbegin())
-            os << ", "; 
+        os << e << ", "; 
     } 
     os << "}\n"; 
     return os;
 }
 
 template <typename T, typename S> 
-std::ostream& operator<<(std::ostream& os, const std::map<T, S>& v) 
+std::ostream& operator<<(std::ostream& os, const std::map<T, S>& m) 
 { 
-    for (auto it : v)
+    for (const auto& kv : m)
     {
-        os << it.first << " : "
-           << it.second << "\n";
+        os << kv.first << " : "
+           << kv.second << "\n";
     }
     return os; 
 }

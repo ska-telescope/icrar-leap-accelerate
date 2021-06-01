@@ -97,7 +97,7 @@ function(configure_cuda_warnings TARGET_NAME)
     # 2929 annotation is ignored on a function that is explicitly defaulted
     target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=3057,2929">)
   endif()
-  if(CUDA_VERSION_STRING VERSION_GREATER_EQUAL "11.0")
+  if(CUDA_VERSION_STRING VERSION_GREATER_EQUAL "11.1")
     # 20012 annotation is ignored on a function that is explicitly defaulted
     target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=20012">)
   endif()

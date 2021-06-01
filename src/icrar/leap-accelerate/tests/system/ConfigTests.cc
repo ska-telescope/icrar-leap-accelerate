@@ -42,6 +42,10 @@
 
 using namespace icrar;
 
+/**
+ * @brief Contains system tests 
+ * 
+ */
 class ConfigTests : public testing::Test
 {
     const std::string m_mwaDirections = "[\

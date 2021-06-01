@@ -36,7 +36,7 @@ if(DEFINED ENV{CMAKE_RUN_CLANG_TIDY})
 endif()
 
 if(TRACE)
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DTRACE")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DTRACE")
 endif()
 
 # Pre-compile headers are only supported in cmake >= 3.16
