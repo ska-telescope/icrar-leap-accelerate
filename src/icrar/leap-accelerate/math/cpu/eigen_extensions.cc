@@ -32,9 +32,9 @@ namespace icrar
             return a.arg();
         }
 
-        bool near(const Eigen::Ref<const Eigen::MatrixXd> left, const Eigen::Ref<const Eigen::MatrixXd> right, double tolerance)
+        bool near(const Eigen::Ref<const Eigen::MatrixXd>& left, const Eigen::Ref<const Eigen::MatrixXd>& right, double tolerance)
         {
             return left.near(right, tolerance);
         }
-    }
-}
+    } // namespace cpu
+} // namespace icrar

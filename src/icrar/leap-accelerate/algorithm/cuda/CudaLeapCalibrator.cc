@@ -74,7 +74,7 @@ namespace cuda
     : m_cublasContext(nullptr)
     , m_cusolverDnContext(nullptr)
     {
-        LOG(warning) << "creating CudaLeapCalibrator";
+        LOG(info) << "creating CudaLeapCalibrator";
         int deviceCount = 0;
         checkCudaErrors(cudaGetDeviceCount(&deviceCount));
         if(deviceCount < 1)
@@ -85,9 +85,9 @@ namespace cuda
         cudaError_t smError = cudaGetLastError();
         if(smError != cudaError_t::cudaSuccess)
         {   
-            CUdevice device;
+            CUdevice device = 0;
             checkCudaErrors(cuDeviceGet(&device, 0));
-            int major, minor;
+            int major = 0, minor = 0;
             checkCudaErrors(cuDeviceGetAttribute(&major, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, device));
             checkCudaErrors(cuDeviceGetAttribute(&minor, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, device));
             LOG(warning) << "CUDA error: No suitable kernel found, hardware sm compatibility is sm_" << major << minor;
@@ -100,8 +100,7 @@ namespace cuda
 
     CudaLeapCalibrator::~CudaLeapCalibrator()
     {
-        LOG(warning) << "destroying CudaLeapCalibrator";
-        //checkCudaErrors(cudaGetLastError());
+        LOG(trace) << "destroying CudaLeapCalibrator";
         checkCudaErrors(cusolverDnDestroy(m_cusolverDnContext));
         checkCudaErrors(cublasDestroy(m_cublasContext));
 
@@ -119,7 +118,11 @@ namespace cuda
             const ComputeOptionsDTO& computeOptions)
     {
         checkCudaErrors(cudaGetLastError());
-        auto cudaComputeOptions = CudaComputeOptions(computeOptions, ms);
+
+        uint32_t timesteps = ms.GetNumTimesteps();
+        Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
+
+        auto cudaComputeOptions = CudaComputeOptions(computeOptions, ms, validatedSolutionInterval);
 
         LOG(info) << "Starting Calibration using cuda";
         LOG(info)
@@ -135,7 +138,7 @@ namespace cuda
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
-        << "timesteps: " << ms.GetNumTimesteps() << ", "
+        << "timesteps: " << timesteps << ", "
         << "use filesystem cache: " << cudaComputeOptions.isFileSystemCacheEnabled << ", "
         << "use intermediate cuda buffer: " << cudaComputeOptions.useIntermediateBuffer << ", "
         << "use cusolver: " << cudaComputeOptions.useCusolver;
@@ -144,8 +147,6 @@ namespace cuda
 
         auto output_calibrations = std::vector<cpu::Calibration>();
 
-        uint32_t timesteps = ms.GetNumTimesteps();
-        Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
         std::vector<double> epochs = ms.GetEpochs();
         
         profiling::timer metadata_read_timer;
@@ -186,8 +187,8 @@ namespace cuda
         auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
         LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
-        uint32_t solutions = boost::numeric_cast<uint32_t>(validatedSolutionInterval.GetSize());
-        constexpr unsigned int integrationNumber = 0;
+        auto solutions = boost::numeric_cast<uint32_t>(validatedSolutionInterval.GetSize());
+        constexpr uint32_t integrationNumber = 0;
         for(uint32_t solution = 0; solution < solutions; solution++)
         {
             profiling::timer solution_timer;
@@ -361,6 +362,7 @@ namespace cuda
         device_matrix<double>& deviceAd1)
     {
         // This matrix is not always m > n, compute on cpu until cuda supports this
+        LOG(info) << "Inverting PhaseMatrix A1 with cpu (" << hostA1.rows() << ":" << hostA1.cols() << ")";
         deviceA1 = device_matrix<double>(hostA1);
         hostAd1 = cpu::pseudo_inverse(hostA1);
         deviceAd1 = device_matrix<double>(hostAd1);

@@ -20,6 +20,8 @@
  * MA 02111 - 1307  USA
  */
 
+#ifdef CUDA_ENABLED
+
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/math/cuda/matrix_op.h>
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
@@ -29,15 +31,15 @@
 
 #include <gtest/gtest.h>
 
-#include <stdio.h>
 #include <array>
+#include <cstdio>
 
 namespace icrar
 {
     class CudaMatrixTests : public testing::Test
     {
         const double TOLERANCE = 0.0001;
-        cublasHandle_t m_cublasContext;
+        cublasHandle_t m_cublasContext = nullptr;
 
     public:
         void SetUp() override
@@ -206,3 +208,4 @@ namespace icrar
     TEST_F(CudaMatrixTests, TestMatrixMatrixMultiply32) { TestMatrixMatrixMultiply32<double>(); }
     TEST_F(CudaMatrixTests, TestMatrixVectorMultiply33) { TestMatrixVectorMultiply33<double>(); }
 } // namespace icrar
+#endif // CUDA_ENABLED

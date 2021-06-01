@@ -56,7 +56,7 @@ namespace cpu
         m_constants.channels = 0;
         m_constants.freq_start_hz = 0;
         m_constants.freq_inc_hz = 0;
-        assert(pms->spectralWindow().nrow() == 1); //TODO(calgray) Only supporting a single spectral window
+        //assert(pms->spectralWindow().nrow() == 1); //TODO(calgray) Only supporting a single spectral window
         if(pms->spectralWindow().nrow() > 0)
         {
             m_constants.channels = msc->spectralWindow().numChan().get(0);
@@ -104,9 +104,8 @@ namespace cpu
         }
 
         LOG(info) << "Calculating PhaseMatrix A";
-        //Eigen::Matrix<bool, 1, -1>::Zero(ms.GetNumBaselines())
         std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), filteredBaselines, m_constants.referenceAntenna, true);
-        //trace_matrix(m_A, "A");
+        trace_matrix(m_A, "A");
 
         if(computeInverse)
         {

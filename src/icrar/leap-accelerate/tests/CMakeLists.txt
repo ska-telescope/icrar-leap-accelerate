@@ -21,6 +21,7 @@ set(sources
 
   math/MathConversionTests.cc
   math/EigenExtensionsTests.cc
+  math/cuda/CudaMatrixTests.cc
   math/cuda/CudaMatrixEigenTests.cc
 
   ms/MSUtilsTests.cc
@@ -29,17 +30,10 @@ set(sources
   model/IntegrationTests.cc
   
   algorithm/PhaseRotateTests.cc
+  
+  system/CalibrationTests.cc
   system/ConfigTests.cc
 )
-
-set(cuda_sources
-  math/cuda/CudaMatrixTests.cu
-)
-
-# Only CUDA 10+ is capable of compiling gtest
-if(CUDA_VERSION_MAJOR GREATER 9)
-  list(APPEND sources ${cuda_sources})
-endif()
 
 add_executable(${TEST_TARGET_NAME}
   ${sources}
@@ -62,7 +56,7 @@ endif()
 # CUDA Options
 if(CUDA_ENABLED)
   if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
-    message("generating clang-tidy cuda compatible configuration")
+    message(STATUS "generating clang-tidy cuda compatible configuration")
     configure_clang_cuda_compiler(${TEST_TARGET_NAME})
   else()
     configure_nvcc_cuda_compiler(${TEST_TARGET_NAME})
@@ -70,12 +64,8 @@ if(CUDA_ENABLED)
   endif()
 endif()
 
+target_compile_definitions(${TEST_TARGET_NAME} PRIVATE TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/testdata")
 target_link_libraries(${TEST_TARGET_NAME} LeapAccelerate gtest)
-
-set(test_data
-  testdata/TestSolutionIntervalConfig.json
-  testdata/TestSolutionIntervalOutput.json
-)
 
 add_custom_target(${TEST_TARGET_NAME}.Data ALL
   COMMAND ${CMAKE_COMMAND}

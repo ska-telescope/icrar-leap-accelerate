@@ -213,7 +213,8 @@ namespace cuda
         const Eigen::Matrix3d& GetDD() const { return m_directionBuffer->GetDD(); }
         
         const ConstantBuffer& GetConstantBuffer() const { return *m_constantBuffer; }
-        const device_matrix<std::complex<double>>& GetAvgData() { return m_directionBuffer->GetAvgData(); };
+        const device_matrix<std::complex<double>>& GetAvgData() const { return m_directionBuffer->GetAvgData(); };
+        device_matrix<std::complex<double>>& GetAvgData() { return m_directionBuffer->GetAvgData(); };
 
         void SetAvgData(int v);
 

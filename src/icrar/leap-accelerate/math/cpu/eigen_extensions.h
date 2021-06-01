@@ -35,28 +35,64 @@
 #include <functional>
 #include <type_traits>
 
+namespace Eigen
+{
+    using MatrixXb = Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic>;
+    using VectorXb = Eigen::Vector<bool, Eigen::Dynamic>;
+}
+
 namespace icrar
 {
     namespace cpu
     {
         /**
-         * @brief Selects a range of elements from matrix row indices. Negative indexes
-         * select from the bottom of the matrix with -1 representing the last row.
+         * @brief Selects a range of elements from matrix row indices. 
+         * Negative indexes select from the bottom of the matrix with 
+         * -1 representing the bottom row.
          * 
          * @tparam T 
          * @param matrix the referenced matrix to select from
          * @param rowIndices a range of row indices to select
          * @param column a valid column index 
          */
-        template<typename Matrix>
-        auto wrapped_row_select(const Eigen::MatrixBase<Matrix>& matrix, const Eigen::VectorXi& rowIndices)
+        template<typename Matrix, typename Scalar>
+        Eigen::IndexedView<Matrix, Eigen::Vector<Scalar, Eigen::Dynamic>, Eigen::internal::AllRange<-1>>
+        wrapped_row_select(
+            Eigen::MatrixBase<Matrix>& matrix,
+            const Eigen::Vector<Scalar, Eigen::Dynamic>& rowIndices)
         {
-            return matrix.wrapped_row_select(rowIndices);
+            Eigen::Vector<Scalar, Eigen::Dynamic> correctedIndices = rowIndices;
+            for(Scalar& i : correctedIndices)
+            {
+                if(i < -matrix.rows() || i >= matrix.rows())
+                {
+                    throw std::runtime_error("index out of range");
+                }
+                if(i < 0)
+                {
+                    i = boost::numeric_cast<int>(matrix.rows() + i);
+                }
+            }
+            return matrix(correctedIndices, Eigen::all);
         }
-        template<typename Matrix>
-        auto wrapped_row_select(Eigen::MatrixBase<Matrix>& matrix, const Eigen::VectorXi& rowIndices)
+
+        /**
+         * @brief Computes the element-wise standard deviation
+         * 
+         * @tparam T 
+         * @param matrix 
+         * @return double 
+         */
+        template<typename T>
+        double standard_deviation(const Eigen::MatrixBase<T>& matrix)
         {
-            return matrix.wrapped_row_select(rowIndices);
+            double mean = matrix.sum() / (double)matrix.size();
+            double sumOfSquareDifferences = 0;
+            for(const double& e : matrix.reshaped())
+            {
+                sumOfSquareDifferences += std::pow(e - mean, 2);
+            }
+            return std::sqrt(sumOfSquareDifferences / (double)matrix.size());
         }
 
         /**
@@ -75,6 +111,6 @@ namespace icrar
          * @param right 
          * @param tolerance 
          */
-        bool near(const Eigen::Ref<const Eigen::MatrixXd> left, const Eigen::Ref<const Eigen::MatrixXd> right, double tolerance);
-    }
+        bool near(const Eigen::Ref<const Eigen::MatrixXd>& left, const Eigen::Ref<const Eigen::MatrixXd>& right, double tolerance);
+    } // namespace cpu 
 } // namespace icrar

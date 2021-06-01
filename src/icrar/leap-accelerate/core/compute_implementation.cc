@@ -21,13 +21,35 @@
  */
 
 #include <icrar/leap-accelerate/core/compute_implementation.h>
+#include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 
 namespace icrar
 {
-    /**
-     * @return true if value was converted succesfully, false otherwise
-     */
+    std::string ComputeImplementationToString(ComputeImplementation value)
+    {
+        switch(value)
+        {
+            case ComputeImplementation::cpu:
+                return "cpu";
+            case ComputeImplementation::cuda:
+                return "cuda";
+            default:
+                throw invalid_argument_exception("ComputeImplementation", "value", __FILE__, __LINE__);
+                return "";
+        }
+    }
+
+    ComputeImplementation ParseComputeImplementation(const std::string& value)
+    {
+        ComputeImplementation e;
+        if(!TryParseComputeImplementation(value, e))
+        {
+            throw invalid_argument_exception(value, "value", __FILE__, __LINE__);
+        }
+        return e;
+    }
+
     bool TryParseComputeImplementation(const std::string& value, ComputeImplementation& out)
     {
         if(value == "casa")

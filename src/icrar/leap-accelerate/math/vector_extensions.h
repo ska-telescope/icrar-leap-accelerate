@@ -23,7 +23,7 @@
 #pragma once
 
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
-#include <vector>
+#include <numeric>
 #include <iostream>
 #include <vector>
 #include <functional>
@@ -48,7 +48,8 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
 namespace icrar
 {
     /**
-     * @brief returns a linear sequence of values from start at step
+     * @brief returns a linear sequence of values from start at step sized
+     * intervals to the stop value inclusive
      * 
      * @tparam IntType 
      * @param start 
@@ -103,15 +104,16 @@ namespace icrar
     }
 
     /**
-     * @brief Returns of true if all vector elements of @param lhs are within the threshold difference to @param rhs 
+     * @brief Returns true if all vector elements of @param lhs are within the
+     * tolerance threshold to @param rhs 
      * 
-     * @tparam T 
-     * @param lhs 
-     * @param rhs 
-     * @param threshold  
+     * @tparam T numeric type
+     * @param lhs left hand side
+     * @param rhs  right hand side
+     * @param tolerance tolerance threshold
      */
     template<typename T>
-    bool isApprox(const std::vector<T>& lhs, const std::vector<T>& rhs, T threshold)
+    bool isApprox(const std::vector<T>& lhs, const std::vector<T>& rhs, T tolerance)
     {
         if(lhs.size() != rhs.size())
         {
@@ -119,7 +121,7 @@ namespace icrar
         }
         for(size_t i = 0; i < lhs.size(); ++i)
         {
-            if(std::abs(lhs[i] - rhs[i]) >= threshold)
+            if(std::abs(lhs[i] - rhs[i]) >= tolerance)
             {
                 return false;
             }
