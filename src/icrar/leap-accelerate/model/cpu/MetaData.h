@@ -124,7 +124,7 @@ namespace cpu
 
         SphericalDirection m_direction; // calibration direction, late initialized
         Eigen::Matrix3d m_dd; // direction dependant matrix, late initialized
-        Eigen::MatrixXcd m_avgData; // matrix of size (baselines, polarizations), late initialized
+        Eigen::VectorXcd m_avgData; // matrix of size (baselines), late initialized
     
     public:
         
@@ -226,8 +226,8 @@ namespace cpu
          */
         Eigen::Matrix3d GenerateDDMatrix(const SphericalDirection& direction) const;
 
-        const Eigen::MatrixXcd& GetAvgData() const { return m_avgData; }
-        Eigen::MatrixXcd& GetAvgData() { return m_avgData; }
+        const Eigen::VectorXcd& GetAvgData() const { return m_avgData; }
+        Eigen::VectorXcd& GetAvgData() { return m_avgData; }
 
         bool operator==(const MetaData& rhs) const;
         bool operator!=(const MetaData& rhs) const { return !(*this == rhs); }
