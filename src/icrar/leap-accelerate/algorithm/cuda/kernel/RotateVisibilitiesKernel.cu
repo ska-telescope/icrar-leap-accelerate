@@ -92,6 +92,7 @@ namespace cuda
             UVWMap,
             integrationDataMap,
             avgDataMap);
+        checkCudaErrors(cudaGetLastError());
     }
 
     __global__ void g_RotateVisibilities(
