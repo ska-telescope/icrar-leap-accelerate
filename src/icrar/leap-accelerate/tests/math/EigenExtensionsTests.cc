@@ -31,7 +31,8 @@ namespace icrar
     {
         double THRESHOLD = 0.00001;
     public:
-        void TestVectorRangeSelect()
+        template<typename Index>
+        void TestWrappedRowSelect()
         {
             auto m = Eigen::MatrixXd(3,3);
             m <<
@@ -39,36 +40,28 @@ namespace icrar
             3, 4, 5,
             6, 7, 8;
 
-            auto r = Eigen::VectorXi(2);
-            r << 0, 2;
+            auto r = Eigen::Vector<Index, Eigen::Dynamic>(6);
+            r << -3, -2, -1, 0, 1, 2;
 
-            auto vi = cpu::wrapped_row_select(m, r);
-            Eigen::MatrixXd v = vi.col(0);
-
-            auto expected = Eigen::MatrixXd(2,1);
+            Eigen::MatrixXd v = cpu::WrappedRowSelect(m, r);
+            auto expected = Eigen::MatrixXd(6,3);
             expected <<
-            0,
-            6;
-            ASSERT_MEQD(expected, v, THRESHOLD);
-        }
-
-        void TestMatrixRangeSelect()
-        {
-            auto m = Eigen::MatrixXd(3,3);
-            m <<
+            0, 1, 2,
+            3, 4, 5,
+            6, 7, 8,
             0, 1, 2,
             3, 4, 5,
             6, 7, 8;
-
-            auto r = Eigen::VectorXi(2);
-            r << 0, 2;
-
-            Eigen::MatrixXd v = cpu::wrapped_row_select(m, r);
-            auto expected = Eigen::MatrixXd(2,3);
-            expected <<
-            0, 1, 2,
-            6, 7, 8;
             ASSERT_MEQD(expected, v, THRESHOLD);
+
+            // out of bounds
+            auto rl = Eigen::Vector<Index, Eigen::Dynamic>(2);
+            rl << -3, -4;
+            ASSERT_THROW(cpu::WrappedRowSelect(m, rl), std::runtime_error);
+
+            auto rh = Eigen::Vector<Index, Eigen::Dynamic>(2);
+            rh << 2, 3;
+            ASSERT_THROW(cpu::WrappedRowSelect(m, rh), std::runtime_error);
         }
 
         void TestArg()
@@ -89,7 +82,7 @@ namespace icrar
         }
     };
 
-    TEST_F(EigenExtensionsTests, TestVectorRangeSelect) { TestVectorRangeSelect(); }
-    TEST_F(EigenExtensionsTests, TestMatrixRangeSelect) { TestMatrixRangeSelect(); }
+    TEST_F(EigenExtensionsTests, TestWrappedRowSelect32) { TestWrappedRowSelect<int32_t>(); }
+    TEST_F(EigenExtensionsTests, TestWrappedRowSelect64) { TestWrappedRowSelect<Eigen::Index>(); }
     TEST_F(EigenExtensionsTests, TestArg) { TestArg(); }
 } // namespace icrar

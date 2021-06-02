@@ -35,6 +35,12 @@
 #include <functional>
 #include <type_traits>
 
+namespace Eigen
+{
+    using MatrixXb = Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic>;
+    using VectorXb = Eigen::Vector<bool, Eigen::Dynamic>;
+}
+
 namespace icrar
 {
     namespace cpu
@@ -75,6 +81,6 @@ namespace icrar
          * @param right 
          * @param tolerance 
          */
-        bool near(const Eigen::Ref<const Eigen::MatrixXd> left, const Eigen::Ref<const Eigen::MatrixXd> right, double tolerance);
-    }
+        bool near(const Eigen::Ref<const Eigen::MatrixXd>& left, const Eigen::Ref<const Eigen::MatrixXd>& right, double tolerance);
+    } // namespace cpu 
 } // namespace icrar

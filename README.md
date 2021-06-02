@@ -15,6 +15,14 @@ See the [online documentation](https://developer.skatelescope.org/projects/icrar
 
 ## Installation
 
+The latest leap release is published as a debian a docker image available at the following location:
+
+`nexus.engageska-portugal.pt/ska-docker/icrar-leap-accelerate:latest`
+
+This image can be run locally using the following command:
+
+`docker run -it --rm nexus.engageska-portugal.pt/ska-docker/icrar-leap-accelerate:latest LeapAccelerateCLI --help`
+
 See the [docker](docs/src/md/Docker.md) documentation for instructions about how to create a docker image.
 
 See the [build](docs/src/md/Build.md) documentation for instructions on platform specific compilation.

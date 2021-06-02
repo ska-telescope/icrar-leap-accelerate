@@ -2,6 +2,7 @@
 # -cppcoreguidelines-avoid-magic-numbers does not ignore test constants
 # -cppcoreguidelines-avoid-non-const-global-variables gtest 1.8.1 does not suppress this
 # -cppcoreguidelines-owning-memory is a GTEST limitation
+# -cppcoreguidelines-avoid-goto is a GTEST limitation
 # -google-build-using-namespace not ideal with modern namespaces like boost::literals
 # -google-runtime-references references in interfaces are more concise than raw pointers
 # -modernize-use-trailing-return-type is not commonly upheld
@@ -33,6 +34,7 @@ WarningsAsErrors:
     -cppcoreguidelines-avoid-magic-numbers,
     -cppcoreguidelines-avoid-non-const-global-variables,
     -cppcoreguidelines-owning-memory,
+    -cppcoreguidelines-avoid-goto,
     -google-build-using-namespace,
     -google-runtime-references,
     -modernize-use-equals-default,

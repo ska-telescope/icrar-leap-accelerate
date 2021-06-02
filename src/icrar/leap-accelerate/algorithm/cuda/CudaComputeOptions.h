@@ -35,6 +35,8 @@
 
 namespace icrar
 {
+    class Range;
+    
     /**
      * @brief Validates and determines the best compute features for calibration depending on measurement set data and hardware
      * configuration.
@@ -52,7 +54,7 @@ namespace icrar
          * @param computeOptions 
          * @param ms 
          */
-        CudaComputeOptions(const ComputeOptionsDTO& computeOptions, const icrar::MeasurementSet& ms);
+        CudaComputeOptions(const ComputeOptionsDTO& computeOptions, const icrar::MeasurementSet& ms, const Range& solutionRange);
     };
 } // namespace icrar
 

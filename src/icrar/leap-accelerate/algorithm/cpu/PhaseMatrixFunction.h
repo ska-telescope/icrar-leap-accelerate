@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 #include <Eigen/Core>
 
 #include <boost/optional.hpp>
@@ -49,7 +50,7 @@ namespace cpu
     std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
-        const Eigen::Matrix<bool, Eigen::Dynamic, 1>& fg,
+        const Eigen::VectorXb& fg,
         uint32_t refAnt,
         bool allBaselines);
 }

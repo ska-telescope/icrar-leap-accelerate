@@ -201,7 +201,7 @@ namespace icrar
         else
         {
             LOG(warning) << "baseline flags not found";
-            return Eigen::Matrix<bool, -1, 1>::Zero(nBaselines);
+            return Eigen::VectorXb::Zero(nBaselines);
         }
     }
 
@@ -211,10 +211,10 @@ namespace icrar
         return boost::numeric_cast<uint32_t>(std::count(flaggedBaselines.cbegin(), flaggedBaselines.cend(), true));
     }
 	
-	Eigen::Matrix<bool, -1, 1> MeasurementSet::GetShortBaselines(double minimumBaselineThreshold) const
+	Eigen::VectorXb MeasurementSet::GetShortBaselines(double minimumBaselineThreshold) const
     {
         auto nBaselines = GetNumBaselines();
-        Eigen::Matrix<bool, -1, 1> baselineFlags = Eigen::Matrix<bool, -1, 1>::Zero(nBaselines); 
+        Eigen::VectorXb baselineFlags = Eigen::VectorXb::Zero(nBaselines); 
 
         // Filter short baselines
         if(minimumBaselineThreshold > 0.0)
@@ -222,8 +222,8 @@ namespace icrar
             auto firstChannelSlicer = casacore::Slicer(casacore::Slice(0, 1));
             casacore::Matrix<double> uv = m_msmc->uvw().getColumn(firstChannelSlicer);
 
-            // TODO(calgray): uv is of size baselines * timesteps, consider throwing a warning if flags change
-            // in later timesteps
+            // TODO(calgray): uv is of size baselines * timesteps, consider throwing a warning if
+            // short baselines change in later timesteps
             for(uint32_t i = 0; i < nBaselines; i++)
             {
                 if(std::sqrt(uv(i, 0) * uv(i, 0) + uv(i, 1) * uv(i, 1)) < minimumBaselineThreshold)
@@ -242,9 +242,9 @@ namespace icrar
         return boost::numeric_cast<uint32_t>(std::count(shortBaselines.cbegin(), shortBaselines.cend(), true));
     }
 
-    Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFilteredBaselines(double minimumBaselineThreshold) const
+    Eigen::VectorXb MeasurementSet::GetFilteredBaselines(double minimumBaselineThreshold) const
     {
-        Eigen::Matrix<bool, -1, 1> result = GetFlaggedBaselines() || GetShortBaselines(minimumBaselineThreshold);
+        Eigen::VectorXb result = GetFlaggedBaselines() || GetShortBaselines(minimumBaselineThreshold);
         return result;
     }
 
@@ -308,16 +308,9 @@ namespace icrar
 
     std::set<int32_t> MeasurementSet::GetFlaggedAntennas() const
     {
-        //Eigen::VectorXi a1 = ToVector(m_msmc->antenna1().getColumn());
-        //Eigen::VectorXi a2 = ToVector(m_msmc->antenna2().getColumn());
-        Eigen::Matrix<bool, -1, 1> fg = GetFilteredBaselines();
-        
+        auto fg = GetFilteredBaselines();        
         int32_t totalStations = GetTotalAntennas();
-        //int32_t blStations = std::max(a1.maxCoeff(), a2.maxCoeff()) + 1; 
-        
-        // std::cout << "totalStations " << totalStations << std::endl;
-        // std::cout << "blStations " << blStations << std::endl;
-        
+
         // start with a set of all antennas flagged and unflag the ones 
         // that contain unflagged baseline data
         Eigen::VectorXi antennas = Eigen::VectorXi::Ones(totalStations);

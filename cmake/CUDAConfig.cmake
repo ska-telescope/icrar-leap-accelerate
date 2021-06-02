@@ -82,7 +82,7 @@ function(configure_clang_cuda_compiler TARGET_NAME)
   target_compile_definitions(${TARGET_NAME} PUBLIC CUDA_ENABLED)
   target_compile_features(${TARGET_NAME} PUBLIC cxx_std_14)
   set_target_properties(${TARGET_NAME} PROPERTIES CUDA_STANDARD 14)
-  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--cuda-gpu-arch=sm_60>)
+  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--cuda-gpu-arch=sm_80>)
 endfunction()
 
 # Configure Cuda Warning Options
@@ -97,7 +97,7 @@ function(configure_cuda_warnings TARGET_NAME)
     # 2929 annotation is ignored on a function that is explicitly defaulted
     target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=3057,2929">)
   endif()
-  if(CUDA_VERSION_STRING VERSION_GREATER_EQUAL "11.0")
+  if(CUDA_VERSION_STRING VERSION_GREATER_EQUAL "11.1")
     # 20012 annotation is ignored on a function that is explicitly defaulted
     target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=20012">)
   endif()

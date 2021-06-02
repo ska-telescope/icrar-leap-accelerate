@@ -66,17 +66,11 @@ namespace cuda
         int m_integrationNumber;
         device_tensor3<std::complex<double>> m_visibilities; //[polarizations][baselines][channels]
 
-        union
-        {
-            std::array<size_t, 4> m_parameters;
-            struct
-            {
-                size_t index;
-                size_t x;
-                size_t channels;
-                size_t baselines;
-            };
-        };
+        size_t index;
+        size_t x;
+        size_t channels;
+        size_t baselines;
+        
     public:
         /**
          * @brief Construct a new Device Integration object where visibilities is a zero tensor of @shape 

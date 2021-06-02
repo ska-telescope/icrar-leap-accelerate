@@ -37,7 +37,7 @@ namespace cpu
     std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
-        const Eigen::Matrix<bool, Eigen::Dynamic, 1>& fg,
+        const Eigen::VectorXb& fg,
         uint32_t refAnt,
         bool allBaselines)
     {
@@ -46,9 +46,9 @@ namespace cpu
             throw invalid_argument_exception("a1 and a2 must not be empty", "a", __FILE__, __LINE__);
         }
 
-        if(a1.size() != a2.size() && a1.size() != fg.size())
+        if(a1.size() != a2.size() || a1.size() != fg.size())
         {
-            throw invalid_argument_exception("a1 and a2 must be equal size", "a", __FILE__, __LINE__);
+            throw invalid_argument_exception("a1, a2, and fg must be equal size", "a", __FILE__, __LINE__);
         }
 
         const uint32_t totalAntennas = std::max(a1.maxCoeff(), a2.maxCoeff()) + 1;
