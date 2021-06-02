@@ -272,7 +272,6 @@ namespace cuda
         bool useCusolver)
     {
         const Eigen::MatrixXd& hostA = metadata.GetA();
-        Eigen::MatrixXd& hostAd = const_cast<Eigen::MatrixXd&>(metadata.GetAd());
 
         if(hostA.rows() <= hostA.cols())
         {
@@ -294,25 +293,25 @@ namespace cuda
             {
                 // Load cache into hostAd then deviceAd,
                 // or load hostA into deviceA, compute deviceAd then load into hostAd
-                ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
-                    matrix_hash<Eigen::MatrixXd>()(hostA),
-                    hostA, hostAd,
+                metadata.SetAd(ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
+                    matrix_hash<Eigen::MatrixXd>(hostA),
+                    hostA,
                     "A.hash", "Ad.cache",
-                    invertA);
+                    invertA));
 
-                deviceAd = device_matrix<double>(hostAd);
+                deviceAd = device_matrix<double>(metadata.GetAd());
                 deviceA = device_matrix<double>(hostA);
-                if(IsDegenerate(hostAd * hostA, 1e-5))
+                if(IsDegenerate(metadata.GetAd() * hostA, 1e-5))
                 {
                     LOG(warning) <<  "Ad is degenerate";
                 }
             }
             else
             {
-                hostAd = invertA(hostA);
+                metadata.SetAd(invertA(hostA));
                 deviceA = device_matrix<double>(hostA);
 
-                if(!((hostAd * hostA).eval()).isDiagonal(1e-10))
+                if(!((metadata.GetAd() * hostA).eval()).isDiagonal(1e-10))
                 {
                     throw icrar::exception("Ad*A is non-diagonal", __FILE__, __LINE__);
                 }
@@ -330,27 +329,24 @@ namespace cuda
 
             if(isFileSystemCacheEnabled)
             {
-                ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
-                    matrix_hash<Eigen::MatrixXd>()(hostA),
-                    hostA, hostAd,
-                    "A.hash", "Ad.cache",
-                    invertA);
+                metadata.SetAd(
+                    ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
+                        matrix_hash<Eigen::MatrixXd>(hostA), hostA,
+                        "A.hash", "Ad.cache",
+                        invertA));
             }
             else
             {
-                hostAd = invertA(hostA);
+                metadata.SetAd(invertA(hostA));
             }
 
-            deviceAd = device_matrix<double>(hostAd);
+            deviceAd = device_matrix<double>(metadata.GetAd());
             deviceA = device_matrix<double>(hostA);
-            if(IsDegenerate(hostAd * hostA, 1e-5))
+            if(IsDegenerate(metadata.GetAd() * hostA, 1e-5))
             {
                 LOG(warning) << "Ad is degenerate";
             }
         }
-        // TODO(calgray): hack
-        cudaHostRegister(hostAd.data(), hostAd.size() * sizeof(decltype(*hostAd.data())), cudaHostRegisterPortable);
-        checkCudaErrors(cudaGetLastError());
     }
 
     void CudaLeapCalibrator::CalculateAd1(

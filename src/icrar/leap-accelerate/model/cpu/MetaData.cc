@@ -132,7 +132,7 @@ namespace cpu
         {
             //cache Ad with A hash
             ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
-                matrix_hash<Eigen::MatrixXd>()(m_A),
+                matrix_hash<Eigen::MatrixXd>(m_A),
                 m_A, m_Ad,
                 "A.hash", "Ad.cache",
                 invertA);
