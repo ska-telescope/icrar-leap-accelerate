@@ -32,29 +32,37 @@
  * @param rowIndices 
  * @return auto 
  */
-template<typename OtherDerived>
-inline auto wrapped_row_select(const MatrixBase<OtherDerived>& rowIndices) const
+template<typename Scalar>
+inline auto wrapped_row_select(const Matrix<Scalar, Eigen::Dynamic, 1>& rowIndices)
 {
-    OtherDerived correctedIndices = rowIndices;
-    for(int& i : correctedIndices)
+    Matrix<Scalar, Eigen::Dynamic, 1> correctedIndices = rowIndices;
+    for(Scalar& index : correctedIndices)
     {
-        if(i < 0)
+        if(index < -rows() || index >= rows())
         {
-            i = static_cast<int>(i % rows());
+            throw std::runtime_error("index out of range");
+        }
+        if(index < 0)
+        {
+            index = rows() + index;
         }
     }
     return this->operator()(correctedIndices, Eigen::all);
 }
 
-template<typename OtherDerived>
-inline auto wrapped_row_select(MatrixBase<OtherDerived>& rowIndices)
+template<typename Scalar>
+inline auto wrapped_row_select(const Matrix<Scalar, Eigen::Dynamic, 1>& rowIndices) const
 {
-    OtherDerived correctedIndices = rowIndices;
-    for(int& i : correctedIndices)
+    Matrix<Scalar, Eigen::Dynamic, 1> correctedIndices = rowIndices;
+    for(Scalar& index : correctedIndices)
     {
-        if(i < 0)
+        if(index < -rows() || index >= rows())
         {
-            i = static_cast<int>(i % rows());
+            throw std::runtime_error("index out of range");
+        }
+        if(index < 0)
+        {
+            index = rows() + index;
         }
     }
     return this->operator()(correctedIndices, Eigen::all);
@@ -91,6 +99,6 @@ inline bool near(const MatrixBase<OtherDerived>& other, double tolerance) const
 }
 
 /**
- * @brief Computes a matrix of the angle/arg from the respective complex values
+ * @brief Computes a matrix of the component-wise angles/args from the respective complex values
  */
 inline auto arg() const { return this->unaryExpr([](Scalar v){ return std::arg(v); }); }

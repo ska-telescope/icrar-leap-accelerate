@@ -54,15 +54,30 @@ namespace icrar
          * @param rowIndices a range of row indices to select
          * @param column a valid column index 
          */
-        template<typename Matrix>
-        auto wrapped_row_select(const Eigen::MatrixBase<Matrix>& matrix, const Eigen::VectorXi& rowIndices)
+        template<typename Matrix, typename Scalar>
+        Eigen::IndexedView<Matrix, Eigen::Vector<Scalar, Eigen::Dynamic>, Eigen::internal::AllRange<-1>>
+        wrapped_row_select(Eigen::MatrixBase<Matrix>& matrix, const Eigen::Vector<Scalar, Eigen::Dynamic>& rowIndices)
         {
             return matrix.wrapped_row_select(rowIndices);
         }
-        template<typename Matrix>
-        auto wrapped_row_select(Eigen::MatrixBase<Matrix>& matrix, const Eigen::VectorXi& rowIndices)
+
+        /**
+         * @brief Computes the element-wise standard deviation
+         * 
+         * @tparam T 
+         * @param matrix 
+         * @return double 
+         */
+        template<typename T>
+        double standard_deviation(const Eigen::MatrixBase<T>& matrix)
         {
-            return matrix.wrapped_row_select(rowIndices);
+            double mean = matrix.sum() / (double)matrix.size();
+            double sumOfSquareDifferences = 0;
+            for(const double& e : matrix.reshaped())
+            {
+                sumOfSquareDifferences += std::pow(e - mean, 2);
+            }
+            return std::sqrt(sumOfSquareDifferences / (double)matrix.size());
         }
 
         /**
