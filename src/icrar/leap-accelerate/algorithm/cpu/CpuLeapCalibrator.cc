@@ -124,10 +124,9 @@ namespace cpu
             const auto integration = Integration(
                     integrationNumber,
                     ms,
-                    boost::numeric_cast<int32_t>(solution * validatedSolutionInterval.GetInterval() * ms.GetNumBaselines()),
-                    ms.GetNumChannels(),
-                    validatedSolutionInterval.GetInterval() * ms.GetNumBaselines(),
-                    ms.GetNumPols());
+                    solution * validatedSolutionInterval.GetInterval(),
+                    validatedSolutionInterval.GetInterval());
+                    
             LOG(info) << "Read integration data in " << integration_read_timer;
 
             for(size_t direction = 0; direction < directions.size(); ++direction)

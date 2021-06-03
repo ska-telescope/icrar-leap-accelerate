@@ -82,7 +82,7 @@ namespace cuda
 
         dim3 blockSize = dim3(128, 8, 1); // block size can be any value where the product is 1024
         dim3 gridSize = dim3(
-            cpu::ceil_div<int64_t>(integration.GetBaselines(), blockSize.x),
+            cpu::ceil_div<int64_t>(integration.GetRows(), blockSize.x),
             cpu::ceil_div<int64_t>(integration.GetChannels(), blockSize.y),
             1
         );

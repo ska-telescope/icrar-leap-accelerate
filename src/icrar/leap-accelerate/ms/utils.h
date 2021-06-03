@@ -202,13 +202,21 @@ namespace icrar
     template<typename T>
     auto ms_read_vis1(
         const casacore::MeasurementSet& ms,
-        unsigned int start_baseline,
-        unsigned int start_channel,
+        unsigned int start_timestep,
+        unsigned int interval_timesteps,
+        unsigned int num_timesteps,
         unsigned int num_channels,
         unsigned int num_baselines,
         unsigned int num_pols,
         const char* column)
     {
+        const unsigned int start_row = start_timestep * num_baselines;
+        const unsigned int interval_rows = interval_timesteps * num_baselines;
+        const unsigned int total_rows = num_timesteps * num_baselines;
+        //uint32_t total_rows = boost::numeric_cast<uint32_t>(ms.nrow());
+        const unsigned int num_rows = num_timesteps * num_baselines;
+        const unsigned int out_pols = num_pols > 1 ? 2 : 1;
+
         if(!ms.tableDesc().isColumn(column))
         {
             throw icrar::exception("ms column not found", __FILE__, __LINE__);
@@ -221,32 +229,35 @@ namespace icrar
             throw icrar::exception("expected a data column", __FILE__, __LINE__);
         }
 
-        uint32_t total_rows = boost::numeric_cast<uint32_t>(ms.nrow());
-        if (start_baseline >= total_rows)
+        if (start_row >= total_rows)
         {
             std::stringstream ss;
-            ss << "ms out of range " << start_baseline << " >= " << total_rows; 
+            ss << "ms out of range " << start_row << " >= " << total_rows; 
             throw icrar::exception(ss.str(), __FILE__, __LINE__);
         }
 
         // clamp num_baselines
-        if (start_baseline + num_baselines > total_rows)
+        if (start_row + interval_rows > total_rows)
         {
             std::stringstream ss;
-            ss << "row selection [" << start_baseline << "," << start_baseline + num_baselines << "] exceeds total range [" << 0 << "," << total_rows << "]";
+            ss << "row selection [" << start_row << "," << start_row + interval_rows << "] exceeds total range [" << 0 << "," << total_rows << "]";
             throw icrar::exception(ss.str(), __FILE__, __LINE__);
         }
 
-        // Create the slicers for the column.
-        casacore::IPosition start1(1, start_baseline);
-        casacore::IPosition length1(1, num_baselines);
+        // Create slicers for table DATA
+        // Slicer for table rows: array[baselines,timesteps]
+        casacore::IPosition start1(1, start_row);
+        casacore::IPosition length1(1, num_rows);
         casacore::Slicer row_range(start1, length1);
-        casacore::IPosition start2(2, 0, start_channel);
+
+        // Slicer for row entries: matrix[polarizations,channels]
+        casacore::IPosition start2(2, 0, 0);
         casacore::IPosition length2(2, num_pols, num_channels);
         casacore::Slicer array_section(start2, length2);
 
         // Read the data.
         casacore::ArrayColumn<std::complex<float>> ac(ms, column);
+        //std::cout << ac.shape() << std::endl;
         casacore::Array<std::complex<float>> column_range = ac.getColumnRange(row_range, array_section);
 
         Eigen::TensorMap<Eigen::Tensor<std::complex<float>, 3>> view(column_range.data(), num_pols, num_channels, num_baselines);
@@ -261,29 +272,31 @@ namespace icrar
     template<typename T>
     auto ms_read_vis2(
         const casacore::MeasurementSet& ms,
-        unsigned int start_row,
-        unsigned int start_channel,
-        unsigned int num_channels,
-        unsigned int num_baselines,
-        unsigned int num_pols,
+        unsigned int start_timestep,
+        unsigned int interval_timesteps,
         unsigned int num_timesteps,
-        const char* column)
+        unsigned int num_baselines,
+        unsigned int num_channels,
+        unsigned int num_pols,
+        const char* columnName)
     {
-        const unsigned int num_rows = num_baselines * num_timesteps;
+        const unsigned int start_row = start_timestep * num_baselines;
+        const unsigned int interval_rows = interval_timesteps * num_baselines;
+        const unsigned int total_rows = num_timesteps * num_baselines;
+        //uint32_t total_rows = boost::numeric_cast<uint32_t>(ms.nrow());
+        const unsigned int num_rows = num_timesteps * num_baselines;
+        const unsigned int out_pols = num_pols > 1 ? 2 : 1;
 
-        if(!ms.tableDesc().isColumn(column))
+        if(!ms.tableDesc().isColumn(columnName))
         {
             throw icrar::exception("ms column not found", __FILE__, __LINE__);
         }
 
-        if(strcmp(column, "DATA")
-        && strcmp(column, "CORRECTED_DATA")
-        && strcmp(column, "MODEL_DATA"))
+        if(strcmp(columnName, "DATA") && strcmp(columnName, "CORRECTED_DATA") && strcmp(columnName, "MODEL_DATA"))
         {
             throw icrar::exception("expected a data column", __FILE__, __LINE__);
         }
 
-        uint32_t total_rows = boost::numeric_cast<uint32_t>(ms.nrow());
         if (start_row >= total_rows)
         {
             std::stringstream ss;
@@ -299,24 +312,24 @@ namespace icrar
             throw icrar::exception(ss.str(), __FILE__, __LINE__);
         }
 
-        // Create slicers DATA
+        // Create slicers for table DATA
         // Slicer for table rows: array[baselines,timesteps]
         casacore::IPosition start1(1, start_row);
         casacore::IPosition length1(1, num_rows);
         casacore::Slicer row_range(start1, length1);
 
         // Slicer for row entries: matrix[polarizations,channels]
-        casacore::IPosition start2(2, 0, start_channel);
-        casacore::IPosition length2(2, num_pols, num_channels);
-        casacore::Slicer array_section(start2, length2);
+        casacore::IPosition start2(2, 0, 0);
+        casacore::IPosition length2(2, out_pols, num_channels);
+        casacore::IPosition stride2(2, std::max(1u, num_pols-1), 1u); // select XX and YY polarizations
+        casacore::Slicer array_section(start2, length2, stride2);
 
         // Read the data
-        casacore::ArrayColumn<std::complex<float>> ac(ms, column);
+        casacore::ArrayColumn<std::complex<float>> ac(ms, columnName);
         casacore::Array<std::complex<float>> column_range = ac.getColumnRange(row_range, array_section);
 
-        Eigen::TensorMap<Eigen::Tensor<std::complex<float>, 4>> view(column_range.data(), num_pols, num_channels, num_baselines, num_timesteps);
-        const Eigen::array<Eigen::DenseIndex, 4> strides = { std::max(1u, num_pols-1), 1u, 1u, 1u }; // select XX and YY polarizations
-        Eigen::Tensor<T, 4> output = view.stride(strides).cast<T>();
+        Eigen::TensorMap<Eigen::Tensor<std::complex<float>, 4>> view(column_range.data(), out_pols, num_channels, num_baselines, num_timesteps);
+        Eigen::Tensor<T, 4> output = view.cast<T>();
         return output;
     }
 } // namespace icrar

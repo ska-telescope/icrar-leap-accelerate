@@ -164,9 +164,10 @@ public:
 
         Eigen::Tensor<std::complex<T>, 3> visibilities = icrar::ms_read_vis1<std::complex<T>>(msAa4,
             0,
-            0,
+            num_timesteps,
+            num_timesteps,
             num_channels,
-            num_baselines * num_timesteps,
+            num_baselines,
             num_pols,
             "DATA");
 

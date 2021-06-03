@@ -35,7 +35,7 @@ namespace Eigen
 namespace Eigen {
 namespace internal {
     template<>
-    inline std::complex<double> cast(const std::complex<short>& x)
+    inline std::complex<double> cast(const std::complex<float>& x)
     {
         return std::complex<double>(std::real(x),std::imag(x));
     }

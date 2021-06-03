@@ -204,12 +204,19 @@ namespace icrar
         Eigen::MatrixX3d GetCoords() const;
         Eigen::MatrixX3d GetCoords(uint32_t start_row, uint32_t nBaselines) const;
 
+        /**
+         * @brief Gets a the visibility from all baselines, channels and polarizations
+         * of a specified timestep slice
+         * 
+         * @note TODO(calgray): use Eigen::ArithmaticSequence
+         * 
+         * @param startTimestep 
+         * @param intervalTimesteps 
+         * @return Eigen::Tensor<std::complex<double>, 3> 
+         */
         Eigen::Tensor<std::complex<double>, 3> GetVis(
-            std::uint32_t startBaseline,
-            std::uint32_t startChannel,
-            std::uint32_t nChannels,
-            std::uint32_t nBaselines,
-            std::uint32_t nPolarizations) const;
+            std::uint32_t startTimestep,
+            std::uint32_t intervalTimesteps) const;
         Eigen::Tensor<std::complex<double>, 3> GetVis() const;
 
         /**

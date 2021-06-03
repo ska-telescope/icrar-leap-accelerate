@@ -66,10 +66,7 @@ namespace cuda
         int m_integrationNumber;
         device_tensor3<std::complex<double>> m_visibilities; //[polarizations][baselines][channels]
 
-        size_t index;
-        size_t x;
-        size_t channels;
-        size_t baselines;
+        size_t m_rows;
         
     public:
         /**
@@ -101,10 +98,9 @@ namespace cuda
         __host__ void Set(const icrar::cuda::DeviceIntegration& integration);
 
         int GetIntegrationNumber() const { return m_integrationNumber; }
-        size_t GetIndex() const { return index; }
-        //size_t GetX() const { return x; }
-        size_t GetChannels() const { return channels; }
-        size_t GetBaselines() const { return baselines; }
+
+        int GetRows() const { return m_rows; }
+        int GetChannels() const { return m_visibilities.GetDimensionSize(2); }
         
         const device_tensor3<std::complex<double>>& GetVis() const { return m_visibilities; }
         device_tensor3<std::complex<double>>& GetVis() { return m_visibilities; }

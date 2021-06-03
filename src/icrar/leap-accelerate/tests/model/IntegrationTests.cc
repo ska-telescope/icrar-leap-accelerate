@@ -70,19 +70,19 @@ namespace icrar
 
             {
                 //RAW
-                auto vis = ms->GetVis(0, 0, ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
+                auto vis = ms->GetVis(0, 1);
                 auto uvw = ms->GetCoords();
                 ASSERT_EQCD(-0.703454494476318-24.7045249938965i, vis(4,0,0), THRESHOLD);
                 ASSERT_DOUBLE_EQ(0.0, uvw(0,0));
                 ASSERT_DOUBLE_EQ(-213.2345748340571, uvw(1,0));
 
-                vis = ms->GetVis(ms->GetNumBaselines(), 0, ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
+                vis = ms->GetVis(1, 1);
                 ASSERT_EQCD(-9.90243244171143 + -39.7880058288574i, vis(4,0,0), THRESHOLD);
                 ASSERT_EQCD(18.1002998352051 + -15.6084890365601i, vis(5,0,0), THRESHOLD);
             }
             {
                 //CPU
-                auto integration = cpu::Integration(0, *ms, 0, ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
+                auto integration = cpu::Integration(0, *ms, 0, 1);
                 ASSERT_EQ(4, integration.GetVis().dimension(0));
                 ASSERT_EQ(5253, integration.GetVis().dimension(1));
                 ASSERT_EQ(48, integration.GetVis().dimension(2));
@@ -92,7 +92,7 @@ namespace icrar
                 ASSERT_DOUBLE_EQ(-213.2345748340571, integration.GetUVW()[1](0));
 
 
-                integration = cpu::Integration(1, *ms, ms->GetNumBaselines(), ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
+                integration = cpu::Integration(1, *ms, 1, 1);
                 ASSERT_EQ(4, integration.GetVis().dimension(0));
                 ASSERT_EQ(5253, integration.GetVis().dimension(1));
                 ASSERT_EQ(48, integration.GetVis().dimension(2));

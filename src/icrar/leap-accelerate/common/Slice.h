@@ -30,8 +30,10 @@
 namespace icrar
 {
     /**
-     * @brief Represents a forwards linear sequence of indexes for some arbitrary collection
-     * 
+     * @brief Represents a forwards linear sequence of indexes for some arbitrary collection.
+     * Python equivalent is the slice operator [start:end:interval].
+     * Eigen equivalent is Eigen::seq(start, end, interval).
+     * TODO(calgray): swap end <-> interval
      */
     class Slice
     {

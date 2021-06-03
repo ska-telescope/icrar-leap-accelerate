@@ -269,19 +269,19 @@ namespace icrar
         auto num_channels = GetNumChannels();
         auto num_baselines = GetNumBaselines();
         auto num_pols = GetNumPols();
-        return GetVis(0, 0, num_channels, num_baselines, num_pols);
+        return GetVis(0, 1);
     }
 
-    Eigen::Tensor<std::complex<double>, 3> MeasurementSet::GetVis(
-        std::uint32_t startBaseline,
-        std::uint32_t startChannel,
-        std::uint32_t nChannels,
-        std::uint32_t nBaselines,
-        std::uint32_t nPolarizations) const
+    Eigen::Tensor<std::complex<double>, 3> MeasurementSet::GetVis(std::uint32_t startTimestep, std::uint32_t intervalTimesteps) const
     {
-        auto visibilities = Eigen::Tensor<std::complex<double>, 3>(nPolarizations, nBaselines, nChannels);
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        icrar::ms_read_vis(*m_measurementSet, startBaseline, startChannel, nChannels, nBaselines, nPolarizations, "DATA", reinterpret_cast<double*>(visibilities.data()));
+        std::uint32_t nTimesteps = GetNumTimesteps();
+        std::uint32_t nBaselines = GetNumBaselines();
+        std::uint32_t nChannels = GetNumChannels();
+        std::uint32_t nPolarizations = GetNumPols();
+
+        Eigen::Tensor<std::complex<double>, 3> visibilities = icrar::ms_read_vis1<std::complex<double>>(
+            *m_measurementSet, startTimestep, intervalTimesteps, nTimesteps, nBaselines, nChannels, nPolarizations,
+            "DATA");
         return visibilities;
         
 

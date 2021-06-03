@@ -63,34 +63,28 @@ namespace cpu
     {
     protected:
         int m_integrationNumber;
-
-        int64_t index; // row index
-        int64_t x; // number of rows
-        int64_t channels; // channels
-        int64_t baselines; // baselines
+        uint32_t m_rows;
 
         std::vector<MVuvw> m_UVW; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
         Eigen::Tensor<std::complex<double>, 3> m_visibilities; //[npol][nbl][nch]
 
     public:
         Integration(
-            int integrationNumber,
-            const icrar::MeasurementSet& ms,
-            uint32_t index,
-            uint32_t channels,
-            uint32_t baselines,
-            uint32_t polarizations);
+        int integrationNumber,
+        const icrar::MeasurementSet& ms,
+        uint32_t startTimestep,
+        uint32_t intervalTimesteps);
 
         bool operator==(const Integration& rhs) const;
 
         int GetIntegrationNumber() const { return m_integrationNumber; }
 
         /**
-         * @brief Gets the number of baselines
+         * @brief Gets the number of rows TODO(calgray): rename
          * 
          * @return int 
          */
-        size_t GetBaselines() const { return baselines; }
+        size_t GetBaselines() const { return m_rows; }
 
         /**
          * @brief Gets the UVW list
