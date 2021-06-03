@@ -97,7 +97,7 @@ namespace icrar
                 {
                     auto a1 = Eigen::VectorXi();
                     auto a2 = Eigen::VectorXi();
-                    auto fg = Eigen::Matrix<bool, Eigen::Dynamic, 1>();
+                    auto fg = Eigen::VectorXb();
                     icrar::cpu::PhaseMatrixFunction(a1, a2, fg, refAnt, false);
                 }
                 else

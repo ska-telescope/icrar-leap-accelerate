@@ -212,14 +212,13 @@ namespace cpu
             for(uint32_t channel = 0; channel < metadata.GetConstants().channels; channel++)
             {
                 double shiftRad = shiftFactor / metadata.GetConstants().GetChannelWavelength(channel);
-                for(uint32_t polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
+                for(uint32_t polarization = 0; polarization < integration_data.dimension(0); ++polarization)
                 {
                     integration_data(polarization, baseline, channel) *= std::exp(std::complex<double>(0.0, shiftRad));
                 }
 
                 bool hasNaN = false;
-                const Eigen::Tensor<std::complex<double>, 1> polarizations = integration_data.chip(channel, 2).chip(baseline, 1);
-                for(uint32_t polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
+                for(uint32_t polarization = 0; polarization < integration_data.dimension(0); ++polarization)
                 {
                     hasNaN |= std::isnan(integration_data(polarization, baseline, channel).real()) || std::isnan(integration_data(polarization, baseline, channel).imag());
                 }
@@ -227,7 +226,7 @@ namespace cpu
                 if(!hasNaN)
                 {
                     metadata.GetAvgData()(md_baseline) += integration_data(0, baseline, channel);
-                    metadata.GetAvgData()(md_baseline) += integration_data(metadata.GetConstants().num_pols-1, baseline, channel);
+                    metadata.GetAvgData()(md_baseline) += integration_data(integration_data.dimension(0) - 1, baseline, channel);
                 }
             }
         }

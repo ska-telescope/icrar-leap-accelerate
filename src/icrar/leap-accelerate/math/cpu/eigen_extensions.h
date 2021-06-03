@@ -23,79 +23,21 @@
 #pragma once
 
 #include <icrar/leap-accelerate/config.h>
-#include <icrar/leap-accelerate/core/log/logging.h>
-#include <icrar/leap-accelerate/core/memory/ioutils.h>
-#include <icrar/leap-accelerate/exception/exception.h>
 #include <Eigen/Core>
-#include <boost/numeric/conversion/cast.hpp>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <vector>
-#include <functional>
 #include <type_traits>
 
 namespace Eigen
 {
     using MatrixXb = Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic>;
     using VectorXb = Eigen::Vector<bool, Eigen::Dynamic>;
-}
+} // namespace Eigen
 
-namespace icrar
-{
-    namespace cpu
+namespace Eigen {
+namespace internal {
+    template<>
+    inline std::complex<double> cast(const std::complex<short>& x)
     {
-        /**
-         * @brief Selects a range of elements from matrix row indices. Negative indexes
-         * select from the bottom of the matrix with -1 representing the last row.
-         * 
-         * @tparam T 
-         * @param matrix the referenced matrix to select from
-         * @param rowIndices a range of row indices to select
-         * @param column a valid column index 
-         */
-        template<typename Matrix, typename Scalar>
-        Eigen::IndexedView<Matrix, Eigen::Vector<Scalar, Eigen::Dynamic>, Eigen::internal::AllRange<-1>>
-        wrapped_row_select(Eigen::MatrixBase<Matrix>& matrix, const Eigen::Vector<Scalar, Eigen::Dynamic>& rowIndices)
-        {
-            return matrix.wrapped_row_select(rowIndices);
-        }
-
-        /**
-         * @brief Computes the element-wise standard deviation
-         * 
-         * @tparam T 
-         * @param matrix 
-         * @return double 
-         */
-        template<typename T>
-        double standard_deviation(const Eigen::MatrixBase<T>& matrix)
-        {
-            double mean = matrix.sum() / (double)matrix.size();
-            double sumOfSquareDifferences = 0;
-            for(const double& e : matrix.reshaped())
-            {
-                sumOfSquareDifferences += std::pow(e - mean, 2);
-            }
-            return std::sqrt(sumOfSquareDifferences / (double)matrix.size());
-        }
-
-        /**
-         * @brief Returns the component-wise arguments of a matrix
-         * 
-         * @param a 
-         * @return Eigen::MatrixXd 
-         */
-        Eigen::MatrixXd arg(const Eigen::Ref<const Eigen::MatrixXcd>& a);
-
-        /**
-         * @brief Performs an elementwise comparison between matrices and returns
-         * false if the absolute difference exceeds the tolerance.
-         * 
-         * @param left 
-         * @param right 
-         * @param tolerance 
-         */
-        bool near(const Eigen::Ref<const Eigen::MatrixXd>& left, const Eigen::Ref<const Eigen::MatrixXd>& right, double tolerance);
-    } // namespace cpu 
-} // namespace icrar
+        return std::complex<double>(std::real(x),std::imag(x));
+    }
+}
+}

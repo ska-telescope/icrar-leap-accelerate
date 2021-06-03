@@ -181,7 +181,7 @@ namespace icrar
         }
     }
 
-    Eigen::Matrix<bool, Eigen::Dynamic, 1> MeasurementSet::GetFlaggedBaselines() const
+    Eigen::VectorXb MeasurementSet::GetFlaggedBaselines() const
     {
         auto nBaselines = GetNumBaselines();
 
@@ -261,15 +261,7 @@ namespace icrar
 
     Eigen::MatrixX3d MeasurementSet::GetCoords(uint32_t start_row, uint32_t nBaselines) const
     {
-        Eigen::MatrixX3d matrix = Eigen::MatrixX3d::Zero(nBaselines, 3);
-        icrar::ms_read_coords(
-            *m_measurementSet,
-            start_row,
-            nBaselines,
-            matrix.col(0).data(),
-            matrix.col(1).data(),
-            matrix.col(2).data());
-        return matrix;
+        return icrar::ms_read_coords2<double>(*m_measurementSet, start_row, nBaselines);
     }
 
     Eigen::Tensor<std::complex<double>, 3> MeasurementSet::GetVis() const
@@ -291,6 +283,9 @@ namespace icrar
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         icrar::ms_read_vis(*m_measurementSet, startBaseline, startChannel, nChannels, nBaselines, nPolarizations, "DATA", reinterpret_cast<double*>(visibilities.data()));
         return visibilities;
+        
+
+        //return icrar::ms_read_vis1<std::complex<double>>(*m_measurementSet, startBaseline, startChannel, nChannels, nBaselines, nPolarizations, "DATA");
     }
 
     std::set<int32_t> MeasurementSet::GetMissingAntennas() const

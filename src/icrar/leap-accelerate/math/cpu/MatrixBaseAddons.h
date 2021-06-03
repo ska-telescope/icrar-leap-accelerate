@@ -28,15 +28,15 @@
  * of a matrix using index wrap around. Negative indexes select from
  * the bottom of the matrix with -1 representing the last row.
  * 
- * @tparam Vector 
- * @param rowIndices 
- * @return auto 
+ * @tparam Index
+ * @param rowIndices a range of row indices to select
+ * @param column a valid column index
  */
-template<typename Scalar>
-inline auto wrapped_row_select(const Matrix<Scalar, Eigen::Dynamic, 1>& rowIndices)
+template<typename Index>
+inline auto wrapped_row_select(const Matrix<Index, Eigen::Dynamic, 1>& rowIndices)
 {
-    Matrix<Scalar, Eigen::Dynamic, 1> correctedIndices = rowIndices;
-    for(Scalar& index : correctedIndices)
+    Matrix<Index, Eigen::Dynamic, 1> correctedIndices = rowIndices;
+    for(Index& index : correctedIndices)
     {
         if(index < -rows() || index >= rows())
         {
@@ -50,11 +50,11 @@ inline auto wrapped_row_select(const Matrix<Scalar, Eigen::Dynamic, 1>& rowIndic
     return this->operator()(correctedIndices, Eigen::all);
 }
 
-template<typename Scalar>
-inline auto wrapped_row_select(const Matrix<Scalar, Eigen::Dynamic, 1>& rowIndices) const
+template<typename Index>
+inline auto wrapped_row_select(const Matrix<Index, Eigen::Dynamic, 1>& rowIndices) const
 {
-    Matrix<Scalar, Eigen::Dynamic, 1> correctedIndices = rowIndices;
-    for(Scalar& index : correctedIndices)
+    Matrix<Index, Eigen::Dynamic, 1> correctedIndices = rowIndices;
+    for(Index& index : correctedIndices)
     {
         if(index < -rows() || index >= rows())
         {
@@ -66,6 +66,22 @@ inline auto wrapped_row_select(const Matrix<Scalar, Eigen::Dynamic, 1>& rowIndic
         }
     }
     return this->operator()(correctedIndices, Eigen::all);
+}
+
+/**
+ * @brief Computes the element-wise standard deviation
+ * 
+ * @return Scalar 
+ */
+double standard_deviation() const
+{
+    double mean = this->sum() / static_cast<double>(size());
+    double sumOfSquareDifferences = 0;
+    for(const Scalar& e : this->reshaped())
+    {
+        sumOfSquareDifferences += std::pow(e - mean, 2);
+    }
+    return std::sqrt(sumOfSquareDifferences / static_cast<double>(size()));
 }
 
 /**

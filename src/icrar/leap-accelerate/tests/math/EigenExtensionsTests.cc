@@ -72,7 +72,7 @@ namespace icrar
             0, 1,
             1i, -1i;
 
-            Eigen::MatrixXd v = cpu::arg(m);
+            Eigen::MatrixXd v = m.arg();
 
             auto expected = Eigen::MatrixXd(2,2);
             expected <<
