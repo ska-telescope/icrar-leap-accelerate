@@ -82,7 +82,7 @@ namespace cpu
             }
         }
 
-        m_avgData = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
+        m_avgData = Eigen::VectorXcd::Zero(ms.GetNumBaselines());
         LOG(trace) << "avg_data: " << memory_amount(m_avgData.size() * sizeof(std::complex<double>));
 
         auto filteredBaselines = ms.GetFilteredBaselines(m_minimumBaselineThreshold);
@@ -132,7 +132,7 @@ namespace cpu
         {
             //cache Ad with A hash
             ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
-                matrix_hash<Eigen::MatrixXd>()(m_A),
+                matrix_hash<Eigen::MatrixXd>(m_A),
                 m_A, m_Ad,
                 "A.hash", "Ad.cache",
                 invertA);

@@ -242,6 +242,16 @@ namespace cuda
             ToHostAsync(out.data());
         }
 
+        __host__ void ToHostVectorAsync(Eigen::Matrix<T, Eigen::Dynamic, 1>& out) const
+        {
+            if(GetCols() != 1)
+            {
+                throw std::runtime_error("columns not 1");
+            }
+            out.resize(GetRows());
+            ToHostAsync(out.data());
+        }
+
         __host__ Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ToHostAsync() const
         {
             auto result = Eigen::MatrixXd(GetRows(), GetCols());

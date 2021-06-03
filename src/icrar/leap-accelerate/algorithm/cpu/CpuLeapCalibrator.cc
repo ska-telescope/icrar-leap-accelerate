@@ -184,13 +184,13 @@ namespace cpu
         Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAnglesI1;
         Eigen::VectorXd ACal1 = metadata.GetA() * cal1;
 
-        Eigen::MatrixXd deltaPhase = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
+        Eigen::VectorXd deltaPhase = Eigen::VectorXd::Zero(metadata.GetI().size());
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
-            deltaPhase.row(n) = (std::exp(std::complex<double>(0, -two_pi<double>() * ACal1(n))) * metadata.GetAvgData().row(n)).arg();
+            deltaPhase(n) = std::arg(std::exp(std::complex<double>(0, -two_pi<double>() * ACal1(n))) * metadata.GetAvgData()(n));
         }
 
-        Eigen::VectorXd deltaPhaseColumn = deltaPhase.col(0); // 1st pol only
+        Eigen::VectorXd deltaPhaseColumn = deltaPhase;
         deltaPhaseColumn.conservativeResize(deltaPhaseColumn.size() + 1);
         deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0;
         output_calibrations.emplace_back(direction, (metadata.GetAd() * deltaPhaseColumn) + cal1);
@@ -221,15 +221,13 @@ namespace cpu
                 const Eigen::Tensor<std::complex<double>, 1> polarizations = integration_data.chip(channel, 2).chip(baseline, 1);
                 for(uint32_t polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
                 {
-                    hasNaN |= std::isnan(polarizations(polarization).real()) || std::isnan(polarizations(polarization).imag());
+                    hasNaN |= std::isnan(integration_data(polarization, baseline, channel).real()) || std::isnan(integration_data(polarization, baseline, channel).imag());
                 }
 
                 if(!hasNaN)
                 {
-                    for(uint32_t polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
-                    {
-                        metadata.GetAvgData()(md_baseline, polarization) += integration_data(polarization, baseline, channel);
-                    }
+                    metadata.GetAvgData()(md_baseline) += integration_data(0, baseline, channel);
+                    metadata.GetAvgData()(md_baseline) += integration_data(metadata.GetConstants().num_pols-1, baseline, channel);
                 }
             }
         }
