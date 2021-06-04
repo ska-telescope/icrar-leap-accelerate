@@ -40,6 +40,7 @@ namespace cpu
         uint32_t intervalTimesteps)
     : m_integrationNumber(integrationNumber)
     {
+        std::cout << "integration: " << startTimestep << ":" << intervalTimesteps << std::endl;
         uint32_t channels = ms.GetNumChannels();
         uint32_t baselines = ms.GetNumBaselines();
         uint32_t polarizations = ms.GetNumPols();
@@ -51,7 +52,7 @@ namespace cpu
         size_t uvw_size = baselines * 3;
         LOG(info) << "uvw: " << memory_amount(uvw_size);
         m_visibilities = ms.GetVis(startTimestep, intervalTimesteps);
-        m_UVW = ToUVWVector(ms.GetCoords(startTimestep * baselines, baselines));
+        m_UVW = ToUVWVector(ms.GetCoords(startTimestep, intervalTimesteps));
     }
 
     bool Integration::operator==(const Integration& rhs) const

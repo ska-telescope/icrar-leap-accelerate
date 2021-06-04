@@ -199,6 +199,7 @@ namespace cpu
     {
         using namespace std::literals::complex_literals;
         Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.GetVis();
+        std::cout << integration_data.dimension(0) << ":" << integration_data.dimension(1) << ":" << integration_data.dimension(2) << std::endl;
 
         // loop over smeared baselines ('md_baseline' is always 'baseline' when timesteps = 1)
         for(size_t baseline = 0; baseline < integration.GetBaselines(); ++baseline)

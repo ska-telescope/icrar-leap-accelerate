@@ -164,14 +164,14 @@ public:
 
         Eigen::Tensor<std::complex<T>, 3> visibilities = icrar::ms_read_vis1<std::complex<T>>(msAa4,
             0,
+            1,
             num_timesteps,
-            num_timesteps,
-            num_channels,
             num_baselines,
+            num_channels,
             num_pols,
             "DATA");
 
-        EXPECT_EQ(2, visibilities.dimension(0));
+        EXPECT_EQ(4, visibilities.dimension(0));
         EXPECT_EQ(num_baselines * num_timesteps, visibilities.dimension(1));
         EXPECT_EQ(num_channels, visibilities.dimension(2));
     }
@@ -193,11 +193,11 @@ public:
 
         Eigen::Tensor<std::complex<T>, 4> visibilities = icrar::ms_read_vis2<std::complex<T>>(msAa4,
             0,
-            0,
-            num_channels,
-            num_baselines,
-            num_pols,
+            1,
             num_timesteps,
+            num_baselines,
+            num_channels,
+            num_pols,
             "DATA");
         EXPECT_EQ(2, visibilities.dimension(0));
         EXPECT_EQ(num_channels, visibilities.dimension(1));

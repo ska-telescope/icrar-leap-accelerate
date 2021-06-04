@@ -200,9 +200,10 @@ namespace icrar
          */
         //Eigen::VectorXb GetFilteredStations(double minimumBaselineThreshold) const;
 
-        //std::vector<casacore::MVuvw> MeasurementSet::GetCoordsCasa(uint32_t start_row) const;
         Eigen::MatrixX3d GetCoords() const;
-        Eigen::MatrixX3d GetCoords(uint32_t start_row, uint32_t nBaselines) const;
+        Eigen::MatrixX3d GetCoords(
+            std::uint32_t startTimestep,
+            std::uint32_t intervalTimesteps) const;
 
         /**
          * @brief Gets a the visibility from all baselines, channels and polarizations

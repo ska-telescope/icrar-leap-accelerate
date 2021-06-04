@@ -256,23 +256,22 @@ namespace icrar
 
     Eigen::MatrixX3d MeasurementSet::GetCoords() const
     {
-        return GetCoords(0, GetNumBaselines());
+        return GetCoords(0, 1);
     }
 
-    Eigen::MatrixX3d MeasurementSet::GetCoords(uint32_t start_row, uint32_t nBaselines) const
+    Eigen::MatrixX3d MeasurementSet::GetCoords(uint32_t startTimestep, uint32_t intervalTimesteps) const
     {
-        return icrar::ms_read_coords2<double>(*m_measurementSet, start_row, nBaselines);
+        return icrar::ms_read_coords1<double>(*m_measurementSet, startTimestep * GetNumBaselines(), intervalTimesteps * GetNumBaselines());
     }
 
     Eigen::Tensor<std::complex<double>, 3> MeasurementSet::GetVis() const
     {
-        auto num_channels = GetNumChannels();
-        auto num_baselines = GetNumBaselines();
-        auto num_pols = GetNumPols();
         return GetVis(0, 1);
     }
 
-    Eigen::Tensor<std::complex<double>, 3> MeasurementSet::GetVis(std::uint32_t startTimestep, std::uint32_t intervalTimesteps) const
+    Eigen::Tensor<std::complex<double>, 3> MeasurementSet::GetVis(
+        std::uint32_t startTimestep,
+        std::uint32_t intervalTimesteps) const
     {
         std::uint32_t nTimesteps = GetNumTimesteps();
         std::uint32_t nBaselines = GetNumBaselines();

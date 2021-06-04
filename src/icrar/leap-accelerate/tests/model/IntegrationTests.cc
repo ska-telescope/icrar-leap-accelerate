@@ -70,15 +70,20 @@ namespace icrar
 
             {
                 //RAW
-                auto vis = ms->GetVis(0, 1);
-                auto uvw = ms->GetCoords();
+                auto vis = ms->GetVis();
                 ASSERT_EQCD(-0.703454494476318-24.7045249938965i, vis(4,0,0), THRESHOLD);
-                ASSERT_DOUBLE_EQ(0.0, uvw(0,0));
-                ASSERT_DOUBLE_EQ(-213.2345748340571, uvw(1,0));
 
                 vis = ms->GetVis(1, 1);
                 ASSERT_EQCD(-9.90243244171143 + -39.7880058288574i, vis(4,0,0), THRESHOLD);
                 ASSERT_EQCD(18.1002998352051 + -15.6084890365601i, vis(5,0,0), THRESHOLD);
+
+                auto uvw = ms->GetCoords();
+                EXPECT_DOUBLE_EQ(0.0, uvw(0,0));
+                EXPECT_DOUBLE_EQ(0.0, uvw(0,1));
+                EXPECT_DOUBLE_EQ(-213.2345748340571, uvw(1,0));
+                EXPECT_DOUBLE_EQ(135.47392678492236, uvw(1,1));
+                EXPECT_DOUBLE_EQ(-126.13023305330449, uvw(2,0));
+                EXPECT_DOUBLE_EQ(169.06485173845823, uvw(2,1));
             }
             {
                 //CPU

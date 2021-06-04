@@ -71,7 +71,7 @@ namespace icrar
 
         void TestRawReadFromFile()
         {
-            auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())), boost::none);
+            auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumTimesteps())), boost::none);
             ASSERT_EQ(102, ms->GetNumStations());
             ASSERT_EQ(5253, ms->GetNumBaselines());
             ASSERT_EQ(48, meta.GetConstants().channels);
@@ -109,7 +109,7 @@ namespace icrar
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
             auto rawms = std::make_unique<icrar::MeasurementSet>(filename, 102, true);
-            auto meta = icrar::cpu::MetaData(*rawms, ToUVWVector(rawms->GetCoords(0, rawms->GetNumRows())), boost::none);
+            auto meta = icrar::cpu::MetaData(*rawms, ToUVWVector(rawms->GetCoords(0, rawms->GetNumTimesteps())), boost::none);
 
             ASSERT_EQ(102, rawms->GetNumStations());
             ASSERT_EQ(5253, rawms->GetNumBaselines());
@@ -146,7 +146,7 @@ namespace icrar
 
         void TestDD()
         {
-            auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())), boost::none);
+            auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumTimesteps())), boost::none);
             auto direction = SphericalDirection(-0.4606549305661674,-0.29719233792392513);
             
             EXPECT_EQ(-0.4606549305661674, direction(0));
@@ -215,7 +215,7 @@ namespace icrar
 #ifdef CUDA_ENABLED
         void TestCudaBufferCopy()
         {
-            auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())));
+            auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumTimesteps())));
             auto direction = SphericalDirection(); direction << 0.0, 0.0;
             auto uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
             meta.SetDirection(direction);
