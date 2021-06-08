@@ -282,9 +282,7 @@ namespace icrar
         // XX + YY mode (first + last) or (first)
         //Range polarizationRange = Range(0, std::max(1u, nPolarizations-1), nPolarizations-1);
 
-        Eigen::Tensor<std::complex<double>, 3> visibilities = ReadVis(
-            startTimestep, intervalTimesteps, polarizationRange, "DATA");
-        return visibilities;
+        return ReadVis(startTimestep, intervalTimesteps, polarizationRange, "DATA");
     }
 
     Eigen::Tensor<std::complex<double>, 3> MeasurementSet::ReadVis(uint32_t startTimestep, uint32_t intervalTimesteps, Range polarizationRange, const char* column) const

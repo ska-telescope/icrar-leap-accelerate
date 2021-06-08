@@ -21,6 +21,7 @@
 */
 
 #include <icrar/leap-accelerate/config.h>
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/common/stream_extensions.h>
 #include <icrar/leap-accelerate/math/vector_extensions.h>
@@ -30,18 +31,23 @@
 
 #include <gtest/gtest.h>
 
-class MSUtilsTests : public testing::Test
+class MeasurementSetTests : public testing::Test
 {
     const double TOLERANCE = 0.0001;
     
-    casacore::MeasurementSet msMwa;
-    casacore::MeasurementSet msAa4;
+    icrar::MeasurementSet msMwa;
+    icrar::MeasurementSet msAa4;
 
 public:
+    MeasurementSetTests()
+    : msMwa(icrar::MeasurementSet(std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms", boost::none, true))
+    , msAa4(icrar::MeasurementSet(std::string(TEST_DATA_DIR) + "/aa4/aa4-SS-33-120.ms", boost::none, false))
+    {
+    }
+
     void SetUp() override
     {
-        msMwa = casacore::MeasurementSet(std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms");
-        msAa4 = casacore::MeasurementSet(std::string(TEST_DATA_DIR) + "/aa4/aa4-SS-33-120.ms");
+
     }
 
     void TearDown() override
@@ -58,7 +64,7 @@ public:
         auto ww = std::vector<double>(num_baselines);
         auto vv = std::vector<double>(num_baselines);
 
-        icrar::ms_read_coords(msMwa,
+        icrar::ms_read_coords(*msMwa.GetMS(),
             start_row,
             num_baselines,
             uu.data(),
@@ -85,17 +91,9 @@ public:
         unsigned int slice_baselines = 3;
         unsigned int slice_pols = 4;
 
-        auto rms = casacore::MeasurementSet(msMwa);
-        auto msc = std::make_unique<casacore::MSColumns>(rms);
-
-        //const size_t num_stations = (size_t) icrar::ms_num_stations(&msMwa);
-        //slice_baselines = num_stations * (num_stations - 1) / 2;
-        //slice_pols = msc->polarization().numCorr().get(0);
-        //slice_channels = msc->spectralWindow().numChan().get(0);
-
         auto visibilities = Eigen::Tensor<std::complex<T>, 3>(slice_pols, slice_baselines, slice_channels);
 
-        icrar::ms_read_vis(msMwa,
+        icrar::ms_read_vis(*msMwa.GetMS(),
             start_row,
             start_channel,
             slice_channels,
@@ -135,7 +133,7 @@ public:
         uint32_t num_timesteps = 1;
 
         auto visibilities = Eigen::Tensor<std::complex<double>, 3>(num_pols, num_baselines * num_timesteps, num_channels);
-        icrar::ms_read_vis(msAa4,
+        icrar::ms_read_vis(*msAa4.GetMS(),
             0,
             0,
             num_channels,
@@ -163,10 +161,10 @@ public:
         uint32_t num_baselines = 130816;
         uint32_t num_timesteps = 1;
 
-        Eigen::Tensor<std::complex<T>, 3> visibilities = icrar::ms_read_vis1<std::complex<T>>(msAa4,
+        Eigen::Tensor<std::complex<T>, 3> visibilities = icrar::ms_read_vis1<std::complex<T>>(*msAa4.GetMS(),
             0,
             1,
-            icrar::Range(0, 3, 3), // XX + YY mode
+            icrar::Range(0, 3, 4), // XX + YY mode
             num_timesteps,
             num_baselines,
             num_channels,
@@ -193,7 +191,7 @@ public:
         uint32_t num_baselines = 130816;
         uint32_t num_timesteps = 1;
 
-        Eigen::Tensor<std::complex<T>, 3> visibilities = icrar::ms_read_vis1<std::complex<T>>(msAa4,
+        Eigen::Tensor<std::complex<T>, 3> visibilities = icrar::ms_read_vis1<std::complex<T>>(*msAa4.GetMS(),
             0,
             1,
             icrar::Range(0, 1, 3), // normal mode
@@ -208,8 +206,27 @@ public:
         EXPECT_EQ(num_channels, visibilities.dimension(2));
     }
 
-    template<typename T>
     void TestVisPerformance4()
+    {
+        //aa4
+        uint32_t num_pols = 4;
+        uint32_t num_channels = 33;
+        uint32_t num_baselines = 130816;
+        uint32_t num_timesteps = 1;
+
+        Eigen::Tensor<std::complex<double>, 3> visibilities = msAa4.GetVis(
+            0,
+            1,
+            icrar::Slice(0, 1, 4) // normal mode
+        );
+
+        EXPECT_EQ(4, visibilities.dimension(0));
+        EXPECT_EQ(num_baselines * num_timesteps, visibilities.dimension(1));
+        EXPECT_EQ(num_channels, visibilities.dimension(2));
+    }
+
+    template<typename T>
+    void TestVisPerformance5()
     {
         //mwa
         // uint32_t num_pols = 4;
@@ -223,7 +240,7 @@ public:
         uint32_t num_baselines = 130816;
         uint32_t num_timesteps = 1;
 
-        Eigen::Tensor<std::complex<T>, 4> visibilities = icrar::ms_read_vis2<std::complex<T>>(msAa4,
+        Eigen::Tensor<std::complex<T>, 4> visibilities = icrar::ms_read_vis2<std::complex<T>>(*msAa4.GetMS(),
             0,
             1,
             num_timesteps,
@@ -354,27 +371,30 @@ private:
     }
 };
 
-TEST_F(MSUtilsTests, TestReadRecords) { TestReadRecords(); }
-TEST_F(MSUtilsTests, TestReadVis) { TestReadVis<float>(); }
+TEST_F(MeasurementSetTests, TestReadRecords) { TestReadRecords(); }
+TEST_F(MeasurementSetTests, TestReadVis) { TestReadVis<float>(); }
 
-TEST_F(MSUtilsTests, TestVisPerformance11) { TestVisPerformance1(); }
-TEST_F(MSUtilsTests, TestVisPerformance12) { TestVisPerformance1(); }
-TEST_F(MSUtilsTests, TestVisPerformance13) { TestVisPerformance1(); }
-TEST_F(MSUtilsTests, TestVisPerformance21f) { TestVisPerformance2<float>(); }
-TEST_F(MSUtilsTests, TestVisPerformance22f) { TestVisPerformance2<float>(); }
-TEST_F(MSUtilsTests, TestVisPerformance23f) { TestVisPerformance2<float>(); }
-TEST_F(MSUtilsTests, TestVisPerformance21d) { TestVisPerformance2<double>(); }
-TEST_F(MSUtilsTests, TestVisPerformance22d) { TestVisPerformance2<double>(); }
-TEST_F(MSUtilsTests, TestVisPerformance23d) { TestVisPerformance2<double>(); }
-TEST_F(MSUtilsTests, TestVisPerformance31f) { TestVisPerformance3<float>(); }
-TEST_F(MSUtilsTests, TestVisPerformance32f) { TestVisPerformance3<float>(); }
-TEST_F(MSUtilsTests, TestVisPerformance33f) { TestVisPerformance3<float>(); }
-TEST_F(MSUtilsTests, TestVisPerformance31d) { TestVisPerformance3<double>(); }
-TEST_F(MSUtilsTests, TestVisPerformance32d) { TestVisPerformance3<double>(); }
-TEST_F(MSUtilsTests, TestVisPerformance33d) { TestVisPerformance3<double>(); }
-TEST_F(MSUtilsTests, TestVisPerformance41f) { TestVisPerformance4<float>(); }
-TEST_F(MSUtilsTests, TestVisPerformance42f) { TestVisPerformance4<float>(); }
-TEST_F(MSUtilsTests, TestVisPerformance43f) { TestVisPerformance4<float>(); }
-TEST_F(MSUtilsTests, TestVisPerformance41d) { TestVisPerformance4<double>(); }
-TEST_F(MSUtilsTests, TestVisPerformance42d) { TestVisPerformance4<double>(); }
-TEST_F(MSUtilsTests, TestVisPerformance43d) { TestVisPerformance4<double>(); }
+TEST_F(MeasurementSetTests, TestVisPerformance11) { TestVisPerformance1(); }
+TEST_F(MeasurementSetTests, TestVisPerformance12) { TestVisPerformance1(); }
+TEST_F(MeasurementSetTests, TestVisPerformance13) { TestVisPerformance1(); }
+TEST_F(MeasurementSetTests, TestVisPerformance21f) { TestVisPerformance2<float>(); }
+TEST_F(MeasurementSetTests, TestVisPerformance22f) { TestVisPerformance2<float>(); }
+TEST_F(MeasurementSetTests, TestVisPerformance23f) { TestVisPerformance2<float>(); }
+TEST_F(MeasurementSetTests, TestVisPerformance21d) { TestVisPerformance2<double>(); }
+TEST_F(MeasurementSetTests, TestVisPerformance22d) { TestVisPerformance2<double>(); }
+TEST_F(MeasurementSetTests, TestVisPerformance23d) { TestVisPerformance2<double>(); }
+TEST_F(MeasurementSetTests, TestVisPerformance31f) { TestVisPerformance3<float>(); }
+TEST_F(MeasurementSetTests, TestVisPerformance32f) { TestVisPerformance3<float>(); }
+TEST_F(MeasurementSetTests, TestVisPerformance33f) { TestVisPerformance3<float>(); }
+TEST_F(MeasurementSetTests, TestVisPerformance31d) { TestVisPerformance3<double>(); }
+TEST_F(MeasurementSetTests, TestVisPerformance32d) { TestVisPerformance3<double>(); }
+TEST_F(MeasurementSetTests, TestVisPerformance33d) { TestVisPerformance3<double>(); }
+TEST_F(MeasurementSetTests, TestVisPerformance41) { TestVisPerformance4(); }
+TEST_F(MeasurementSetTests, TestVisPerformance42) { TestVisPerformance4(); }
+TEST_F(MeasurementSetTests, TestVisPerformance43) { TestVisPerformance4(); }
+TEST_F(MeasurementSetTests, TestVisPerformance51f) { TestVisPerformance5<float>(); }
+TEST_F(MeasurementSetTests, TestVisPerformance52f) { TestVisPerformance5<float>(); }
+TEST_F(MeasurementSetTests, TestVisPerformance53f) { TestVisPerformance5<float>(); }
+TEST_F(MeasurementSetTests, TestVisPerformance51d) { TestVisPerformance5<double>(); }
+TEST_F(MeasurementSetTests, TestVisPerformance52d) { TestVisPerformance5<double>(); }
+TEST_F(MeasurementSetTests, TestVisPerformance53d) { TestVisPerformance5<double>(); }

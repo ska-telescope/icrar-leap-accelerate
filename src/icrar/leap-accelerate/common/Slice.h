@@ -60,7 +60,7 @@ namespace icrar
         int32_t GetInterval() const { return m_interval; }
 
         /**
-         * @brief Gets the end index of an arbitrary collection slice. -1 represents the end of the collection.
+         * @brief Gets the end exclusive index of an arbitrary collection slice. -1 represents the end of the collection.
          */
         int32_t GetEnd() const { return m_end; }
 
