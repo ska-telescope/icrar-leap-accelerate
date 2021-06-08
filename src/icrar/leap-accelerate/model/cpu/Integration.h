@@ -74,7 +74,7 @@ namespace cpu
         const icrar::MeasurementSet& ms,
         uint32_t startTimestep,
         uint32_t intervalTimesteps,
-        Slice polarizationSlice = Slice(0,1,-1));
+        Slice polarizationSlice = Slice(0, boost::none, 1));
 
         bool operator==(const Integration& rhs) const;
 

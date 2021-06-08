@@ -11,7 +11,7 @@
         "minimumBaselineTheshold": { "type": "integer" },
         "solutionInterval": {
             "type": ["integer", "array"],
-            "items": { "type": "number" },
+            "items": { "type": ["number", "null"] },
             "minItems": 3,
             "maxItems": 3
         },

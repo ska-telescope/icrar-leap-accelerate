@@ -25,43 +25,50 @@
 
 namespace icrar
 {
-    Slice::Slice(int interval)
-    : Slice(0, interval, -1)
+    Slice::Slice(boost::optional<int32_t> interval)
+    : Slice(0, boost::none, interval)
     {}
 
-    Slice::Slice(int start, int end)
-    : Slice(start, end == -1 ? -1 : end - start, end)
+    Slice::Slice(boost::optional<int32_t> start, boost::optional<int32_t> end)
+    : Slice(start, end, 1)
     {}
 
-    Slice::Slice(int start, int interval, int end)
+    Slice::Slice(boost::optional<int32_t> start, boost::optional<int32_t> end, boost::optional<int> interval)
     {
-        if(start < -1) throw icrar::exception("expected a positive integer start", __FILE__, __LINE__);
-        if(interval < -1) throw icrar::exception("expected a positive integer or -1 interval", __FILE__, __LINE__);
-        if(end < -1) throw icrar::exception("expected a positive or -1 integer end", __FILE__, __LINE__);
+        //if(start < -1) throw icrar::exception("expected a positive integer start", __FILE__, __LINE__);
+        //if(interval < -1) throw icrar::exception("expected a positive integer or -1 interval", __FILE__, __LINE__);
+        //if(end < -1) throw icrar::exception("expected a positive or -1 integer end", __FILE__, __LINE__);
 
         //forward sequences only
-        if(end != -1)
+        if(end != boost::none)
         {
-            if(start == -1)
+            if(start != boost::none)
             {
-                throw icrar::exception("range start must be greater than end", __FILE__, __LINE__);
-            }
-            if(start > end)
-            {
-                throw icrar::exception("range start must be greater than end", __FILE__, __LINE__);
-            }
-            if(interval == -1)
-            {
-                interval = end - start;
-            }
-            if(interval > (end - start))
+                if(interval > (end.get() - start.get()))
             {
                 // Not an exception in python slices, but likely unintended behaviour
                 // Consider negative case such as [::-1]
-                throw icrar::exception("range increment out of bounds", __FILE__, __LINE__);
+                throw icrar::exception("slice increment out of bounds", __FILE__, __LINE__);
+            }
+            }
+            
+            if(start > end)
+            {
+                std::stringstream ss;
+                ss << "slice start (" << start << ") must be less than end (" << end << ")";
+                throw icrar::exception(ss.str(), __FILE__, __LINE__);
             }
         }
-        if(interval == 0) throw icrar::exception("expected a non zero integer interval", __FILE__, __LINE__);
+        if(start == boost::none)
+        {
+            throw icrar::exception("undefined behaviour", __FILE__, __LINE__);
+        }
+        if(interval.is_initialized() && interval <= 0)
+        {
+            std::stringstream ss;
+            ss << "expected a non zero integer interval (" << interval << ")";
+            throw icrar::exception(ss.str(), __FILE__, __LINE__);
+        }
 
         m_start = start;
         m_interval = interval;
@@ -72,9 +79,9 @@ namespace icrar
     {
         return Range
         {
-            (m_start == -1) ? collectionSize : m_start,
-            (m_interval == -1) ? collectionSize : m_interval,
-            (m_end == -1) ? collectionSize : m_end
+            (m_start == boost::none) ? collectionSize : (m_start < 0) ? m_start.get() + collectionSize : m_start.get(),
+            (m_end == boost::none) ? collectionSize : (m_end < 0) ? m_end.get() + collectionSize : m_end.get(),
+            (m_interval == boost::none) ? collectionSize : m_interval.get()
         };
     }
 
@@ -85,30 +92,42 @@ namespace icrar
         return ParseSlice(doc);
     }
 
+    boost::optional<int> GetOptionalInt(const rapidjson::Value& v)
+    {
+        if(v.IsNull())
+        {
+            return boost::none;
+        }
+        else
+        {
+            return v.GetInt();
+        }
+    }
+
+
     Slice ParseSlice(const rapidjson::Value& doc)
     {
         Slice result = {};
 
         //Validate Schema
-        if(doc.IsInt())
-        {
-            result = Slice(doc.GetInt());
-        }
-        else if(doc.IsArray())
+        if(doc.IsArray())
         {
             if(doc.Size() == 2)
             {
-                result = Slice(doc[0].GetInt(), doc[1].GetInt());
+                result = Slice(GetOptionalInt(doc[0]), GetOptionalInt(doc[1]));
             }
             if(doc.Size() == 3)
             {
-                result = Slice(doc[0].GetInt(), doc[1].GetInt(), doc[2].GetInt());
+                result = Slice(GetOptionalInt(doc[0]), GetOptionalInt(doc[1]), GetOptionalInt(doc[2]));
             }
             else
             {
                 throw icrar::json_exception("expected 3 integers", __FILE__, __LINE__);
             }
-            
+        }
+        else if(doc.IsInt() || doc.IsNull())
+        {
+            result = Slice(GetOptionalInt(doc));
         }
         else
         {

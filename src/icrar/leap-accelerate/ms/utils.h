@@ -220,7 +220,7 @@ namespace icrar
         
         // NOTE: dimension size needed for this slice
         //auto pols_slice = Eigen::seq(0, num_pols-1, std::max(1u, num_pols-1));
-        auto pols_slice = Eigen::seq(polarizationRange.GetStart(), polarizationRange.GetEnd(), polarizationRange.GetInterval());
+        auto pols_slice = polarizationRange.ToSeq();
         
         const unsigned int pol_length = pols_slice.sizeObject();
         const unsigned int pol_stride = pols_slice.incrObject(); // select XX and YY polarizations

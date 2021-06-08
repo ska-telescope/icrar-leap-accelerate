@@ -37,7 +37,6 @@ namespace icrar
     , m_filepath(filepath)
     , m_readAutocorrelations(readAutocorrelations)
     {
-        LOG(warning) << "loading";
         //TODO(calgray): consider detecting autocorrelations when using antenna2
         // Check and use unique antennas
         m_antennas = CalculateUniqueAntennas();
@@ -67,9 +66,7 @@ namespace icrar
         m_numTimesteps = boost::numeric_cast<uint32_t>(m_numRows / m_numBaselines);
         assert(m_measurementSet->polarization().nrow() > 0);
         m_numPols = m_msc->polarization().numCorr().get(0);
-        LOG(warning) << "validating";
         Validate();
-        LOG(warning) << "validated";
     }
 
     void MeasurementSet::Validate() const
@@ -284,9 +281,12 @@ namespace icrar
     {
         uint32_t nPolarizations = GetNumPols();
 
+        std::cout << "pol:" << polarizationSlice.GetStart() << ":" << polarizationSlice.GetInterval() << ":" << polarizationSlice.GetEnd(); 
+
         //normal mode
         Range polarizationRange = polarizationSlice.Evaluate(nPolarizations);
 
+        std::cout << "pol:" << polarizationRange.GetStart() << ":" << polarizationRange.GetInterval() << ":" << polarizationRange.GetEnd(); 
         // XX + YY mode (first + last) or (first)
         //Range polarizationRange = Range(0, std::max(1u, nPolarizations-1), nPolarizations-1);
 

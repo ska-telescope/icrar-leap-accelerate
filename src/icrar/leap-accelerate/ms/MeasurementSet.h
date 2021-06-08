@@ -223,7 +223,7 @@ namespace icrar
         Eigen::Tensor<std::complex<double>, 3> GetVis(
             std::uint32_t startTimestep,
             std::uint32_t intervalTimesteps,
-            Slice polarizationSlice = Slice(0,1,-1)) const;
+            Slice polarizationSlice = Slice(0, boost::none, 1)) const;
 
         /**
          * @brief Gets the vis for the first timestep

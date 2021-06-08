@@ -39,12 +39,17 @@ namespace icrar
         std::uint32_t m_end;
 
     public:
-        Range(int start, int interval, int end)
+        Range(int start, int end, int interval)
         {
             if(start < 0) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
-            if(interval < 1) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
             if(end < 0) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
-            if(start > end) throw icrar::exception("range start must be less than end", __FILE__, __LINE__);
+            if(interval < 1) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
+            if(start > end)
+            {
+                std::stringstream ss;
+                ss << "range start (" << start << ") must be less than end (" << end << ")";
+                throw icrar::exception(ss.str(), __FILE__, __LINE__);
+            }
 
             m_start = start;
             m_interval = interval;
@@ -52,8 +57,8 @@ namespace icrar
         }
 
         uint32_t GetStart() const { return m_start; }
-        uint32_t GetInterval() const { return m_interval; }
         uint32_t GetEnd() const { return m_end; }
+        uint32_t GetInterval() const { return m_interval; }
 
         /**
          * @brief Gets the number of elements in the range
