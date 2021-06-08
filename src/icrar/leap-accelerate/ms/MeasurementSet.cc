@@ -37,9 +37,11 @@ namespace icrar
     , m_filepath(filepath)
     , m_readAutocorrelations(readAutocorrelations)
     {
+        LOG(warning) << "loading";
         //TODO(calgray): consider detecting autocorrelations when using antenna2
         // Check and use unique antennas
         m_antennas = CalculateUniqueAntennas();
+        LOG(warning) << "unique antennas loaded";
 
         if(overrideNStations.is_initialized())
         {
@@ -54,14 +56,20 @@ namespace icrar
             LOG(warning) << "using unique antennas";
 
             m_stations = boost::numeric_cast<int>(m_antennas.size());
-
         }
         else
         {
             m_stations = boost::numeric_cast<int>(m_measurementSet->antenna().nrow());
         }
 
+        m_numBaselines = CalculateNumBaselines(m_readAutocorrelations);
+        m_numRows = boost::numeric_cast<uint32_t>(m_msmc->uvw().nrow());
+        m_numTimesteps = boost::numeric_cast<uint32_t>(m_numRows / m_numBaselines);
+        assert(m_measurementSet->polarization().nrow() > 0);
+        m_numPols = m_msc->polarization().numCorr().get(0);
+        LOG(warning) << "validating";
         Validate();
+        LOG(warning) << "validated";
     }
 
     void MeasurementSet::Validate() const
@@ -107,7 +115,7 @@ namespace icrar
 
     uint32_t MeasurementSet::GetNumRows() const
     {
-        return boost::numeric_cast<uint32_t>(m_msmc->uvw().nrow());
+        return m_numRows;
     }
 
     uint32_t MeasurementSet::GetTotalAntennas() const
@@ -117,7 +125,7 @@ namespace icrar
 
     uint32_t MeasurementSet::GetNumTimesteps() const
     {
-        return boost::numeric_cast<uint32_t>(GetNumRows() / GetNumBaselines());
+        return m_numTimesteps;
     }
 
     std::vector<double> MeasurementSet::GetEpochs() const
@@ -151,10 +159,10 @@ namespace icrar
 
     uint32_t MeasurementSet::GetNumBaselines() const
     {
-        return GetNumBaselines(m_readAutocorrelations);
+        return m_numBaselines;
     }
 
-    uint32_t MeasurementSet::GetNumBaselines(bool useAutocorrelations) const
+    uint32_t MeasurementSet::CalculateNumBaselines(bool useAutocorrelations) const
     {
         //TODO(calgray): cache value
         if(useAutocorrelations)
@@ -287,13 +295,13 @@ namespace icrar
 
     Eigen::Tensor<std::complex<double>, 3> MeasurementSet::ReadVis(uint32_t startTimestep, uint32_t intervalTimesteps, Range polarizationRange, const char* column) const
     {
-        const uint32_t num_baselines = GetNumBaselines();
+        const uint32_t num_numBaselines = GetNumBaselines();
         const uint32_t num_channels = GetNumChannels();
         const unsigned int total_rows = GetNumRows();
 
         auto timestep_slice = Eigen::seq(startTimestep, startTimestep+intervalTimesteps, intervalTimesteps);
-        const unsigned int start_row = startTimestep * num_baselines;
-        const unsigned int rows = intervalTimesteps * num_baselines;
+        const unsigned int start_row = startTimestep * num_numBaselines;
+        const unsigned int rows = intervalTimesteps * num_numBaselines;
         
         auto pols_slice = polarizationRange.ToSeq();
         const unsigned int pol_length = boost::numeric_cast<unsigned int>(pols_slice.sizeObject());
@@ -318,7 +326,7 @@ namespace icrar
             throw icrar::exception(ss.str(), __FILE__, __LINE__);
         }
 
-        // clamp num_baselines
+        // clamp num_numBaselines
         if (start_row + rows > total_rows)
         {
             std::stringstream ss;
@@ -342,7 +350,7 @@ namespace icrar
         casacore::ArrayColumn<std::complex<float>> ac(*m_measurementSet, column);
         casacore::Array<std::complex<float>> column_range = ac.getColumnRange(row_range, array_section);
 
-        Eigen::TensorMap<Eigen::Tensor<std::complex<float>, 3>> view(column_range.data(), pol_length, num_channels, num_baselines * intervalTimesteps);
+        Eigen::TensorMap<Eigen::Tensor<std::complex<float>, 3>> view(column_range.data(), pol_length, num_channels, num_numBaselines * intervalTimesteps);
 
         //TODO: Converting ICD format from [pol, channels, baselines*timesteps] to [pol, baselines*timesteps, channels]
         const Eigen::array<Eigen::DenseIndex, 3> shuffle = { 0, 2, 1 };

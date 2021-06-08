@@ -63,6 +63,10 @@ namespace icrar
         std::set<std::int32_t> m_antennas;
         int m_stations;
         bool m_readAutocorrelations;
+        uint32_t m_numBaselines;
+        uint32_t m_numRows;
+        uint32_t m_numTimesteps;
+        uint32_t m_numPols;
 
     public:
         MeasurementSet(const std::string& filepath, boost::optional<int> overrideNStations, bool readAutocorrelations);
@@ -260,11 +264,11 @@ namespace icrar
         void Validate() const;
 
         /**
-         * @brief Get the number of baselines in the measurement set (e.g. (0,0), (1,1), (2,2))
+         * @brief Calculates the number of baselines in the measurement set (e.g. (0,0), (1,1), (2,2))
          * 
          * @return uint32_t 
          */
-        uint32_t GetNumBaselines(bool useAutocorrelations) const;
+        uint32_t CalculateNumBaselines(bool useAutocorrelations) const;
 
         /**
          * @brief Calculates the set of unique antenna present in baselines
