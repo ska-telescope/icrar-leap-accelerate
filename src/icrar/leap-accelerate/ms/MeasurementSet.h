@@ -221,7 +221,22 @@ namespace icrar
             std::uint32_t intervalTimesteps,
             Slice polarizationSlice = Slice(0,1,-1)) const;
 
+        /**
+         * @brief Gets the vis for the first timestep
+         * 
+         * @return Eigen::Tensor<std::complex<double>, 3> 
+         */
         Eigen::Tensor<std::complex<double>, 3> GetVis() const;
+
+        /**
+         * @brief 
+         * 
+         * @param startTimestep 
+         * @param intervalTimesteps 
+         * @param polarizationSlice 
+         * @return Eigen::Tensor<std::complex<double>, 3> 
+         */
+        Eigen::Tensor<std::complex<double>, 3> ReadVis(uint32_t startTimestep, uint32_t intervalTimesteps, Range polarizationRange, const char* column) const;
 
         /**
          * @brief Gets the antennas that are not present in any baselines

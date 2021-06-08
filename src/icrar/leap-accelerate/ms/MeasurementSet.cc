@@ -270,24 +270,86 @@ namespace icrar
     }
 
     Eigen::Tensor<std::complex<double>, 3> MeasurementSet::GetVis(
-        std::uint32_t startTimestep,
-        std::uint32_t intervalTimesteps,
+        uint32_t startTimestep,
+        uint32_t intervalTimesteps,
         Slice polarizationSlice) const
     {
-        std::uint32_t nTimesteps = GetNumTimesteps();
-        std::uint32_t nBaselines = GetNumBaselines();
-        std::uint32_t nChannels = GetNumChannels();
-        std::uint32_t nPolarizations = GetNumPols();
+        uint32_t nPolarizations = GetNumPols();
 
         //normal mode
         //Range polarizationRange = polarizationSlice.Evaluate(nPolarizations);
-        // XX + YY mode
+        // XX + YY mode (first + last) or (first)
         Range polarizationRange = Range(0, std::max(1u, nPolarizations-1), nPolarizations-1);
 
-        Eigen::Tensor<std::complex<double>, 3> visibilities = icrar::ms_read_vis1<std::complex<double>>(
-            *m_measurementSet, startTimestep, intervalTimesteps, polarizationRange,
-            nTimesteps, nBaselines, nChannels, nPolarizations, "DATA");
+        Eigen::Tensor<std::complex<double>, 3> visibilities = ReadVis(
+            startTimestep, intervalTimesteps, polarizationRange, "DATA");
         return visibilities;
+    }
+
+    Eigen::Tensor<std::complex<double>, 3> MeasurementSet::ReadVis(uint32_t startTimestep, uint32_t intervalTimesteps, Range polarizationRange, const char* column) const
+    {
+        const uint32_t num_baselines = GetNumBaselines();
+        const uint32_t num_channels = GetNumChannels();
+        const unsigned int total_rows = GetNumRows();
+
+        auto timestep_slice = Eigen::seq(startTimestep, Eigen::last, intervalTimesteps);
+        const unsigned int start_row = startTimestep * num_baselines;
+        const unsigned int rows = intervalTimesteps * num_baselines;
+        
+        // NOTE: dimension size needed for this slice
+        auto pols_slice = Eigen::seq(polarizationRange.GetStart(), polarizationRange.GetEnd(), polarizationRange.GetInterval());
+        const unsigned int pol_length = pols_slice.sizeObject();
+        const unsigned int pol_stride = pols_slice.incrObject(); // select XX and YY polarizations
+        
+        if(!m_measurementSet->tableDesc().isColumn(column))
+        {
+            throw icrar::exception("ms column not found", __FILE__, __LINE__);
+        }
+
+        if(strcmp(column, "DATA")
+        && strcmp(column, "CORRECTED_DATA")
+        && strcmp(column, "MODEL_DATA"))
+        {
+            throw icrar::exception("expected a data column", __FILE__, __LINE__);
+        }
+
+        if (start_row >= total_rows)
+        {
+            std::stringstream ss;
+            ss << "ms out of range " << start_row << " >= " << total_rows; 
+            throw icrar::exception(ss.str(), __FILE__, __LINE__);
+        }
+
+        // clamp num_baselines
+        if (start_row + rows > total_rows)
+        {
+            std::stringstream ss;
+            ss << "row selection [" << start_row << "," << start_row + rows << "] exceeds total range [" << 0 << "," << total_rows << "]";
+            throw icrar::exception(ss.str(), __FILE__, __LINE__);
+        }
+
+        // Create slicers for table DATA
+        // Slicer for table rows: array[baselines,timesteps]
+        casacore::IPosition start1(1, start_row);
+        casacore::IPosition length1(1, rows);
+        casacore::Slicer row_range(start1, length1);
+
+        // Slicer for row entries: matrix[polarizations,channels]
+        casacore::IPosition start2(2, 0, 0);
+        casacore::IPosition length2(2, pol_length, num_channels);
+        casacore::IPosition stride2(2, pol_stride, 1u);
+        casacore::Slicer array_section(start2, length2, stride2);
+
+        // Read the data.
+        casacore::ArrayColumn<std::complex<float>> ac(*m_measurementSet, column);
+        casacore::Array<std::complex<float>> column_range = ac.getColumnRange(row_range, array_section);
+
+        Eigen::TensorMap<Eigen::Tensor<std::complex<float>, 3>> view(column_range.data(), pol_length, num_channels, num_baselines * intervalTimesteps);
+
+        //TODO: Converting ICD format from [pol, channels, baselines*timesteps] to [pol, baselines*timesteps, channels]
+        const Eigen::array<Eigen::DenseIndex, 3> shuffle = { 0, 2, 1 };
+        Eigen::Tensor<std::complex<double>, 3> output = view.shuffle(shuffle).cast<std::complex<double>>();
+        return output;
     }
 
     std::set<int32_t> MeasurementSet::GetMissingAntennas() const
