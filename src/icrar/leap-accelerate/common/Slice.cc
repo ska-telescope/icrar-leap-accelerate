@@ -33,25 +33,17 @@ namespace icrar
     : Slice(start, end, 1)
     {}
 
-    Slice::Slice(boost::optional<int32_t> start, boost::optional<int32_t> end, boost::optional<int> interval)
+    Slice::Slice(boost::optional<int32_t> start, boost::optional<int32_t> end, boost::optional<int32_t> interval)
     {
-        //if(start < -1) throw icrar::exception("expected a positive integer start", __FILE__, __LINE__);
-        //if(interval < -1) throw icrar::exception("expected a positive integer or -1 interval", __FILE__, __LINE__);
-        //if(end < -1) throw icrar::exception("expected a positive or -1 integer end", __FILE__, __LINE__);
-
         //forward sequences only
-        if(end != boost::none)
+        if(end != boost::none && start != boost::none)
         {
-            if(start != boost::none)
-            {
-                if(interval > (end.get() - start.get()))
+            if(interval > (end.get() - start.get()))
             {
                 // Not an exception in python slices, but likely unintended behaviour
                 // Consider negative case such as [::-1]
                 throw icrar::exception("slice increment out of bounds", __FILE__, __LINE__);
             }
-            }
-            
             if(start > end)
             {
                 std::stringstream ss;

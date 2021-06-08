@@ -126,7 +126,7 @@ namespace cpu
                     ms,
                     solution * validatedSolutionInterval.GetInterval(),
                     validatedSolutionInterval.GetInterval(),
-                    Slice(0, 4, 3));
+                    Slice(0, ms.GetNumPols(), ms.GetNumPols()-1)); // XX + YY pols
                     
             LOG(info) << "Read integration data in " << integration_read_timer;
 

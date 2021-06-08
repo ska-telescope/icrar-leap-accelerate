@@ -37,8 +37,6 @@ namespace icrar
     , m_filepath(filepath)
     , m_readAutocorrelations(false)
     {
-        //TODO(calgray): consider detecting autocorrelations when using antenna2
-        // Check and use unique antennas
         std:tie(m_antennas, m_readAutocorrelations) = CalculateUniqueAntennas();
         LOG(warning) << "unique antennas loaded";
 
