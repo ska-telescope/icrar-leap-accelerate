@@ -85,6 +85,7 @@ namespace cpu
          * @return int 
          */
         size_t GetBaselines() const { return m_rows; }
+        size_t GetRows() const { return m_rows; }
 
         /**
          * @brief Gets the UVW list

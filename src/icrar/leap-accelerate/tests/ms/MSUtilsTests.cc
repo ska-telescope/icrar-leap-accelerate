@@ -20,6 +20,7 @@
 *    MA 02111-1307  USA
 */
 
+#include <icrar/leap-accelerate/config.h>
 #include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/common/stream_extensions.h>
 #include <icrar/leap-accelerate/math/vector_extensions.h>
@@ -165,6 +166,37 @@ public:
         Eigen::Tensor<std::complex<T>, 3> visibilities = icrar::ms_read_vis1<std::complex<T>>(msAa4,
             0,
             1,
+            icrar::Range(0, 3, 3), // XX + YY mode
+            num_timesteps,
+            num_baselines,
+            num_channels,
+            num_pols,
+            "DATA");
+
+        EXPECT_EQ(2, visibilities.dimension(0));
+        EXPECT_EQ(num_baselines * num_timesteps, visibilities.dimension(1));
+        EXPECT_EQ(num_channels, visibilities.dimension(2));
+    }
+
+    template<typename T>
+    void TestVisPerformance3()
+    {
+        //mwa
+        // uint32_t num_pols = 4;
+        // uint32_t num_channels = 48;
+        // uint32_t num_baselines = 5253;
+        // uint32_t num_timesteps = 14;
+
+        //aa4
+        uint32_t num_pols = 4;
+        uint32_t num_channels = 33;
+        uint32_t num_baselines = 130816;
+        uint32_t num_timesteps = 1;
+
+        Eigen::Tensor<std::complex<T>, 3> visibilities = icrar::ms_read_vis1<std::complex<T>>(msAa4,
+            0,
+            1,
+            icrar::Range(0, 1, 3), // normal mode
             num_timesteps,
             num_baselines,
             num_channels,
@@ -177,7 +209,7 @@ public:
     }
 
     template<typename T>
-    void TestVisPerformance3()
+    void TestVisPerformance4()
     {
         //mwa
         // uint32_t num_pols = 4;
@@ -340,3 +372,9 @@ TEST_F(MSUtilsTests, TestVisPerformance33f) { TestVisPerformance3<float>(); }
 TEST_F(MSUtilsTests, TestVisPerformance31d) { TestVisPerformance3<double>(); }
 TEST_F(MSUtilsTests, TestVisPerformance32d) { TestVisPerformance3<double>(); }
 TEST_F(MSUtilsTests, TestVisPerformance33d) { TestVisPerformance3<double>(); }
+TEST_F(MSUtilsTests, TestVisPerformance41f) { TestVisPerformance4<float>(); }
+TEST_F(MSUtilsTests, TestVisPerformance42f) { TestVisPerformance4<float>(); }
+TEST_F(MSUtilsTests, TestVisPerformance43f) { TestVisPerformance4<float>(); }
+TEST_F(MSUtilsTests, TestVisPerformance41d) { TestVisPerformance4<double>(); }
+TEST_F(MSUtilsTests, TestVisPerformance42d) { TestVisPerformance4<double>(); }
+TEST_F(MSUtilsTests, TestVisPerformance43d) { TestVisPerformance4<double>(); }

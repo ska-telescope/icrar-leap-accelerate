@@ -40,14 +40,13 @@ namespace cpu
         uint32_t intervalTimesteps)
     : m_integrationNumber(integrationNumber)
     {
-        std::cout << "integration: " << startTimestep << ":" << intervalTimesteps << std::endl;
         uint32_t channels = ms.GetNumChannels();
         uint32_t baselines = ms.GetNumBaselines();
         uint32_t polarizations = ms.GetNumPols();
         m_rows = baselines * intervalTimesteps;
 
         constexpr int startChannel = 0;
-        size_t vis_size = baselines * (channels - startChannel) * polarizations * sizeof(std::complex<double>);
+        size_t vis_size = baselines * (channels - startChannel) * (polarizations > 1 ? 2 : 1) * sizeof(std::complex<double>);
         LOG(info) << "vis: " << memory_amount(vis_size);
         size_t uvw_size = baselines * 3;
         LOG(info) << "uvw: " << memory_amount(uvw_size);

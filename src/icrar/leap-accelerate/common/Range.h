@@ -22,6 +22,7 @@
 
 #pragma once
 #include <icrar/leap-accelerate/exception/exception.h>
+#include <Eigen/Core>
 #include <string>
 #include <stdint.h>
 
@@ -62,6 +63,11 @@ namespace icrar
         int GetSize() const
         {
             return (m_end - m_start) / m_interval;
+        }
+
+        Eigen::ArithmeticSequence<Eigen::Index, Eigen::Index, Eigen::Index> GetSeq()
+        {
+            return Eigen::seq(m_start, m_end, m_interval);
         }
     };
 } // namespace icrar

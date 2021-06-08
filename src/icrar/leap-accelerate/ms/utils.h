@@ -23,6 +23,8 @@
 #pragma once
 
 #include <icrar/leap-accelerate/exception/exception.h>
+#include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
+#include <icrar/leap-accelerate/common/Range.h>
 
 #include <casacore/ms/MeasurementSets.h>
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
@@ -36,7 +38,6 @@
 
 #include <Eigen/Core>
 #include <unsupported/Eigen/CXX11/Tensor>
-#include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 
 #include <iterator>
 #include <sstream>
@@ -204,17 +205,26 @@ namespace icrar
         const casacore::MeasurementSet& ms,
         unsigned int start_timestep,
         unsigned int interval_timesteps,
+        Range polarizationRange,
         unsigned int num_timesteps,
         unsigned int num_baselines,
         unsigned int num_channels,
         unsigned int num_pols,
         const char* column)
     {
+        auto timestep_slice = Eigen::seq(start_timestep, Eigen::last, interval_timesteps);
         const unsigned int start_row = start_timestep * num_baselines;
         const unsigned int rows = interval_timesteps * num_baselines;
         const unsigned int total_rows = num_timesteps * num_baselines;
         //uint32_t total_rows = boost::numeric_cast<uint32_t>(ms.nrow());
-        const unsigned int out_pols = num_pols; //std::min(num_pols, 2u);
+        
+        // NOTE: dimension size needed for this slice
+        //auto pols_slice = Eigen::seq(0, num_pols-1, std::max(1u, num_pols-1));
+        auto pols_slice = Eigen::seq(polarizationRange.GetStart(), polarizationRange.GetEnd(), polarizationRange.GetInterval());
+        
+        const unsigned int pol_length = pols_slice.sizeObject();
+        const unsigned int pol_stride = pols_slice.incrObject(); // select XX and YY polarizations
+        
 
         if(!ms.tableDesc().isColumn(column))
         {
@@ -251,20 +261,19 @@ namespace icrar
 
         // Slicer for row entries: matrix[polarizations,channels]
         casacore::IPosition start2(2, 0, 0);
-        casacore::IPosition length2(2, num_pols, num_channels);
-        casacore::Slicer array_section(start2, length2);
+        casacore::IPosition length2(2, pol_length, num_channels);
+        casacore::IPosition stride2(2, pol_stride, 1u);
+        casacore::Slicer array_section(start2, length2, stride2);
 
         // Read the data.
         casacore::ArrayColumn<std::complex<float>> ac(ms, column);
         casacore::Array<std::complex<float>> column_range = ac.getColumnRange(row_range, array_section);
 
-        Eigen::TensorMap<Eigen::Tensor<std::complex<float>, 3>> view(column_range.data(), num_pols, num_channels, num_baselines * interval_timesteps);
+        Eigen::TensorMap<Eigen::Tensor<std::complex<float>, 3>> view(column_range.data(), pol_length, num_channels, num_baselines * interval_timesteps);
 
         //TODO: Converting ICD format from [pol, channels, baselines*timesteps] to [pol, baselines*timesteps, channels]
         const Eigen::array<Eigen::DenseIndex, 3> shuffle = { 0, 2, 1 };
-        //const Eigen::array<Eigen::DenseIndex, 3> strides = { std::max(1u, num_pols-1), 1u, 1u }; // select XX and YY polarizations
-        const Eigen::array<Eigen::DenseIndex, 3> strides = { 1u, 1u, 1u }; // select XX and YY polarizations
-        Eigen::Tensor<T, 3> output = view.stride(strides).shuffle(shuffle).cast<T>();
+        Eigen::Tensor<T, 3> output = view.shuffle(shuffle).cast<T>();
         return output;
     }
 
@@ -279,11 +288,15 @@ namespace icrar
         unsigned int num_pols,
         const char* columnName)
     {
+        auto timestep_slice = Eigen::seq(start_timestep, Eigen::last, interval_timesteps);
         const unsigned int start_row = start_timestep * num_baselines;
         const unsigned int rows = interval_timesteps * num_baselines;
         const unsigned int total_rows = num_timesteps * num_baselines;
-        //uint32_t total_rows = boost::numeric_cast<uint32_t>(ms.nrow());
-        const unsigned int out_pols = std::min(num_pols, 2u);
+
+        // NOTE: dimension size needed for this slice
+        auto pols_slice = Eigen::seq(0, num_pols-1, std::max(1u, num_pols-1)); // select XX and YY polarizations
+        const unsigned int pol_length = pols_slice.sizeObject();
+        const unsigned int pol_stride = pols_slice.incrObject();
 
         if(!ms.tableDesc().isColumn(columnName))
         {
@@ -318,15 +331,14 @@ namespace icrar
 
         // Slicer for row entries: matrix[polarizations,channels]
         casacore::IPosition start2(2, 0, 0);
-        casacore::IPosition length2(2, out_pols, num_channels);
-        casacore::IPosition stride2(2, std::max(1u, num_pols-1), 1u); // select XX and YY polarizations
+        casacore::IPosition length2(2, pol_length, num_channels);
+        casacore::IPosition stride2(2, pol_stride, 1u);
         casacore::Slicer array_section(start2, length2, stride2);
 
         // Read the data
         casacore::ArrayColumn<std::complex<float>> ac(ms, columnName);
         casacore::Array<std::complex<float>> column_range = ac.getColumnRange(row_range, array_section);
-
-        Eigen::TensorMap<Eigen::Tensor<std::complex<float>, 4>> view(column_range.data(), out_pols, num_channels, num_baselines, num_timesteps);
+        Eigen::TensorMap<Eigen::Tensor<std::complex<float>, 4>> view(column_range.data(), pol_length, num_channels, num_baselines, num_timesteps);
         Eigen::Tensor<T, 4> output = view.cast<T>();
         return output;
     }

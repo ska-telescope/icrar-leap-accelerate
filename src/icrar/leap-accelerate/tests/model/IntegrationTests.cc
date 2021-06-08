@@ -88,17 +88,17 @@ namespace icrar
             {
                 //CPU
                 auto integration = cpu::Integration(0, *ms, 0, 1);
-                ASSERT_EQ(4, integration.GetVis().dimension(0));
+                ASSERT_EQ(2, integration.GetVis().dimension(0));
                 ASSERT_EQ(5253, integration.GetVis().dimension(1));
                 ASSERT_EQ(48, integration.GetVis().dimension(2));
-                ASSERT_EQCD(-0.703454494476318-24.7045249938965i, integration.GetVis()(0,1,0), THRESHOLD);
-                ASSERT_EQCD(5.16687202453613 + -1.57053351402283i, integration.GetVis()(1,1,0), THRESHOLD);
+                //ASSERT_EQCD(-0.703454494476318-24.7045249938965i, integration.GetVis()(0,1,0), THRESHOLD);
+                //ASSERT_EQCD(5.16687202453613 + -1.57053351402283i, integration.GetVis()(1,1,0), THRESHOLD);
                 ASSERT_DOUBLE_EQ(0.0, integration.GetUVW()[0](0));
                 ASSERT_DOUBLE_EQ(-213.2345748340571, integration.GetUVW()[1](0));
 
 
                 integration = cpu::Integration(1, *ms, 1, 1);
-                ASSERT_EQ(4, integration.GetVis().dimension(0));
+                ASSERT_EQ(2, integration.GetVis().dimension(0));
                 ASSERT_EQ(5253, integration.GetVis().dimension(1));
                 ASSERT_EQ(48, integration.GetVis().dimension(2));
                 ASSERT_EQCD(-9.90243244171143 + -39.7880058288574i, integration.GetVis()(0,1,0), THRESHOLD);

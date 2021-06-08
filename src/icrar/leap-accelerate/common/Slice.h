@@ -33,6 +33,8 @@ namespace icrar
      * @brief Represents a forwards linear sequence of indexes for some arbitrary collection.
      * Python equivalent is the slice operator [start:end:interval].
      * Eigen equivalent is Eigen::seq(start, end, interval).
+     * Matlab equivalent is slice operator (start:interval:end)
+     * TODO(cgray) no support for reverse order, e.g. (end:-1:0)
      * TODO(calgray): swap end <-> interval
      */
     class Slice

@@ -24,6 +24,64 @@
 /// for details on extending Eigen3.
 
 /**
+ * @brief Provides numpy behaviour slicing.
+ * @note Eigen does not allow the increment to be a symbolic expression
+ * but numpy can
+ * 
+ * @tparam Index 
+ * @param start 
+ * @param end 
+ * @param step 
+ * @return ArithmaticSequence 
+ */
+inline auto numpy(Index start, Index end, Index step)
+{
+    if(cols() == 1)
+    {
+        Index total = rows();
+        start = start < 0 ? start + total : start;
+        end = end < 0 ? end + total : end;
+        return Eigen::seq(start, end, step);
+    }
+    else if(rows() == 1)
+    {
+        Index total = cols();
+        start = start < 0 ? start + total : start;
+        end = end < 0 ? end + total : end;
+        return Eigen::seq(start, end, step);
+    }
+    else
+    {
+        return Eigen::seq(start, end, step);
+    }
+}
+
+inline auto numpy_rows(Index start, Index end, Index step)
+{
+    Index total = rows();
+    start = start < 0 ? start + total : start;
+    end = end < 0 ? end + total : end;
+    return Eigen::seq(start, end, step);
+}
+
+inline auto numpy_cols(Index start, Index end, Index step)
+{
+    Index total = cols();
+    start = start < 0 ? start + total : start;
+    end = end < 0 ? end + total : end;
+    return Eigen::seq(start, end, step);
+}
+
+inline auto numpy(std::initializer_list<std::initializer_list<Index>> slice)
+{
+    if(slice.size() == 3)
+    {
+        auto it = slice.begin();
+        return numpy(*slice.begin(), *std::next(slice.begin()), *std::prev(slice.end()));
+    }
+}
+
+/**
  * @brief A numpythonic row selection operation that selects the rows
  * of a matrix using index wrap around. Negative indexes select from
  * the bottom of the matrix with -1 representing the last row.

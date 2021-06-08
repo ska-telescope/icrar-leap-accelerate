@@ -271,20 +271,23 @@ namespace icrar
 
     Eigen::Tensor<std::complex<double>, 3> MeasurementSet::GetVis(
         std::uint32_t startTimestep,
-        std::uint32_t intervalTimesteps) const
+        std::uint32_t intervalTimesteps,
+        Slice polarizationSlice) const
     {
         std::uint32_t nTimesteps = GetNumTimesteps();
         std::uint32_t nBaselines = GetNumBaselines();
         std::uint32_t nChannels = GetNumChannels();
         std::uint32_t nPolarizations = GetNumPols();
 
-        Eigen::Tensor<std::complex<double>, 3> visibilities = icrar::ms_read_vis1<std::complex<double>>(
-            *m_measurementSet, startTimestep, intervalTimesteps, nTimesteps, nBaselines, nChannels, nPolarizations,
-            "DATA");
-        return visibilities;
-        
+        //normal mode
+        //Range polarizationRange = polarizationSlice.Evaluate(nPolarizations);
+        // XX + YY mode
+        Range polarizationRange = Range(0, std::max(1u, nPolarizations-1), nPolarizations-1);
 
-        //return icrar::ms_read_vis1<std::complex<double>>(*m_measurementSet, startBaseline, startChannel, nChannels, nBaselines, nPolarizations, "DATA");
+        Eigen::Tensor<std::complex<double>, 3> visibilities = icrar::ms_read_vis1<std::complex<double>>(
+            *m_measurementSet, startTimestep, intervalTimesteps, polarizationRange,
+            nTimesteps, nBaselines, nChannels, nPolarizations, "DATA");
+        return visibilities;
     }
 
     std::set<int32_t> MeasurementSet::GetMissingAntennas() const

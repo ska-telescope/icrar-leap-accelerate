@@ -24,6 +24,7 @@
 
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
+#include <icrar/leap-accelerate/common/Slice.h>
 
 #include <casacore/ms/MeasurementSets.h>
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
@@ -217,7 +218,9 @@ namespace icrar
          */
         Eigen::Tensor<std::complex<double>, 3> GetVis(
             std::uint32_t startTimestep,
-            std::uint32_t intervalTimesteps) const;
+            std::uint32_t intervalTimesteps,
+            Slice polarizationSlice = Slice(0,1,-1)) const;
+
         Eigen::Tensor<std::complex<double>, 3> GetVis() const;
 
         /**
