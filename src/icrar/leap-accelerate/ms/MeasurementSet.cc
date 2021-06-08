@@ -35,11 +35,11 @@ namespace icrar
     , m_msmc(std::make_unique<casacore::MSMainColumns>(*m_measurementSet))
     , m_msc(std::make_unique<casacore::MSColumns>(*m_measurementSet))
     , m_filepath(filepath)
-    , m_readAutocorrelations(readAutocorrelations)
+    , m_readAutocorrelations(false)
     {
         //TODO(calgray): consider detecting autocorrelations when using antenna2
         // Check and use unique antennas
-        m_antennas = CalculateUniqueAntennas();
+        std:tie(m_antennas, m_readAutocorrelations) = CalculateUniqueAntennas();
         LOG(warning) << "unique antennas loaded";
 
         if(overrideNStations.is_initialized())
@@ -399,12 +399,18 @@ namespace icrar
         return indexes;
     }
 
-    std::set<int32_t> MeasurementSet::CalculateUniqueAntennas() const
+    // template<typename InputInterator1, typename InputIterator2>
+    // bool HasMatches(InputInterator1 first1, InputInterator1 last1, InputInterator2 first2)
+    // {
+    // }
+
+    std::tuple<std::set<int32_t>, bool> MeasurementSet::CalculateUniqueAntennas() const
     {
         casacore::Vector<casacore::Int> a1 = m_msmc->antenna1().getColumn();
         casacore::Vector<casacore::Int> a2 = m_msmc->antenna2().getColumn();
         std::set<std::int32_t> antennas;
         std::set_union(a1.cbegin(), a1.cend(), a2.cbegin(), a2.cend(), std::inserter(antennas, antennas.begin()));
-        return antennas;
+        bool autoCorrelations = std::mismatch(a1.cbegin(), a1.cend(), a2.cbegin(), [](int a, int b) { return a != b; }).first != a1.cend();
+        return std::make_tuple(antennas, autoCorrelations);
     }
 } // namespace icrar

@@ -275,7 +275,7 @@ namespace icrar
          * 
          * @return uint32_t 
          */
-        std::set<int32_t> CalculateUniqueAntennas() const;
+        std::tuple<std::set<int32_t>, bool> CalculateUniqueAntennas() const;
 
     };
 } // namespace icrar

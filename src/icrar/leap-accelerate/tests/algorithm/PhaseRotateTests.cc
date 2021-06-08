@@ -480,14 +480,14 @@ namespace icrar
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::cpu); }
     TEST_F(PhaseRotateTests, ReferenceAntennaTestCpu) { ReferenceAntennaTest(ComputeImplementation::cpu, {0, 1, 2, 3, 4, 5, 126, 127}, Slice(0, 1, 1)); }
 
-    TEST_F(PhaseRotateTests, PhaseRotateFirstTimestepTestCpu) { CalibrateTest(ComputeImplementation::cpu, ComputeOptionsDTO{false, false, false}, Slice(0, 1, 14), &GetFirstTimestepMWACalibration); }
-    TEST_F(PhaseRotateTests, PhaseRotateAllTimesteps0TestCpu) { CalibrateTest(ComputeImplementation::cpu, ComputeOptionsDTO{false, false, false}, Slice(0, 14 ,14), &GetAllTimestepsMWACalibration); }
-    TEST_F(PhaseRotateTests, PhaseRotateAllTimesteps1TestCpu) { CalibrateTest(ComputeImplementation::cpu, ComputeOptionsDTO{false, false, false}, Slice(0,-1), &GetAllTimestepsMWACalibration); }
-    TEST_F(PhaseRotateTests, PhaseRotateEachTimestepTestCpu) { CalibrateTest(ComputeImplementation::cpu, ComputeOptionsDTO{false, false, false}, Slice(1), &GetEachTimestepMWACalibration); }
+    TEST_F(PhaseRotateTests, PhaseRotateFirstTimestepTestCpu) { CalibrateTest(ComputeImplementation::cpu, ComputeOptionsDTO{false, false, false}, Slice::First(), &GetFirstTimestepMWACalibration); }
+    TEST_F(PhaseRotateTests, PhaseRotateAllTimesteps0TestCpu) { CalibrateTest(ComputeImplementation::cpu, ComputeOptionsDTO{false, false, false}, Slice::All(), &GetAllTimestepsMWACalibration); }
+    TEST_F(PhaseRotateTests, PhaseRotateAllTimesteps1TestCpu) { CalibrateTest(ComputeImplementation::cpu, ComputeOptionsDTO{false, false, false}, Slice(0,14,14), &GetAllTimestepsMWACalibration); }
+    TEST_F(PhaseRotateTests, PhaseRotateEachTimestepTestCpu) { CalibrateTest(ComputeImplementation::cpu, ComputeOptionsDTO{false, false, false}, Slice::Each(), &GetEachTimestepMWACalibration); }
 
 #ifdef CUDA_ENABLED
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(ComputeImplementation::cuda); }
-    TEST_F(PhaseRotateTests, ReferenceAntennaTestCuda) { ReferenceAntennaTest(ComputeImplementation::cuda, {0, 1, 2, 3, 4, 5, 126, 127}, Slice(0, 1, 1)); }
+    TEST_F(PhaseRotateTests, ReferenceAntennaTestCuda) { ReferenceAntennaTest(ComputeImplementation::cuda, {0, 1, 2, 3, 4, 5, 126, 127}, Slice::First()); }
 
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateCacheTestCuda) { CalibrateTest(ComputeImplementation::cuda, ComputeOptionsDTO{true, false, false}, Slice(0,1), &GetFirstTimestepMWACalibration); }
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateIntermediateBufferTestCuda) { CalibrateTest(ComputeImplementation::cuda, ComputeOptionsDTO{true, true, false}, Slice(0,1), &GetFirstTimestepMWACalibration); }
@@ -496,7 +496,7 @@ namespace icrar
     
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateFirstTimestepsTestCuda) { CalibrateTest(ComputeImplementation::cuda, ComputeOptionsDTO{false, false, false}, Slice(0,1), &GetFirstTimestepMWACalibration); }
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTimestepsTestCuda) { CalibrateTest(ComputeImplementation::cuda, ComputeOptionsDTO{false, false, false}, Slice(0,14), &GetAllTimestepsMWACalibration); }
-    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateAllTimestepsTestCuda) { CalibrateTest(ComputeImplementation::cuda, ComputeOptionsDTO{false, false, false}, Slice(0,-1), &GetAllTimestepsMWACalibration); }
+    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateAllTimestepsTestCuda) { CalibrateTest(ComputeImplementation::cuda, ComputeOptionsDTO{false, false, false}, Slice::All(), &GetAllTimestepsMWACalibration); }
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateEachTimestepTestCuda) { CalibrateTest(ComputeImplementation::cuda, ComputeOptionsDTO{false, false, false}, Slice(1), &GetEachTimestepMWACalibration); }
 #endif
 } // namespace icrar
