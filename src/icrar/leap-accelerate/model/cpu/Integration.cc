@@ -37,7 +37,8 @@ namespace cpu
         int integrationNumber,
         const icrar::MeasurementSet& ms,
         uint32_t startTimestep,
-        uint32_t intervalTimesteps)
+        uint32_t intervalTimesteps,
+        Slice polarizationSlice)
     : m_integrationNumber(integrationNumber)
     {
         uint32_t channels = ms.GetNumChannels();
@@ -50,7 +51,7 @@ namespace cpu
         LOG(info) << "vis: " << memory_amount(vis_size);
         size_t uvw_size = baselines * 3;
         LOG(info) << "uvw: " << memory_amount(uvw_size);
-        m_visibilities = ms.GetVis(startTimestep, intervalTimesteps);
+        m_visibilities = ms.GetVis(startTimestep, intervalTimesteps, polarizationSlice);
         m_UVW = ToUVWVector(ms.GetCoords(startTimestep, intervalTimesteps));
     }
 
