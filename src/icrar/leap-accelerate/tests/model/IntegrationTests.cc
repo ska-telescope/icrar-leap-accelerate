@@ -69,7 +69,7 @@ namespace icrar
             double THRESHOLD = 0.0001;
 
             {
-                //RAW
+                //RAW VIS
                 auto vis = ms->GetVis();
                 ASSERT_EQCD(-0.703454494476318-24.7045249938965i, vis(4,0,0), THRESHOLD);
 
@@ -86,23 +86,54 @@ namespace icrar
                 EXPECT_DOUBLE_EQ(169.06485173845823, uvw(2,1));
             }
             {
-                //CPU
-                auto integration = cpu::Integration(0, *ms, 0, 1);
-                ASSERT_EQ(2, integration.GetVis().dimension(0));
-                ASSERT_EQ(5253, integration.GetVis().dimension(1));
-                ASSERT_EQ(48, integration.GetVis().dimension(2));
-                //ASSERT_EQCD(-0.703454494476318-24.7045249938965i, integration.GetVis()(0,1,0), THRESHOLD);
-                //ASSERT_EQCD(5.16687202453613 + -1.57053351402283i, integration.GetVis()(1,1,0), THRESHOLD);
+                // Full Vis Integration
+                auto integration = cpu::Integration(0, *ms, 0, 1, Slice(0,1,4));
+                ASSERT_EQ(4, integration.GetVis().dimension(0)); // polarizations
+                ASSERT_EQ(5253, integration.GetVis().dimension(1)); // baselines
+                ASSERT_EQ(48, integration.GetVis().dimension(2)); // channels
+                ASSERT_EQCD(-0.703454494476318-24.7045249938965i, integration.GetVis()(0,1,0), THRESHOLD);
+                ASSERT_EQCD(5.16687202453613 + -1.57053351402283i, integration.GetVis()(1,1,0), THRESHOLD);
+                ASSERT_DOUBLE_EQ(0.0, integration.GetUVW()[0](0));
+                ASSERT_DOUBLE_EQ(-213.2345748340571, integration.GetUVW()[1](0));
+
+                integration = cpu::Integration(0, *ms, 0, 1, Slice(0,1,-1)); //Slice(0,1,boost::none)
+                ASSERT_EQ(4, integration.GetVis().dimension(0)); // polarizations
+                ASSERT_EQ(5253, integration.GetVis().dimension(1)); // baselines
+                ASSERT_EQ(48, integration.GetVis().dimension(2)); // channels
+                ASSERT_EQCD(-0.703454494476318-24.7045249938965i, integration.GetVis()(0,1,0), THRESHOLD);
+                ASSERT_EQCD(5.16687202453613 + -1.57053351402283i, integration.GetVis()(1,1,0), THRESHOLD);
                 ASSERT_DOUBLE_EQ(0.0, integration.GetUVW()[0](0));
                 ASSERT_DOUBLE_EQ(-213.2345748340571, integration.GetUVW()[1](0));
 
 
-                integration = cpu::Integration(1, *ms, 1, 1);
-                ASSERT_EQ(2, integration.GetVis().dimension(0));
+                integration = cpu::Integration(1, *ms, 1, 1, Slice(0,1,-1)); //Slice(0,1,boost::none)
+                ASSERT_EQ(4, integration.GetVis().dimension(0));
                 ASSERT_EQ(5253, integration.GetVis().dimension(1));
                 ASSERT_EQ(48, integration.GetVis().dimension(2));
                 ASSERT_EQCD(-9.90243244171143 + -39.7880058288574i, integration.GetVis()(0,1,0), THRESHOLD);
                 ASSERT_EQCD(18.1002998352051 + -15.6084890365601i, integration.GetVis()(1,1,0), THRESHOLD);
+                ASSERT_DOUBLE_EQ(0.0, integration.GetUVW()[0](0));
+                ASSERT_DOUBLE_EQ(-213.16346997196314, integration.GetUVW()[1](0));
+            }
+            {
+                // XX + YY Vis Integration
+                //Slice(0, std::max(1u, nPolarizations-1), nPolarizations-1);
+                auto integration = cpu::Integration(0, *ms, 0, 1, Slice(0,3,4));
+                ASSERT_EQ(2, integration.GetVis().dimension(0));
+                ASSERT_EQ(5253, integration.GetVis().dimension(1));
+                ASSERT_EQ(48, integration.GetVis().dimension(2));
+                ASSERT_EQCD(-0.703454494476318-24.7045249938965i, integration.GetVis()(0,1,0), THRESHOLD);
+                ASSERT_EQCD(-28.7867774963379 + 20.7210712432861i, integration.GetVis()(1,1,0), THRESHOLD);
+                ASSERT_DOUBLE_EQ(0.0, integration.GetUVW()[0](0));
+                ASSERT_DOUBLE_EQ(-213.2345748340571, integration.GetUVW()[1](0));
+
+
+                integration = cpu::Integration(1, *ms, 1, 1, Slice(0,3,4));
+                ASSERT_EQ(2, integration.GetVis().dimension(0));
+                ASSERT_EQ(5253, integration.GetVis().dimension(1));
+                ASSERT_EQ(48, integration.GetVis().dimension(2));
+                ASSERT_EQCD(-9.90243244171143 + -39.7880058288574i, integration.GetVis()(0,1,0), THRESHOLD);
+                ASSERT_EQCD(2.42902636528015 + -20.8974418640137i, integration.GetVis()(1,1,0), THRESHOLD);
                 ASSERT_DOUBLE_EQ(0.0, integration.GetUVW()[0](0));
                 ASSERT_DOUBLE_EQ(-213.16346997196314, integration.GetUVW()[1](0));
             }

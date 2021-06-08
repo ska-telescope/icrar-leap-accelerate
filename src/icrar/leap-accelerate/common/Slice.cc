@@ -56,6 +56,7 @@ namespace icrar
             }
             if(interval > (end - start))
             {
+                // Not an exception in python slices, but likely unintended behaviour
                 throw icrar::exception("range increment out of bounds", __FILE__, __LINE__);
             }
         }

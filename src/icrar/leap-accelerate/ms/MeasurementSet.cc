@@ -277,9 +277,10 @@ namespace icrar
         uint32_t nPolarizations = GetNumPols();
 
         //normal mode
-        //Range polarizationRange = polarizationSlice.Evaluate(nPolarizations);
+        Range polarizationRange = polarizationSlice.Evaluate(nPolarizations);
+
         // XX + YY mode (first + last) or (first)
-        Range polarizationRange = Range(0, std::max(1u, nPolarizations-1), nPolarizations-1);
+        //Range polarizationRange = Range(0, std::max(1u, nPolarizations-1), nPolarizations-1);
 
         Eigen::Tensor<std::complex<double>, 3> visibilities = ReadVis(
             startTimestep, intervalTimesteps, polarizationRange, "DATA");
@@ -292,14 +293,13 @@ namespace icrar
         const uint32_t num_channels = GetNumChannels();
         const unsigned int total_rows = GetNumRows();
 
-        auto timestep_slice = Eigen::seq(startTimestep, Eigen::last, intervalTimesteps);
+        auto timestep_slice = Eigen::seq(startTimestep, startTimestep+intervalTimesteps, intervalTimesteps);
         const unsigned int start_row = startTimestep * num_baselines;
         const unsigned int rows = intervalTimesteps * num_baselines;
         
-        // NOTE: dimension size needed for this slice
-        auto pols_slice = Eigen::seq(polarizationRange.GetStart(), polarizationRange.GetEnd(), polarizationRange.GetInterval());
-        const unsigned int pol_length = pols_slice.sizeObject();
-        const unsigned int pol_stride = pols_slice.incrObject(); // select XX and YY polarizations
+        auto pols_slice = polarizationRange.ToSeq();
+        const unsigned int pol_length = boost::numeric_cast<unsigned int>(pols_slice.sizeObject());
+        const unsigned int pol_stride = boost::numeric_cast<unsigned int>(pols_slice.incrObject());
         
         if(!m_measurementSet->tableDesc().isColumn(column))
         {

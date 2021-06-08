@@ -65,9 +65,9 @@ namespace icrar
             return (m_end - m_start) / m_interval;
         }
 
-        Eigen::ArithmeticSequence<Eigen::Index, Eigen::Index, Eigen::Index> GetSeq()
+        Eigen::ArithmeticSequence<Eigen::Index, Eigen::Index, Eigen::Index> ToSeq()
         {
-            return Eigen::seq(m_start, m_end, m_interval);
+            return Eigen::seq(m_start, m_end-1, m_interval);
         }
     };
 } // namespace icrar
