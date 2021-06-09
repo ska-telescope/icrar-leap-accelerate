@@ -30,24 +30,16 @@
 
 namespace icrar
 {
-    MeasurementSet::MeasurementSet(const std::string& filepath, boost::optional<int> overrideNStations, bool readAutocorrelations)
+    MeasurementSet::MeasurementSet(const std::string& filepath)
     : m_measurementSet(std::make_unique<casacore::MeasurementSet>(filepath))
     , m_msmc(std::make_unique<casacore::MSMainColumns>(*m_measurementSet))
     , m_msc(std::make_unique<casacore::MSColumns>(*m_measurementSet))
     , m_filepath(filepath)
-    , m_readAutocorrelations(false)
     {
-        std:tie(m_antennas, m_readAutocorrelations) = CalculateUniqueAntennas();
-        LOG(warning) << "unique antennas loaded";
-
-        if(overrideNStations.is_initialized())
+        std::tie(m_antennas, m_readAutocorrelations) = CalculateUniqueAntennas();
+        if(m_antennas.size() != m_measurementSet->antenna().nrow())
         {
-            m_stations = overrideNStations.get();
-            LOG(warning) << "overriding number of stations will be removed in future releases";
-        }
-        else if(m_antennas.size() != m_measurementSet->antenna().nrow())
-        {
-            // The antenna column may have blank entries for flagged antennas
+            // The antenna column may have blank entries for flagged antennas            
             LOG(warning) << "total antennas = " << m_measurementSet->antenna().nrow();
             LOG(warning) << "unique antennas = " << m_antennas.size();
             LOG(warning) << "using unique antennas";
@@ -279,14 +271,10 @@ namespace icrar
     {
         uint32_t nPolarizations = GetNumPols();
 
-        std::cout << "pol:" << polarizationSlice.GetStart() << ":" << polarizationSlice.GetInterval() << ":" << polarizationSlice.GetEnd(); 
 
-        //normal mode
-        Range polarizationRange = polarizationSlice.Evaluate(nPolarizations);
 
-        std::cout << "pol:" << polarizationRange.GetStart() << ":" << polarizationRange.GetInterval() << ":" << polarizationRange.GetEnd(); 
-        // XX + YY mode (first + last) or (first)
-        //Range polarizationRange = Range(0, std::max(1u, nPolarizations-1), nPolarizations-1);
+        Range polarizationRange = polarizationSlice.Evaluate(nPolarizations); //normal mode
+        //Range polarizationRange = Range(0, std::max(1u, nPolarizations-1), nPolarizations-1); // XX + YY mode (first + last) or (first)
 
         return ReadVis(startTimestep, intervalTimesteps, polarizationRange, "DATA");
     }
@@ -297,7 +285,7 @@ namespace icrar
         const uint32_t num_channels = GetNumChannels();
         const unsigned int total_rows = GetNumRows();
 
-        auto timestep_slice = Eigen::seq(startTimestep, startTimestep+intervalTimesteps, intervalTimesteps);
+        //auto timestep_slice = Eigen::seq(startTimestep, startTimestep+intervalTimesteps, intervalTimesteps);
         const unsigned int start_row = startTimestep * num_numBaselines;
         const unsigned int rows = intervalTimesteps * num_numBaselines;
         
@@ -408,7 +396,10 @@ namespace icrar
         casacore::Vector<casacore::Int> a2 = m_msmc->antenna2().getColumn();
         std::set<std::int32_t> antennas;
         std::set_union(a1.cbegin(), a1.cend(), a2.cbegin(), a2.cend(), std::inserter(antennas, antennas.begin()));
+
+        // TODO(cgray): it may only be necessary to check the first element of both iterators
         bool autoCorrelations = std::mismatch(a1.cbegin(), a1.cend(), a2.cbegin(), [](int a, int b) { return a != b; }).first != a1.cend();
+        
         return std::make_tuple(antennas, autoCorrelations);
     }
 } // namespace icrar

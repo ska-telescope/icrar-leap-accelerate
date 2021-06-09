@@ -96,8 +96,6 @@ namespace icrar
             auto mr = m(m.numpy_rows(-1,0,-1), m.numpy_cols(-1,0,-1));
             ASSERT_MEQI(m(Eigen::seq(Eigen::last, 0, -1), Eigen::seq(Eigen::last, 0, -1)), mr, 0);
             ASSERT_MEQI(m.reverse(), mr, 0);
-
-            std::cout << v(Eigen::seq(0, 0, 1)) << std::endl;
         }
     };
 

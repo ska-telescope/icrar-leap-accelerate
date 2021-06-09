@@ -41,37 +41,37 @@ namespace icrar
      */
     class Slice
     {
-        boost::optional<int32_t> m_start;
-        boost::optional<int32_t> m_end;
-        boost::optional<int32_t> m_interval;
+        boost::optional<int64_t> m_start;
+        boost::optional<int64_t> m_end;
+        boost::optional<int64_t> m_interval;
 
     public:
         Slice() = default;
-        Slice(boost::optional<int32_t> interval);
-        Slice(boost::optional<int32_t> start, boost::optional<int32_t> end);
-        Slice(boost::optional<int32_t> start, boost::optional<int32_t> end, boost::optional<int32_t> interval);
+        Slice(boost::optional<int64_t> interval);
+        Slice(boost::optional<int64_t> start, boost::optional<int64_t> end);
+        Slice(boost::optional<int64_t> start, boost::optional<int64_t> end, boost::optional<int64_t> interval);
         
         /**
          * @brief Gets the starting index of an arbitrary collection slice.
          * -1 represents the end of the collection.
          * none represents the element after the end of the collection. 
          */
-        boost::optional<int32_t> GetStart() const { return m_start; }
+        boost::optional<int64_t> GetStart() const { return m_start; }
 
         /**
          * @brief Gets the end exclusive index of an arbitrary collection slice.
          * -1 represents the end of the collection.
          * none represents the element after the end of the collection.
          */
-        boost::optional<int32_t> GetEnd() const { return m_end; }
+        boost::optional<int64_t> GetEnd() const { return m_end; }
 
         /**
          * @brief Gets the interval betweeen indices of an arbitrary collection slice.
          * none represents the length of the collection. 
          */
-        boost::optional<int32_t> GetInterval() const { return m_interval; }
+        boost::optional<int64_t> GetInterval() const { return m_interval; }
 
-        Range Evaluate(int collectionSize) const;
+        Range Evaluate(int64_t collectionSize) const;
 
         static Slice First() { return Slice(0, 1, 1); }
         static Slice Last() { return Slice(-1, boost::none, 1); }

@@ -63,7 +63,7 @@ namespace cpu
     {
     protected:
         int m_integrationNumber;
-        uint32_t m_rows;
+        int64_t m_rows;
 
         std::vector<MVuvw> m_UVW; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
         Eigen::Tensor<std::complex<double>, 3> m_visibilities; //[npol][nbl][nch]

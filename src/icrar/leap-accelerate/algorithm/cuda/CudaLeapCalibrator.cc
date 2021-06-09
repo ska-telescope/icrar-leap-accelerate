@@ -201,8 +201,8 @@ namespace cuda
             auto integration = cuda::HostIntegration(
                 integrationNumber,
                 ms,
-                solution * validatedSolutionInterval.GetInterval(),
-                validatedSolutionInterval.GetInterval());
+                boost::numeric_cast<int32_t>(solution * validatedSolutionInterval.GetInterval()),
+                boost::numeric_cast<int32_t>(validatedSolutionInterval.GetInterval()));
             checkCudaErrors(cudaGetLastError());
             LOG(info) << "Read integration data in " << integration_read_timer;
 

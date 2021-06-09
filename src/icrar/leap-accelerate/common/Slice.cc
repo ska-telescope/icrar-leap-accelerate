@@ -25,15 +25,15 @@
 
 namespace icrar
 {
-    Slice::Slice(boost::optional<int32_t> interval)
+    Slice::Slice(boost::optional<int64_t> interval)
     : Slice(0, boost::none, interval)
     {}
 
-    Slice::Slice(boost::optional<int32_t> start, boost::optional<int32_t> end)
+    Slice::Slice(boost::optional<int64_t> start, boost::optional<int64_t> end)
     : Slice(start, end, 1)
     {}
 
-    Slice::Slice(boost::optional<int32_t> start, boost::optional<int32_t> end, boost::optional<int32_t> interval)
+    Slice::Slice(boost::optional<int64_t> start, boost::optional<int64_t> end, boost::optional<int64_t> interval)
     {
         //forward sequences only
         if(end != boost::none && start != boost::none)
@@ -55,7 +55,7 @@ namespace icrar
         {
             throw icrar::exception("undefined behaviour", __FILE__, __LINE__);
         }
-        if(interval.is_initialized() && interval <= 0)
+        if(interval.is_initialized() && interval <= 0l)
         {
             std::stringstream ss;
             ss << "expected a non zero integer interval (" << interval << ")";
@@ -67,12 +67,12 @@ namespace icrar
         m_end = end;
     }
 
-    Range Slice::Evaluate(int collectionSize) const
+    Range Slice::Evaluate(int64_t collectionSize) const
     {
         return Range
         {
-            (m_start == boost::none) ? collectionSize : (m_start < 0) ? m_start.get() + collectionSize : m_start.get(),
-            (m_end == boost::none) ? collectionSize : (m_end < 0) ? m_end.get() + collectionSize : m_end.get(),
+            (m_start == boost::none) ? collectionSize : (m_start < 0l) ? m_start.get() + collectionSize : m_start.get(),
+            (m_end == boost::none) ? collectionSize : (m_end < 0l) ? m_end.get() + collectionSize : m_end.get(),
             (m_interval == boost::none) ? collectionSize : m_interval.get()
         };
     }
@@ -84,7 +84,7 @@ namespace icrar
         return ParseSlice(doc);
     }
 
-    boost::optional<int> GetOptionalInt(const rapidjson::Value& v)
+    boost::optional<int64_t> GetOptionalInt(const rapidjson::Value& v)
     {
         if(v.IsNull())
         {
@@ -92,7 +92,7 @@ namespace icrar
         }
         else
         {
-            return v.GetInt();
+            return v.GetInt64();
         }
     }
 

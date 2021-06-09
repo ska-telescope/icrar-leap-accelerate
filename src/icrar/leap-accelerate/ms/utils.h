@@ -212,7 +212,7 @@ namespace icrar
         unsigned int num_pols,
         const char* column)
     {
-        auto timestep_slice = Eigen::seq(start_timestep, Eigen::last, interval_timesteps);
+        //auto timestep_slice = Eigen::seq(start_timestep, Eigen::last, interval_timesteps);
         const unsigned int start_row = start_timestep * num_baselines;
         const unsigned int rows = interval_timesteps * num_baselines;
         const unsigned int total_rows = num_timesteps * num_baselines;
@@ -220,10 +220,14 @@ namespace icrar
         
         // NOTE: dimension size needed for this slice
         //auto pols_slice = Eigen::seq(0, num_pols-1, std::max(1u, num_pols-1));
+        if(polarizationRange.GetEnd() != num_pols)
+        {
+            throw std::runtime_error("polarizations slice must create correct range");
+        }
         auto pols_slice = polarizationRange.ToSeq();
         
-        const unsigned int pol_length = pols_slice.sizeObject();
-        const unsigned int pol_stride = pols_slice.incrObject(); // select XX and YY polarizations
+        const int64_t pol_length = pols_slice.sizeObject();
+        const int64_t pol_stride = pols_slice.incrObject(); // select XX and YY polarizations
         
 
         if(!ms.tableDesc().isColumn(column))
@@ -288,15 +292,15 @@ namespace icrar
         unsigned int num_pols,
         const char* columnName)
     {
-        auto timestep_slice = Eigen::seq(start_timestep, Eigen::last, interval_timesteps);
+        //auto timestep_slice = Eigen::seq(start_timestep, Eigen::last, interval_timesteps);
         const unsigned int start_row = start_timestep * num_baselines;
         const unsigned int rows = interval_timesteps * num_baselines;
         const unsigned int total_rows = num_timesteps * num_baselines;
 
         // NOTE: dimension size needed for this slice
         auto pols_slice = Eigen::seq(0, num_pols-1, std::max(1u, num_pols-1)); // select XX and YY polarizations
-        const unsigned int pol_length = pols_slice.sizeObject();
-        const unsigned int pol_stride = pols_slice.incrObject();
+        const int64_t pol_length = pols_slice.sizeObject();
+        const int64_t pol_stride = pols_slice.incrObject();
 
         if(!ms.tableDesc().isColumn(columnName))
         {

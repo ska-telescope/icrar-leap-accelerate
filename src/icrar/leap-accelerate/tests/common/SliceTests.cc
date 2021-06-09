@@ -35,7 +35,7 @@ namespace icrar
             using namespace boost;
 
             ASSERT_NO_THROW(Slice());
-            ASSERT_NO_THROW(Slice(none));
+            ASSERT_NO_THROW(Slice(boost::none));
             ASSERT_THROW(Slice(0), icrar::exception);
             ASSERT_NO_THROW(Slice(1));
 
@@ -85,13 +85,13 @@ namespace icrar
             last << 14;
             ASSERT_MEQI(last, v(Slice::Last().Evaluate(v.size()).ToSeq()), 0);
 
-            // Eigen::VectorXi each(5);
-            // each << 10, 11, 12, 13, 14;
-            // ASSERT_MEQI(each, v(Slice::Each().Evaluate(v.size()).ToSeq()), 0);
+            Eigen::VectorXi each(5);
+            each << 10, 11, 12, 13, 14;
+            ASSERT_MEQI(each, v(Slice::Each().Evaluate(v.size()).ToSeq()), 0);
 
-            // Eigen::VectorXi all(1);
-            // all << 10;
-            // ASSERT_MEQI(all, v(Slice::All().Evaluate(v.size()).ToSeq()), 0);
+            Eigen::VectorXi all(1);
+            all << 10;
+            ASSERT_MEQI(all, v(Slice::All().Evaluate(v.size()).ToSeq()), 0);
         }
     };
 

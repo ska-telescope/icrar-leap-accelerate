@@ -40,8 +40,8 @@ class MeasurementSetTests : public testing::Test
 
 public:
     MeasurementSetTests()
-    : msMwa(icrar::MeasurementSet(std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms", boost::none, true))
-    , msAa4(icrar::MeasurementSet(std::string(TEST_DATA_DIR) + "/aa4/aa4-SS-33-120.ms", boost::none, false))
+    : msMwa(icrar::MeasurementSet(std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms"))
+    , msAa4(icrar::MeasurementSet(std::string(TEST_DATA_DIR) + "/aa4/aa4-SS-33-120.ms"))
     {
     }
 
@@ -217,7 +217,7 @@ public:
         Eigen::Tensor<std::complex<double>, 3> visibilities = msAa4.GetVis(
             0,
             1,
-            icrar::Slice(0, 4, 1) // normal mode
+            icrar::Slice(0, num_pols, 1) // normal mode
         );
 
         EXPECT_EQ(4, visibilities.dimension(0));

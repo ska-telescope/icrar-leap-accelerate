@@ -51,7 +51,7 @@ namespace icrar
         void SetUp() override
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, boost::none, true);
+            ms = std::make_unique<icrar::MeasurementSet>(filename);
         }
 
         void TearDown() override
@@ -108,7 +108,7 @@ namespace icrar
         void TestReadFromFileOverrideStations()
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
-            auto rawms = std::make_unique<icrar::MeasurementSet>(filename, 102, true);
+            auto rawms = std::make_unique<icrar::MeasurementSet>(filename);
             auto meta = icrar::cpu::MetaData(*rawms, ToUVWVector(rawms->GetCoords(0, rawms->GetNumTimesteps())), boost::none);
 
             ASSERT_EQ(102, rawms->GetNumStations());

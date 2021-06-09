@@ -78,7 +78,7 @@ namespace icrar
         void SetUp() override
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, 102, true);
+            ms = std::make_unique<icrar::MeasurementSet>(filename);
             std::cout << std::setprecision(15);
         }
 
@@ -337,7 +337,7 @@ namespace icrar
         void CalibrateTest(ComputeImplementation impl, const ComputeOptionsDTO computeOptions, const Slice solutionInterval, std::function<cpu::CalibrationCollection()> getExpected)
         {
             auto solutionRange = solutionInterval.Evaluate(ms->GetNumTimesteps());
-            auto metadata = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, solutionRange.GetInterval())));
+            auto metadata = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, boost::numeric_cast<int32_t>(solutionRange.GetInterval()))));
             std::vector<icrar::SphericalDirection> directions =
             {
                 { -0.4606549305661674,-0.29719233792392513 },
@@ -432,7 +432,7 @@ namespace icrar
          */
         void ReferenceAntennaTest(const ComputeImplementation impl, std::vector<int> referenceAntennas, const Slice solutionInterval)
         {
-            auto metadata = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, solutionInterval.GetInterval().get())));
+            auto metadata = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, boost::numeric_cast<int32_t>(solutionInterval.GetInterval().get()))));
             std::vector<icrar::SphericalDirection> directions =
             {
                 { -0.4606549305661674,-0.29719233792392513 },

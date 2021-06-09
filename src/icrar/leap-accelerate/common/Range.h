@@ -29,17 +29,19 @@
 namespace icrar
 {
     /**
-     * @brief Represents a forwards linear sequence of indexes for some finite collection
+     * @brief Represents a forwards linear sequence of indexes for some finite collection.
+     * (Indexes are always positive and can be converted to Eigen ArithmeticSequence)
      * 
      */
-    class Range
+    template<typename T>
+    class RangeT
     {
-        std::uint32_t m_start;
-        std::uint32_t m_interval;
-        std::uint32_t m_end;
+        T m_start;
+        T m_interval;
+        T m_end;
 
     public:
-        Range(int start, int end, int interval)
+        RangeT(T start, T end, T interval)
         {
             if(start < 0) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
             if(end < 0) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
@@ -56,16 +58,16 @@ namespace icrar
             m_end = end;
         }
 
-        uint32_t GetStart() const { return m_start; }
-        uint32_t GetEnd() const { return m_end; }
-        uint32_t GetInterval() const { return m_interval; }
+        T GetStart() const { return m_start; }
+        T GetEnd() const { return m_end; }
+        T GetInterval() const { return m_interval; }
 
         /**
          * @brief Gets the number of elements in the range
          * 
          * @return int 
          */
-        int GetSize() const
+        T GetSize() const
         {
             return (m_end - m_start) / m_interval;
         }
@@ -75,4 +77,7 @@ namespace icrar
             return Eigen::seq(m_start, m_end-1, m_interval);
         }
     };
+
+    class Range : public RangeT<int64_t>{ public: Range(int64_t start, int64_t end, int64_t interval) : RangeT(start, end, interval){}  };
+    using Range32 = RangeT<int32_t>;
 } // namespace icrar

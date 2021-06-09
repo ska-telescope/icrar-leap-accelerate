@@ -69,7 +69,7 @@ namespace icrar
         uint32_t m_numPols;
 
     public:
-        MeasurementSet(const std::string& filepath, boost::optional<int> overrideNStations, bool readAutocorrelations);
+        MeasurementSet(const std::string& filepath);
 
         boost::optional<std::string> GetFilepath() const { return m_filepath; }
         

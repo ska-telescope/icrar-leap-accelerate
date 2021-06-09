@@ -45,7 +45,7 @@ namespace icrar
         void SetUp() override
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, boost::none, true);
+            ms = std::make_unique<icrar::MeasurementSet>(filename);
         }
 
         void TearDown() override
@@ -87,7 +87,7 @@ namespace icrar
             }
             {
                 // Full Vis Integration
-                auto integration = cpu::Integration(0, *ms, 0, 1, Slice(0,1,4));
+                auto integration = cpu::Integration(0, *ms, 0, 1, Slice(0,4,1));
                 ASSERT_EQ(4, integration.GetVis().dimension(0)); // polarizations
                 ASSERT_EQ(5253, integration.GetVis().dimension(1)); // baselines
                 ASSERT_EQ(48, integration.GetVis().dimension(2)); // channels
@@ -96,7 +96,7 @@ namespace icrar
                 ASSERT_DOUBLE_EQ(0.0, integration.GetUVW()[0](0));
                 ASSERT_DOUBLE_EQ(-213.2345748340571, integration.GetUVW()[1](0));
 
-                integration = cpu::Integration(0, *ms, 0, 1, Slice(0,1,-1)); //Slice(0,1,boost::none)
+                integration = cpu::Integration(0, *ms, 0, 1, Slice(0,boost::none,1));
                 ASSERT_EQ(4, integration.GetVis().dimension(0)); // polarizations
                 ASSERT_EQ(5253, integration.GetVis().dimension(1)); // baselines
                 ASSERT_EQ(48, integration.GetVis().dimension(2)); // channels
@@ -106,7 +106,7 @@ namespace icrar
                 ASSERT_DOUBLE_EQ(-213.2345748340571, integration.GetUVW()[1](0));
 
 
-                integration = cpu::Integration(1, *ms, 1, 1, Slice(0,1,-1)); //Slice(0,1,boost::none)
+                integration = cpu::Integration(1, *ms, 1, 1, Slice(0,boost::none,1));
                 ASSERT_EQ(4, integration.GetVis().dimension(0));
                 ASSERT_EQ(5253, integration.GetVis().dimension(1));
                 ASSERT_EQ(48, integration.GetVis().dimension(2));
@@ -118,7 +118,7 @@ namespace icrar
             {
                 // XX + YY Vis Integration
                 //Slice(0, std::max(1u, nPolarizations-1), nPolarizations-1);
-                auto integration = cpu::Integration(0, *ms, 0, 1, Slice(0,3,4));
+                auto integration = cpu::Integration(0, *ms, 0, 1, Slice(0,4,3));
                 ASSERT_EQ(2, integration.GetVis().dimension(0));
                 ASSERT_EQ(5253, integration.GetVis().dimension(1));
                 ASSERT_EQ(48, integration.GetVis().dimension(2));
@@ -128,7 +128,7 @@ namespace icrar
                 ASSERT_DOUBLE_EQ(-213.2345748340571, integration.GetUVW()[1](0));
 
 
-                integration = cpu::Integration(1, *ms, 1, 1, Slice(0,3,4));
+                integration = cpu::Integration(1, *ms, 1, 1, Slice(0,4,3));
                 ASSERT_EQ(2, integration.GetVis().dimension(0));
                 ASSERT_EQ(5253, integration.GetVis().dimension(1));
                 ASSERT_EQ(48, integration.GetVis().dimension(2));
