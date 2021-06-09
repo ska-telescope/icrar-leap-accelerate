@@ -65,7 +65,7 @@ From the repository root folder run:
 
 NOTE: pulling exernal submodules is now automated by CMake. When downloading the source files via tools other than git the folder `external/` will need to be copied manually.
 
-##### Linux
+##### Linux GCC
 
 `export CUDA_HOME=/usr/local/cuda`
 
@@ -77,21 +77,29 @@ NOTE: pulling exernal submodules is now automated by CMake. When downloading the
 
 `mkdir -p build/Debug && cd build/Debug`
 
-`cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCUDA_ENABLED=TRUE -DCMAKE_BUILD_TYPE=Debug`
+`cmake ../../ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCUDA_ENABLED=TRUE`
 
 With tracing to file:
 
-`cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCUDA_ENABLED=TRUE -DTRACE=ON -DCMAKE_BUILD_TYPE=Debug`
+`cmake ../../ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCUDA_ENABLED=TRUE -DTRACE=ON`
 
 With gcovr analysis:
 
 `cmake ../.. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"`
 
-#### Release
+###### Release
 
 `mkdir -p build/Release && cd build/Release`
 
-`cmake ../../ -DCUDA_ENABLED=TRUE -DCMAKE_BUILD_TYPE=Release`
+`cmake ../../ -DCMAKE_BUILD_TYPE=Release -DCUDA_ENABLED=TRUE`
+
+###### SYCL (Experimental)
+
+SYCL builds using HipSYCL currently do not support Python or precompiled headers. (Boost.Python is not distributed with HipSYCL Boost 1.76.0)
+
+`mkdir -p build/sycl/Release && cd build/sycl/Release`
+
+`cmake ../../../ -DCMAKE_BUILD_TYPE=Release -DHIPSYCL_ENABLED=TRUE -DUSE_PCH=FALSE -DHIPSYCL_CUDA_PATH=/opt/hipSYCL/cuda -DBoost_NO_BOOST_CMAKE=TRUE -DBoost_NO_SYSTEM_PATHS=TRUE -DBOOST_ROOT=/opt/hipSYCL/boost/boost -DHIPSYCL_TARGETS=cuda:sm_60`
 
 ## Testing
 

@@ -10,6 +10,7 @@ message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(CUDA_ENABLED "Build with cuda support" OFF)
+option(SYCL_ENABLED "Build with sycl support" OFF)
 set(CMAKE_CUDA_ARCHITECTURES "" CACHE STRING "Cuda Compute and Streaming Multiprocessor level")
 option(CMAKE_RUN_CLANG_TIDY "Run clang-tidy with the compiler." OFF)
 option(WERROR "Warnings as Errors" OFF)
@@ -21,6 +22,10 @@ option(USE_PCH "Use pre-compile headers internally when possible" ON)
 if(DEFINED ENV{CUDA_ENABLED})
   set(CUDA_ENABLED $ENV{CUDA_ENABLED})
   message("-- Environment variable override: CUDA_ENABLED=${CUDA_ENABLED}")
+endif()
+if(DEFINED ENV{SYCL_ENABLED})
+  set(SYCL_ENABLED $ENV{SYCL_ENABLED})
+  message("-- Environment variable override: SYCL_ENABLED=${SYCL_ENABLED}")
 endif()
 if(DEFINED ENV{WERROR})
   set(WERROR $ENV{WERROR})
@@ -71,7 +76,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIE")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall -Wextra")
   if(WERROR)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
   endif()
@@ -79,6 +84,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GN
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wconversion")
   endif()
 endif()
+
+set(Boost_DIR "/opt/hipSYCL/boost/boost/lib/cmake" CACHE STRING "")
 
 # Load CMake Modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -151,7 +158,12 @@ if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
 endif()
 
 add_definitions(-DBOOST_ALL_DYN_LINK)
-find_package(Boost REQUIRED COMPONENTS log log_setup program_options filesystem python numpy)
+#find_package(Boost 1.76.0 EXACT)
+find_package(Boost REQUIRED
+  COMPONENTS log log_setup filesystem program_options
+  OPTIONAL_COMPONENTS python numpy
+)
+set(PYTHON_ENABLED ${Boost_PYTHON_FOUND})
 
 set(CASACORE_FIND_QUIETLY ON)
 find_package(Casacore COMPONENTS ms)

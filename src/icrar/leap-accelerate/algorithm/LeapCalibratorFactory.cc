@@ -23,6 +23,7 @@
 #include "LeapCalibratorFactory.h"
 #include <icrar/leap-accelerate/algorithm/cpu/CpuLeapCalibrator.h>
 #include <icrar/leap-accelerate/algorithm/cuda/CudaLeapCalibrator.h>
+#include <icrar/leap-accelerate/algorithm/sycl/SyclLeapCalibrator.h>
 #include <icrar/leap-accelerate/exception/exception.h>
 
 namespace icrar
@@ -39,6 +40,14 @@ namespace icrar
             return std::make_unique<cuda::CudaLeapCalibrator>();
 #else
             throw invalid_argument_exception("cuda build option not enabled", "impl", __FILE__, __LINE__);
+#endif
+        }
+        else if(impl == ComputeImplementation::sycl)
+        {
+#ifdef SYCL_ENABLED
+            return std::make_unique<sycl::SyclLeapCalibrator>();
+#else
+            throw invalid_argument_exception("sycl build option not enabled", "impl", __FILE__, __LINE__);
 #endif
         }
         else

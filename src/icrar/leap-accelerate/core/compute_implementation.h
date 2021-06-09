@@ -34,6 +34,7 @@ namespace icrar
     {
         cpu, // Compute implementation on cpu using eigen
         cuda, // Compute implementation on gpu using nvidia cuda
+        sycl
     };
 
     /**

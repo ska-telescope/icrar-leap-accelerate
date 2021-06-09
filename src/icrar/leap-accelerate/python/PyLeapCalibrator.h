@@ -22,6 +22,8 @@
 
 #pragma once
 
+#if PYTHON_ENABLED
+
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
 #include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
 #include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
@@ -89,4 +91,4 @@ namespace python
 } // namespace python
 } // namespace icrar
 
-
+#endif // PYTHON_ENABLED

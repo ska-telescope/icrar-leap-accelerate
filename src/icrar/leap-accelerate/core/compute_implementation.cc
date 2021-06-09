@@ -34,6 +34,8 @@ namespace icrar
                 return "cpu";
             case ComputeImplementation::cuda:
                 return "cuda";
+            case ComputeImplementation::sycl:
+                return "sycl";
             default:
                 throw invalid_argument_exception("ComputeImplementation", "value", __FILE__, __LINE__);
                 return "";
@@ -72,6 +74,11 @@ namespace icrar
         else if(value == "cuda")
         {
             out = ComputeImplementation::cuda;
+            return true;
+        }
+        else if(value == "sycl")
+        {
+            out = ComputeImplementation::sycl;
             return true;
         }
         return false;
