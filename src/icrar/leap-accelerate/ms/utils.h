@@ -201,11 +201,11 @@ namespace icrar
     }
 
     template<typename T>
-    auto ms_read_vis1(
+    Eigen::Tensor<T, 3> ms_read_vis1(
         const casacore::MeasurementSet& ms,
         unsigned int start_timestep,
         unsigned int interval_timesteps,
-        Range polarizationRange,
+        Range<int32_t> polarizationRange,
         unsigned int num_timesteps,
         unsigned int num_baselines,
         unsigned int num_channels,
@@ -220,7 +220,7 @@ namespace icrar
         
         // NOTE: dimension size needed for this slice
         //auto pols_slice = Eigen::seq(0, num_pols-1, std::max(1u, num_pols-1));
-        if(polarizationRange.GetEnd() != num_pols)
+        if(static_cast<int64_t>(polarizationRange.GetEnd()) != num_pols)
         {
             throw std::runtime_error("polarizations slice must create correct range");
         }
@@ -277,12 +277,11 @@ namespace icrar
 
         //TODO: Converting ICD format from [pol, channels, baselines*timesteps] to [pol, baselines*timesteps, channels]
         const Eigen::array<Eigen::DenseIndex, 3> shuffle = { 0, 2, 1 };
-        Eigen::Tensor<T, 3> output = view.shuffle(shuffle).cast<T>();
-        return output;
+        return view.shuffle(shuffle).cast<T>();
     }
 
     template<typename T>
-    auto ms_read_vis2(
+    Eigen::Tensor<T, 4> ms_read_vis2(
         const casacore::MeasurementSet& ms,
         unsigned int start_timestep,
         unsigned int interval_timesteps,
@@ -343,7 +342,6 @@ namespace icrar
         casacore::ArrayColumn<std::complex<float>> ac(ms, columnName);
         casacore::Array<std::complex<float>> column_range = ac.getColumnRange(row_range, array_section);
         Eigen::TensorMap<Eigen::Tensor<std::complex<float>, 4>> view(column_range.data(), pol_length, num_channels, num_baselines, num_timesteps);
-        Eigen::Tensor<T, 4> output = view.cast<T>();
-        return output;
+        return view.cast<T>();
     }
 } // namespace icrar

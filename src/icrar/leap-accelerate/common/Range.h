@@ -34,14 +34,14 @@ namespace icrar
      * 
      */
     template<typename T>
-    class RangeT
+    class Range
     {
         T m_start;
         T m_interval;
         T m_end;
 
     public:
-        RangeT(T start, T end, T interval)
+        Range(T start, T end, T interval)
         {
             if(start < 0) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
             if(end < 0) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
@@ -78,6 +78,6 @@ namespace icrar
         }
     };
 
-    class Range : public RangeT<int64_t>{ public: Range(int64_t start, int64_t end, int64_t interval) : RangeT(start, end, interval){}  };
-    using Range32 = RangeT<int32_t>;
+    using Rangei = Range<int32_t>;
+    using Rangel = Range<int64_t>;
 } // namespace icrar

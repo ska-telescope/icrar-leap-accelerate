@@ -26,6 +26,7 @@
 #include <rapidjson/document.h>
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 #include <string>
 #include <stdint.h>
 
@@ -71,7 +72,16 @@ namespace icrar
          */
         boost::optional<int64_t> GetInterval() const { return m_interval; }
 
-        Range Evaluate(int64_t collectionSize) const;
+        template<typename T>
+        Range<T> Evaluate(T collectionSize) const
+        {
+            return Range<T>
+            {
+                boost::numeric_cast<T>((m_start == boost::none) ? collectionSize : (m_start < 0l) ? m_start.get() + collectionSize : m_start.get()),
+                boost::numeric_cast<T>((m_end == boost::none) ? collectionSize : (m_end < 0l) ? m_end.get() + collectionSize : m_end.get()),
+                boost::numeric_cast<T>((m_interval == boost::none) ? collectionSize : m_interval.get())
+            };
+        }
 
         static Slice First() { return Slice(0, 1, 1); }
         static Slice Last() { return Slice(-1, boost::none, 1); }

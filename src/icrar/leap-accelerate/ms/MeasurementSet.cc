@@ -269,17 +269,14 @@ namespace icrar
         uint32_t intervalTimesteps,
         Slice polarizationSlice) const
     {
-        uint32_t nPolarizations = GetNumPols();
-
-
-
-        Range polarizationRange = polarizationSlice.Evaluate(nPolarizations); //normal mode
+        int32_t nPolarizations = GetNumPols();
+        Range<int32_t> polarizationRange = polarizationSlice.Evaluate(nPolarizations); //normal mode
         //Range polarizationRange = Range(0, std::max(1u, nPolarizations-1), nPolarizations-1); // XX + YY mode (first + last) or (first)
 
         return ReadVis(startTimestep, intervalTimesteps, polarizationRange, "DATA");
     }
 
-    Eigen::Tensor<std::complex<double>, 3> MeasurementSet::ReadVis(uint32_t startTimestep, uint32_t intervalTimesteps, Range polarizationRange, const char* column) const
+    Eigen::Tensor<std::complex<double>, 3> MeasurementSet::ReadVis(uint32_t startTimestep, uint32_t intervalTimesteps, Range<int32_t> polarizationRange, const char* column) const
     {
         const uint32_t num_numBaselines = GetNumBaselines();
         const uint32_t num_channels = GetNumChannels();

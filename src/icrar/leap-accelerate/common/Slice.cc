@@ -67,16 +67,6 @@ namespace icrar
         m_end = end;
     }
 
-    Range Slice::Evaluate(int64_t collectionSize) const
-    {
-        return Range
-        {
-            (m_start == boost::none) ? collectionSize : (m_start < 0l) ? m_start.get() + collectionSize : m_start.get(),
-            (m_end == boost::none) ? collectionSize : (m_end < 0l) ? m_end.get() + collectionSize : m_end.get(),
-            (m_interval == boost::none) ? collectionSize : m_interval.get()
-        };
-    }
-
     Slice ParseSlice(const std::string& json)
     {
         rapidjson::Document doc;

@@ -119,8 +119,8 @@ namespace cuda
     {
         checkCudaErrors(cudaGetLastError());
 
-        uint32_t timesteps = ms.GetNumTimesteps();
-        Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
+        int32_t timesteps = ms.GetNumTimesteps();
+        Rangei validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
 
         auto cudaComputeOptions = CudaComputeOptions(computeOptions, ms, validatedSolutionInterval);
 

@@ -39,15 +39,15 @@ namespace icrar
             ASSERT_THROW(Slice(0), icrar::exception);
             ASSERT_NO_THROW(Slice(1).Evaluate(1));
 
-            ASSERT_THROW(   Range( -1,   -1,   -1), icrar::exception);
-            ASSERT_THROW(   Range( -1,   -1,    0), icrar::exception);
-            ASSERT_THROW(   Range( -1,   -1,    1), icrar::exception);
-            ASSERT_THROW(   Range( -1,    0,   -1), icrar::exception);
-            ASSERT_THROW(   Range( -1,    0,    0), icrar::exception);
-            ASSERT_THROW(   Range( -1,    0,    1), icrar::exception);
-            ASSERT_THROW(   Range( -1,    1,   -1), icrar::exception);
-            ASSERT_THROW(   Range( -1,    1,    0), icrar::exception);
-            ASSERT_THROW(   Range( -1,    1,    1), icrar::exception);
+            ASSERT_THROW(   Rangel( -1,   -1,   -1), icrar::exception);
+            ASSERT_THROW(   Rangel( -1,   -1,    0), icrar::exception);
+            ASSERT_THROW(   Rangel( -1,   -1,    1), icrar::exception);
+            ASSERT_THROW(   Rangel( -1,    0,   -1), icrar::exception);
+            ASSERT_THROW(   Rangel( -1,    0,    0), icrar::exception);
+            ASSERT_THROW(   Rangel( -1,    0,    1), icrar::exception);
+            ASSERT_THROW(   Rangel( -1,    1,   -1), icrar::exception);
+            ASSERT_THROW(   Rangel( -1,    1,    0), icrar::exception);
+            ASSERT_THROW(   Rangel( -1,    1,    1), icrar::exception);
 
             ASSERT_NO_THROW(Slice( 0, none, none).Evaluate(1));
             ASSERT_THROW(   Slice( 0, none,    0), icrar::exception);

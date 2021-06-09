@@ -240,7 +240,7 @@ namespace icrar
          * @param polarizationSlice 
          * @return Eigen::Tensor<std::complex<double>, 3> 
          */
-        Eigen::Tensor<std::complex<double>, 3> ReadVis(uint32_t startTimestep, uint32_t intervalTimesteps, Range polarizationRange, const char* column) const;
+        Eigen::Tensor<std::complex<double>, 3> ReadVis(uint32_t startTimestep, uint32_t intervalTimesteps, Range<int32_t> polarizationRange, const char* column) const;
 
         /**
          * @brief Gets the antennas that are not present in any baselines

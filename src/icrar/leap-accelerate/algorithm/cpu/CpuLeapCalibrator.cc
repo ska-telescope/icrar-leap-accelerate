@@ -92,8 +92,7 @@ namespace cpu
         << "timesteps: " << ms.GetNumTimesteps();
 
         profiling::timer calibration_timer;
-        int timesteps = boost::numeric_cast<int>(ms.GetNumTimesteps());
-        Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
+        Rangei validatedSolutionInterval = solutionInterval.Evaluate(boost::numeric_cast<int32_t>(ms.GetNumTimesteps()));
         std::vector<double> epochs = ms.GetEpochs();
 
         profiling::timer metadata_read_timer;
@@ -106,7 +105,7 @@ namespace cpu
             cpuComputeOptions.IsFileSystemCacheEnabled());
         LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
-        int32_t solutions = boost::numeric_cast<int32_t>(validatedSolutionInterval.GetSize());
+        int32_t solutions = validatedSolutionInterval.GetSize();
         auto output_calibrations = std::vector<cpu::Calibration>();
         output_calibrations.reserve(solutions);
 
@@ -124,8 +123,8 @@ namespace cpu
             const auto integration = Integration(
                     integrationNumber,
                     ms,
-                    boost::numeric_cast<int32_t>(solution * validatedSolutionInterval.GetInterval()),
-                    boost::numeric_cast<int32_t>(validatedSolutionInterval.GetInterval()),
+                    solution * validatedSolutionInterval.GetInterval(),
+                    validatedSolutionInterval.GetInterval(),
                     Slice(0, ms.GetNumPols(), ms.GetNumPols()-1)); // XX + YY pols
                     
             LOG(info) << "Read integration data in " << integration_read_timer;

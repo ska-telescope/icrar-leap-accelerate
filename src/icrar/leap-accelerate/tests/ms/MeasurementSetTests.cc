@@ -164,7 +164,7 @@ public:
         Eigen::Tensor<std::complex<T>, 3> visibilities = icrar::ms_read_vis1<std::complex<T>>(*msAa4.GetMS(),
             0,
             1,
-            icrar::Range(0, 4, 3), // XX + YY mode
+            icrar::Rangei(0, 4, 3), // XX + YY mode
             num_timesteps,
             num_baselines,
             num_channels,
@@ -194,7 +194,7 @@ public:
         Eigen::Tensor<std::complex<T>, 3> visibilities = icrar::ms_read_vis1<std::complex<T>>(*msAa4.GetMS(),
             0,
             1,
-            icrar::Range(0, 4, 1), // normal mode
+            icrar::Rangei(0, 4, 1), // normal mode
             num_timesteps,
             num_baselines,
             num_channels,
