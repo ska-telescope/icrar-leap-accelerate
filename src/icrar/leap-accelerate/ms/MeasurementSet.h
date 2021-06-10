@@ -243,6 +243,17 @@ namespace icrar
         Eigen::Tensor<std::complex<double>, 3> ReadVis(uint32_t startTimestep, uint32_t intervalTimesteps, Range<int32_t> polarizationRange, const char* column) const;
 
         /**
+         * @brief 
+         * 
+         * @param startTimestep 
+         * @param intervalTimesteps 
+         * @param polarizationRange 
+         * @param column 
+         * @return Eigen::Tensor<std::complex<double>, 4> 
+         */
+        Eigen::Tensor<std::complex<double>, 4> ReadVisExperimental(uint32_t startTimestep, uint32_t intervalTimesteps, Range<int32_t> polarizationRange, const char* column) const;
+
+        /**
          * @brief Gets the antennas that are not present in any baselines
          * 
          * @return std::set<int32_t>

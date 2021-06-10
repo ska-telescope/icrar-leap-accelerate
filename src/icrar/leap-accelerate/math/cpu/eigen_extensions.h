@@ -37,7 +37,7 @@ namespace internal {
     template<>
     inline std::complex<double> cast(const std::complex<float>& x)
     {
-        return std::complex<double>(std::real(x),std::imag(x));
+        return std::complex<double>(x.real(),x.imag());
     }
 }
 }

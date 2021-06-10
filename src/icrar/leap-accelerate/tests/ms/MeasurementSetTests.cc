@@ -22,9 +22,9 @@
 
 #include <icrar/leap-accelerate/config.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
-#include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/common/stream_extensions.h>
 #include <icrar/leap-accelerate/math/vector_extensions.h>
+#include <icrar/leap-accelerate/math/math_conversion.h>
 #include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 
 #include <unsupported/Eigen/CXX11/Tensor>
@@ -36,12 +36,10 @@ class MeasurementSetTests : public testing::Test
     const double TOLERANCE = 0.0001;
     
     icrar::MeasurementSet msMwa;
-    icrar::MeasurementSet msAa4;
 
 public:
     MeasurementSetTests()
     : msMwa(icrar::MeasurementSet(std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms"))
-    , msAa4(icrar::MeasurementSet(std::string(TEST_DATA_DIR) + "/aa4/aa4-SS-33-120.ms"))
     {
     }
 
@@ -55,56 +53,57 @@ public:
 
     }
 
-    void TestReadRecords()
+    void TestReadCoords()
     {
-        unsigned int start_row = 0;
-        unsigned int num_baselines = 196;
+        unsigned int start_timestep = 0;
+        unsigned int timesteps = 2;
+        Eigen::MatrixX3d uvws = msMwa.GetCoords(start_timestep, timesteps);
 
-        auto uu = std::vector<double>(num_baselines);
-        auto ww = std::vector<double>(num_baselines);
-        auto vv = std::vector<double>(num_baselines);
+        ASSERT_EQ(timesteps * msMwa.GetNumBaselines(), uvws.rows());
+        
+        EXPECT_NEAR(0,                   uvws(0, 0), TOLERANCE);
+        EXPECT_NEAR(0,                   uvws(0, 1), TOLERANCE);
+        EXPECT_NEAR(0,                   uvws(0, 2), TOLERANCE);
+        EXPECT_NEAR(-213.234574834057,   uvws(1, 0), TOLERANCE);
+        EXPECT_NEAR( 135.473926784922,   uvws(1, 1), TOLERANCE);
+        EXPECT_NEAR( 136.990822255294,   uvws(1, 2), TOLERANCE);
+        EXPECT_NEAR(-126.130233053304,   uvws(2, 0), TOLERANCE);
+        EXPECT_NEAR( 169.064851738458,   uvws(2, 1), TOLERANCE);
+        EXPECT_NEAR( 139.291586460673,   uvws(2, 2), TOLERANCE);
+        EXPECT_NEAR(-366.52924769051333, uvws(5251, 0), TOLERANCE);
+        EXPECT_NEAR(-437.91497202478854, uvws(5251, 1), TOLERANCE);
+        EXPECT_NEAR(-207.55869675563417, uvws(5251, 2), TOLERANCE);
+        EXPECT_NEAR(0,                   uvws(5252, 0), TOLERANCE);
+        EXPECT_NEAR(0,                   uvws(5252, 1), TOLERANCE);
+        EXPECT_NEAR(0,                   uvws(5252, 2), TOLERANCE);
 
-        icrar::ms_read_coords(*msMwa.GetMS(),
-            start_row,
-            num_baselines,
-            uu.data(),
-            vv.data(),
-            ww.data());
-
-        auto expectedUu = GetExpectedUU();
-        auto expectedVv = GetExpectedVV();
-        auto expectedWw = GetExpectedWW();
-
-        ASSERT_VEQD(expectedUu, uu, TOLERANCE);
-        ASSERT_VEQD(expectedVv, vv, TOLERANCE);
-        ASSERT_VEQD(expectedWw, ww, TOLERANCE);
+        EXPECT_NEAR(0,                   uvws(5253, 0), TOLERANCE);
+        EXPECT_NEAR(0,                   uvws(5253, 1), TOLERANCE);
+        EXPECT_NEAR(0,                   uvws(5253, 2), TOLERANCE);
+        EXPECT_NEAR(-213.16346997196314, uvws(5254, 0), TOLERANCE);
+        EXPECT_NEAR( 135.46083100163386, uvws(5254, 1), TOLERANCE);
+        EXPECT_NEAR( 137.11437728855378, uvws(5254, 2), TOLERANCE);
     }
 
     template<typename T>
     void TestReadVis()
     {
         using namespace std::complex_literals;
-        unsigned int start_row = 0;
-        unsigned int start_channel = 0;
+        uint32_t start_timestep = 0;
+        uint32_t num_timesteps = 1;
+        uint32_t total_pols = 4;
+        uint32_t total_channels = 48;
+        uint32_t total_baselines = 5253;
+        //uint32_t total_timesteps = 14;
 
-        unsigned int slice_channels = 2;
-        unsigned int slice_baselines = 3;
-        unsigned int slice_pols = 4;
+        auto visibilities = msMwa.GetVis(
+            start_timestep, num_timesteps,
+            icrar::Slice(0,4,1)
+        );
 
-        auto visibilities = Eigen::Tensor<std::complex<T>, 3>(slice_pols, slice_baselines, slice_channels);
-
-        icrar::ms_read_vis(*msMwa.GetMS(),
-            start_row,
-            start_channel,
-            slice_channels,
-            slice_baselines,
-            slice_pols,
-            "DATA",
-            reinterpret_cast<T*>(visibilities.data())); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-
-        ASSERT_EQ(slice_pols, visibilities.dimension(0));
-        ASSERT_EQ(slice_baselines, visibilities.dimension(1));
-        ASSERT_EQ(slice_channels, visibilities.dimension(2));
+        ASSERT_EQ(total_pols, visibilities.dimension(0));
+        ASSERT_EQ(total_baselines * num_timesteps, visibilities.dimension(1));
+        ASSERT_EQ(total_channels, visibilities.dimension(2));
         ASSERT_EQCD(0.0+0.0i, visibilities(0,0,0), TOLERANCE);
         ASSERT_EQCD(0.0+0.0i, visibilities(1,0,0), TOLERANCE);
         ASSERT_EQCD(0.0+0.0i, visibilities(2,0,0), TOLERANCE);
@@ -112,146 +111,19 @@ public:
         ASSERT_EQCD(-0.703454494476318 + -24.7045249938965i, visibilities(0,1,0), TOLERANCE);
         ASSERT_EQCD(5.16687202453613 + -1.57053351402283i, visibilities(1,1,0), TOLERANCE);
         ASSERT_EQCD(-10.9083280563354 + 11.3552942276001i, visibilities(2,1,0), TOLERANCE);
-        ASSERT_EQCD(-28.7867774963379 + 20.7210712432861i, visibilities(3,1,0), TOLERANCE); 
+        ASSERT_EQCD(-28.7867774963379 + 20.7210712432861i, visibilities(3,1,0), TOLERANCE);
 
-        //TODO(calgray): Column major reading
-        //ASSERT_TEQ(GetExpectedVis(), visibilities, TOLERANCE);
-    }
-
-    void TestVisPerformance1()
-    {
-        //mwa
-        // uint32_t num_pols = 4;
-        // uint32_t num_channels = 48;
-        // uint32_t num_baselines = 5253;
-        // uint32_t num_timesteps = 14;
-
-        //aa4
-        uint32_t num_pols = 4;
-        uint32_t num_channels = 33;
-        uint32_t num_baselines = 130816;
-        uint32_t num_timesteps = 1;
-
-        auto visibilities = Eigen::Tensor<std::complex<double>, 3>(num_pols, num_baselines * num_timesteps, num_channels);
-        icrar::ms_read_vis(*msAa4.GetMS(),
-            0,
-            0,
-            num_channels,
-            num_baselines * num_timesteps,
-            num_pols,
-            "DATA",
-            reinterpret_cast<double*>(visibilities.data())); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-        EXPECT_EQ(num_pols, visibilities.dimension(0));
-        EXPECT_EQ(num_baselines * num_timesteps, visibilities.dimension(1));
-        EXPECT_EQ(num_channels, visibilities.dimension(2));
-    }
-
-    template<typename T>
-    void TestVisPerformance2()
-    {
-        //mwa
-        // uint32_t num_pols = 4;
-        // uint32_t num_channels = 48;
-        // uint32_t num_baselines = 5253;
-        // uint32_t num_timesteps = 14;
-
-        //aa4
-        uint32_t num_pols = 4;
-        uint32_t num_channels = 33;
-        uint32_t num_baselines = 130816;
-        uint32_t num_timesteps = 1;
-
-        Eigen::Tensor<std::complex<T>, 3> visibilities = icrar::ms_read_vis1<std::complex<T>>(*msAa4.GetMS(),
-            0,
-            1,
-            icrar::Rangei(0, 4, 3), // XX + YY mode
-            num_timesteps,
-            num_baselines,
-            num_channels,
-            num_pols,
-            "DATA");
-
-        EXPECT_EQ(2, visibilities.dimension(0));
-        EXPECT_EQ(num_baselines * num_timesteps, visibilities.dimension(1));
-        EXPECT_EQ(num_channels, visibilities.dimension(2));
-    }
-
-    template<typename T>
-    void TestVisPerformance3()
-    {
-        //mwa
-        // uint32_t num_pols = 4;
-        // uint32_t num_channels = 48;
-        // uint32_t num_baselines = 5253;
-        // uint32_t num_timesteps = 14;
-
-        //aa4
-        uint32_t num_pols = 4;
-        uint32_t num_channels = 33;
-        uint32_t num_baselines = 130816;
-        uint32_t num_timesteps = 1;
-
-        Eigen::Tensor<std::complex<T>, 3> visibilities = icrar::ms_read_vis1<std::complex<T>>(*msAa4.GetMS(),
-            0,
-            1,
-            icrar::Rangei(0, 4, 1), // normal mode
-            num_timesteps,
-            num_baselines,
-            num_channels,
-            num_pols,
-            "DATA");
-
-        EXPECT_EQ(4, visibilities.dimension(0));
-        EXPECT_EQ(num_baselines * num_timesteps, visibilities.dimension(1));
-        EXPECT_EQ(num_channels, visibilities.dimension(2));
-    }
-
-    void TestVisPerformance4()
-    {
-        //aa4
-        uint32_t num_pols = 4;
-        uint32_t num_channels = 33;
-        uint32_t num_baselines = 130816;
-        uint32_t num_timesteps = 1;
-
-        Eigen::Tensor<std::complex<double>, 3> visibilities = msAa4.GetVis(
-            0,
-            1,
-            icrar::Slice(0, num_pols, 1) // normal mode
+        visibilities = msMwa.GetVis(
+            start_timestep, num_timesteps,
+            icrar::Slice(0,4,3)
         );
-
-        EXPECT_EQ(4, visibilities.dimension(0));
-        EXPECT_EQ(num_baselines * num_timesteps, visibilities.dimension(1));
-        EXPECT_EQ(num_channels, visibilities.dimension(2));
-    }
-
-    template<typename T>
-    void TestVisPerformance5()
-    {
-        //mwa
-        // uint32_t num_pols = 4;
-        // uint32_t num_channels = 48;
-        // uint32_t num_baselines = 5253;
-        // uint32_t num_timesteps = 14;
-
-        //aa4
-        uint32_t num_pols = 4;
-        uint32_t num_channels = 33;
-        uint32_t num_baselines = 130816;
-        uint32_t num_timesteps = 1;
-
-        Eigen::Tensor<std::complex<T>, 4> visibilities = icrar::ms_read_vis2<std::complex<T>>(*msAa4.GetMS(),
-            0,
-            1,
-            num_timesteps,
-            num_baselines,
-            num_channels,
-            num_pols,
-            "DATA");
-        EXPECT_EQ(2, visibilities.dimension(0));
-        EXPECT_EQ(num_channels, visibilities.dimension(1));
-        EXPECT_EQ(num_baselines, visibilities.dimension(2));
-        EXPECT_EQ(num_timesteps, visibilities.dimension(3));
+        ASSERT_EQ(2, visibilities.dimension(0));
+        ASSERT_EQ(total_baselines, visibilities.dimension(1));
+        ASSERT_EQ(total_channels, visibilities.dimension(2));
+        ASSERT_EQCD(0.0+0.0i, visibilities(0,0,0), TOLERANCE);
+        ASSERT_EQCD(0.0+0.0i, visibilities(1,0,0), TOLERANCE);
+        ASSERT_EQCD(-0.703454494476318 + -24.7045249938965i, visibilities(0,1,0), TOLERANCE);
+        ASSERT_EQCD(-28.7867774963379 + 20.7210712432861i, visibilities(1,1,0), TOLERANCE);
     }
 
 private:
@@ -371,30 +243,6 @@ private:
     }
 };
 
-TEST_F(MeasurementSetTests, TestReadRecords) { TestReadRecords(); }
+TEST_F(MeasurementSetTests, TestReadCoords) { TestReadCoords(); }
 TEST_F(MeasurementSetTests, TestReadVis) { TestReadVis<float>(); }
 
-TEST_F(MeasurementSetTests, TestVisPerformance11) { TestVisPerformance1(); }
-TEST_F(MeasurementSetTests, TestVisPerformance12) { TestVisPerformance1(); }
-TEST_F(MeasurementSetTests, TestVisPerformance13) { TestVisPerformance1(); }
-TEST_F(MeasurementSetTests, TestVisPerformance21f) { TestVisPerformance2<float>(); }
-TEST_F(MeasurementSetTests, TestVisPerformance22f) { TestVisPerformance2<float>(); }
-TEST_F(MeasurementSetTests, TestVisPerformance23f) { TestVisPerformance2<float>(); }
-TEST_F(MeasurementSetTests, TestVisPerformance21d) { TestVisPerformance2<double>(); }
-TEST_F(MeasurementSetTests, TestVisPerformance22d) { TestVisPerformance2<double>(); }
-TEST_F(MeasurementSetTests, TestVisPerformance23d) { TestVisPerformance2<double>(); }
-TEST_F(MeasurementSetTests, TestVisPerformance31f) { TestVisPerformance3<float>(); }
-TEST_F(MeasurementSetTests, TestVisPerformance32f) { TestVisPerformance3<float>(); }
-TEST_F(MeasurementSetTests, TestVisPerformance33f) { TestVisPerformance3<float>(); }
-TEST_F(MeasurementSetTests, TestVisPerformance31d) { TestVisPerformance3<double>(); }
-TEST_F(MeasurementSetTests, TestVisPerformance32d) { TestVisPerformance3<double>(); }
-TEST_F(MeasurementSetTests, TestVisPerformance33d) { TestVisPerformance3<double>(); }
-TEST_F(MeasurementSetTests, TestVisPerformance41) { TestVisPerformance4(); }
-TEST_F(MeasurementSetTests, TestVisPerformance42) { TestVisPerformance4(); }
-TEST_F(MeasurementSetTests, TestVisPerformance43) { TestVisPerformance4(); }
-TEST_F(MeasurementSetTests, TestVisPerformance51f) { TestVisPerformance5<float>(); }
-TEST_F(MeasurementSetTests, TestVisPerformance52f) { TestVisPerformance5<float>(); }
-TEST_F(MeasurementSetTests, TestVisPerformance53f) { TestVisPerformance5<float>(); }
-TEST_F(MeasurementSetTests, TestVisPerformance51d) { TestVisPerformance5<double>(); }
-TEST_F(MeasurementSetTests, TestVisPerformance52d) { TestVisPerformance5<double>(); }
-TEST_F(MeasurementSetTests, TestVisPerformance53d) { TestVisPerformance5<double>(); }
