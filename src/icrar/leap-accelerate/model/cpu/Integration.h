@@ -80,12 +80,6 @@ namespace cpu
 
         int GetIntegrationNumber() const { return m_integrationNumber; }
 
-        /**
-         * @brief Gets the number of rows TODO(calgray): rename
-         * 
-         * @return int 
-         */
-        size_t GetBaselines() const { return m_rows; }
         size_t GetRows() const { return m_rows; }
 
         /**

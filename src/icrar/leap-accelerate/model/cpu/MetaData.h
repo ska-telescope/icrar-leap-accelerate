@@ -82,6 +82,7 @@ namespace cpu
         uint32_t channels; // The number of channels of the current observation
         uint32_t num_pols; // The number of polarizations used by the current observation
         uint32_t stations; // The number of stations used by the current observation
+        uint32_t timesteps; // The number of visibility timesteps 
         uint32_t rows;
 
         double freq_start_hz; // The frequency of the first channel, in Hz

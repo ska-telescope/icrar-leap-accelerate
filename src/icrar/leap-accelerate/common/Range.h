@@ -72,6 +72,9 @@ namespace icrar
             return (m_end - m_start) / m_interval;
         }
 
+        //Iterator begin() const {} // TODO(cgray): range iterator, see boost::irange
+        //Iterator end() const {} // TODO(cgray): range iterator, see boost::irange
+
         Eigen::ArithmeticSequence<Eigen::Index, Eigen::Index, Eigen::Index> ToSeq()
         {
             return Eigen::seq(m_start, m_end-1, m_interval);

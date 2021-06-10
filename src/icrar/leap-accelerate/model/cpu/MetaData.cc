@@ -64,6 +64,7 @@ namespace cpu
             m_constants.freq_inc_hz = msc->spectralWindow().chanWidth().get(0)(casacore::IPosition(1,0));
         }
 
+        m_constants.timesteps = ms.GetNumTimesteps();
         m_constants.rows = ms.GetNumRows();
         m_constants.num_pols = ms.GetNumPols();
         m_constants.stations = ms.GetNumStations();

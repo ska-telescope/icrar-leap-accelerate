@@ -200,12 +200,12 @@ namespace cpu
         using namespace std::literals::complex_literals;
         Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.GetVis();
 
-        // loop over smeared baselines ('md_baseline' is always 'baseline' when timesteps = 1)
-        for(size_t baseline = 0; baseline < integration.GetBaselines(); ++baseline)
+        // loop over smeared baselines ('baseline' is always 'row' when timesteps = 1)
+        for(size_t row = 0; row < integration.GetRows(); ++row)
         {
-            auto md_baseline = static_cast<int>(baseline % static_cast<size_t>(metadata.GetConstants().nbaselines)); // metadata baseline
-            auto rotatedUVW = metadata.GetDD() * metadata.GetUVW()[baseline];
-            double shiftFactor = -two_pi<double>() * (rotatedUVW(2) - metadata.GetUVW()[baseline](2));
+            auto baseline = static_cast<int>(row % static_cast<size_t>(metadata.GetConstants().nbaselines));
+            auto rotatedUVW = metadata.GetDD() * metadata.GetUVW()[row];
+            double shiftFactor = -two_pi<double>() * (rotatedUVW(2) - metadata.GetUVW()[row](2));
 
             // Loop over channels
             for(uint32_t channel = 0; channel < metadata.GetConstants().channels; channel++)
@@ -213,19 +213,19 @@ namespace cpu
                 double shiftRad = shiftFactor / metadata.GetConstants().GetChannelWavelength(channel);
                 for(uint32_t polarization = 0; polarization < integration_data.dimension(0); ++polarization)
                 {
-                    integration_data(polarization, baseline, channel) *= std::exp(std::complex<double>(0.0, shiftRad));
+                    integration_data(polarization, row, channel) *= std::exp(std::complex<double>(0.0, shiftRad));
                 }
 
                 bool hasNaN = false;
                 for(uint32_t polarization = 0; polarization < integration_data.dimension(0); ++polarization)
                 {
-                    hasNaN |= std::isnan(integration_data(polarization, baseline, channel).real()) || std::isnan(integration_data(polarization, baseline, channel).imag());
+                    hasNaN |= std::isnan(integration_data(polarization, row, channel).real()) || std::isnan(integration_data(polarization, row, channel).imag());
                 }
 
                 if(!hasNaN)
                 {
-                    metadata.GetAvgData()(md_baseline) += integration_data(0, baseline, channel);
-                    metadata.GetAvgData()(md_baseline) += integration_data(integration_data.dimension(0) - 1, baseline, channel);
+                    metadata.GetAvgData()(baseline) += integration_data(0, row, channel);
+                    metadata.GetAvgData()(baseline) += integration_data(integration_data.dimension(0) - 1, row, channel);
                 }
             }
         }
