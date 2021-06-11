@@ -35,9 +35,10 @@ namespace Eigen
 namespace Eigen {
 namespace internal {
     template<>
+    EIGEN_DEVICE_FUNC
     inline std::complex<double> cast(const std::complex<float>& x)
     {
-        return std::complex<double>(x.real(),x.imag());
+        return std::complex<double>(x.real(), x.imag());
     }
 }
 }

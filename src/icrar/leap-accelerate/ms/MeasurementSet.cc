@@ -460,11 +460,6 @@ namespace icrar
         return indexes;
     }
 
-    // template<typename InputInterator1, typename InputIterator2>
-    // bool HasMatches(InputInterator1 first1, InputInterator1 last1, InputInterator2 first2)
-    // {
-    // }
-
     std::tuple<std::set<int32_t>, bool> MeasurementSet::CalculateUniqueAntennas() const
     {
         casacore::Vector<casacore::Int> a1 = m_msmc->antenna1().getColumn();

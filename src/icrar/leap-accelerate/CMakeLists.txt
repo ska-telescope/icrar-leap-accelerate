@@ -90,12 +90,11 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 if(CUDA_ENABLED)
+  list(APPEND sources ${cuda_sources})
   list(APPEND private_headers ${cuda_headers})
-  list(APPEND sources ${cuda_headers})
 endif()
 
-
-PYTHON_ADD_MODULE( # #python_add_library(
+PYTHON_ADD_MODULE( #python_add_library(
   ${TARGET_NAME} SHARED
   ${sources}
   ${private_headers}

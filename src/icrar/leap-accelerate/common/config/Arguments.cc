@@ -48,7 +48,7 @@ namespace icrar
         args.referenceAntenna = boost::none;
         args.directions = boost::none;
         args.computeImplementation.reset(std::string("cpu"));
-        args.solutionInterval = std::string("[0,null,null]"); // Average over all timesteps
+        args.solutionInterval.reset(std::string("[0,null,null]")); // Average over all timesteps
         args.readAutocorrelations.reset(true);
         args.minimumBaselineThreshold.reset(0.0);
         args.mwaSupport.reset(false);

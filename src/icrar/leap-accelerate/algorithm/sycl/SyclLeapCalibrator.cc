@@ -20,6 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
+#ifdef SYNCL_ENABLED
 
 #include "SyclLeapCalibrator.h"
 
@@ -138,3 +139,4 @@ namespace sycl
     }
 } // namespace cpu
 } // namespace icrar
+#endif // SYNCL_ENABLED
