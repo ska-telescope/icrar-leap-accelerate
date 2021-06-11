@@ -268,7 +268,7 @@ namespace cuda
 
     inline bool IsDegenerate(const Eigen::MatrixXd& identity, double tolerance)
     {
-        return icrar::cpu::near(identity, Eigen::MatrixXd::Identity(identity.rows(), identity.cols()), tolerance);
+        return identity.near(Eigen::MatrixXd::Identity(identity.rows(), identity.cols()), tolerance);
     }
 
     void CudaLeapCalibrator::CalculateAd(

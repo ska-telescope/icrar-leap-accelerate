@@ -24,8 +24,7 @@
 
 #ifdef CUDA_ENABLED
 
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
+#include <icrar/leap-accelerate/config.h>
 
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/model/cpu/calibration/Calibration.h>

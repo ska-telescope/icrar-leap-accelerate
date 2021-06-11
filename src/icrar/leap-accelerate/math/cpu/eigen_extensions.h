@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/config.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/memory/ioutils.h>
 #include <icrar/leap-accelerate/exception/exception.h>
@@ -45,9 +46,8 @@ namespace icrar
     namespace cpu
     {
         /**
-         * @brief Selects a range of elements from matrix row indices. 
-         * Negative indexes select from the bottom of the matrix with 
-         * -1 representing the bottom row.
+         * @brief Selects a range of elements from matrix row indices. Negative indexes
+         * select from the bottom of the matrix with -1 representing the last row.
          * 
          * @tparam T 
          * @param matrix the referenced matrix to select from
@@ -56,23 +56,9 @@ namespace icrar
          */
         template<typename Matrix, typename Scalar>
         Eigen::IndexedView<Matrix, Eigen::Vector<Scalar, Eigen::Dynamic>, Eigen::internal::AllRange<-1>>
-        WrappedRowSelect(
-            Eigen::MatrixBase<Matrix>& matrix,
-            const Eigen::Vector<Scalar, Eigen::Dynamic>& rowIndices)
+        wrapped_row_select(Eigen::MatrixBase<Matrix>& matrix, const Eigen::Vector<Scalar, Eigen::Dynamic>& rowIndices)
         {
-            Eigen::Vector<Scalar, Eigen::Dynamic> correctedIndices = rowIndices;
-            for(Scalar& i : correctedIndices)
-            {
-                if(i < -matrix.rows() || i >= matrix.rows())
-                {
-                    throw std::runtime_error("index out of range");
-                }
-                if(i < 0)
-                {
-                    i = boost::numeric_cast<int>(matrix.rows() + i);
-                }
-            }
-            return matrix(correctedIndices, Eigen::all);
+            return matrix.wrapped_row_select(rowIndices);
         }
 
         /**

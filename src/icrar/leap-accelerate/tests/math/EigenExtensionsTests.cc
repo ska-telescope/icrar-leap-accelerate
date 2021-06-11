@@ -43,7 +43,7 @@ namespace icrar
             auto r = Eigen::Vector<Index, Eigen::Dynamic>(6);
             r << -3, -2, -1, 0, 1, 2;
 
-            Eigen::MatrixXd v = cpu::WrappedRowSelect(m, r);
+            Eigen::MatrixXd v = m.wrapped_row_select(r);
             auto expected = Eigen::MatrixXd(6,3);
             expected <<
             0, 1, 2,
@@ -57,11 +57,11 @@ namespace icrar
             // out of bounds
             auto rl = Eigen::Vector<Index, Eigen::Dynamic>(2);
             rl << -3, -4;
-            ASSERT_THROW(cpu::WrappedRowSelect(m, rl), std::runtime_error);
+            ASSERT_THROW(m.wrapped_row_select(rl), std::runtime_error);
 
             auto rh = Eigen::Vector<Index, Eigen::Dynamic>(2);
             rh << 2, 3;
-            ASSERT_THROW(cpu::WrappedRowSelect(m, rh), std::runtime_error);
+            ASSERT_THROW(m.wrapped_row_select(rh), std::runtime_error);
         }
 
         void TestArg()

@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/config.h>
+
 #include <icrar/leap-accelerate/common/stream_extensions.h>
 #include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 #include <icrar/leap-accelerate/math/vector_extensions.h>
