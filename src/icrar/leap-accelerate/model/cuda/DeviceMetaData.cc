@@ -168,7 +168,7 @@ namespace cuda
         m_solutionIntervalBuffer->GetUVW().ToHostAsync(metadata.m_UVW);
         metadata.m_direction = m_directionBuffer->GetDirection();
         metadata.m_dd = m_directionBuffer->GetDD();
-        m_directionBuffer->GetAvgData().ToHostAsync(metadata.m_avgData);
+        m_directionBuffer->GetAvgData().ToHostVectorAsync(metadata.m_avgData);
     }
 } // namespace cuda
 } // namespace icrar

@@ -91,10 +91,10 @@ public:
         const auto& calibration = calibrations[0];
 
         // 0 values are better
-        EXPECT_NEAR(calibration.GetBeamCalibrations()[0].GetPhaseCalibration().mean(),                          std::get<0>(expected[0]), TOLERANCE);
-        EXPECT_NEAR(icrar::cpu::standard_deviation(calibration.GetBeamCalibrations()[0].GetPhaseCalibration()), std::get<1>(expected[0]), TOLERANCE);
-        EXPECT_NEAR(calibration.GetBeamCalibrations()[1].GetPhaseCalibration().mean(),                          std::get<0>(expected[1]), TOLERANCE);
-        EXPECT_NEAR(icrar::cpu::standard_deviation(calibration.GetBeamCalibrations()[1].GetPhaseCalibration()), std::get<1>(expected[1]), TOLERANCE);
+        EXPECT_NEAR(calibration.GetBeamCalibrations()[0].GetPhaseCalibration().mean(),               std::get<0>(expected[0]), TOLERANCE);
+        EXPECT_NEAR(calibration.GetBeamCalibrations()[0].GetPhaseCalibration().standard_deviation(), std::get<1>(expected[0]), TOLERANCE);
+        EXPECT_NEAR(calibration.GetBeamCalibrations()[1].GetPhaseCalibration().mean(),               std::get<0>(expected[1]), TOLERANCE);
+        EXPECT_NEAR(calibration.GetBeamCalibrations()[1].GetPhaseCalibration().standard_deviation(), std::get<1>(expected[1]), TOLERANCE);
     }
 };
 
@@ -102,8 +102,8 @@ TEST_F(CalibrationTests, TestAA3ClearCpuCalibration)
 {
     TestAA3ClearCalibration(ComputeImplementationToString(ComputeImplementation::cpu),
     {
-        { 0.0031753870255758166, 0.049746623893558904 },
-        { -0.023484514309303432, 0.1534504270121704 }
+        { 0.0031753870255758166, 0.049623509161058774 },
+        { -0.023547715680888742, 0.15359904595794271 }
     });
 }
 #if CUDA_ENABLED
@@ -111,8 +111,8 @@ TEST_F(CalibrationTests, TestAA3ClearCudaCalibration)
 {
     TestAA3ClearCalibration(ComputeImplementationToString(ComputeImplementation::cuda),
     {
-        { 0.0031753870255758166, 0.049746623893558939 },
-        { -0.023484514309303432, 0.15345042701215036 }
+        { 0.0031753870255758166, 0.049623509161058815 },
+        { -0.023547715680594751, 0.1535990459579227 }
     });
 }
 #endif // CUDA_ENABLED

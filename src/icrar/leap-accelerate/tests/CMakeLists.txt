@@ -24,7 +24,7 @@ set(sources
   math/cuda/CudaMatrixTests.cc
   math/cuda/CudaMatrixEigenTests.cc
 
-  ms/MSUtilsTests.cc
+  ms/MeasurementSetTests.cc
 
   model/MetaDataTests.cc
   model/IntegrationTests.cc

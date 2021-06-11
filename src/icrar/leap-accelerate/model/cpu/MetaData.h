@@ -82,6 +82,7 @@ namespace cpu
         uint32_t channels; // The number of channels of the current observation
         uint32_t num_pols; // The number of polarizations used by the current observation
         uint32_t stations; // The number of stations used by the current observation
+        uint32_t timesteps; // The number of visibility timesteps 
         uint32_t rows;
 
         double freq_start_hz; // The frequency of the first channel, in Hz
@@ -124,7 +125,7 @@ namespace cpu
 
         SphericalDirection m_direction; // calibration direction, late initialized
         Eigen::Matrix3d m_dd; // direction dependant matrix, late initialized
-        Eigen::MatrixXcd m_avgData; // matrix of size (baselines, polarizations), late initialized
+        Eigen::VectorXcd m_avgData; // matrix of size (baselines), late initialized
     
     public:
         /**
@@ -176,11 +177,7 @@ namespace cpu
          * @brief The pseudoinverse of A with shape [stations, baselines]
          */
         const Eigen::MatrixXd& GetAd() const;
-
-        /**
-         * @brief Gets a mutable reference to Ad. Host references may need to reregister after resize.
-         */
-        Eigen::MatrixXd& GetAd() { return m_Ad; }
+        virtual void SetAd(Eigen::MatrixXd&& Ad) { m_Ad = Ad; }
 
         /**
          * @brief Matrix of baselines using the reference antenna of shape [stations+1, stations]
@@ -190,11 +187,7 @@ namespace cpu
         const Eigen::VectorXi& GetI1() const;
 
         const Eigen::MatrixXd& GetAd1() const;
-
-        /**
-         * @brief Gets a mutable reference to Ad1. Host references may need to reregister after resize.
-         */
-        Eigen::MatrixXd& GetAd1() { return m_Ad1; }
+        virtual void SetAd1(Eigen::MatrixXd&& ad1) { m_Ad1 = ad1; }
 
         const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
 
@@ -225,8 +218,8 @@ namespace cpu
          */
         Eigen::Matrix3d GenerateDDMatrix(const SphericalDirection& direction) const;
 
-        const Eigen::MatrixXcd& GetAvgData() const { return m_avgData; }
-        Eigen::MatrixXcd& GetAvgData() { return m_avgData; }
+        const Eigen::VectorXcd& GetAvgData() const { return m_avgData; }
+        Eigen::VectorXcd& GetAvgData() { return m_avgData; }
 
         bool operator==(const MetaData& rhs) const;
         bool operator!=(const MetaData& rhs) const { return !(*this == rhs); }

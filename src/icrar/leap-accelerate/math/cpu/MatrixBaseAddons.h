@@ -23,20 +23,78 @@
 /// See http://eigen.tuxfamily.org/dox-3.2/TopicCustomizingEigen.html
 /// for details on extending Eigen3.
 
-//NOTE: MatrixBase class templates are already defined
+/**
+ * @brief Provides numpy behaviour slicing.
+ * @note Eigen does not allow the increment to be a symbolic expression
+ * but numpy can
+ * 
+ * @tparam Index 
+ * @param start 
+ * @param end 
+ * @param step 
+ * @return ArithmaticSequence 
+ */
+inline auto numpy(Index start, Index end, Index step)
+{
+    if(cols() == 1)
+    {
+        Index total = rows();
+        start = start < 0 ? start + total : start;
+        end = end < 0 ? end + total : end;
+        return Eigen::seq(start, end, step);
+    }
+    else if(rows() == 1)
+    {
+        Index total = cols();
+        start = start < 0 ? start + total : start;
+        end = end < 0 ? end + total : end;
+        return Eigen::seq(start, end, step);
+    }
+    else
+    {
+        return Eigen::seq(start, end, step);
+    }
+}
+
+inline auto numpy_rows(Index start, Index end, Index step)
+{
+    Index total = rows();
+    start = start < 0 ? start + total : start;
+    end = end < 0 ? end + total : end;
+    return Eigen::seq(start, end, step);
+}
+
+inline auto numpy_cols(Index start, Index end, Index step)
+{
+    Index total = cols();
+    start = start < 0 ? start + total : start;
+    end = end < 0 ? end + total : end;
+    return Eigen::seq(start, end, step);
+}
+
+inline auto numpy(std::initializer_list<std::initializer_list<Index>> slice)
+{
+    if(slice.size() == 3)
+    {
+        auto it = slice.begin();
+        return numpy(*slice.begin(), *std::next(slice.begin()), *std::prev(slice.end()));
+    }
+}
 
 /**
- * @brief Wraps around negative indices for slicing an eigen matrix
+ * @brief A numpythonic row selection operation that selects the rows
+ * of a matrix using index wrap around. Negative indexes select from
+ * the bottom of the matrix with -1 representing the last row.
  * 
- * @tparam OtherIndex a signed integer type
- * @param indices 
- * @return Matrix<OtherIndex, Dynamic, 1> 
+ * @tparam Index
+ * @param rowIndices a range of row indices to select
+ * @param column a valid column index
  */
-template<typename OtherIndex>
-Matrix<OtherIndex, Dynamic, 1> wrap_indices(const Matrix<OtherIndex, Dynamic, 1>& indices) const
+template<typename Index>
+inline auto wrapped_row_select(const Matrix<Index, Eigen::Dynamic, 1>& rowIndices)
 {
-    Matrix<OtherIndex, Dynamic, 1> correctedIndices = indices;
-    for(OtherIndex& index : correctedIndices)
+    Matrix<Index, Eigen::Dynamic, 1> correctedIndices = rowIndices;
+    for(Index& index : correctedIndices)
     {
         if(index < -rows() || index >= rows())
         {
@@ -47,29 +105,41 @@ Matrix<OtherIndex, Dynamic, 1> wrap_indices(const Matrix<OtherIndex, Dynamic, 1>
             index = rows() + index;
         }
     }
-    return correctedIndices;
+    return this->operator()(correctedIndices, Eigen::all);
+}
+
+template<typename Index>
+inline auto wrapped_row_select(const Matrix<Index, Eigen::Dynamic, 1>& rowIndices) const
+{
+    Matrix<Index, Eigen::Dynamic, 1> correctedIndices = rowIndices;
+    for(Index& index : correctedIndices)
+    {
+        if(index < -rows() || index >= rows())
+        {
+            throw std::runtime_error("index out of range");
+        }
+        if(index < 0)
+        {
+            index = rows() + index;
+        }
+    }
+    return this->operator()(correctedIndices, Eigen::all);
 }
 
 /**
- * @brief A pythonic row selection operation that selects the rows
- * of a matrix using index wrap around. Negative indexes select from
- * the bottom of the matrix with -1 representing the last row.
+ * @brief Computes the element-wise standard deviation
  * 
- * @tparam OtherIndex a signed integer type
- * @param rowIndices 
- * @return auto 
+ * @return Scalar 
  */
-template<typename OtherIndex>
-inline Eigen::IndexedView<Eigen::Matrix<Scalar, Dynamic, Dynamic>, Eigen::Matrix<OtherIndex, Dynamic, 1>, Eigen::internal::AllRange<Dynamic>>
-wrapped_row_select(const Matrix<OtherIndex, Dynamic, 1>& rowIndices)
+double standard_deviation() const
 {
-    return this->operator()(wrap_indices(rowIndices), Eigen::all);
-}
-template<typename OtherIndex>
-inline const Eigen::IndexedView<const Eigen::Matrix<Scalar, Dynamic, Dynamic>, Eigen::Matrix<OtherIndex, Dynamic, 1>, Eigen::internal::AllRange<Dynamic>>
-wrapped_row_select(const Matrix<OtherIndex, Dynamic, 1>& rowIndices) const
-{
-    return this->operator()(wrap_indices(rowIndices), Eigen::all);
+    double mean = this->sum() / static_cast<double>(size());
+    double sumOfSquareDifferences = 0;
+    for(const Scalar& e : this->reshaped())
+    {
+        sumOfSquareDifferences += std::pow(e - mean, 2);
+    }
+    return std::sqrt(sumOfSquareDifferences / static_cast<double>(size()));
 }
 
 /**

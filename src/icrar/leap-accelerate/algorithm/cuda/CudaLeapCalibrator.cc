@@ -119,8 +119,8 @@ namespace cuda
     {
         checkCudaErrors(cudaGetLastError());
 
-        uint32_t timesteps = ms.GetNumTimesteps();
-        Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
+        int32_t timesteps = ms.GetNumTimesteps();
+        Rangei validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
 
         auto cudaComputeOptions = CudaComputeOptions(computeOptions, ms, validatedSolutionInterval);
 
@@ -158,17 +158,10 @@ namespace cuda
             false);
 
         device_matrix<double> deviceA, deviceAd;
-        
-        CalculateAd(metadata.GetA(), deviceA, metadata.GetAd(), deviceAd, cudaComputeOptions.isFileSystemCacheEnabled, cudaComputeOptions.useCusolver);
-        //Hack
-        cudaHostRegister(metadata.GetAd().data(), metadata.GetAd().size() * sizeof(decltype(*metadata.GetAd().data())), cudaHostRegisterPortable);
-        checkCudaErrors(cudaGetLastError());
+        CalculateAd(metadata, deviceA, deviceAd, cudaComputeOptions.isFileSystemCacheEnabled, cudaComputeOptions.useCusolver);
 
         device_matrix<double> deviceA1, deviceAd1;
-        CalculateAd1(metadata.GetA1(), deviceA1, metadata.GetAd1(), deviceAd1);
-        //Hack
-        cudaHostRegister(metadata.GetAd1().data(), metadata.GetAd1().size() * sizeof(decltype(*metadata.GetAd1().data())), cudaHostRegisterPortable);
-        checkCudaErrors(cudaGetLastError());
+        CalculateAd1(metadata, deviceA1, deviceAd1);
 
         auto constantBuffer = std::make_shared<ConstantBuffer>(
             metadata.GetConstants(),
@@ -208,10 +201,8 @@ namespace cuda
             auto integration = cuda::HostIntegration(
                 integrationNumber,
                 ms,
-                solution * validatedSolutionInterval.GetInterval() * ms.GetNumBaselines(),
-                ms.GetNumChannels(),
-                validatedSolutionInterval.GetInterval() * ms.GetNumBaselines(),
-                ms.GetNumPols());
+                boost::numeric_cast<int32_t>(solution * validatedSolutionInterval.GetInterval()),
+                boost::numeric_cast<int32_t>(validatedSolutionInterval.GetInterval()));
             checkCudaErrors(cudaGetLastError());
             LOG(info) << "Read integration data in " << integration_read_timer;
 
@@ -272,13 +263,14 @@ namespace cuda
     }
 
     void CudaLeapCalibrator::CalculateAd(
-        const Eigen::MatrixXd& hostA,
+        HostMetaData& metadata,
         device_matrix<double>& deviceA,
-        Eigen::MatrixXd& hostAd,
         device_matrix<double>& deviceAd,
         bool isFileSystemCacheEnabled,
         bool useCusolver)
     {
+        const Eigen::MatrixXd& hostA = metadata.GetA();
+
         if(hostA.rows() <= hostA.cols())
         {
             useCusolver = false;
@@ -299,25 +291,25 @@ namespace cuda
             {
                 // Load cache into hostAd then deviceAd,
                 // or load hostA into deviceA, compute deviceAd then load into hostAd
-                ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
-                    matrix_hash<Eigen::MatrixXd>()(hostA),
-                    hostA, hostAd,
+                metadata.SetAd(ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
+                    matrix_hash<Eigen::MatrixXd>(hostA),
+                    hostA,
                     "A.hash", "Ad.cache",
-                    invertA);
+                    invertA));
 
-                deviceAd = device_matrix<double>(hostAd);
+                deviceAd = device_matrix<double>(metadata.GetAd());
                 deviceA = device_matrix<double>(hostA);
-                if(IsDegenerate(hostAd * hostA, 1e-5))
+                if(IsDegenerate(metadata.GetAd() * hostA, 1e-5))
                 {
                     LOG(warning) <<  "Ad is degenerate";
                 }
             }
             else
             {
-                hostAd = invertA(hostA);
+                metadata.SetAd(invertA(hostA));
                 deviceA = device_matrix<double>(hostA);
 
-                if(!((hostAd * hostA).eval()).isDiagonal(1e-10))
+                if(!((metadata.GetAd() * hostA).eval()).isDiagonal(1e-10))
                 {
                     throw icrar::exception("Ad*A is non-diagonal", __FILE__, __LINE__);
                 }
@@ -335,20 +327,20 @@ namespace cuda
 
             if(isFileSystemCacheEnabled)
             {
-                ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
-                    matrix_hash<Eigen::MatrixXd>()(hostA),
-                    hostA, hostAd,
-                    "A.hash", "Ad.cache",
-                    invertA);
+                metadata.SetAd(
+                    ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
+                        matrix_hash<Eigen::MatrixXd>(hostA), hostA,
+                        "A.hash", "Ad.cache",
+                        invertA));
             }
             else
             {
-                hostAd = invertA(hostA);
+                metadata.SetAd(invertA(hostA));
             }
 
-            deviceAd = device_matrix<double>(hostAd);
+            deviceAd = device_matrix<double>(metadata.GetAd());
             deviceA = device_matrix<double>(hostA);
-            if(IsDegenerate(hostAd * hostA, 1e-5))
+            if(IsDegenerate(metadata.GetAd() * hostA, 1e-5))
             {
                 LOG(warning) << "Ad is degenerate";
             }
@@ -356,15 +348,19 @@ namespace cuda
     }
 
     void CudaLeapCalibrator::CalculateAd1(
-        const Eigen::MatrixXd& hostA1,
+        HostMetaData& metadata,
         device_matrix<double>& deviceA1,
-        Eigen::MatrixXd& hostAd1,
         device_matrix<double>& deviceAd1)
     {
+        const Eigen::MatrixXd& hostA1 = metadata.GetA1();
+        const Eigen::MatrixXd& hostAd1 = metadata.GetAd1();
+
         // This matrix is not always m > n, compute on cpu until cuda supports this
         LOG(info) << "Inverting PhaseMatrix A1 with cpu (" << hostA1.rows() << ":" << hostA1.cols() << ")";
         deviceA1 = device_matrix<double>(hostA1);
-        hostAd1 = cpu::pseudo_inverse(hostA1);
+        
+        metadata.SetAd1(cpu::pseudo_inverse(hostA1));
+
         deviceAd1 = device_matrix<double>(hostAd1);
         if(IsDegenerate(hostAd1 * hostA1, 1e-5))
         {
@@ -373,7 +369,7 @@ namespace cuda
     }
 
     void CudaLeapCalibrator::PhaseRotate(
-        const cpu::MetaData& metadata,
+        const HostMetaData& metadata,
         DeviceMetaData& deviceMetadata,
         const SphericalDirection& direction,
         cuda::DeviceIntegration& input,
@@ -381,10 +377,7 @@ namespace cuda
     {
 
         LOG(info) << "Rotating integration " << input.GetIntegrationNumber();
-        checkCudaErrors(cudaGetLastError());
         RotateVisibilities(input, deviceMetadata);
-        checkCudaErrors(cudaGetLastError());
-
         LOG(info) << "Calibrating in cuda";
         auto devicePhaseAnglesI1 = device_vector<double>(metadata.GetI1().rows() + 1);
         auto deviceCal1 = device_vector<double>(metadata.GetA1().cols());

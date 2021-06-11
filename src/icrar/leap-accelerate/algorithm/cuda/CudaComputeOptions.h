@@ -25,6 +25,7 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/memory/ioutils.h>
+#include <icrar/leap-accelerate/common/Range.h>
 
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
@@ -34,9 +35,7 @@
 #include <boost/optional.hpp>
 
 namespace icrar
-{
-    class Range;
-    
+{    
     /**
      * @brief Validates and determines the best compute features for calibration depending on measurement set data and hardware
      * configuration.
@@ -54,7 +53,7 @@ namespace icrar
          * @param computeOptions 
          * @param ms 
          */
-        CudaComputeOptions(const ComputeOptionsDTO& computeOptions, const icrar::MeasurementSet& ms, const Range& solutionRange);
+        CudaComputeOptions(const ComputeOptionsDTO& computeOptions, const icrar::MeasurementSet& ms, const Rangei& solutionRange);
     };
 } // namespace icrar
 

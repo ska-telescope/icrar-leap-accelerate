@@ -26,7 +26,6 @@ set(sources
 
     exception/exception.cc
 
-    ms/utils.cc
     ms/MeasurementSet.cc
 
     core/compute_implementation.cc
