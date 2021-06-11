@@ -88,60 +88,14 @@ namespace icrar
     }
 
     /**
-     * @brief Computes the sum of the the collection
+     * @brief Returns true if all vector elements of @param lhs are within the
+     * tolerance threshold to @param rhs 
      * 
-     * @tparam T 
-     * @param v 
-     * @return double 
+     * @tparam T numeric type
+     * @param lhs left hand side
+     * @param rhs  right hand side
+     * @param tolerance tolerance threshold
      */
-    template<typename T>
-    double sum(const std::vector<T>& v)
-    {
-        return std::accumulate(v.begin(), v.end(), 0);
-    }
-
-    /**
-     * @brief Computes the mean of the the collection
-     * 
-     * @tparam T 
-     * @param v 
-     * @return double 
-     */
-    template<typename T>
-    double mean(const std::vector<T>& v)
-    {
-        double sum = std::accumulate(v.begin(), v.end(), 0);
-        return sum / v.size();
-    }
-
-    /**
-     * @brief Computes the standard deviation of the collection
-     * 
-     * @tparam T 
-     * @param v 
-     * @return double 
-     */
-    template<typename T>
-    double standard_deviation(const std::vector<T>& v)
-    {
-        double mean = std::accumulate(v.begin(), v.end(), 0);
-        double sumOfSquareDifferences = 0;
-        for(const double& e : v)
-        {
-            sumOfSquareDifferences += std::pow(e - mean, 2);
-        }
-        return std::sqrt(sumOfSquareDifferences / v.size());
-    }
-
-    /**
-     * @brief Returns of true if all vector elements of @p lhs are within the tolerance
-     * threshold difference to @p rhs
-     * 
-     * @tparam T numerically comparable type
-     * @param lhs left collection
-     * @param rhs right collection
-     * @param tolerance numeric tolerance inclusive threshold for equality
-	**/
     template<typename T>
     bool isApprox(const std::vector<T>& lhs, const std::vector<T>& rhs, T tolerance)
     {

@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/config.h>
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
 
 #include <icrar/leap-accelerate/common/Slice.h>

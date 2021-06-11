@@ -21,11 +21,12 @@
  */
 #pragma once
 
+#include <icrar/leap-accelerate/config.h>
+#include <icrar/leap-accelerate/math/complex_extensions.h>
+
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <unsupported/Eigen/CXX11/Tensor>
-
-#include <icrar/leap-accelerate/math/complex_extensions.h>
 
 #include <gtest/gtest.h>
 

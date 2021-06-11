@@ -85,9 +85,9 @@ namespace cuda
         cudaError_t smError = cudaGetLastError();
         if(smError != cudaError_t::cudaSuccess)
         {   
-            CUdevice device;
+            CUdevice device = 0;
             checkCudaErrors(cuDeviceGet(&device, 0));
-            int major, minor;
+            int major = 0, minor = 0;
             checkCudaErrors(cuDeviceGetAttribute(&major, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, device));
             checkCudaErrors(cuDeviceGetAttribute(&minor, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, device));
             LOG(warning) << "CUDA error: No suitable kernel found, hardware sm compatibility is sm_" << major << minor;
@@ -100,8 +100,7 @@ namespace cuda
 
     CudaLeapCalibrator::~CudaLeapCalibrator()
     {
-        LOG(warning) << "destroying CudaLeapCalibrator";
-        //checkCudaErrors(cudaGetLastError());
+        LOG(trace) << "destroying CudaLeapCalibrator";
         checkCudaErrors(cusolverDnDestroy(m_cusolverDnContext));
         checkCudaErrors(cublasDestroy(m_cublasContext));
 
@@ -188,8 +187,8 @@ namespace cuda
         auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
         LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
-        uint32_t solutions = boost::numeric_cast<uint32_t>(validatedSolutionInterval.GetSize());
-        constexpr unsigned int integrationNumber = 0;
+        auto solutions = boost::numeric_cast<uint32_t>(validatedSolutionInterval.GetSize());
+        constexpr uint32_t integrationNumber = 0;
         for(uint32_t solution = 0; solution < solutions; solution++)
         {
             profiling::timer solution_timer;
@@ -269,7 +268,7 @@ namespace cuda
 
     inline bool IsDegenerate(const Eigen::MatrixXd& identity, double tolerance)
     {
-        return icrar::cpu::near(identity, Eigen::MatrixXd::Identity(identity.rows(), identity.cols()), tolerance);
+        return identity.near(Eigen::MatrixXd::Identity(identity.rows(), identity.cols()), tolerance);
     }
 
     void CudaLeapCalibrator::CalculateAd(

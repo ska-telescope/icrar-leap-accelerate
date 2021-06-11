@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/config.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/memory/ioutils.h>
 #include <icrar/leap-accelerate/exception/exception.h>
@@ -34,85 +35,30 @@
 #include <functional>
 #include <type_traits>
 
+namespace Eigen
+{
+    using MatrixXb = Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic>;
+    using VectorXb = Eigen::Vector<bool, Eigen::Dynamic>;
+}
+
 namespace icrar
 {
     namespace cpu
     {
-        template<typename Matrix>
-        Eigen::IndexedView<Matrix, Eigen::VectorXi, Eigen::internal::AllRange<-1>>
-        WrappedRangeSelect(
-            Eigen::MatrixBase<Matrix>& matrix,
-            const Eigen::VectorXi& rowIndices)
-        {
-            Eigen::VectorXi correctedIndices = rowIndices;
-
-            // wrap around
-            for(int& i : correctedIndices)
-            {
-                if(i < 0)
-                {
-                    i = boost::numeric_cast<int>(i % matrix.rows());
-                }
-            }
-
-            return matrix(correctedIndices, Eigen::all);
-        }
-
-        /**
-         * @brief Selects a range of elements from matrix row indices and column index.
-         * Negative indexes select from the bottom of the matrix with -1 representing the bottom row.
-         * 
-         * @tparam T 
-         * @param matrix the referenced matrix to select from
-         * @param rowIndices a range of row indices to select
-         * @param column a valid column index 
-         */
-        template<typename Matrix>
-        Eigen::IndexedView<Matrix, Eigen::VectorXi, Eigen::internal::SingleRange>
-        VectorRangeSelect(
-            Eigen::MatrixBase<Matrix>& matrix,
-            const Eigen::VectorXi& rowIndices,
-            unsigned int column)
-        {
-            Eigen::VectorXi correctedIndices = rowIndices;
-
-            // wrap around
-            for(int& i : correctedIndices)
-            {
-                if(i < 0)
-                {
-                    i = boost::numeric_cast<int>(i % matrix.rows());
-                }
-            }
-
-            return matrix(correctedIndices, column);
-        }
-
         /**
          * @brief Selects a range of elements from matrix row indices. Negative indexes
-         * select from the bottom of the matrix with -1 representing the bottom row.
+         * select from the bottom of the matrix with -1 representing the last row.
          * 
          * @tparam T 
          * @param matrix the referenced matrix to select from
          * @param rowIndices a range of row indices to select
          * @param column a valid column index 
          */
-        template<typename Matrix>
-        Eigen::IndexedView<Matrix, Eigen::VectorXi, Eigen::internal::AllRange<-1>>
-        MatrixRangeSelect(
-            Matrix& matrix,
-            const Eigen::VectorXi& rowIndices)
+        template<typename Matrix, typename Scalar>
+        Eigen::IndexedView<Matrix, Eigen::Vector<Scalar, Eigen::Dynamic>, Eigen::internal::AllRange<-1>>
+        wrapped_row_select(Eigen::MatrixBase<Matrix>& matrix, const Eigen::Vector<Scalar, Eigen::Dynamic>& rowIndices)
         {
-            Eigen::VectorXi correctedIndices = rowIndices;
-            for(int& i : correctedIndices)
-            {
-                if(i < 0)
-                {
-                    i = boost::numeric_cast<int>(i % matrix.rows());
-                }
-            }
-
-            return matrix(correctedIndices, Eigen::all);
+            return matrix.wrapped_row_select(rowIndices);
         }
 
         /**
@@ -150,6 +96,6 @@ namespace icrar
          * @param right 
          * @param tolerance 
          */
-        bool near(const Eigen::Ref<const Eigen::MatrixXd> left, const Eigen::Ref<const Eigen::MatrixXd> right, double tolerance);
-    }
+        bool near(const Eigen::Ref<const Eigen::MatrixXd>& left, const Eigen::Ref<const Eigen::MatrixXd>& right, double tolerance);
+    } // namespace cpu 
 } // namespace icrar

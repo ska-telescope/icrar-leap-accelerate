@@ -127,7 +127,6 @@ namespace cpu
         Eigen::MatrixXcd m_avgData; // matrix of size (baselines, polarizations), late initialized
     
     public:
-        
         /**
          * @brief Construct a new MetaData object. SetUVW() and SetDirection() must be called after construction
          * 

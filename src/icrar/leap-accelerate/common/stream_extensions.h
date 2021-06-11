@@ -65,9 +65,9 @@ template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::set<T>& v)
 {
     os << "{"; 
-    for (auto it = v.begin(); it != v.end(); it++)
+    for (const auto& e : v)
     {
-        os << *it << ", "; 
+        os << e << ", "; 
     } 
     os << "}\n"; 
     return os;
@@ -83,12 +83,12 @@ std::ostream& operator<<(std::ostream& os, const std::set<T>& v)
  * @return std::ostream& 
  */
 template <typename T, typename S> 
-std::ostream& operator<<(std::ostream& os, const std::map<T, S>& v) 
+std::ostream& operator<<(std::ostream& os, const std::map<T, S>& m) 
 { 
-    for (auto it : v)
+    for (const auto& kv : m)
     {
-        os << it.first << " : "
-           << it.second << "\n";
+        os << kv.first << " : "
+           << kv.second << "\n";
     }
     return os; 
 }

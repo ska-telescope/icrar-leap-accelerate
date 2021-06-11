@@ -31,7 +31,7 @@ variables:
   GIT_SUBMODULE_STRATEGY: normal
 
 .src_dir_ref_storage: &src_dir_ref_storage
-  - mkdir build || true
+  - mkdir -p build
   - pwd > build/original_source_directory
 
 .src_dir_ref_replacement: &src_dir_ref_replacement
@@ -115,7 +115,7 @@ stages:
   - build
   - linting
   - test
-  - pages
+  - deploy
 
 ########
 # Build
@@ -211,6 +211,8 @@ build_export_compile_commands:
   artifacts:
     paths:
       - build
+    reports:
+      junit: build/clang-tidy-junit.xml
 
 lint_clang_tidy:
   extends: [.lint_dependencies, .lint_clang_tidy]
@@ -220,7 +222,7 @@ lint_clang_tidy:
   stage: linting
   script:
     # iwyu pre 0.12
-    - iwyu_tool -j 2 -p ./build -- --transitive_includes_only 2>&1 | tee build/iwyu.log
+    - iwyu_tool -j 2 -p ./build -- --transitive_includes_only 2>&1 | tee build/iwyu.log || true
     # iwyu 0.12+
     # iwyu_tool -j 2 -p ./build -- -Xiwyu --transitive_includes_only 2>&1 | tee build/iwyu.log
     - cat build/iwyu.log | python3 .clang-tidy-to-junit.py $PWD/ iwyu > build/iwyu-junit.xml
@@ -228,6 +230,8 @@ lint_clang_tidy:
     when: always
     paths:
       - build
+    reports:
+      junit: build/iwyu-junit.xml
 
 lint_iwyu:
   extends: [.lint_dependencies, .lint_iwyu]
@@ -244,12 +248,13 @@ lint_iwyu:
       --project=compile_commands.json
       --platform=unix64
       -q --std=c++14
-      -j 2
-      --library=googletest 2>&1 | tee cppcheck.xml'
+      --library=googletest 2>&1 | tee cppcheck.xml || true'
     - cppcheck_junit cppcheck.xml cppcheck-junit.xml
   artifacts:
     paths:
       - build
+    reports:
+      junit: build/cppcheck-junit.xml
 
 # clang pre-11.0 cannot parse gunit tests
 .lint_cppcheck_no_tests:
@@ -265,11 +270,13 @@ lint_iwyu:
       --std=c++14
       -i $PWD/../external
       -i $PWD/../src/icrar/leap-accelerate/tests
-      -i $PWD/../src/icrar/leap-accelerate-cli/tests 2>&1 | tee cppcheck.xml'
+      -i $PWD/../src/icrar/leap-accelerate-cli/tests 2>&1 | tee cppcheck.xml || true'
     - cppcheck_junit cppcheck.xml cppcheck-junit.xml
   artifacts:
     paths:
       - build
+    reports:
+      junit: build/cppcheck-junit.xml
 
 lint_cppcheck:
   extends: [.lint_dependencies, .lint_cppcheck_no_tests]
@@ -283,13 +290,13 @@ lint_cppcheck:
   stage: test
   after_script:
     - cd build
-    - ctest2junit > ctest.xml
+    - ctest2junit > unit-tests.xml
   timeout: 1h
   artifacts:
     paths:
       - build/
     reports:
-      junit: build/ctest.xml
+      junit: build/unit-tests.xml
 
 test_debug_minimal:
   extends: [.minimal_build_dependencies, .test]
@@ -331,7 +338,7 @@ test_debug_all:
 
 pages:
   extends: .minimal_build_dependencies
-  stage: pages
+  stage: deploy
   needs: ["test_debug_minimal", "lint_clang_tidy", "lint_cppcheck", "lint_iwyu"]
   script:
     - apt update && apt install -y curl gcovr moreutils python3-pip jq
@@ -340,7 +347,7 @@ pages:
     - cd .public
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o build/reports/code-coverage/index.html | sponge gcovr-html.log
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml | sponge gcovr-xml.log
-    - cp ../build/ctest.xml build/reports/unit-tests.xml
+    - cp ../build/unit-tests.xml build/reports/unit-tests.xml
     - cp ../build/cppcheck-junit.xml build/reports/cppcheck-junit.xml
     - cp ../build/clang-tidy-junit.xml build/reports/clang-tidy-junit.xml
     - cp ../build/iwyu-junit.xml build/reports/iwyu-junit.xml
@@ -351,6 +358,7 @@ pages:
       build/reports/cppcheck-junit.xml
       build/reports/iwyu-junit.xml
       --xml-output | sponge build/reports/linting.xml'
+    # recalculate linting totals
     - 'xq ".testsuites |= {\"@tests\": .testsuite | map(.\"@tests\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
     - 'xq ".testsuites |= {\"@errors\": .testsuite | map(.\"@errors\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
     - 'xq ".testsuites |= {\"@failures\": .testsuite | map(.\"@failures\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
@@ -364,4 +372,59 @@ pages:
     when: always
     paths:
       - public
+    reports:
+      cobertura: build/reports/code-coverage.xml
+      junit: build/reports/ci-metrics.xml
   allow_failure: true
+
+###
+# Docker
+###
+
+.docker_common:
+  image: docker:stable
+  tags:
+    - docker-executor
+  before_script:
+    - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
+    - docker info
+
+docker_build:
+  stage: build
+  extends: .docker_common
+  only:
+   - tags
+   - master
+  script:
+    # The docker image tag is:
+    #  * The git tag (without the initial "v") if building a git tag
+    #  * "latest" when building the master branch
+    #  * Other branches do not yield a docker image
+    - IMAGE_NAME=icrar-leap-accelerate
+    # Registry folder not system defined
+    - DOCKER_REGISTRY_FOLDER=ska-docker
+    - BRANCH=${CI_COMMIT_TAG:-${CI_COMMIT_BRANCH}}
+    - DOCKER_TAG=${BRANCH##v}
+    - >
+      if [ "$CI_COMMIT_BRANCH" = master ]; then
+        DOCKER_TAG=latest
+      fi
+    - >
+      docker build -t $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG .
+    - docker save $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG > docker_image.tar
+  artifacts:
+    paths:
+      - docker_image.tar
+    expire_in: 1 day
+
+docker_publish:
+  stage: deploy
+  extends: .docker_common
+  needs: [docker_build]
+  only:
+    - tags
+    - master
+  script:
+    - image_id=`docker load < docker_image.tar | sed -n '/Loaded image:/ { s/Loaded image://p }'`
+    - echo $image_id
+    - docker push $image_id

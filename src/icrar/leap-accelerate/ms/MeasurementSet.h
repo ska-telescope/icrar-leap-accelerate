@@ -23,6 +23,7 @@
 #pragma once
 
 #include <icrar/leap-accelerate/exception/exception.h>
+#include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 
 #include <casacore/ms/MeasurementSets.h>
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
@@ -148,9 +149,9 @@ namespace icrar
          * @brief Gets a vector of size nBaselines with a true value at the index of flagged baselines.
          * Checks for flagged data on the first channel and polarization.
          * 
-         * @return Eigen::Matrix<bool, -1, 1> 
+         * @return Eigen::VectorXb 
          */
-        Eigen::Matrix<bool, -1, 1> GetFlaggedBaselines() const;
+        Eigen::VectorXb GetFlaggedBaselines() const;
 
         /**
          * @brief Get the number of baselines that are flagged by the measurement set
@@ -163,9 +164,9 @@ namespace icrar
          * @brief Gets a flag vector of short baselines
          * 
          * @param minimumBaselineThreshold 
-         * @return Eigen::Matrix<bool, -1, 1> 
+         * @return Eigen::VectorXb
          */
-        Eigen::Matrix<bool, -1, 1> GetShortBaselines(double minimumBaselineThreshold = 0.0) const;
+        Eigen::VectorXb GetShortBaselines(double minimumBaselineThreshold = 0.0) const;
 
         /**
          * @brief Get the number of baselines that below the @p minimumBaselineThreshold
@@ -179,9 +180,9 @@ namespace icrar
          * @brief Gets flag vector of filtered baselines that are either flagged or short
          * 
          * @param minimumBaselineThreshold 
-         * @return Eigen::Matrix<bool, -1, 1> 
+         * @return Eigen::VectorXb 
          */
-        Eigen::Matrix<bool, -1, 1> GetFilteredBaselines(double minimumBaselineThreshold = 0.0) const;
+        Eigen::VectorXb GetFilteredBaselines(double minimumBaselineThreshold = 0.0) const;
 
         /**
          * @brief Gets the number of baselines that are flagged baselines or short baselines
@@ -195,9 +196,9 @@ namespace icrar
          * @brief Gets a flag vector of filtered stations
          * 
          * @param minimumBaselineThreshold 
-         * @return Eigen::Matrix<bool, -1, 1> 
+         * @return Eigen::VectorXb 
          */
-        //Eigen::Matrix<bool, -1, 1> GetFilteredStations(double minimumBaselineThreshold) const;
+        //Eigen::VectorXb GetFilteredStations(double minimumBaselineThreshold) const;
 
         //std::vector<casacore::MVuvw> MeasurementSet::GetCoordsCasa(uint32_t start_row) const;
         Eigen::MatrixX3d GetCoords() const;
