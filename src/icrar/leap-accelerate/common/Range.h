@@ -22,46 +22,65 @@
 
 #pragma once
 #include <icrar/leap-accelerate/exception/exception.h>
+#include <Eigen/Core>
 #include <string>
 #include <stdint.h>
 
 namespace icrar
 {
     /**
-     * @brief Represents a forwards linear sequence of indexes for some finite collection
+     * @brief Represents a forwards linear sequence of indexes for some finite collection.
+     * (Indexes are always positive and can be converted to Eigen ArithmeticSequence)
      * 
      */
+    template<typename T>
     class Range
     {
-        std::uint32_t m_start;
-        std::uint32_t m_interval;
-        std::uint32_t m_end;
+        T m_start;
+        T m_interval;
+        T m_end;
 
     public:
-        Range(int start, int interval, int end)
+        Range(T start, T end, T interval)
         {
             if(start < 0) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
-            if(interval < 1) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
             if(end < 0) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
-            if(start > end) throw icrar::exception("range start must be less than end", __FILE__, __LINE__);
+            if(interval < 1) throw icrar::exception("expected a positive integer", __FILE__, __LINE__);
+            if(start > end)
+            {
+                std::stringstream ss;
+                ss << "range start (" << start << ") must be less than end (" << end << ")";
+                throw icrar::exception(ss.str(), __FILE__, __LINE__);
+            }
 
             m_start = start;
             m_interval = interval;
             m_end = end;
         }
 
-        uint32_t GetStart() const { return m_start; }
-        uint32_t GetInterval() const { return m_interval; }
-        uint32_t GetEnd() const { return m_end; }
+        T GetStart() const { return m_start; }
+        T GetEnd() const { return m_end; }
+        T GetInterval() const { return m_interval; }
 
         /**
          * @brief Gets the number of elements in the range
          * 
          * @return int 
          */
-        int GetSize() const
+        T GetSize() const
         {
             return (m_end - m_start) / m_interval;
         }
+
+        //Iterator begin() const {} // TODO(cgray): range iterator, see boost::irange
+        //Iterator end() const {} // TODO(cgray): range iterator, see boost::irange
+
+        Eigen::ArithmeticSequence<Eigen::Index, Eigen::Index, Eigen::Index> ToSeq()
+        {
+            return Eigen::seq(m_start, m_end-1, m_interval);
+        }
     };
+
+    using Rangei = Range<int32_t>;
+    using Rangel = Range<int64_t>;
 } // namespace icrar

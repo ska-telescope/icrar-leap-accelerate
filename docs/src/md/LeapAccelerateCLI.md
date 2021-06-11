@@ -14,7 +14,7 @@ leap-accelerate-cli is a command line interface to performing leap calibration t
 
 * `--stations` - Overrides number of stations to use in the specified measurement set
 
-* `--solutionInterval <[start,interval,end]>` - Sets the interval to generate solutions. Additionally supports a single interval integer argument.
+* `--solutionInterval <[start,end,interval]>` - Sets the interval to generate solutions using numpy syntax. Additionally supports a single interval integer argument.
 
 * `--referenceAntenna <integer>` - Selects the reference antenna index, default is the last antenna
 
@@ -62,7 +62,7 @@ Config files currently must be written in coformant JSON format.
         "minimumBaselineTheshold": { "type": "integer" },
         "solutionInterval": {
             "type": ["integer", "array"],
-            "items": { "type": "number" },
+            "items": { "type": ["number", "null"] },
             "minItems": 3,
             "maxItems": 3
         },
@@ -97,6 +97,7 @@ Note: Properties are not required when specified in as CLI arguments with a conf
         [-0.4606549305661674,-0.29719233792392513],
         [-0.4606549305661674,-0.29719233792392513]
     ],
+    "solutionInterval": [0, None, 1],
     "verbosity": "info"
 }
 ```

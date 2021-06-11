@@ -60,11 +60,11 @@ namespace icrar
             
         }
 
-        void MultiDirectionTest(ComputeImplementation impl, const std::string& msname, boost::optional<int> stations_override, bool readAutocorrelations)
+        void MultiDirectionTest(ComputeImplementation impl, const std::string& msname)
         {
             std::cout << "loading ms" << std::endl;
             std::string filepath = std::string(TEST_DATA_DIR) + msname;
-            ms = std::make_unique<icrar::MeasurementSet>(filepath, stations_override, readAutocorrelations);
+            ms = std::make_unique<icrar::MeasurementSet>(filepath);
 
             std::vector<SphericalDirection> directions =
             {
@@ -102,14 +102,14 @@ namespace icrar
     };
 
     // These measurements have flagged data removed and complete data for each timestep
-    TEST_F(E2EPerformanceTests, MWACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/mwa/1197638568-split.ms", 102, true); }
+    TEST_F(E2EPerformanceTests, MWACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/mwa/1197638568-split.ms"); }
 #ifdef CUDA_ENABLED
-    TEST_F(E2EPerformanceTests, DISABLED_MWACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/mwa/1197638568-split.ms", 102, true); }
+    TEST_F(E2EPerformanceTests, DISABLED_MWACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/mwa/1197638568-split.ms"); }
 #endif
 
     // These measurements are clean and use a single timestep
-    TEST_F(E2EPerformanceTests, DISABLED_SKACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, true); }
+    TEST_F(E2EPerformanceTests, DISABLED_SKACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms"); }
 #ifdef CUDA_ENABLED
-    TEST_F(E2EPerformanceTests, DISABLED_SKACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, true); }
+    TEST_F(E2EPerformanceTests, DISABLED_SKACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms"); }
 #endif
 } // namespace icrar

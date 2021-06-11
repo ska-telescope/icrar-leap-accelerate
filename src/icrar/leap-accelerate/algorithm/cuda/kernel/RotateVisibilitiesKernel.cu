@@ -58,7 +58,7 @@ namespace cuda
     {
         const auto& constants = metadata.GetConstants(); 
         assert(constants.channels == integration.GetChannels() && integration.GetChannels() == integration.GetVis().GetDimensionSize(2));
-        assert(constants.nbaselines == metadata.GetAvgData().GetRows() && integration.GetBaselines() == integration.GetVis().GetDimensionSize(1));
+        assert(constants.nbaselines == metadata.GetAvgData().GetRows() && integration.GetRows() == integration.GetVis().GetDimensionSize(1));
         assert(constants.num_pols == integration.GetVis().GetDimensionSize(0));
 
         auto integrationDataMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>>(
@@ -82,7 +82,7 @@ namespace cuda
 
         dim3 blockSize = dim3(128, 8, 1); // block size can be any value where the product is 1024
         dim3 gridSize = dim3(
-            cpu::ceil_div<int64_t>(integration.GetBaselines(), blockSize.x),
+            cpu::ceil_div<int64_t>(integration.GetRows(), blockSize.x),
             cpu::ceil_div<int64_t>(integration.GetChannels(), blockSize.y),
             1
         );
@@ -92,6 +92,7 @@ namespace cuda
             UVWMap,
             integrationDataMap,
             avgDataMap);
+        checkCudaErrors(cudaGetLastError());
     }
 
     __global__ void g_RotateVisibilities(
@@ -101,10 +102,10 @@ namespace cuda
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>> integrationData,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> avgData)
     {
+        const int integration_polarizations = integrationData.dimension(0);
         const int integration_baselines = integrationData.dimension(1);
         const int integration_channels = integrationData.dimension(2);
         const int md_baselines = constants.nbaselines; //metadata baselines
-        const int polarizations = constants.num_pols;
         constexpr double two_pi = 2 * CUDART_PI;
 
         //parallel execution per channel
@@ -122,12 +123,12 @@ namespace cuda
             double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
             cuDoubleComplex exp = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
 
-            for(int polarization = 0; polarization < polarizations; polarization++)
+            for(int polarization = 0; polarization < integration_polarizations; polarization++)
             {
                 integrationData(polarization, baseline, channel) = cuCmul(integrationData(polarization, baseline, channel), exp);
             }
             bool hasNaN = false;
-            for(int polarization = 0; polarization < polarizations; polarization++)
+            for(int polarization = 0; polarization < integration_polarizations; polarization++)
             {
                 cuDoubleComplex n = integrationData(polarization, baseline, channel);
                 hasNaN |= isnan(n.x) || isnan(n.y);
@@ -135,11 +136,11 @@ namespace cuda
 
             if(!hasNaN)
             {
-                for(int polarization = 0; polarization < polarizations; ++polarization)
-                {
-                    atomicAdd(&avgData(md_baseline, polarization).x, integrationData(polarization, baseline, channel).x);
-                    atomicAdd(&avgData(md_baseline, polarization).y, integrationData(polarization, baseline, channel).y);
-                }
+                // XX + YY
+                atomicAdd(&avgData(md_baseline, 0).x, integrationData(0, baseline, channel).x);
+                atomicAdd(&avgData(md_baseline, 0).y, integrationData(0, baseline, channel).y);
+                atomicAdd(&avgData(md_baseline, 0).x, integrationData(integration_polarizations - 1, baseline, channel).x);
+                atomicAdd(&avgData(md_baseline, 0).y, integrationData(integration_polarizations - 1, baseline, channel).y);
             }
         }
     }

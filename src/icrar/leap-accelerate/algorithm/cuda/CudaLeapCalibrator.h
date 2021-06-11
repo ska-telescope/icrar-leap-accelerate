@@ -24,8 +24,7 @@
 
 #ifdef CUDA_ENABLED
 
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
+#include <icrar/leap-accelerate/config.h>
 
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/model/cpu/calibration/Calibration.h>
@@ -55,11 +54,11 @@ namespace icrar
         class Integration;
         class IntegrationResult;
         class BeamCalibration;
-        class MetaData;
     }
     namespace cuda
     {
         class DeviceMetaData;
+        class HostMetaData;
         class DeviceIntegration;
     }
 }
@@ -106,9 +105,8 @@ namespace cuda
          * @param useCuda whether to use cuda solvers
          */
         void CalculateAd(
-            const Eigen::MatrixXd& hostA,
+            HostMetaData& metadata,
             device_matrix<double>& deviceA,
-            Eigen::MatrixXd& hostAd,
             device_matrix<double>& deviceAd,
             bool isFileSystemCacheEnabled,
             bool useCuda);
@@ -122,16 +120,15 @@ namespace cuda
          * @param deviceAd1 output device memory of Ad1
          */
         void CalculateAd1(
-            const Eigen::MatrixXd& hostA1,
+            HostMetaData& metadata,
             device_matrix<double>& deviceA1,
-            Eigen::MatrixXd& hostAd1,
             device_matrix<double>& deviceAd1);
 
         /**
          * Performs only visibilities rotation on the GPU
          */
         void PhaseRotate(
-            const cpu::MetaData& hostMetadata,
+            const HostMetaData& hostMetadata,
             DeviceMetaData& deviceMetadata,
             const SphericalDirection& direction,
             cuda::DeviceIntegration& input,

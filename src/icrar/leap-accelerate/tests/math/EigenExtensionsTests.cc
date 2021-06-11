@@ -43,7 +43,7 @@ namespace icrar
             auto r = Eigen::Vector<Index, Eigen::Dynamic>(6);
             r << -3, -2, -1, 0, 1, 2;
 
-            Eigen::MatrixXd v = cpu::WrappedRowSelect(m, r);
+            Eigen::MatrixXd v = m.wrapped_row_select(r);
             auto expected = Eigen::MatrixXd(6,3);
             expected <<
             0, 1, 2,
@@ -57,11 +57,11 @@ namespace icrar
             // out of bounds
             auto rl = Eigen::Vector<Index, Eigen::Dynamic>(2);
             rl << -3, -4;
-            ASSERT_THROW(cpu::WrappedRowSelect(m, rl), std::runtime_error);
+            ASSERT_THROW(m.wrapped_row_select(rl), std::runtime_error);
 
             auto rh = Eigen::Vector<Index, Eigen::Dynamic>(2);
             rh << 2, 3;
-            ASSERT_THROW(cpu::WrappedRowSelect(m, rh), std::runtime_error);
+            ASSERT_THROW(m.wrapped_row_select(rh), std::runtime_error);
         }
 
         void TestArg()
@@ -72,7 +72,7 @@ namespace icrar
             0, 1,
             1i, -1i;
 
-            Eigen::MatrixXd v = cpu::arg(m);
+            Eigen::MatrixXd v = m.arg();
 
             auto expected = Eigen::MatrixXd(2,2);
             expected <<
@@ -80,9 +80,27 @@ namespace icrar
             boost::math::constants::pi<double>() / 2, -boost::math::constants::pi<double>() / 2;
             ASSERT_MEQD(expected, v, THRESHOLD);
         }
+
+        void TestNumpySlice()
+        {
+            Eigen::VectorXi v(5);
+            v << 0, 1, 2, 3, 4;
+            auto vr = v(v.numpy(-1,0,-1));
+            ASSERT_MEQI(v(Eigen::seq(Eigen::last, 0, -1)), vr, 0);
+            ASSERT_MEQI(v.reverse(), vr, 0);
+
+            Eigen::MatrixXi m(2,3);
+            m <<
+            0, 1, 2,
+            3, 4, 5;
+            auto mr = m(m.numpy_rows(-1,0,-1), m.numpy_cols(-1,0,-1));
+            ASSERT_MEQI(m(Eigen::seq(Eigen::last, 0, -1), Eigen::seq(Eigen::last, 0, -1)), mr, 0);
+            ASSERT_MEQI(m.reverse(), mr, 0);
+        }
     };
 
     TEST_F(EigenExtensionsTests, TestWrappedRowSelect32) { TestWrappedRowSelect<int32_t>(); }
     TEST_F(EigenExtensionsTests, TestWrappedRowSelect64) { TestWrappedRowSelect<Eigen::Index>(); }
     TEST_F(EigenExtensionsTests, TestArg) { TestArg(); }
+    TEST_F(EigenExtensionsTests, TestNumpySlice) { TestNumpySlice(); }
 } // namespace icrar
