@@ -20,7 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
-#ifdef SYNCL_ENABLED
+#ifdef SYCL_ENABLED
 
 #include "SyclLeapCalibrator.h"
 
@@ -40,9 +40,6 @@
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/timer.h>
 #include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
-
-#include <casacore/measures/Measures/MDirection.h>
-#include <casacore/ms/MeasurementSets/MSAntenna.h>
 
 #include <CL/sycl.hpp>
 
@@ -139,4 +136,4 @@ namespace sycl
     }
 } // namespace cpu
 } // namespace icrar
-#endif // SYNCL_ENABLED
+#endif // SYCL_ENABLED

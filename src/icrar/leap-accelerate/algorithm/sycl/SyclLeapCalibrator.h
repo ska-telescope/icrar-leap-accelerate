@@ -21,7 +21,7 @@
  */
 
 #pragma once
-#ifdef SYNCL_ENABLED
+#ifdef SYCL_ENABLED
 
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
 
@@ -93,4 +93,4 @@ namespace sycl
     };
 } // namespace cpu
 } // namespace icrar
-#endif // SYNCL_ENABLED
+#endif // SYCL_ENABLED
