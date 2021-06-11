@@ -78,7 +78,7 @@ namespace icrar
             inputType.reset(InputType()); //Default value ignored
             if(!TryParseInputType(args.inputType.get(), inputType.get()))
             {
-                throw std::invalid_argument("invalid compute implementation argument");
+                throw std::invalid_argument("invalid input implementation argument");
             }
         }
         
@@ -87,7 +87,7 @@ namespace icrar
             computeImplementation.reset(ComputeImplementation()); //Default value ignored
             if(!TryParseComputeImplementation(args.computeImplementation.get(), computeImplementation.get()))
             {
-                throw std::invalid_argument("invalid compute implementation argument");
+                throw icrar::invalid_argument_exception("invalid compute implementation argument", args.computeImplementation.get(), __FILE__, __LINE__);
             }
         }
 
