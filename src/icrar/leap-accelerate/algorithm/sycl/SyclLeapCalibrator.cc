@@ -42,6 +42,10 @@
 #include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 
 #include <CL/sycl.hpp>
+#include <ml/eigen/eigen.hpp>
+#include <ml/math/mat_mul.hpp>
+#include <ml/math/svd.hpp>
+#include <sycl_blas.h>
 
 #include <boost/math/constants/constants.hpp>
 #include <boost/optional.hpp>
@@ -90,6 +94,26 @@ namespace sycl
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
         << "timesteps: " << ms.GetNumTimesteps();
+
+        profiling::timer calibration_timer;
+
+        auto output_calibrations = std::vector<cpu::Calibration>();
+
+        std::vector<double> epochs = ms.GetEpochs();
+        
+        profiling::timer metadata_read_timer;
+        auto metadata = icrar::MetaData(
+            ms,
+            referenceAntenna,
+            minimumBaselineThreshold,
+            false,
+            false);
+
+        device_matrix<double> deviceA, deviceAd;
+        CalculateAd(metadata, deviceA, deviceAd, cudaComputeOptions.isFileSystemCacheEnabled, cudaComputeOptions.useCusolver);
+
+        device_matrix<double> deviceA1, deviceAd1;
+        CalculateAd1(metadata, deviceA1, deviceAd1);
 
         cl::sycl::float4 a = { 1.0, 2.0, 3.0, 4.0 };
         cl::sycl::float4 b = { 4.0, 3.0, 2.0, 1.0 };

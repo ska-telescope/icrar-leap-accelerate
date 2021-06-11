@@ -7,3 +7,5 @@ git submodule add --name gtest-1.8.1 https://github.com/google/googletest.git ex
 git submodule add --name cmake-modules https://gitlab.com/ska-telescope/cmake-modules.git external/cmake-modules
 git submodule add --name eigen-3.3.90 https://gitlab.com/libeigen/eigen.git external/eigen-3.3.90
 git submodule add --name rapidjson-1.1.0 https://github.com/Tencent/rapidjson.git external/rapidjson-1.1.0
+git submodule add --name sycl-ml https://github.com/codeplaysoftware/SYCL-ML.git external/sycl-ml
+git submodule add --name sycl-blas https://github.com/codeplaysoftware/sycl-blas.git external/sycl-blas
