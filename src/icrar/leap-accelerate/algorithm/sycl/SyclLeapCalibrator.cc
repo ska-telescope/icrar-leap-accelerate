@@ -42,9 +42,9 @@
 #include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 
 #include <CL/sycl.hpp>
-#include <ml/eigen/eigen.hpp>
-#include <ml/math/mat_mul.hpp>
-#include <ml/math/svd.hpp>
+// #include <ml/eigen/eigen.hpp>
+// #include <ml/math/mat_mul.hpp>
+// #include <ml/math/svd.hpp>
 #include <sycl_blas.h>
 
 #include <boost/math/constants/constants.hpp>

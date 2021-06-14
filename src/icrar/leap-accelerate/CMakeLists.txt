@@ -127,6 +127,8 @@ target_link_libraries(${TARGET_NAME} PUBLIC Boost::program_options)
 target_link_libraries(${TARGET_NAME} PUBLIC Boost::filesystem)
 target_link_libraries(${TARGET_NAME} PUBLIC Eigen3::Eigen)
 
+target_include_directories(${TARGET_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/external/sycl-blas/include)
+
 
 if(CUDA_ENABLED)
   if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
