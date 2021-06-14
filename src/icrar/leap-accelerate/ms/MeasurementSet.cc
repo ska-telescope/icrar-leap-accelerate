@@ -280,6 +280,37 @@ namespace icrar
             m_msmc->uvw().getColumnRange(slice).data(), num_rows, 3);
     }
 
+    Eigen::Tensor<double, 3> MeasurementSet::GetCoordsExperimental(uint32_t startTimestep, uint32_t intervalTimesteps)
+    {
+        // See https://github.com/OxfordSKA/OSKAR/blob/f018c03bb34c16dcf8fb985b46b3e9dc1cf0812c/oskar/ms/src/oskar_ms_read.cpp
+        uint32_t num_baselines = GetNumBaselines();
+        uint32_t start_row = startTimestep * num_baselines;
+        uint32_t num_rows = intervalTimesteps * num_baselines;
+        uint32_t total_rows = GetNumRows();
+
+        if(start_row >= total_rows)
+        {
+            std::stringstream ss;
+            ss << "ms out of range " << start_row << " >= " << total_rows; 
+            throw icrar::exception(ss.str(), __FILE__, __LINE__);
+        }
+
+        // reduce selection if selecting out of range
+        if(start_row + num_rows > total_rows)
+        {
+            std::stringstream ss;
+            ss << "ms out of range " << start_row + num_rows << " >= " << total_rows; 
+            throw icrar::exception(ss.str(), __FILE__, __LINE__);
+        }
+
+        casacore::Slice slice(start_row, num_rows, 1);
+        return Eigen::TensorMap<Eigen::Tensor<double, 3>(
+            m_msmc->uvw().getColumnRange(slice).data(),
+            3,
+            num_baselines,
+            interval_timestep);
+    }
+
     Eigen::Tensor<std::complex<double>, 3> MeasurementSet::GetVis() const
     {
         return GetVis(0, 1);
