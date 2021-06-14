@@ -83,6 +83,6 @@ namespace icrar
     };
 
     TEST_F(EigenExtensionsTests, TestWrappedRowSelect32) { TestWrappedRowSelect<int32_t>(); }
-    //TEST_F(EigenExtensionsTests, TestWrappedRowSelect64) { TestWrappedRowSelect<int64_t>(); }
+    TEST_F(EigenExtensionsTests, TestWrappedRowSelect64) { TestWrappedRowSelect<int64_t>(); }
     TEST_F(EigenExtensionsTests, TestArg) { TestArg(); }
 } // namespace icrar
