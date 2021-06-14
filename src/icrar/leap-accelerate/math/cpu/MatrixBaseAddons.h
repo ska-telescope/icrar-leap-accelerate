@@ -23,41 +23,53 @@
 /// See http://eigen.tuxfamily.org/dox-3.2/TopicCustomizingEigen.html
 /// for details on extending Eigen3.
 
+//NOTE: MatrixBase class templates are already defined
+
 /**
- * @brief A numpythonic row selection operation that selects the rows
+ * @brief Wraps around negative indices for slicing an eigen matrix
+ * 
+ * @tparam OtherIndex a signed integer type
+ * @param indices 
+ * @return Matrix<OtherIndex, Dynamic, 1> 
+ */
+template<typename OtherIndex>
+Matrix<OtherIndex, Dynamic, 1> wrap_indices(const Matrix<OtherIndex, Dynamic, 1>& indices) const
+{
+    Matrix<OtherIndex, Dynamic, 1> correctedIndices = indices;
+    for(OtherIndex& index : correctedIndices)
+    {
+        if(index < -rows() || index >= rows())
+        {
+            throw std::runtime_error("index out of range");
+        }
+        if(index < 0)
+        {
+            index = rows() + index;
+        }
+    }
+    return correctedIndices;
+}
+
+/**
+ * @brief A pythonic row selection operation that selects the rows
  * of a matrix using index wrap around. Negative indexes select from
  * the bottom of the matrix with -1 representing the last row.
  * 
- * @tparam Vector 
+ * @tparam OtherIndex a signed integer type
  * @param rowIndices 
  * @return auto 
  */
-template<typename OtherDerived>
-inline auto wrapped_row_select(const MatrixBase<OtherDerived>& rowIndices) const
+template<typename OtherIndex>
+inline Eigen::IndexedView<Eigen::Matrix<Scalar, Dynamic, Dynamic>, Eigen::Matrix<OtherIndex, Dynamic, 1>, Eigen::internal::AllRange<Dynamic>>
+wrapped_row_select(const Matrix<OtherIndex, Dynamic, 1>& rowIndices)
 {
-    OtherDerived correctedIndices = rowIndices;
-    for(int& i : correctedIndices)
-    {
-        if(i < 0)
-        {
-            i = static_cast<int>(i % rows());
-        }
-    }
-    return this->operator()(correctedIndices, Eigen::all);
+    return this->operator()(wrap_indices(rowIndices), Eigen::all);
 }
-
-template<typename OtherDerived>
-inline auto wrapped_row_select(MatrixBase<OtherDerived>& rowIndices)
+template<typename OtherIndex>
+inline const Eigen::IndexedView<const Eigen::Matrix<Scalar, Dynamic, Dynamic>, Eigen::Matrix<OtherIndex, Dynamic, 1>, Eigen::internal::AllRange<Dynamic>>
+wrapped_row_select(const Matrix<OtherIndex, Dynamic, 1>& rowIndices) const
 {
-    OtherDerived correctedIndices = rowIndices;
-    for(int& i : correctedIndices)
-    {
-        if(i < 0)
-        {
-            i = static_cast<int>(i % rows());
-        }
-    }
-    return this->operator()(correctedIndices, Eigen::all);
+    return this->operator()(wrap_indices(rowIndices), Eigen::all);
 }
 
 /**
@@ -91,6 +103,6 @@ inline bool near(const MatrixBase<OtherDerived>& other, double tolerance) const
 }
 
 /**
- * @brief Computes a matrix of the angle/arg from the respective complex values
+ * @brief Computes a matrix of the component-wise angles/args from the respective complex values
  */
 inline auto arg() const { return this->unaryExpr([](Scalar v){ return std::arg(v); }); }

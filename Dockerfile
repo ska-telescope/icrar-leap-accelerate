@@ -1,7 +1,7 @@
 # This is Dockerfile installs everything from scratch into a Ubuntu 20.04 based container
 FROM ubuntu:20.04
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata \
-    gnupg2 wget gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 clang-tidy libboost1.71-all-dev libgsl-dev git \
+    gnupg2 git wget gcc g++ gdb doxygen cmake casacore-dev libboost1.71-all-dev \
     software-properties-common
 
 RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin &&\
@@ -11,7 +11,7 @@ RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
 RUN add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
 RUN apt update &&\
-    DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install cuda-11-1
+    DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install cuda-minimal-build-11-2
 
 #
 # Get the LEAP sources and install them in the system

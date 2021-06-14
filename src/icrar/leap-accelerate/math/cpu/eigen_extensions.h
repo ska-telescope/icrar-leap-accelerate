@@ -57,23 +57,9 @@ namespace icrar
          */
         template<typename Matrix, typename Scalar>
         Eigen::IndexedView<Matrix, Eigen::Vector<Scalar, Eigen::Dynamic>, Eigen::internal::AllRange<-1>>
-        wrapped_row_select(
-            Eigen::MatrixBase<Matrix>& matrix,
-            const Eigen::Vector<Scalar, Eigen::Dynamic>& rowIndices)
+        wrapped_row_select(Eigen::MatrixBase<Matrix>& matrix, const Eigen::Vector<Scalar, Eigen::Dynamic>& rowIndices)
         {
-            Eigen::Vector<Scalar, Eigen::Dynamic> correctedIndices = rowIndices;
-            for(Scalar& i : correctedIndices)
-            {
-                if(i < -matrix.rows() || i >= matrix.rows())
-                {
-                    throw std::runtime_error("index out of range");
-                }
-                if(i < 0)
-                {
-                    i = boost::numeric_cast<int>(matrix.rows() + i);
-                }
-            }
-            return matrix(correctedIndices, Eigen::all);
+            return matrix.wrapped_row_select(rowIndices);
         }
 
         /**
