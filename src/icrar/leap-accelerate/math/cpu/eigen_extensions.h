@@ -24,7 +24,17 @@
 
 #include <icrar/leap-accelerate/config.h>
 #include <Eigen/Core>
+
+#ifdef CUDA_ENABLED
 #include <thrust/complex.h>
+#else
+namespace thrust
+{
+    template<typename Scalar>
+    using complex = std::complex<Scalar>;
+} // namespace thrust
+#endif // CUDA_ENABLED
+
 #include <type_traits>
 
 namespace Eigen
@@ -33,6 +43,7 @@ namespace Eigen
     using VectorXb = Eigen::Vector<bool, Eigen::Dynamic>;
 } // namespace Eigen
 
+
 namespace Eigen {
 namespace internal {
     template<>
@@ -40,5 +51,5 @@ namespace internal {
     {
         return thrust::complex<double>(x);
     }
-}
-}
+} // namespace internal
+} // namespace Eigen
