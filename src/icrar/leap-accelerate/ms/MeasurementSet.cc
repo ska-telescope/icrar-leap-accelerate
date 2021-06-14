@@ -304,11 +304,11 @@ namespace icrar
         }
 
         casacore::Slice slice(start_row, num_rows, 1);
-        return Eigen::TensorMap<Eigen::Tensor<double, 3>(
+        return Eigen::TensorMap<Eigen::Tensor<double, 3>>(
             m_msmc->uvw().getColumnRange(slice).data(),
             3,
             num_baselines,
-            interval_timestep);
+            intervalTimesteps);
     }
 
     Eigen::Tensor<std::complex<double>, 3> MeasurementSet::GetVis() const

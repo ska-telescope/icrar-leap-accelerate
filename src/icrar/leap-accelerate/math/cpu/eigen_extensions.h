@@ -24,6 +24,7 @@
 
 #include <icrar/leap-accelerate/config.h>
 #include <Eigen/Core>
+#include <thrust/complex.h>
 #include <type_traits>
 
 namespace Eigen
@@ -35,9 +36,9 @@ namespace Eigen
 namespace Eigen {
 namespace internal {
     template<>
-    inline std::complex<double> cast(const std::complex<float>& x)
+    EIGEN_DEVICE_FUNC inline std::complex<double> cast(const std::complex<float>& x)
     {
-        return std::complex<double>(x.real(),x.imag());
+        return thrust::complex<double>(x);
     }
 }
 }

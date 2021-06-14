@@ -23,6 +23,8 @@
 /// See http://eigen.tuxfamily.org/dox-3.2/TopicCustomizingEigen.html
 /// for details on extending Eigen3.
 
+//NOTE: MatrixBase class templates are already defined
+
 /**
  * @brief Provides numpy behaviour slicing.
  * @note Eigen does not allow the increment to be a symbolic expression
@@ -82,48 +84,49 @@ inline auto numpy(std::initializer_list<std::initializer_list<Index>> slice)
 }
 
 /**
- * @brief A numpythonic row selection operation that selects the rows
+ * @brief Wraps around negative indices for slicing an eigen matrix
+ * 
+ * @tparam Vector 
+ * @param rowIndices a range of row indices to select
+ * @param rowIndices 
+ * @return auto 
+ */
+template<typename OtherIndex>
+Matrix<OtherIndex, Dynamic, 1> wrap_indices(const Matrix<OtherIndex, Dynamic, 1>& indices) const
+{
+    Matrix<OtherIndex, Dynamic, 1> correctedIndices = indices;
+    for(OtherIndex& index : correctedIndices)
+    {
+        if(index < -rows() || index >= rows())
+        {
+            throw std::runtime_error("index out of range");
+        }
+        if(index < 0)
+        {
+            index = rows() + index;
+        }
+    }
+    return correctedIndices;
+}
+
+/**
+ * @brief A pythonic row selection operation that selects the rows
  * of a matrix using index wrap around. Negative indexes select from
  * the bottom of the matrix with -1 representing the last row.
  * 
- * @tparam Index
- * @param rowIndices a range of row indices to select
- * @param column a valid column index
+ * @tparam OtherIndex a signed integer type
+ * @param rowIndices 
+ * @return auto 
  */
-template<typename Index>
-inline auto wrapped_row_select(const Matrix<Index, Eigen::Dynamic, 1>& rowIndices)
+template<typename OtherIndex>
+inline auto wrapped_row_select(const Matrix<OtherIndex, Dynamic, 1>& rowIndices) const
 {
-    Matrix<Index, Eigen::Dynamic, 1> correctedIndices = rowIndices;
-    for(Index& index : correctedIndices)
-    {
-        if(index < -rows() || index >= rows())
-        {
-            throw std::runtime_error("index out of range");
-        }
-        if(index < 0)
-        {
-            index = rows() + index;
-        }
-    }
-    return this->operator()(correctedIndices, Eigen::all);
+    return this->operator()(wrap_indices(rowIndices), Eigen::all);
 }
-
-template<typename Index>
-inline auto wrapped_row_select(const Matrix<Index, Eigen::Dynamic, 1>& rowIndices) const
+template<typename OtherIndex>
+inline auto wrapped_row_select(const Matrix<OtherIndex, Dynamic, 1>& rowIndices)
 {
-    Matrix<Index, Eigen::Dynamic, 1> correctedIndices = rowIndices;
-    for(Index& index : correctedIndices)
-    {
-        if(index < -rows() || index >= rows())
-        {
-            throw std::runtime_error("index out of range");
-        }
-        if(index < 0)
-        {
-            index = rows() + index;
-        }
-    }
-    return this->operator()(correctedIndices, Eigen::all);
+    return this->operator()(wrap_indices(rowIndices), Eigen::all);
 }
 
 /**

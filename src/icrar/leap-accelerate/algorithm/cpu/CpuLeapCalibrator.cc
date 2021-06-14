@@ -174,7 +174,7 @@ namespace cpu
 
         LOG(info) << "Calculating Calibration";
         auto polarizationsI1 = metadata.GetAvgData().wrapped_row_select(metadata.GetI1());
-        Eigen::VectorXd phaseAnglesI1 = polarizationsI1.col(0).arg();
+        Eigen::VectorXd phaseAnglesI1 = polarizationsI1.arg(); // arg(XX + YY)
 
         // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
         phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
@@ -224,6 +224,7 @@ namespace cpu
 
                 if(!hasNaN)
                 {
+                    // Averaging with XX and YY polarizations
                     metadata.GetAvgData()(baseline) += integration_data(0, row, channel);
                     metadata.GetAvgData()(baseline) += integration_data(integration_data.dimension(0) - 1, row, channel);
                 }
