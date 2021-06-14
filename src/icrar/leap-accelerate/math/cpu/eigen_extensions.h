@@ -35,21 +35,17 @@ namespace thrust
 } // namespace thrust
 #endif // CUDA_ENABLED
 
-#include <type_traits>
-
 namespace Eigen
 {
     using MatrixXb = Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic>;
     using VectorXb = Eigen::Vector<bool, Eigen::Dynamic>;
-} // namespace Eigen
 
-
-namespace Eigen {
-namespace internal {
-    template<>
-    EIGEN_DEVICE_FUNC inline std::complex<double> cast(const std::complex<float>& x)
+    namespace internal
     {
-        return thrust::complex<double>(x);
-    }
-} // namespace internal
+        template<>
+        inline EIGEN_DEVICE_FUNC std::complex<double> cast(const std::complex<float>& x)
+        {
+            return thrust::complex<double>(x);
+        }
+    } // namespace internal
 } // namespace Eigen
