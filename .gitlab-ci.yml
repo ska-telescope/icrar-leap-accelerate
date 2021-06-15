@@ -77,7 +77,7 @@ variables:
 
 .cuda_build_dependencies:
   extends: .common
-  image: nallack/bullseye-cuda:latest
+  image: nexus.engageska-portugal.pt/ska-docker/icrar-leap-accelerate-build@sha256:c6b988961135375bb0e4dfe51eae45921c77ae8da855e385b95b7f24f5ce587e
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
@@ -373,13 +373,13 @@ pages:
     paths:
       - public
     reports:
-      cobertura: build/reports/code-coverage.xml
-      junit: build/reports/ci-metrics.xml
+      cobertura: public/build/reports/code-coverage.xml
+      junit: public/build/reports/ci-metrics.xml
   allow_failure: true
 
-###
+#########
 # Docker
-###
+#########
 
 .docker_common:
   image: docker:stable
@@ -388,6 +388,23 @@ pages:
   before_script:
     - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
     - docker info
+
+docker_ci_build_deploy:
+  stage: build
+  extends: .docker_common
+  variables:
+    DOCKER_TAG: "latest"
+  when: manual
+  script:
+    # The docker image tag is:
+    #  * The git tag (without the initial "v") if building a git tag
+    #  * "latest" when building the master branch
+    #  * Other branches do not yield a docker image
+    - IMAGE_NAME=icrar-leap-accelerate-build
+    # Registry folder not system defined
+    - DOCKER_REGISTRY_FOLDER=ska-docker
+    - docker build -t $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG ./docker/build
+    - docker push $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG
 
 docker_build:
   stage: build
