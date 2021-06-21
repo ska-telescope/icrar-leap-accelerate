@@ -46,8 +46,9 @@ namespace icrar
     namespace cpu
     {
         /**
-         * @brief Selects a range of elements from matrix row indices. Negative indexes
-         * select from the bottom of the matrix with -1 representing the last row.
+         * @brief Selects a range of elements from matrix row indices. 
+         * Negative indexes select from the bottom of the matrix with 
+         * -1 representing the bottom row.
          * 
          * @tparam T 
          * @param matrix the referenced matrix to select from

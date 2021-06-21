@@ -32,8 +32,8 @@ namespace icrar
 namespace cuda
 {
     /**
-     * @brief A cuda decorator for for cpu::Integration. 
-     * This class stores data on the host using pinned memory to allow for asyncronous read and write with cuda.
+     * @brief A cuda decorator for cpu::Integration. This class stores data on the host withs pinned memory
+     * calls to allow for asyncronous read and write with cuda.
      */
     class HostMetaData : public cpu::MetaData
     {
@@ -69,7 +69,27 @@ namespace cuda
             cudaHostUnregister(m_Ad.data());
             cudaHostUnregister(m_Ad1.data());
         }
+
+        void SetAd(Eigen::MatrixXd&& Ad) override
+        {
+            if(m_Ad.size() != 0)
+            {
+                cudaHostUnregister(m_Ad.data());
+            }
+            m_Ad = std::move(Ad);
+            cudaHostRegister(m_Ad.data(), m_Ad.size() * sizeof(decltype(*m_Ad.data())), cudaHostRegisterPortable);
+        }
+
+        void SetAd1(Eigen::MatrixXd&& Ad1) override
+        {
+            if(m_Ad1.size() != 0)
+            {
+                cudaHostUnregister(m_Ad1.data());
+            }
+            m_Ad1 = std::move(Ad1);
+            cudaHostRegister(m_Ad1.data(), m_Ad1.size() * sizeof(decltype(*m_Ad1.data())), cudaHostRegisterPortable);
+        }
     };
-}
-}
+} // namespace cuda
+} // namespace icrar
 #endif // CUDA_ENABLED

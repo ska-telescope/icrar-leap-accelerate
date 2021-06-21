@@ -43,22 +43,19 @@ namespace icrar
      * @tparam T Eigen Dense Matrix type 
      */
     template<typename T>
-    struct matrix_hash : std::unary_function<T, size_t>
+    std::size_t matrix_hash(const T& matrix)
     {
-        std::size_t operator()(const T& matrix) const
+        // Note that it is oblivious to the storage order of Eigen matrix (column- or
+        // row-major). It will give you the same hash value for two different matrices if they
+        // are the transpose of each other in different storage order.
+        size_t seed = 0;
+        for (Eigen::Index i = 0; i < matrix.size(); ++i)
         {
-            // Note that it is oblivious to the storage order of Eigen matrix (column- or
-            // row-major). It will give you the same hash value for two different matrices if they
-            // are the transpose of each other in different storage order.
-            size_t seed = 0;
-            for (Eigen::Index i = 0; i < matrix.size(); ++i)
-            {
-                auto elem = *(matrix.data() + i);
-                seed ^= std::hash<typename T::Scalar>()(elem) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-            }
-            return seed;
+            auto elem = *(matrix.data() + i);
+            seed ^= std::hash<typename T::Scalar>()(elem) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
         }
-    };
+        return seed;
+    }
 
     /**
      * @brief Writes @p matrix to a file overwriting existing content (throws if fails)
@@ -153,7 +150,7 @@ namespace icrar
      * 
      * @tparam In Matrix type
      * @tparam Out Matrix type
-     * @tparam Lambda lambda type of signature Out(const In&)
+     * @tparam Lambda lambda type of signature Out(const In&) called if hashes do not match
      * @param in The input matrix to hash and transform
      * @param out The transformed output
      * @param transform the transform lambda
@@ -196,4 +193,15 @@ namespace icrar
             }
         }
     }
+
+    template<typename In, typename Out, typename Lambda>
+    Out ProcessCache(size_t hash, const In& in,
+        const std::string& hashFile, const std::string& cacheFile,
+        Lambda transform)
+    {
+        Out out;
+        ProcessCache(hash, in, out, hashFile, cacheFile, transform);
+        return out;
+    }
+
 } // namespace icrar

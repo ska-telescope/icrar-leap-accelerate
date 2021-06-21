@@ -60,14 +60,12 @@ Matrix<OtherIndex, Dynamic, 1> wrap_indices(const Matrix<OtherIndex, Dynamic, 1>
  * @return auto 
  */
 template<typename OtherIndex>
-inline Eigen::IndexedView<Eigen::Matrix<Scalar, Dynamic, Dynamic>, Eigen::Matrix<OtherIndex, Dynamic, 1>, Eigen::internal::AllRange<Dynamic>>
-wrapped_row_select(const Matrix<OtherIndex, Dynamic, 1>& rowIndices)
+inline auto wrapped_row_select(const Matrix<OtherIndex, Dynamic, 1>& rowIndices)
 {
     return this->operator()(wrap_indices(rowIndices), Eigen::all);
 }
 template<typename OtherIndex>
-inline const Eigen::IndexedView<const Eigen::Matrix<Scalar, Dynamic, Dynamic>, Eigen::Matrix<OtherIndex, Dynamic, 1>, Eigen::internal::AllRange<Dynamic>>
-wrapped_row_select(const Matrix<OtherIndex, Dynamic, 1>& rowIndices) const
+inline auto wrapped_row_select(const Matrix<OtherIndex, Dynamic, 1>& rowIndices) const
 {
     return this->operator()(wrap_indices(rowIndices), Eigen::all);
 }
