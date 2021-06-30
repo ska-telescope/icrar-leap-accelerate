@@ -70,8 +70,17 @@ namespace icrar
 
             {
                 //RAW VIS
-                auto vis = ms->GetVis();
-                ASSERT_EQCD(-0.703454494476318-24.7045249938965i, vis(4,0,0), THRESHOLD);
+                //auto vis = ms->GetVis();
+                auto vis = ms->ReadVis(0, 1, Range<int32_t>(0,4,1), "DATA");
+                ASSERT_EQ(4, vis.dimension(0)); // polarizations
+                ASSERT_EQ(5253, vis.dimension(1)); // baselines
+                ASSERT_EQ(48, vis.dimension(2)); // channels
+                //ASSERT_EQ(1, vis.dimension(3)); // timesteps
+
+                ASSERT_EQCD( 0.000000000000000 + 0.00000000000000i, vis(0,0,0), THRESHOLD);
+                ASSERT_EQCD(-0.000000000000000 + 0.00000000000000i, vis(3,0,0), THRESHOLD);
+                ASSERT_EQCD(-0.703454494476318 + -24.7045249938965i, vis(0,1,0), THRESHOLD);
+                ASSERT_EQCD(-28.7867774963379 + 20.7210712432861i, vis(3,1,0), THRESHOLD);
 
                 vis = ms->GetVis(1, 1);
                 ASSERT_EQCD(-9.90243244171143 + -39.7880058288574i, vis(4,0,0), THRESHOLD);
