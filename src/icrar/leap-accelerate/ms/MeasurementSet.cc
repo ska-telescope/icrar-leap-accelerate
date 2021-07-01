@@ -311,12 +311,12 @@ namespace icrar
             intervalTimesteps);
     }
 
-    Eigen::Tensor<std::complex<double>, 3> MeasurementSet::GetVis() const
+    Eigen::Tensor<std::complex<double>, 4> MeasurementSet::GetVis() const
     {
         return GetVis(0, 1);
     }
 
-    Eigen::Tensor<std::complex<double>, 3> MeasurementSet::GetVis(
+    Eigen::Tensor<std::complex<double>, 4> MeasurementSet::GetVis(
         uint32_t startTimestep,
         uint32_t intervalTimesteps,
         Slice polarizationSlice) const
@@ -325,10 +325,14 @@ namespace icrar
         
         int32_t nPolarizations = GetNumPols();
         Range<int32_t> polarizationRange = polarizationSlice.Evaluate(nPolarizations);
-        return ReadVis(startTimestep, intervalTimesteps, polarizationRange, "DATA");
+        return ReadVisExperimental(startTimestep, intervalTimesteps, polarizationRange, "DATA");
     }
 
-    Eigen::Tensor<std::complex<double>, 3> MeasurementSet::ReadVis(uint32_t startTimestep, uint32_t intervalTimesteps, Range<int32_t> polarizationRange, const char* column) const
+    Eigen::Tensor<std::complex<double>, 3> MeasurementSet::ReadVis(
+        uint32_t startTimestep,
+        uint32_t intervalTimesteps,
+        Range<int32_t> polarizationRange,
+        const char* column) const
     {
         const uint32_t num_baselines = GetNumBaselines();
         const uint32_t num_channels = GetNumChannels();
@@ -392,7 +396,11 @@ namespace icrar
         return output;
     }
 
-    Eigen::Tensor<std::complex<double>, 4> MeasurementSet::ReadVisExperimental(uint32_t startTimestep, uint32_t intervalTimesteps, Range<int32_t> polarizationRange, const char* columnName) const
+    Eigen::Tensor<std::complex<double>, 4> MeasurementSet::ReadVisExperimental(
+        uint32_t startTimestep,
+        uint32_t intervalTimesteps,
+        Range<int32_t> polarizationRange,
+        const char* columnName) const
     {
         const uint32_t num_baselines = GetNumBaselines();
         const uint32_t num_channels = GetNumChannels();

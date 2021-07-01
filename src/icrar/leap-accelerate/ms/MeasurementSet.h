@@ -233,9 +233,9 @@ namespace icrar
          * @brief Gets the visibilities from all baselines, channels and polarizations
          * for the first timestep
          * 
-         * @return Eigen::Tensor<std::complex<double>, 3> of dimensions (polarizations, baselines * timesteps, channels)
+         * @return Eigen::Tensor<std::complex<double>, 4> of dimensions (polarizations, channels, baselines, timesteps)
          */
-        Eigen::Tensor<std::complex<double>, 3> GetVis() const;
+        Eigen::Tensor<std::complex<double>, 4> GetVis() const;
 
         /**
          * @brief Gets visibilities from the specificed dimension slices
@@ -243,9 +243,9 @@ namespace icrar
          * 
          * @param startTimestep 
          * @param intervalTimesteps 
-         * @return Eigen::Tensor<std::complex<double>, 3> of dimensions (polarizations, baselines * timesteps, channels)
+         * @return Eigen::Tensor<std::complex<double>, 4> of dimensions (polarizations, channels, baselines, timesteps)
          */
-        Eigen::Tensor<std::complex<double>, 3> GetVis(
+        Eigen::Tensor<std::complex<double>, 4> GetVis(
             std::uint32_t startTimestep,
             std::uint32_t intervalTimesteps,
             Slice polarizationSlice = Slice(0, boost::none, 1)) const;

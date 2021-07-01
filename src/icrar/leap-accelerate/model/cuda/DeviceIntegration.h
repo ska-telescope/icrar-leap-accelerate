@@ -64,7 +64,7 @@ namespace cuda
     class DeviceIntegration
     {
         int m_integrationNumber;
-        device_tensor3<std::complex<double>> m_visibilities; //[polarizations][baselines][channels]
+        device_tensor4<std::complex<double>> m_visibilities; //[polarizations][baselines][channels]
         int64_t m_rows;
         
     public:
@@ -73,7 +73,7 @@ namespace cuda
          * 
          * @param shape 
          */
-        DeviceIntegration(int integrationNumber, Eigen::DSizes<Eigen::DenseIndex, 3> shape);
+        DeviceIntegration(int integrationNumber, Eigen::DSizes<Eigen::DenseIndex, 4> shape);
 
         /**
          * @brief Construct a new Device Integration object with a data syncronous copy
@@ -101,8 +101,8 @@ namespace cuda
         int64_t GetRows() const { return m_rows; }
         uint64_t GetChannels() const { return m_visibilities.GetDimensionSize(2); }
         
-        const device_tensor3<std::complex<double>>& GetVis() const { return m_visibilities; }
-        device_tensor3<std::complex<double>>& GetVis() { return m_visibilities; }
+        const device_tensor4<std::complex<double>>& GetVis() const { return m_visibilities; }
+        device_tensor4<std::complex<double>>& GetVis() { return m_visibilities; }
 
         /**
          * @brief Copies device data to a host object

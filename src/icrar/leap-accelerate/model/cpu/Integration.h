@@ -66,7 +66,7 @@ namespace cpu
         int64_t m_rows;
 
         std::vector<MVuvw> m_UVW; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
-        Eigen::Tensor<std::complex<double>, 3> m_visibilities; //[npol][nbl][nch]
+        Eigen::Tensor<std::complex<double>, 4> m_visibilities;
 
     public:
         Integration(
@@ -82,6 +82,11 @@ namespace cpu
 
         size_t GetRows() const { return m_rows; }
 
+        size_t GetNumPolarizations() const { return m_visibilities.dimension(0); }
+        size_t GetNumChannels() const { return m_visibilities.dimension(1); }
+        size_t GetNumBaselines() const { return m_visibilities.dimension(2); }
+        size_t GetNumTimesteps() const { return m_visibilities.dimension(3); }
+
         /**
          * @brief Gets the UVW list
          * 
@@ -91,18 +96,18 @@ namespace cpu
         std::vector<icrar::MVuvw>& GetUVW() { return m_UVW; }
 
         /**
-         * @brief Get the Visibilities object of size (polarizations, baselines, channels)
+         * @brief Get the Visibilities object of size (polarizations, channels, baselines, timesteps)
          * 
-         * @return Eigen::Tensor<std::complex<double>, 3>& 
+         * @return Eigen::Tensor<std::complex<double>, 4>& 
          */
-        const Eigen::Tensor<std::complex<double>, 3>& GetVis() const { return m_visibilities; }
+        const Eigen::Tensor<std::complex<double>, 4>& GetVis() const { return m_visibilities; }
 
         /**
-         * @brief Get the Visibilities object of size (polarizations, baselines, channels)
+         * @brief Get the Visibilities object of size size (polarizations, channels, baselines, timesteps)
          * 
-         * @return Eigen::Tensor<std::complex<double>, 3>& 
+         * @return Eigen::Tensor<std::complex<double>, 4>& 
          */
-        Eigen::Tensor<std::complex<double>, 3>& GetVis() { return m_visibilities; }
+        Eigen::Tensor<std::complex<double>, 4>& GetVis() { return m_visibilities; }
 
         friend class icrar::cuda::DeviceIntegration;
     };
