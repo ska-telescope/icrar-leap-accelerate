@@ -120,7 +120,6 @@ namespace cpu
 
             //Iterate solutions
             profiling::timer integration_read_timer;
-            std::cout << "loading integration" << std::endl;
             const auto integration = Integration(
                     integrationNumber,
                     ms,
@@ -201,17 +200,15 @@ namespace cpu
         using namespace std::literals::complex_literals;
         Eigen::Tensor<std::complex<double>, 4>& integration_data = integration.GetVis();
 
-        std::cout << integration.GetNumTimesteps() << std::endl;
-        std::cout << integration.GetNumBaselines() << std::endl;
-        std::cout << integration.GetNumChannels() << std::endl;
-        std::cout << integration.GetNumPolarizations() << std::endl;
-
         // loop over smeared baselines ('baseline' is always 'row' when timesteps = 1)
         for(size_t timestep = 0; timestep < integration.GetNumTimesteps(); ++timestep)
         {
             for(size_t baseline = 0; baseline < integration.GetNumBaselines(); baseline++)
             {
-                size_t row = baseline + (timestep * integration.GetNumTimesteps());
+                //TODO: UVWs should alternatively be stored as a tensor  
+                //auto rotatedUVW = metadata.GetDD() * metadata.GetUVW().chip(0, 2).chip(baseline, 1);
+
+                size_t row = baseline + (timestep * integration.GetNumBaselines());
                 auto rotatedUVW = metadata.GetDD() * metadata.GetUVW()[row];
                 double shiftFactor = -two_pi<double>() * (rotatedUVW(2) - metadata.GetUVW()[row](2));
 
