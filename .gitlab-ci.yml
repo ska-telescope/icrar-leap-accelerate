@@ -377,9 +377,9 @@ pages:
       junit: build/reports/ci-metrics.xml
   allow_failure: true
 
-###
+########
 # Docker
-###
+########
 
 .docker_common:
   image: docker:stable

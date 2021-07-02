@@ -185,7 +185,7 @@ namespace cuda
         }
 
         /**
-         * @brief Set the Data Async object
+         * @brief Copies data from device to host memory
          * 
          * @param data 
          * @return __host__ 
@@ -193,9 +193,7 @@ namespace cuda
         __host__ void SetDataAsync(const T* data)
         {
             size_t bytes = GetSize();
-            //cudaHostRegister(data, bytes, cudaHostRegisterPortable);
             checkCudaErrors(cudaMemcpyAsync(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
-            //cudaHostUnregister(data);
         }
 
         __host__ void ToHost(T* out) const
@@ -212,7 +210,9 @@ namespace cuda
 
         __host__ void ToHost(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& out) const
         {
+            std::cout << out.rows() << ":" << out.cols() << std::endl;
             out.resize(GetRows(), GetCols());
+            std::cout << out.rows() << ":" << out.cols() << std::endl;
             ToHost(out.data());
         }
 
