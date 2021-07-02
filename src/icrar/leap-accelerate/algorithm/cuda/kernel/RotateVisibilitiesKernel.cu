@@ -117,8 +117,8 @@ namespace cuda
         if(baseline < integration_baselines && channel < integration_channels)
         {
             // Rotation
-            Eigen::Vector3d rotatedUVW = dd * UVWs.col(row); //TODO: use row 
-            double shiftFactor = -two_pi * (rotatedUVW.z() - UVWs.col(row).z()); //TODO: use row
+            Eigen::Vector3d rotatedUVW = dd * UVWs.col(row);
+            double shiftFactor = -two_pi * (rotatedUVW.z() - UVWs.col(row).z());
             double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
             cuDoubleComplex shiftCoeff = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
             for(int polarization = 0; polarization < integration_polarizations; polarization++)

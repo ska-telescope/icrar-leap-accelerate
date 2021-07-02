@@ -210,9 +210,7 @@ namespace cuda
 
         __host__ void ToHost(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& out) const
         {
-            std::cout << out.rows() << ":" << out.cols() << std::endl;
             out.resize(GetRows(), GetCols());
-            std::cout << out.rows() << ":" << out.cols() << std::endl;
             ToHost(out.data());
         }
 

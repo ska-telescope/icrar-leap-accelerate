@@ -268,17 +268,10 @@ namespace icrar
             if(impl == ComputeImplementation::cuda)
             {
                 auto integration = icrar::cpu::Integration(0, *ms, 0, 1);
-                std::cout << "loading integration" << std::endl;
                 auto deviceIntegration = icrar::cuda::DeviceIntegration(integration);
-                
-                std::cout << "loading metadata" << std::endl;
                 auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
                 auto deviceMetadata = icrar::cuda::DeviceMetaData(hostMetadata);
-
-                std::cout << "rotating" << std::endl;
-                icrar::cuda::RotateVisibilities(deviceIntegration, deviceMetadata);
-                
-                std::cout << "copying metadata to host" << std::endl;
+                icrar::cuda::RotateVisibilities(deviceIntegration, deviceMetadata);                
                 deviceMetadata.ToHost(hostMetadata);
                 metadataOptionalOutput = hostMetadata;
             }
