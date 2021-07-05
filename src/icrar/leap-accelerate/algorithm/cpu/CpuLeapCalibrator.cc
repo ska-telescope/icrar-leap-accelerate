@@ -107,7 +107,7 @@ namespace cpu
         LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
         size_t solutions = validatedSolutionInterval.GetSize();
-        auto output_calibrations = std::vector<cpu::Calibration>(); // Reserve memory
+        auto output_calibrations = std::vector<cpu::Calibration>();
         output_calibrations.reserve(solutions);
 
         constexpr unsigned int integrationNumber = 0;
@@ -174,24 +174,23 @@ namespace cpu
         }
 
         LOG(info) << "Calculating Calibration";
-        // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
-        
-        auto polarizationsI1 = icrar::cpu::WrappedRowSelect(metadata.GetAvgData(), metadata.GetI1());
-        Eigen::VectorXd phaseAnglesI1 = icrar::cpu::arg(polarizationsI1.col(0)); // 1st pol only
+        auto polarizationsI1 = metadata.GetAvgData().wrapped_row_select(metadata.GetI1());
+        Eigen::VectorXd phaseAnglesI1 = polarizationsI1.arg(); // arg(XX + YY)
 
+        // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
         phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
         phaseAnglesI1(phaseAnglesI1.rows() - 1) = 0;
 
         Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAnglesI1;
         Eigen::VectorXd ACal1 = metadata.GetA() * cal1;
 
-        Eigen::MatrixXd deltaPhase = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
+        Eigen::VectorXd deltaPhase = Eigen::VectorXd::Zero(metadata.GetI().size());
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
-            deltaPhase.row(n) = icrar::cpu::arg(std::exp(std::complex<double>(0, -two_pi<double>() * ACal1(n))) * metadata.GetAvgData().row(n));
+            deltaPhase(n) = std::arg(std::exp(std::complex<double>(0, -two_pi<double>() * ACal1(n))) * metadata.GetAvgData()(n));
         }
 
-        Eigen::VectorXd deltaPhaseColumn = deltaPhase.col(0); // 1st pol only
+        Eigen::VectorXd deltaPhaseColumn = deltaPhase;
         deltaPhaseColumn.conservativeResize(deltaPhaseColumn.size() + 1);
         deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0;
         output_calibrations.emplace_back(direction, (metadata.GetAd() * deltaPhaseColumn) + cal1);
@@ -222,15 +221,14 @@ namespace cpu
                 const Eigen::Tensor<std::complex<double>, 1> polarizations = integration_data.chip(channel, 2).chip(baseline, 1);
                 for(uint32_t polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
                 {
-                    hasNaN |= std::isnan(polarizations(polarization).real()) || std::isnan(polarizations(polarization).imag());
+                    hasNaN |= std::isnan(integration_data(polarization, baseline, channel).real()) || std::isnan(integration_data(polarization, baseline, channel).imag());
                 }
 
                 if(!hasNaN)
                 {
-                    for(uint32_t polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
-                    {
-                        metadata.GetAvgData()(md_baseline, polarization) += integration_data(polarization, baseline, channel);
-                    }
+                    // Averaging with XX and YY polarizations
+                    metadata.GetAvgData()(md_baseline) += integration_data(0, baseline, channel);
+                    metadata.GetAvgData()(md_baseline) += integration_data(metadata.GetConstants().num_pols-1, baseline, channel);
                 }
             }
         }

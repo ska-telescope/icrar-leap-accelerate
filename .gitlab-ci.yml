@@ -77,7 +77,7 @@ variables:
 
 .cuda_build_dependencies:
   extends: .common
-  image: nallack/bullseye-cuda:latest
+  image: nexus.engageska-portugal.pt/ska-docker/icrar-leap-accelerate-build:0.10.0
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
@@ -115,7 +115,7 @@ stages:
   - build
   - linting
   - test
-  - pages
+  - deploy
 
 ########
 # Build
@@ -290,13 +290,13 @@ lint_cppcheck:
   stage: test
   after_script:
     - cd build
-    - ctest2junit > ctest.xml
+    - ctest2junit > unit-tests.xml
   timeout: 1h
   artifacts:
     paths:
       - build/
     reports:
-      junit: build/ctest.xml
+      junit: build/unit-tests.xml
 
 test_debug_minimal:
   extends: [.minimal_build_dependencies, .test]
@@ -338,7 +338,7 @@ test_debug_all:
 
 pages:
   extends: .minimal_build_dependencies
-  stage: pages
+  stage: deploy
   needs: ["test_debug_minimal", "lint_clang_tidy", "lint_cppcheck", "lint_iwyu"]
   script:
     - apt update && apt install -y curl gcovr moreutils python3-pip jq
@@ -347,7 +347,7 @@ pages:
     - cd .public
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o build/reports/code-coverage/index.html | sponge gcovr-html.log
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml | sponge gcovr-xml.log
-    - cp ../build/ctest.xml build/reports/unit-tests.xml
+    - cp ../build/unit-tests.xml build/reports/unit-tests.xml
     - cp ../build/cppcheck-junit.xml build/reports/cppcheck-junit.xml
     - cp ../build/clang-tidy-junit.xml build/reports/clang-tidy-junit.xml
     - cp ../build/iwyu-junit.xml build/reports/iwyu-junit.xml
@@ -358,6 +358,7 @@ pages:
       build/reports/cppcheck-junit.xml
       build/reports/iwyu-junit.xml
       --xml-output | sponge build/reports/linting.xml'
+    # recalculate linting totals
     - 'xq ".testsuites |= {\"@tests\": .testsuite | map(.\"@tests\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
     - 'xq ".testsuites |= {\"@errors\": .testsuite | map(.\"@errors\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
     - 'xq ".testsuites |= {\"@failures\": .testsuite | map(.\"@failures\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
@@ -372,6 +373,75 @@ pages:
     paths:
       - public
     reports:
-      junit: build/reports/*.xml
-
+      cobertura: public/build/reports/code-coverage.xml
+      junit: public/build/reports/ci-metrics.xml
   allow_failure: true
+
+#########
+# Docker
+#########
+
+.docker_common:
+  image: docker:stable
+  tags:
+    - docker-executor
+  before_script:
+    - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
+    - docker info
+
+docker_ci_build_deploy:
+  stage: build
+  extends: .docker_common
+  variables:
+    DOCKER_TAG: "latest"
+  when: manual
+  script:
+    # Registry folder not system defined
+    - DOCKER_REGISTRY_FOLDER=ska-docker
+    # The docker image tag is:
+    #  * The git tag (without the initial "v") if building a git tag
+    #  * "latest" when building the master branch
+    #  * Other branches do not yield a docker image
+    - IMAGE_NAME=icrar-leap-accelerate-build
+    - docker build -t $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG ./docker/build
+    - docker push $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG
+
+docker_build:
+  stage: build
+  extends: .docker_common
+  only:
+   - tags
+   - master
+  script:
+    # Registry folder not system defined
+    - DOCKER_REGISTRY_FOLDER=ska-docker
+    # The docker image tag is:
+    #  * The git tag (without the initial "v") if building a git tag
+    #  * "latest" when building the master branch
+    #  * Other branches do not yield a docker image
+    - IMAGE_NAME=icrar-leap-accelerate
+    - BRANCH=${CI_COMMIT_TAG:-${CI_COMMIT_BRANCH}}
+    - DOCKER_TAG=${BRANCH##v}
+    - >
+      if [ "$CI_COMMIT_BRANCH" = master ]; then
+        DOCKER_TAG=latest
+      fi
+    - >
+      docker build -t $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG .
+    - docker save $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG > docker_image.tar
+  artifacts:
+    paths:
+      - docker_image.tar
+    expire_in: 1 day
+
+docker_publish:
+  stage: deploy
+  extends: .docker_common
+  needs: [docker_build]
+  only:
+    - tags
+    - master
+  script:
+    - image_id=`docker load < docker_image.tar | sed -n '/Loaded image:/ { s/Loaded image://p }'`
+    - echo $image_id
+    - docker push $image_id

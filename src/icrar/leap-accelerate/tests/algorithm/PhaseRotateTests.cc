@@ -343,11 +343,8 @@ namespace icrar
             EXPECT_DOUBLE_EQ(expectedDD(2,2), metadataOutput.GetDD()(2,2));
 
             ASSERT_EQ(5253, metadataOutput.GetAvgData().rows());
-            ASSERT_EQ(4, metadataOutput.GetAvgData().cols());
-            ASSERT_EQCD(-527.143090304241 + -89.9946133549982i, metadataOutput.GetAvgData()(1,0), TOLERANCE);
-            ASSERT_EQCD(55.4651357651697 + 60.5911844734979i, metadataOutput.GetAvgData()(1,1), TOLERANCE);
-            ASSERT_EQCD(0.800572867605558 + -9.05853723508164i, metadataOutput.GetAvgData()(1,2), TOLERANCE);
-            ASSERT_EQCD(-251.31739125869 + 39.6303072927434i, metadataOutput.GetAvgData()(1,3), TOLERANCE);
+            ASSERT_EQ(1, metadataOutput.GetAvgData().cols());
+            ASSERT_EQCD(-778.460481562931 + -50.3643060622548i, metadataOutput.GetAvgData()(1), TOLERANCE);
         }
 
         void CalibrateTest(ComputeImplementation impl, const ComputeOptionsDTO computeOptions, const Slice solutionInterval, std::function<cpu::CalibrationCollection()> getExpected)
