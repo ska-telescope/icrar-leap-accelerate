@@ -373,8 +373,7 @@ pages:
     paths:
       - public
     reports:
-      cobertura: build/reports/code-coverage.xml
-      junit: build/reports/ci-metrics.xml
+      cobertura: public/build/reports/code-coverage.xml
   allow_failure: true
 
 ########
