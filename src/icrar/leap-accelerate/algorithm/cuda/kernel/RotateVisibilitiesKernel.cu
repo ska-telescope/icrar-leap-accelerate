@@ -55,9 +55,10 @@ namespace cuda
     __host__ void RotateVisibilities(DeviceIntegration& integration, DeviceMetaData& metadata)
     {
         const auto& constants = metadata.GetConstants(); 
-        assert(constants.channels == integration.GetChannels() && integration.GetChannels() == integration.GetVis().GetDimensionSize(2));
-        assert(constants.nbaselines == metadata.GetAvgData().GetRows() && integration.GetRows() == integration.GetVis().GetDimensionSize(1));
-        assert(constants.num_pols == integration.GetVis().GetDimensionSize(0));
+        assert(constants.num_pols == integration.GetNumPolarizations());
+        assert(constants.channels == integration.GetNumChannels());
+        assert(constants.nbaselines == integration.GetNumBaselines());
+        assert(constants.timesteps == integration.GetNumTimesteps());
 
         auto integrationDataMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 4>>(
             reinterpret_cast<cuDoubleComplex*>(integration.GetVis().Get()),
