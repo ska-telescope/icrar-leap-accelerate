@@ -42,7 +42,7 @@ Matrix<OtherIndex, Dynamic, 1> wrap_indices(const Matrix<OtherIndex, Dynamic, 1>
         {
             throw std::runtime_error("index out of range");
         }
-        if(index < 0)
+        else if(index < 0)
         {
             index = rows() + index;
         }

@@ -34,9 +34,6 @@
 #include <icrar/leap-accelerate/cuda/device_vector.h>
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
 
-//#define EIGEN_HAS_CXX11 1
-//#define EIGEN_VECTORIZE_GPU 1
-//#define EIGEN_CUDACC 1
 #include <Eigen/Core>
 
 #include <cublas_v2.h>

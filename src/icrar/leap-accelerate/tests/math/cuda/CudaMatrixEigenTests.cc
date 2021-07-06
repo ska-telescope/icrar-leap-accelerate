@@ -252,7 +252,7 @@ namespace icrar
             casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
             Eigen::MatrixXd A;
             Eigen::MatrixXi I;
-            std::tie(A, I) = cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), ms.GetFilteredBaselines(0.0), true, 0);
+            std::tie(A, I) = cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), ms.GetFilteredBaselines(0.0), 1, true);
 
             Eigen::MatrixXd Ad = icrar::cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, A, cuda::JobType::S);
 

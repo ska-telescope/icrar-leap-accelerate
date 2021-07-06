@@ -455,12 +455,11 @@ namespace icrar
             std::unique_ptr<ILeapCalibrator> calibrator = LeapCalibratorFactory::Create(impl);
             auto flaggedAntennas = ms->GetFlaggedAntennas();
 
-            for(auto it = referenceAntennas.begin(); it != referenceAntennas.end(); ++it)
+            for(auto referenceAntenna : referenceAntennas)
             {
-                int32_t referenceAntenna = *it;
                 if(flaggedAntennas.find(referenceAntenna) != flaggedAntennas.end())
                 {
-                    //TODO: calibrate should throw for flagged antennas
+                    //TODO(calgray): calibration should throw for flagged reference antenna
                     continue;
                 }
 

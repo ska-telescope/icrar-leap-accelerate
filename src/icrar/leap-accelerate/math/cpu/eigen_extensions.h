@@ -28,12 +28,8 @@
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <Eigen/Core>
 #include <boost/numeric/conversion/cast.hpp>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
 #include <vector>
 #include <functional>
-#include <type_traits>
 
 namespace Eigen
 {
