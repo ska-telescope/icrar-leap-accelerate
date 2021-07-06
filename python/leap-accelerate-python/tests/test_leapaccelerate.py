@@ -13,18 +13,12 @@ def callback():
 
 def test_calibrate():
     cal = leap.LeapCalibrator("cpu")
-    cal.Calibrate(
+    cal.calibrate(
         ms_path="../../testdata/mwa/1197638568-split.ms",
         autocorrelations=True,
         directions=np.array([[0.1,0.2],[0.3, 0.4],[0.5, 0.6]]),
-        output_path="out.json",
-        callback=callback)
+        output_path="calibration.json")
 
-    # with open('out.json') as f:
-    #     output = json.loads(f)
-        #print(str(output))
-
-    assert True
-
-if __name__ == "__main__":
-    test_calibrate()
+    with open('calibration.json') as f:
+        output = json.load(f)
+        assert len(output) == 1

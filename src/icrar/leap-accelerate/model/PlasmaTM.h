@@ -43,6 +43,6 @@ namespace icrar
         int GetNumPols() const;
         std::pair<int, int> GetPhaseCentreRadecRad() const;
         void* GetNearestData(double time) const;
-        std::par<int, UVWData> GetMatchingData(double current_mjd_utc) const;
+        std::pair<int, UVWData> GetMatchingData(double current_mjd_utc) const;
     };
 } // namespace icrar

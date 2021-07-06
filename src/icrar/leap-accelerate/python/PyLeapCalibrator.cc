@@ -22,6 +22,8 @@
 
 #include "PyLeapCalibrator.h"
 
+#include <icrar/leap-accelerate/model/PlasmaTM.h>
+
 #include <future>
 
 namespace np = boost::python::numpy;
@@ -34,7 +36,7 @@ inline T ternary(bool condition, T trueValue, T falseValue)
 }
 
 template<typename T>
-inline std::optional<T> PythonToOptional(boost::python::object& o)
+inline std::optional<T> PythonToOptional(bp::object& o)
 {
     return ternary<std::optional<T>>(o.is_none(), std::optional<T>(), bp::extract<T>(o));
 }
@@ -61,11 +63,11 @@ namespace python
         return output;
     }
 
-    boost::python::object ToPython(std::future<void>&& future)
+    bp::object ToPython(std::future<void>&& future)
     {
         // TODO: Not implemented
         throw std::runtime_error("not implemented");
-        auto asyncio = boost::python::import("asyncio");
+        auto asyncio = bp::import("asyncio");
         return asyncio.attr("Future")();
     }
 
@@ -91,7 +93,7 @@ namespace python
         const np::ndarray& directions,
         std::optional<std::string> outputPath)
     {
-        icrar::log::Initialize(icrar::log::Verbosity::info);
+        icrar::log::Initialize(icrar::log::Verbosity::warn);
 
         m_measurementSet = std::make_unique<MeasurementSet>(msPath, boost::none, useAutoCorrelations);
         auto validatedDirections = ToSphericalDirectionVector(directions);
@@ -128,7 +130,7 @@ namespace python
         const np::ndarray& directions,
         PyObject* callback)
     {
-        icrar::log::Initialize(icrar::log::Verbosity::info);
+        icrar::log::Initialize(icrar::log::Verbosity::warn);
 
         m_measurementSet = std::make_unique<MeasurementSet>(msPath, boost::none, useAutoCorrelations);
         auto validatedDirections = ToSphericalDirectionVector(directions);
@@ -141,7 +143,7 @@ namespace python
         {
             if(callback != nullptr)
             {
-                boost::python::call<void>(callback, cal);
+                bp::call<void>(callback, cal);
             }
         };
 
@@ -156,10 +158,10 @@ namespace python
     }
 
     void PyLeapCalibrator::PythonCalibrate(
-        boost::python::object& msPath,
-        boost::python::object& useAutoCorrelations,
+        bp::object& msPath,
+        bp::object& useAutoCorrelations,
         const np::ndarray& directions,
-        boost::python::object& outputPath)
+        bp::object& outputPath)
     {
         Calibrate(
             bp::extract<std::string>(msPath),
@@ -169,21 +171,21 @@ namespace python
     }
 
     void PyLeapCalibrator::PythonPlasmaCalibrate(
-        boost::python::object& plasmaTM,
-        boost::python::object& useAutoCorrelations,
+        bp::object& plasmaTM,
+        bp::object& useAutoCorrelations,
         const np::ndarray& directions,
-        boost::python::object& outputPath)
+        bp::object& outputPath)
     {
-        Calibrate(
-            bp::extract<PlasmaTM>(msPath),
-            bp::extract<bool>(useAutoCorrelations),
-            directions,
-            PythonToOptional<std::string>(outputPath));
+        // Calibrate(
+        //     bp::extract<PlasmaTM>(plasmaTM),
+        //     bp::extract<bool>(useAutoCorrelations),
+        //     directions,
+        //     PythonToOptional<std::string>(outputPath));
     }
 
-    boost::python::object PyLeapCalibrator::PythonCalibrateAsync(
-        boost::python::object& msPath,
-        boost::python::object& useAutoCorrelations,
+    bp::object PyLeapCalibrator::PythonCalibrateAsync(
+        bp::object& msPath,
+        bp::object& useAutoCorrelations,
         const np::ndarray& directions,
         PyObject* callback)
     {
@@ -201,18 +203,18 @@ namespace python
 
 BOOST_PYTHON_MODULE(LeapAccelerate)
 {
-    boost::python::numpy::initialize();
+    bp::numpy::initialize();
 
-    boost::python::class_<icrar::python::PyLeapCalibrator>("LeapCalibrator", boost::python::init<icrar::ComputeImplementation>())
-        .def(boost::python::init<std::string>())
+    bp::class_<icrar::python::PyLeapCalibrator>("LeapCalibrator", bp::init<icrar::ComputeImplementation>())
+        .def(bp::init<std::string>())
         .def("calibrate", &icrar::python::PyLeapCalibrator::PythonCalibrate, (
-            boost::python::arg("ms_path"),
-            boost::python::arg("autocorrelations"),
-            boost::python::arg("directions"),
-            boost::python::arg("output_path")=boost::python::object()
+            bp::arg("ms_path"),
+            bp::arg("autocorrelations"),
+            bp::arg("directions"),
+            bp::arg("output_path")=bp::object()
         ));
 
-    boost::python::enum_<icrar::ComputeImplementation>("compute_implementation")
+    bp::enum_<icrar::ComputeImplementation>("compute_implementation")
         .value("cpu", icrar::ComputeImplementation::cpu)
         .value("cuda", icrar::ComputeImplementation::cuda);
 }

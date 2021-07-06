@@ -75,6 +75,12 @@ namespace python
             const boost::python::numpy::ndarray& directions,
             boost::python::object& outputPath);
 
+        void PythonPlasmaCalibrate(
+            boost::python::object& plasmaTM,
+            boost::python::object& useAutoCorrelations,
+            const boost::python::numpy::ndarray& directions,
+            boost::python::object& outputPath);
+
         /**
          * @brief Performs calibration that 
          */
