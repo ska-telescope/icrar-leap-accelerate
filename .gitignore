@@ -10,6 +10,7 @@
 /Testing/
 
 *.orig
+.pytest_cache/
 
 # Eclipse IDE files
 .project

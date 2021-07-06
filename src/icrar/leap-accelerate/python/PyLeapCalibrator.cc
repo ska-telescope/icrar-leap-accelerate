@@ -22,6 +22,23 @@
 
 #include "PyLeapCalibrator.h"
 
+#include <future>
+
+namespace np = boost::python::numpy;
+namespace bp = boost::python;
+
+template<typename T>
+inline T ternary(bool condition, T trueValue, T falseValue)
+{
+    return condition ? trueValue : falseValue;
+}
+
+template<typename T>
+inline std::optional<T> PythonToOptional(boost::python::object& o)
+{
+    return ternary<std::optional<T>>(o.is_none(), std::optional<T>(), bp::extract<T>(o));
+}
+
 namespace icrar
 {
 namespace python
@@ -44,6 +61,14 @@ namespace python
         return output;
     }
 
+    boost::python::object ToPython(std::future<void>&& future)
+    {
+        // TODO: Not implemented
+        throw std::runtime_error("not implemented");
+        auto asyncio = boost::python::import("asyncio");
+        return asyncio.attr("Future")();
+    }
+
     PyLeapCalibrator::PyLeapCalibrator(ComputeImplementation impl)
     {
         m_calibrator = LeapCalibratorFactory::Create(impl);
@@ -61,27 +86,62 @@ namespace python
     }
 
     void PyLeapCalibrator::Calibrate(
-        PyObject* callback,
         std::string msPath,
         bool useAutoCorrelations,
         const np::ndarray& directions,
         std::optional<std::string> outputPath)
     {
+        icrar::log::Initialize(icrar::log::Verbosity::info);
+
         m_measurementSet = std::make_unique<MeasurementSet>(msPath, boost::none, useAutoCorrelations);
         auto validatedDirections = ToSphericalDirectionVector(directions);
         auto solutionInterval = Slice(0,1,1);
         double minimumBaselineThreshold = 0.0;
         int referenceAntenna = 0;
-        ComputeOptionsDTO computeOptions = {false, false, false};
+        ComputeOptionsDTO computeOptions = {boost::none, boost::none, boost::none};
 
         std::vector<cpu::Calibration> calibrations;
-        
+        m_calibrator->Calibrate(
+            [&](const cpu::Calibration& cal) { calibrations.push_back(cal); },
+            *m_measurementSet,
+            validatedDirections,
+            solutionInterval,
+            minimumBaselineThreshold,
+            referenceAntenna,
+            computeOptions);
+
+        auto calibrationCollection = cpu::CalibrationCollection(std::move(calibrations));
+        if(outputPath.has_value())
+        {
+            std::ofstream file(outputPath.value());
+            calibrationCollection.Serialize(file);
+        }
+        else
+        {
+            calibrationCollection.Serialize(std::cout);
+        }
+    }
+
+    void PyLeapCalibrator::Calibrate(
+        std::string msPath,
+        bool useAutoCorrelations,
+        const np::ndarray& directions,
+        PyObject* callback)
+    {
+        icrar::log::Initialize(icrar::log::Verbosity::info);
+
+        m_measurementSet = std::make_unique<MeasurementSet>(msPath, boost::none, useAutoCorrelations);
+        auto validatedDirections = ToSphericalDirectionVector(directions);
+        auto solutionInterval = Slice(0,1,1);
+        double minimumBaselineThreshold = 0.0;
+        int referenceAntenna = 0;
+        ComputeOptionsDTO computeOptions = {boost::none, boost::none, boost::none};
+
         auto outputCallback = [&](const cpu::Calibration& cal)
         {
-            calibrations.push_back(cal);
             if(callback != nullptr)
             {
-                boost::python::call<void>(callback);
+                boost::python::call<void>(callback, cal);
             }
         };
 
@@ -93,29 +153,47 @@ namespace python
             minimumBaselineThreshold,
             referenceAntenna,
             computeOptions);
-
-        auto calibrationCollection = cpu::CalibrationCollection(std::move(calibrations));
-
-        if(outputPath.has_value())
-        {
-            std::ofstream file(outputPath.value());
-            calibrationCollection.Serialize(file);
-        }
     }
-    
+
     void PyLeapCalibrator::PythonCalibrate(
-        PyObject* callback,
         boost::python::object& msPath,
         boost::python::object& useAutoCorrelations,
         const np::ndarray& directions,
         boost::python::object& outputPath)
     {
         Calibrate(
-            callback,
             bp::extract<std::string>(msPath),
             bp::extract<bool>(useAutoCorrelations),
             directions,
             PythonToOptional<std::string>(outputPath));
+    }
+
+    void PyLeapCalibrator::PythonPlasmaCalibrate(
+        boost::python::object& plasmaTM,
+        boost::python::object& useAutoCorrelations,
+        const np::ndarray& directions,
+        boost::python::object& outputPath)
+    {
+        Calibrate(
+            bp::extract<PlasmaTM>(msPath),
+            bp::extract<bool>(useAutoCorrelations),
+            directions,
+            PythonToOptional<std::string>(outputPath));
+    }
+
+    boost::python::object PyLeapCalibrator::PythonCalibrateAsync(
+        boost::python::object& msPath,
+        boost::python::object& useAutoCorrelations,
+        const np::ndarray& directions,
+        PyObject* callback)
+    {
+        return ToPython(std::async(std::launch::async, [&]() {
+            Calibrate(
+                bp::extract<std::string>(msPath),
+                bp::extract<bool>(useAutoCorrelations),
+                directions,
+                callback);
+        }));
     }
 } // namespace python
 } // namespace icrar
@@ -127,15 +205,14 @@ BOOST_PYTHON_MODULE(LeapAccelerate)
 
     boost::python::class_<icrar::python::PyLeapCalibrator>("LeapCalibrator", boost::python::init<icrar::ComputeImplementation>())
         .def(boost::python::init<std::string>())
-        .def("Calibrate", &icrar::python::PyLeapCalibrator::PythonCalibrate, (
-            boost::python::arg("callback"),
+        .def("calibrate", &icrar::python::PyLeapCalibrator::PythonCalibrate, (
             boost::python::arg("ms_path"),
             boost::python::arg("autocorrelations"),
             boost::python::arg("directions"),
             boost::python::arg("output_path")=boost::python::object()
         ));
 
-    boost::python::enum_<icrar::ComputeImplementation>("ComputeImplementation")
+    boost::python::enum_<icrar::ComputeImplementation>("compute_implementation")
         .value("cpu", icrar::ComputeImplementation::cpu)
         .value("cuda", icrar::ComputeImplementation::cuda);
 }

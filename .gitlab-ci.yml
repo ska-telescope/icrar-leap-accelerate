@@ -374,7 +374,6 @@ pages:
       - public
     reports:
       cobertura: public/build/reports/code-coverage.xml
-      junit: public/build/reports/ci-metrics.xml
   allow_failure: true
 
 #########

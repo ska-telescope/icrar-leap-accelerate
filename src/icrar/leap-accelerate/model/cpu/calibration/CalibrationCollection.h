@@ -61,19 +61,20 @@ namespace cpu
             rapidjson::StringBuffer s;
             if(pretty)
             {
-                 rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
-                 Write(writer);
+                rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
+                Write(writer);
             }
             else
             {
-                //rapidjson::Writer<rapidjson::StringBuffer> writer(s);
-                //Write(writer);
+                rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+                Write(writer);
             }
 
             os << s.GetString() << std::endl;
         }
 
-        void Write(rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const
+        template<typename Writer>
+        void Write(Writer& writer) const
         {
             writer.StartArray();
             for(const auto& calibration : m_calibrations)
