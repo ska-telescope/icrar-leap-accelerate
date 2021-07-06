@@ -376,9 +376,9 @@ pages:
       cobertura: public/build/reports/code-coverage.xml
   allow_failure: true
 
-#########
+########
 # Docker
-#########
+########
 
 .docker_common:
   image: docker:stable

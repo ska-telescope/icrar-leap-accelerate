@@ -27,14 +27,5 @@ namespace icrar
 {
     namespace cpu
     {
-        Eigen::MatrixXd arg(const Eigen::Ref<const Eigen::MatrixXcd>& a)
-        {
-            return a.arg();
-        }
-
-        bool near(const Eigen::Ref<const Eigen::MatrixXd>& left, const Eigen::Ref<const Eigen::MatrixXd>& right, double tolerance)
-        {
-            return left.near(right, tolerance);
-        }
     } // namespace cpu
 } // namespace icrar

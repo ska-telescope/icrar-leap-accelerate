@@ -89,13 +89,12 @@ namespace python
 
     void PyLeapCalibrator::Calibrate(
         std::string msPath,
-        bool useAutoCorrelations,
         const np::ndarray& directions,
         std::optional<std::string> outputPath)
     {
         icrar::log::Initialize(icrar::log::Verbosity::warn);
 
-        m_measurementSet = std::make_unique<MeasurementSet>(msPath, boost::none, useAutoCorrelations);
+        m_measurementSet = std::make_unique<MeasurementSet>(msPath);
         auto validatedDirections = ToSphericalDirectionVector(directions);
         auto solutionInterval = Slice(0,1,1);
         double minimumBaselineThreshold = 0.0;
@@ -126,13 +125,12 @@ namespace python
 
     void PyLeapCalibrator::Calibrate(
         std::string msPath,
-        bool useAutoCorrelations,
         const np::ndarray& directions,
         PyObject* callback)
     {
         icrar::log::Initialize(icrar::log::Verbosity::warn);
 
-        m_measurementSet = std::make_unique<MeasurementSet>(msPath, boost::none, useAutoCorrelations);
+        m_measurementSet = std::make_unique<MeasurementSet>(msPath);
         auto validatedDirections = ToSphericalDirectionVector(directions);
         auto solutionInterval = Slice(0,1,1);
         double minimumBaselineThreshold = 0.0;
@@ -159,20 +157,17 @@ namespace python
 
     void PyLeapCalibrator::PythonCalibrate(
         bp::object& msPath,
-        bp::object& useAutoCorrelations,
         const np::ndarray& directions,
         bp::object& outputPath)
     {
         Calibrate(
             bp::extract<std::string>(msPath),
-            bp::extract<bool>(useAutoCorrelations),
             directions,
             PythonToOptional<std::string>(outputPath));
     }
 
     void PyLeapCalibrator::PythonPlasmaCalibrate(
         bp::object& plasmaTM,
-        bp::object& useAutoCorrelations,
         const np::ndarray& directions,
         bp::object& outputPath)
     {
@@ -185,14 +180,12 @@ namespace python
 
     bp::object PyLeapCalibrator::PythonCalibrateAsync(
         bp::object& msPath,
-        bp::object& useAutoCorrelations,
         const np::ndarray& directions,
         PyObject* callback)
     {
         return ToPython(std::async(std::launch::async, [&]() {
             Calibrate(
                 bp::extract<std::string>(msPath),
-                bp::extract<bool>(useAutoCorrelations),
                 directions,
                 callback);
         }));
@@ -209,7 +202,6 @@ BOOST_PYTHON_MODULE(LeapAccelerate)
         .def(bp::init<std::string>())
         .def("calibrate", &icrar::python::PyLeapCalibrator::PythonCalibrate, (
             bp::arg("ms_path"),
-            bp::arg("autocorrelations"),
             bp::arg("directions"),
             bp::arg("output_path")=bp::object()
         ));

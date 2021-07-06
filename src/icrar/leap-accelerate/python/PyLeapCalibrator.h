@@ -56,13 +56,11 @@ namespace python
 
         void Calibrate(
             std::string msPath,
-            bool useAutoCorrelations,
             const boost::python::numpy::ndarray& directions,
             std::optional<std::string> outputPath);
 
         void Calibrate(
             std::string msPath,
-            bool useAutoCorrelations,
             const boost::python::numpy::ndarray& directions,
             PyObject* callback);
 
@@ -71,13 +69,11 @@ namespace python
          */
         void PythonCalibrate(
             boost::python::object& msPath,
-            boost::python::object& useAutoCorrelations,
             const boost::python::numpy::ndarray& directions,
             boost::python::object& outputPath);
 
         void PythonPlasmaCalibrate(
             boost::python::object& plasmaTM,
-            boost::python::object& useAutoCorrelations,
             const boost::python::numpy::ndarray& directions,
             boost::python::object& outputPath);
 
@@ -86,7 +82,6 @@ namespace python
          */
         boost::python::object PythonCalibrateAsync(
             boost::python::object& msPath,
-            boost::python::object& useAutoCorrelations,
             const boost::python::numpy::ndarray& directions,
             PyObject* callback);
     };

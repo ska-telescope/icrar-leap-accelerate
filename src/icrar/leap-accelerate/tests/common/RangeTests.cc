@@ -32,42 +32,44 @@ namespace icrar
     public:
         void TestConstructors()
         {
+            using namespace boost;
+
             ASSERT_NO_THROW(Slice());
-            ASSERT_NO_THROW(Slice(-1));
+            ASSERT_NO_THROW(Slice(none).Evaluate(1));
             ASSERT_THROW(Slice(0), icrar::exception);
-            ASSERT_NO_THROW(Slice(1));
+            ASSERT_NO_THROW(Slice(1).Evaluate(1));
 
-            ASSERT_NO_THROW(Slice(-1, -1, -1).Evaluate(1));
-            ASSERT_THROW(Slice(-1, -1,  0), icrar::exception);
-            ASSERT_THROW(Slice(-1, -1,  1), icrar::exception);
-            ASSERT_THROW(Slice(-1,  0, -1), icrar::exception);
-            ASSERT_THROW(Slice(-1,  0,  0), icrar::exception);
-            ASSERT_THROW(Slice(-1,  0,  1), icrar::exception);
-            ASSERT_NO_THROW(Slice(-1,  1, -1).Evaluate(1));
-            ASSERT_THROW(Slice(-1,  1,  0), icrar::exception);
-            ASSERT_THROW(Slice(-1,  1,  1), icrar::exception);
+            ASSERT_THROW(   Rangel( -1,   -1,   -1), icrar::exception);
+            ASSERT_THROW(   Rangel( -1,   -1,    0), icrar::exception);
+            ASSERT_THROW(   Rangel( -1,   -1,    1), icrar::exception);
+            ASSERT_THROW(   Rangel( -1,    0,   -1), icrar::exception);
+            ASSERT_THROW(   Rangel( -1,    0,    0), icrar::exception);
+            ASSERT_THROW(   Rangel( -1,    0,    1), icrar::exception);
+            ASSERT_THROW(   Rangel( -1,    1,   -1), icrar::exception);
+            ASSERT_THROW(   Rangel( -1,    1,    0), icrar::exception);
+            ASSERT_THROW(   Rangel( -1,    1,    1), icrar::exception);
 
-            ASSERT_NO_THROW(Slice( 0, -1, -1).Evaluate(1));
-            ASSERT_THROW(Slice( 0, -1,  0), icrar::exception);
-            ASSERT_NO_THROW(Slice( 0, -1,  1).Evaluate(1));
-            ASSERT_THROW(Slice( 0,  0, -1), icrar::exception);
-            ASSERT_THROW(Slice( 0,  0,  0), icrar::exception);
-            ASSERT_THROW(Slice( 0,  0,  1), icrar::exception);
-            ASSERT_NO_THROW(Slice( 0,  1, -1).Evaluate(1));
-            ASSERT_THROW(Slice( 0,  1,  0), icrar::exception);
-            ASSERT_NO_THROW(Slice( 0,  1,  1).Evaluate(1));
+            ASSERT_NO_THROW(Slice( 0, none, none).Evaluate(1));
+            ASSERT_THROW(   Slice( 0, none,    0), icrar::exception);
+            ASSERT_NO_THROW(Slice( 0, none,    1).Evaluate(1));
+            ASSERT_NO_THROW(Slice( 0,    0, none).Evaluate(1));
+            ASSERT_THROW(   Slice( 0,    0,    0), icrar::exception);
+            ASSERT_THROW(   Slice( 0,    0,    1), icrar::exception);
+            ASSERT_NO_THROW(Slice( 0,    1, none).Evaluate(1));
+            ASSERT_THROW(   Slice( 0,    1,    0), icrar::exception);
+            ASSERT_NO_THROW(Slice( 0,    1,    1).Evaluate(1));
 
-            ASSERT_NO_THROW(Slice( 1, -1, -1).Evaluate(1));
-            ASSERT_THROW(Slice( 1, -1,  0), icrar::exception);
-            ASSERT_THROW(Slice( 1, -1,  1), icrar::exception);
-            ASSERT_THROW(Slice( 1,  0, -1), icrar::exception);
-            ASSERT_THROW(Slice( 1,  0,  0), icrar::exception);
-            ASSERT_THROW(Slice( 1,  0,  1), icrar::exception);
-            ASSERT_NO_THROW(Slice( 1,  1, -1).Evaluate(1));
-            ASSERT_THROW(Slice( 1,  1,  0), icrar::exception);
-            ASSERT_THROW(Slice( 1,  1,  1), icrar::exception);
-
-            ASSERT_THROW(Slice(0, 1,  -2), icrar::exception);
+            ASSERT_NO_THROW(Slice( 1, none, none).Evaluate(1));
+            ASSERT_THROW(   Slice( 1, none,    0), icrar::exception);
+            ASSERT_NO_THROW(Slice( 1, none,    1).Evaluate(1));
+            ASSERT_THROW(   Slice( 1,    0, none), icrar::exception);
+            ASSERT_THROW(   Slice( 1,    0,    0), icrar::exception);
+            ASSERT_THROW(   Slice( 1,    0,    1), icrar::exception);
+            ASSERT_NO_THROW(Slice( 1,    1, none).Evaluate(1));
+            ASSERT_THROW(   Slice( 1,    1,    0), icrar::exception);
+            ASSERT_THROW(   Slice( 1,    1,    1), icrar::exception);
+  
+            ASSERT_THROW(   Slice(0, 1,  -2), icrar::exception);
         }
     };
 

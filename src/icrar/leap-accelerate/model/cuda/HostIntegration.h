@@ -41,17 +41,13 @@ namespace cuda
         HostIntegration(
             int integrationNumber,
             const icrar::MeasurementSet& ms,
-            unsigned int index,
-            unsigned int channels,
-            unsigned int baselines,
-            unsigned int polarizations)
+            uint32_t startTimestep,
+            uint32_t intervalTimesteps)
         : Integration(
             integrationNumber,
             ms,
-            index,
-            channels,
-            baselines,
-            polarizations)
+            startTimestep,
+            intervalTimesteps)
         {
             cudaHostRegister(m_visibilities.data(), m_visibilities.size() * sizeof(decltype(*m_visibilities.data())), cudaHostRegisterPortable);
             cudaHostRegister(m_UVW.data(), m_UVW.size() * sizeof(decltype(*m_UVW.data())), cudaHostRegisterPortable);

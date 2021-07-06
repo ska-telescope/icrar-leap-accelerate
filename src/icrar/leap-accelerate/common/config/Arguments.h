@@ -115,13 +115,11 @@ namespace icrar
         StreamOutType m_streamOutType;
         boost::optional<std::string> m_outputFilePath; ///< Calibration output filepath
 
-        boost::optional<int> m_stations; ///< Overriden number of stations (will be removed in a later release)
         boost::optional<unsigned int> m_referenceAntenna; ///< Index of the reference antenna
         std::vector<SphericalDirection> m_directions; ///< Calibration directions
         ComputeImplementation m_computeImplementation; ///< Specifies the implementation for calibration computation
         Slice m_solutionInterval; ///< Specifies the interval to calculate solutions for
         double m_minimumBaselineThreshold; ///< Minimum baseline length otherwise flagged at runtime
-        bool m_readAutocorrelations; ///< Adjusts the number of baselines calculation to include autocorrelations
         bool m_mwaSupport; ///< Negates baselines when enabled
         icrar::log::Verbosity m_verbosity; ///< Defines logging level for std::out
 

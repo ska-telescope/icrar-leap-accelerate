@@ -92,8 +92,7 @@ namespace cpu
         << "timesteps: " << ms.GetNumTimesteps();
 
         profiling::timer calibration_timer;
-        int timesteps = boost::numeric_cast<int>(ms.GetNumTimesteps());
-        Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
+        Rangei validatedSolutionInterval = solutionInterval.Evaluate(boost::numeric_cast<int32_t>(ms.GetNumTimesteps()));
         std::vector<double> epochs = ms.GetEpochs();
 
         profiling::timer metadata_read_timer;
@@ -106,12 +105,12 @@ namespace cpu
             cpuComputeOptions.IsFileSystemCacheEnabled());
         LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
-        size_t solutions = validatedSolutionInterval.GetSize();
+        int32_t solutions = validatedSolutionInterval.GetSize();
         auto output_calibrations = std::vector<cpu::Calibration>();
         output_calibrations.reserve(solutions);
 
         constexpr unsigned int integrationNumber = 0;
-        for(size_t solution = 0; solution < solutions; ++solution)
+        for(int32_t solution = 0; solution < solutions; ++solution)
         {
             auto input_queues = std::vector<std::vector<cpu::Integration>>();
             profiling::timer solution_timer;
@@ -124,10 +123,10 @@ namespace cpu
             const auto integration = Integration(
                     integrationNumber,
                     ms,
-                    boost::numeric_cast<int32_t>(solution * validatedSolutionInterval.GetInterval() * ms.GetNumBaselines()),
-                    ms.GetNumChannels(),
-                    validatedSolutionInterval.GetInterval() * ms.GetNumBaselines(),
-                    ms.GetNumPols());
+                    solution * validatedSolutionInterval.GetInterval(),
+                    validatedSolutionInterval.GetInterval(),
+                    Slice(0, ms.GetNumPols(), ms.GetNumPols()-1)); // XX + YY pols
+                    
             LOG(info) << "Read integration data in " << integration_read_timer;
 
             for(size_t direction = 0; direction < directions.size(); ++direction)
@@ -199,36 +198,42 @@ namespace cpu
     void CpuLeapCalibrator::RotateVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)
     {
         using namespace std::literals::complex_literals;
-        Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.GetVis();
+        Eigen::Tensor<std::complex<double>, 4>& integration_data = integration.GetVis();
 
-        // loop over smeared baselines ('md_baseline' is always 'baseline' when timesteps = 1)
-        for(size_t baseline = 0; baseline < integration.GetBaselines(); ++baseline)
+        // loop over smeared baselines ('baseline' is always 'row' when timesteps = 1)
+        for(size_t timestep = 0; timestep < integration.GetNumTimesteps(); ++timestep)
         {
-            auto md_baseline = static_cast<int>(baseline % static_cast<size_t>(metadata.GetConstants().nbaselines)); // metadata baseline
-            auto rotatedUVW = metadata.GetDD() * metadata.GetUVW()[baseline];
-            double shiftFactor = -two_pi<double>() * (rotatedUVW(2) - metadata.GetUVW()[baseline](2));
-
-            // Loop over channels
-            for(uint32_t channel = 0; channel < metadata.GetConstants().channels; channel++)
+            for(size_t baseline = 0; baseline < integration.GetNumBaselines(); baseline++)
             {
-                double shiftRad = shiftFactor / metadata.GetConstants().GetChannelWavelength(channel);
-                for(uint32_t polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
-                {
-                    integration_data(polarization, baseline, channel) *= std::exp(std::complex<double>(0.0, shiftRad));
-                }
+                //TODO: UVWs should alternatively be stored as a tensor  
+                //auto rotatedUVW = metadata.GetDD() * metadata.GetUVW().chip(0, 2).chip(baseline, 1);
 
-                bool hasNaN = false;
-                const Eigen::Tensor<std::complex<double>, 1> polarizations = integration_data.chip(channel, 2).chip(baseline, 1);
-                for(uint32_t polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
-                {
-                    hasNaN |= std::isnan(integration_data(polarization, baseline, channel).real()) || std::isnan(integration_data(polarization, baseline, channel).imag());
-                }
+                size_t row = baseline + (timestep * integration.GetNumBaselines());
+                auto rotatedUVW = metadata.GetDD() * metadata.GetUVW()[row];
+                double shiftFactor = -two_pi<double>() * (rotatedUVW(2) - metadata.GetUVW()[row](2));
 
-                if(!hasNaN)
+                // Loop over channels
+                for(uint32_t channel = 0; channel < integration.GetNumChannels(); channel++)
                 {
-                    // Averaging with XX and YY polarizations
-                    metadata.GetAvgData()(md_baseline) += integration_data(0, baseline, channel);
-                    metadata.GetAvgData()(md_baseline) += integration_data(metadata.GetConstants().num_pols-1, baseline, channel);
+                    double shiftRad = shiftFactor / metadata.GetConstants().GetChannelWavelength(channel);
+                    for(uint32_t polarization = 0; polarization < integration.GetNumPolarizations(); ++polarization)
+                    {
+                        integration_data(polarization, channel, baseline, timestep) *= std::exp(std::complex<double>(0.0, shiftRad));
+                    }
+
+                    bool hasNaN = false;
+                    for(uint32_t polarization = 0; polarization < integration.GetNumPolarizations(); ++polarization)
+                    {
+                        hasNaN |= std::isnan(integration_data(polarization, channel, baseline, timestep).real())
+                               || std::isnan(integration_data(polarization, channel, baseline, timestep).imag());
+                    }
+
+                    if(!hasNaN)
+                    {
+                        // Averaging with XX and YY polarizations
+                        metadata.GetAvgData()(baseline) += integration_data(0, channel, baseline, timestep);
+                        metadata.GetAvgData()(baseline) += integration_data(integration_data.dimension(0) - 1, channel, baseline, timestep);
+                    }
                 }
             }
         }

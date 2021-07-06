@@ -62,7 +62,7 @@ namespace icrar
     {
         if (step == IntType(0))
         {
-            throw std::invalid_argument("step for range must be non-zero");
+            throw std::invalid_argument("step must be non-zero");
         }
 
         std::vector<IntType> result;
@@ -77,7 +77,7 @@ namespace icrar
     }
 
     /**
-     * @brief 
+     * @brief returns a linear sequence of values from start to stop
      * 
      * @tparam IntType 
      * @param start 
@@ -91,7 +91,7 @@ namespace icrar
     }
 
     /**
-     * @brief 
+     * @brief returns a linear sequence of values from 0 to stop
      * 
      * @tparam IntType 
      * @param stop 

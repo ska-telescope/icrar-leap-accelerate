@@ -48,7 +48,7 @@ namespace icrar
         args.referenceAntenna = boost::none;
         args.directions = boost::none;
         args.computeImplementation.reset(std::string("cpu"));
-        args.solutionInterval.reset(std::string("[0,-1,-1]")); // Average over all timesteps
+        args.solutionInterval = std::string("[0,null,null]"); // Average over all timesteps
         args.readAutocorrelations.reset(true);
         args.minimumBaselineThreshold.reset(0.0);
         args.mwaSupport.reset(false);
@@ -122,7 +122,6 @@ namespace icrar
     , m_computeImplementation(ComputeImplementation::cpu)
     , m_solutionInterval()
     , m_minimumBaselineThreshold(0)
-    , m_readAutocorrelations(false)
     , m_mwaSupport(false)
     , m_verbosity(icrar::log::Verbosity::trace)
     , m_computeOptions()
@@ -149,10 +148,7 @@ namespace icrar
         case InputType::file:
             if (m_filePath.is_initialized())
             {
-                m_measurementSet = std::make_unique<MeasurementSet>(
-                    m_filePath.get(),
-                    m_stations,
-                    m_readAutocorrelations);
+                m_measurementSet = std::make_unique<MeasurementSet>(m_filePath.get());
             }
             else
             {
@@ -195,11 +191,6 @@ namespace icrar
             m_outputFilePath.reset(args.outputFilePath.get());
         }
 
-        if(args.stations.is_initialized())
-        {
-            m_stations.reset(args.stations.get());
-        }
-
         if(args.referenceAntenna.is_initialized())
         {
             m_referenceAntenna.reset(args.referenceAntenna.get());
@@ -223,11 +214,6 @@ namespace icrar
         if(args.minimumBaselineThreshold.is_initialized())
         {
             m_minimumBaselineThreshold = args.minimumBaselineThreshold.get();
-        }
-        
-        if(args.readAutocorrelations.is_initialized())
-        {
-            m_readAutocorrelations = args.readAutocorrelations.get();
         }
 
         if(args.mwaSupport.is_initialized())
