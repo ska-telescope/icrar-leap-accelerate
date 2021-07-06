@@ -8,9 +8,19 @@
 !testdata/README.md
 !testdata/install.sh
 /Testing/
+log/
 
+# Git
 *.orig
+
+# Python
 .pytest_cache/
+*.pyc
+*.a
+*.so
+*.hash
+*.cache
+python/leap-accelerate-python/tests/*.json
 
 # Eclipse IDE files
 .project
