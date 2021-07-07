@@ -129,37 +129,36 @@ namespace cpu
     
     public:
         /**
-         * @brief Construct a new MetaData object. SetUVW() and SetDirection() must be called after construction
-         * 
-         * @param ms 
-         * @param minimumBaselineThreshold
-         * @param useCache
-         */
-        MetaData(const icrar::MeasurementSet& ms, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool computeInverse = true, bool useCache = true);
-
-
-        /**
          * @brief Construct a new MetaData object. SetDirection() must be called after construction
          * 
          * @param ms measurement set to read observations from
-         * @param uvws uvw coordinates of stations
          * @param refAnt the reference antenna index, default is the last index
          * @param minimumBaselineThreshold baseline lengths less that the minimum in meters are flagged
          * @param useCache whether to load Ad matrix from cache
          */
-        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool computeInverse = true, bool useCache = true);
+        MetaData(
+            const icrar::MeasurementSet& ms,
+            boost::optional<unsigned int> refAnt = boost::none,
+            double minimumBaselineThreshold = 0.0,
+            bool computeInverse = true,
+            bool useCache = true);
 
         /**
          * @brief Construct a new MetaData object.
          * 
          * @param ms measurement set to read observations from
          * @param direction the direction of the beam to calibrate for
-         * @param uvws uvw coordinates of stations
          * @param refAnt the reference antenna index, default is the last index
          * @param minimumBaselineThreshold baseline lengths less that the minimum in meters are flagged
          * @param useCache whether to load Ad matrix from cache
          */
-        MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt = boost::none, double minimumBaselineThreshold = 0.0, bool computeInverse = true, bool useCache = true);
+        MetaData(
+            const icrar::MeasurementSet& ms,
+            const SphericalDirection& direction,
+            boost::optional<unsigned int> refAnt = boost::none,
+            double minimumBaselineThreshold = 0.0,
+            bool computeInverse = true,
+            bool useCache = true);
 
         const Constants& GetConstants() const;
 

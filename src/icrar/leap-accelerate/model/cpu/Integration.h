@@ -63,7 +63,7 @@ namespace cpu
     {
     protected:
         int m_integrationNumber;
-        std::vector<MVuvw> m_UVW; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
+        Eigen::Tensor<double, 3> m_UVW; //uvw is an array uvw[3][nbl][timesteps]
         Eigen::Tensor<std::complex<double>, 4> m_visibilities;
 
     public:
@@ -88,13 +88,7 @@ namespace cpu
          * 
          * @return const std::vector<icrar::MVuvw>& 
          */
-<<<<<<< HEAD
-        const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
-=======
-        // const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
-        // std::vector<icrar::MVuvw>& GetUVW() { return m_UVW; }
-        const Eigen::Tensor<3, double> GetUVW() const { return m_UVW; }
->>>>>>> dirty
+        const Eigen::Tensor<double, 3>& GetUVW() const { return m_UVW; }
 
         /**
          * @brief Get the Visibilities object of size (polarizations, channels, baselines, timesteps)

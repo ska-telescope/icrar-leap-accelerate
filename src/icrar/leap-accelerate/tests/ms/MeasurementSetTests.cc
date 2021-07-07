@@ -57,32 +57,34 @@ public:
     {
         unsigned int start_timestep = 0;
         unsigned int timesteps = 2;
-        Eigen::MatrixX3d uvws = msMwa.GetCoords(start_timestep, timesteps);
+        Eigen::Tensor<double, 3> uvws = msMwa.GetCoords(start_timestep, timesteps);
 
-        ASSERT_EQ(timesteps * msMwa.GetNumBaselines(), uvws.rows());
-        
-        EXPECT_NEAR(0,                   uvws(0, 0), TOLERANCE);
-        EXPECT_NEAR(0,                   uvws(0, 1), TOLERANCE);
-        EXPECT_NEAR(0,                   uvws(0, 2), TOLERANCE);
-        EXPECT_NEAR(-213.234574834057,   uvws(1, 0), TOLERANCE);
-        EXPECT_NEAR( 135.473926784922,   uvws(1, 1), TOLERANCE);
-        EXPECT_NEAR( 136.990822255294,   uvws(1, 2), TOLERANCE);
-        EXPECT_NEAR(-126.130233053304,   uvws(2, 0), TOLERANCE);
-        EXPECT_NEAR( 169.064851738458,   uvws(2, 1), TOLERANCE);
-        EXPECT_NEAR( 139.291586460673,   uvws(2, 2), TOLERANCE);
-        EXPECT_NEAR(-366.52924769051333, uvws(5251, 0), TOLERANCE);
-        EXPECT_NEAR(-437.91497202478854, uvws(5251, 1), TOLERANCE);
-        EXPECT_NEAR(-207.55869675563417, uvws(5251, 2), TOLERANCE);
-        EXPECT_NEAR(0,                   uvws(5252, 0), TOLERANCE);
-        EXPECT_NEAR(0,                   uvws(5252, 1), TOLERANCE);
-        EXPECT_NEAR(0,                   uvws(5252, 2), TOLERANCE);
+        ASSERT_EQ(3,                       uvws.dimension(0));
+        ASSERT_EQ(msMwa.GetNumBaselines(), uvws.dimension(1));
+        ASSERT_EQ(timesteps,               uvws.dimension(2));
 
-        EXPECT_NEAR(0,                   uvws(5253, 0), TOLERANCE);
-        EXPECT_NEAR(0,                   uvws(5253, 1), TOLERANCE);
-        EXPECT_NEAR(0,                   uvws(5253, 2), TOLERANCE);
-        EXPECT_NEAR(-213.16346997196314, uvws(5254, 0), TOLERANCE);
-        EXPECT_NEAR( 135.46083100163386, uvws(5254, 1), TOLERANCE);
-        EXPECT_NEAR( 137.11437728855378, uvws(5254, 2), TOLERANCE);
+        EXPECT_NEAR(0,                   uvws(0, 0, 0), TOLERANCE);
+        EXPECT_NEAR(0,                   uvws(1, 0, 0), TOLERANCE);
+        EXPECT_NEAR(0,                   uvws(2, 0, 0), TOLERANCE);
+        EXPECT_NEAR(-213.234574834057,   uvws(0, 1, 0), TOLERANCE);
+        EXPECT_NEAR( 135.473926784922,   uvws(1, 1, 0), TOLERANCE);
+        EXPECT_NEAR( 136.990822255294,   uvws(2, 1, 0), TOLERANCE);
+        EXPECT_NEAR(-126.130233053304,   uvws(0, 2, 0), TOLERANCE);
+        EXPECT_NEAR( 169.064851738458,   uvws(1, 2, 0), TOLERANCE);
+        EXPECT_NEAR( 139.291586460673,   uvws(2, 2, 0), TOLERANCE);
+        EXPECT_NEAR(-366.52924769051333, uvws(0, 5251, 0), TOLERANCE);
+        EXPECT_NEAR(-437.91497202478854, uvws(1, 5251, 0), TOLERANCE);
+        EXPECT_NEAR(-207.55869675563417, uvws(2, 5251, 0), TOLERANCE);
+        EXPECT_NEAR(0,                   uvws(0, 5252, 0), TOLERANCE);
+        EXPECT_NEAR(0,                   uvws(1, 5252, 0), TOLERANCE);
+        EXPECT_NEAR(0,                   uvws(2, 5252, 0), TOLERANCE);
+
+        EXPECT_NEAR(0,                   uvws(0, 0, 1), TOLERANCE);
+        EXPECT_NEAR(0,                   uvws(1, 0, 1), TOLERANCE);
+        EXPECT_NEAR(0,                   uvws(2, 0, 1), TOLERANCE);
+        EXPECT_NEAR(-213.16346997196314, uvws(0, 1, 1), TOLERANCE);
+        EXPECT_NEAR( 135.46083100163386, uvws(1, 1, 1), TOLERANCE);
+        EXPECT_NEAR( 137.11437728855378, uvws(2, 1, 1), TOLERANCE);
     }
 
     template<typename T>
