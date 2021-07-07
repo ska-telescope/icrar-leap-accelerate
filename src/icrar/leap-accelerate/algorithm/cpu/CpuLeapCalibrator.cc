@@ -206,11 +206,14 @@ namespace cpu
             for(size_t baseline = 0; baseline < integration.GetNumBaselines(); baseline++)
             {
                 //TODO(calgray): UVWs should alternatively be stored as a tensor  
-                //auto rotatedUVW = metadata.GetDD() * integration.GetUVW().chip(0, 2).chip(baseline, 1);
 
-                size_t row = baseline + (timestep * integration.GetNumBaselines());
-                auto rotatedUVW = metadata.GetDD() * integration.GetUVW()[row];
-                double shiftFactor = -two_pi<double>() * (rotatedUVW(2) - integration.GetUVW()[row](2));
+                //size_t row = baseline + (timestep * integration.GetNumBaselines());
+                //auto rotatedUVW = metadata.GetDD() * integration.GetUVW()[row];
+
+                Eigen::Tensor<double, 1> uvwTensor = integration.GetUVW().chip(timestep, 2).chip(baseline, 1);
+                Eigen::VectorXd uvw = ToVector(uvwTensor);
+                auto rotatedUVW = metadata.GetDD() * uvw;
+                double shiftFactor = -two_pi<double>() * (rotatedUVW(2) - uvw(2));
 
                 // Loop over channels
                 for(uint32_t channel = 0; channel < integration.GetNumChannels(); channel++)

@@ -49,20 +49,20 @@ namespace cpu
         LOG(info) << "vis: " << memory_amount(vis_size);
         size_t uvw_size = baselines * 3;
         LOG(info) << "uvw: " << memory_amount(uvw_size);
-        m_visibilities = ms.GetVis(startTimestep, intervalTimesteps, polarizationSlice);
-        m_UVW = ToUVWVector(ms.GetCoords(startTimestep, intervalTimesteps));
+        m_visibilities = ms.GetVis(startTimestep, intervalTimesteps, polarizationSlice); // TODO: rename to ReadVis
+        m_UVW = ms.GetCoords(startTimestep, intervalTimesteps);
     }
 
     bool Integration::operator==(const Integration& rhs) const
     {
-        Eigen::Map<const Eigen::VectorXcd> datav(m_visibilities.data(), m_visibilities.size());
-        Eigen::Map<const Eigen::VectorXcd> rhsdatav(rhs.m_visibilities.data(), rhs.m_visibilities.size());
+        Eigen::Map<const Eigen::ArrayXcd> datav(m_visibilities.data(), m_visibilities.size());
+        Eigen::Map<const Eigen::ArrayXcd> rhsdatav(rhs.m_visibilities.data(), rhs.m_visibilities.size());
         
         return 
-            m_visibilities.dimensions() == rhs.m_visibilities.dimensions()
-            && datav.isApprox(rhsdatav)
-            && m_UVW == rhs.m_UVW
-            && m_integrationNumber == rhs.m_integrationNumber;
+            m_integrationNumber == rhs.m_integrationNumber
+            && m_visibilities.dimensions() == rhs.m_visibilities.dimensions()
+            && m_UVW.dimensions() == rhs.m_UVW.dimensions()
+            && datav.isApprox(rhsdatav); //TODO: compare UVWs
     }
 } // namespace cpu
 } // namespace icrar

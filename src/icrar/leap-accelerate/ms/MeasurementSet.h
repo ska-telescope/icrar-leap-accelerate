@@ -197,26 +197,7 @@ namespace icrar
          */
         uint32_t GetNumFilteredBaselines(double minimumBaselineThreshold = 0.0) const;
 
-        /**
-         * @brief Gets a flag vector of filtered stations
-         * 
-         * @param minimumBaselineThreshold 
-         * @return Eigen::VectorXb 
-         */
-        //Eigen::VectorXb GetFilteredStations(double minimumBaselineThreshold) const;
-
-        Eigen::MatrixX3d GetCoords() const;
-
-        /**
-         * @brief Gets the Coords/UVWs of a specified time interval.
-         * 
-         * @param startTimestep 
-         * @param intervalTimesteps 
-         * @return Eigen::MatrixX3d of dimensions (3, baselines * timesteps)
-         */
-        Eigen::MatrixX3d GetCoords(
-            std::uint32_t startTimestep,
-            std::uint32_t intervalTimesteps) const;
+        Eigen::Tensor<double, 3> GetCoords() const;
 
         /**
          * @brief Gets the Coords/UVWs of a specified time interval.
@@ -225,9 +206,9 @@ namespace icrar
          * @param intervalTimesteps 
          * @return Eigen::Tensor<double, 3> of dimensions (3, baselines, timesteps)
          */
-        Eigen::Tensor<double, 3> GetCoordsExperimental(
+        Eigen::Tensor<double, 3> GetCoords(
             uint32_t startTimestep,
-            uint32_t intervalTimesteps);
+            uint32_t intervalTimesteps) const;
 
         /**
          * @brief Gets the visibilities from all baselines, channels and polarizations

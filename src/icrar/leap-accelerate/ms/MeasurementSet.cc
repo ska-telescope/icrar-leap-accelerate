@@ -238,8 +238,7 @@ namespace icrar
 
     Eigen::VectorXb MeasurementSet::GetFilteredBaselines(double minimumBaselineThreshold) const
     {
-        Eigen::VectorXb result = GetFlaggedBaselines() || GetShortBaselines(minimumBaselineThreshold);
-        return result;
+        return GetFlaggedBaselines() || GetShortBaselines(minimumBaselineThreshold);
     }
 
     uint32_t MeasurementSet::GetNumFilteredBaselines(double minimumBaselineThreshold) const
@@ -248,39 +247,39 @@ namespace icrar
         return boost::numeric_cast<uint32_t>(std::count(filteredBaselines.cbegin(), filteredBaselines.cend(), true));
 	}
 
-    Eigen::MatrixX3d MeasurementSet::GetCoords() const
+    Eigen::Tensor<double, 3> MeasurementSet::GetCoords() const
     {
         return GetCoords(0, 1);
     }
 
-    Eigen::MatrixX3d MeasurementSet::GetCoords(uint32_t startTimestep, uint32_t intervalTimesteps) const
-    {
-        // See https://github.com/OxfordSKA/OSKAR/blob/f018c03bb34c16dcf8fb985b46b3e9dc1cf0812c/oskar/ms/src/oskar_ms_read.cpp
-        uint32_t start_row = startTimestep * GetNumBaselines();
-        uint32_t num_rows = intervalTimesteps * GetNumBaselines();
-        uint32_t total_rows = GetNumRows();
+    // Eigen::MatrixX3d MeasurementSet::GetCoords(uint32_t startTimestep, uint32_t intervalTimesteps) const
+    // {
+    //     // See https://github.com/OxfordSKA/OSKAR/blob/f018c03bb34c16dcf8fb985b46b3e9dc1cf0812c/oskar/ms/src/oskar_ms_read.cpp
+    //     uint32_t start_row = startTimestep * GetNumBaselines();
+    //     uint32_t num_rows = intervalTimesteps * GetNumBaselines();
+    //     uint32_t total_rows = GetNumRows();
 
-        if(start_row >= total_rows)
-        {
-            std::stringstream ss;
-            ss << "ms out of range " << start_row << " >= " << total_rows; 
-            throw icrar::exception(ss.str(), __FILE__, __LINE__);
-        }
+    //     if(start_row >= total_rows)
+    //     {
+    //         std::stringstream ss;
+    //         ss << "ms out of range " << start_row << " >= " << total_rows; 
+    //         throw icrar::exception(ss.str(), __FILE__, __LINE__);
+    //     }
 
-        // reduce selection if selecting out of range
-        if(start_row + num_rows > total_rows)
-        {
-            std::stringstream ss;
-            ss << "ms out of range " << start_row + num_rows << " >= " << total_rows; 
-            throw icrar::exception(ss.str(), __FILE__, __LINE__);
-        }
+    //     // reduce selection if selecting out of range
+    //     if(start_row + num_rows > total_rows)
+    //     {
+    //         std::stringstream ss;
+    //         ss << "ms out of range " << start_row + num_rows << " >= " << total_rows; 
+    //         throw icrar::exception(ss.str(), __FILE__, __LINE__);
+    //     }
 
-        casacore::Slice slice(start_row, num_rows, 1);
-        return Eigen::Map<Eigen::Matrix<double, -1, 3, Eigen::RowMajorBit>>(
-            m_msmc->uvw().getColumnRange(slice).data(), num_rows, 3);
-    }
+    //     casacore::Slice slice(start_row, num_rows, 1);
+    //     return Eigen::Map<Eigen::Matrix<double, -1, 3, Eigen::RowMajorBit>>(
+    //         m_msmc->uvw().getColumnRange(slice).data(), num_rows, 3);
+    // }
 
-    Eigen::Tensor<double, 3> MeasurementSet::GetCoordsExperimental(uint32_t startTimestep, uint32_t intervalTimesteps)
+    Eigen::Tensor<double, 3> MeasurementSet::GetCoords(uint32_t startTimestep, uint32_t intervalTimesteps) const
     {
         // See https://github.com/OxfordSKA/OSKAR/blob/f018c03bb34c16dcf8fb985b46b3e9dc1cf0812c/oskar/ms/src/oskar_ms_read.cpp
         uint32_t num_baselines = GetNumBaselines();

@@ -114,6 +114,18 @@ namespace cpu
         }
     }
 
+    MetaData::MetaData(
+        const icrar::MeasurementSet& ms,
+        const SphericalDirection& direction,
+        boost::optional<unsigned int> refAnt,
+        double minimumBaselineThreshold,
+        bool computeInverse,
+        bool useCache)
+    : MetaData(ms, refAnt, minimumBaselineThreshold, computeInverse, useCache)
+    {
+        SetDirection(direction);
+    }
+
     void MetaData::ComputeInverse()
     {
         auto invertA1 = [](const Eigen::MatrixXd& a)
@@ -160,19 +172,6 @@ namespace cpu
         {
             LOG(warning) << "Ad1 is degenerate";
         }
-    }
-
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool computeInverse, bool useCache)
-    : MetaData(ms, refAnt, minimumBaselineThreshold, computeInverse, useCache)
-    {
-        //TODO remove signature SetUVW(uvws);
-    }
-
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool computeInverse, bool useCache)
-    : MetaData(ms, uvws, refAnt, minimumBaselineThreshold, computeInverse, useCache)
-    {
-        //TODO remove signature SetUVW(uvws);
-        SetDirection(direction);
     }
 
     const Constants& MetaData::GetConstants() const

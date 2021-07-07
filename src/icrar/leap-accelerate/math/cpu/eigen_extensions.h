@@ -24,6 +24,8 @@
 
 #include <icrar/leap-accelerate/config.h>
 #include <Eigen/Core>
+#include <unsupported/Eigen/CXX11/Tensor>
+
 
 #ifdef CUDA_ENABLED
 #include <thrust/complex.h>
@@ -39,6 +41,25 @@ namespace Eigen
 {
     using MatrixXb = Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic>;
     using VectorXb = Eigen::Vector<bool, Eigen::Dynamic>;
+
+    template<typename Scalar>
+    auto ToMatrix(const Eigen::Tensor<Scalar, 2>& tensor)
+    {
+        return Eigen::Map<const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>>(
+            tensor.data(),
+            tensor.dimension(0),
+            tensor.dimension(2)
+        );
+    }
+
+    template<typename Scalar>
+    auto ToVector(const Eigen::Tensor<Scalar, 1>& tensor)
+    {
+        return Eigen::Map<const Eigen::Matrix<Scalar, Eigen::Dynamic, 1>>(
+            tensor.data(),
+            tensor.dimension(0)
+        );
+    }
 
     namespace internal
     {
