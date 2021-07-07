@@ -88,7 +88,13 @@ namespace cpu
          * 
          * @return const std::vector<icrar::MVuvw>& 
          */
+<<<<<<< HEAD
         const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
+=======
+        // const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
+        // std::vector<icrar::MVuvw>& GetUVW() { return m_UVW; }
+        const Eigen::Tensor<3, double> GetUVW() const { return m_UVW; }
+>>>>>>> dirty
 
         /**
          * @brief Get the Visibilities object of size (polarizations, channels, baselines, timesteps)

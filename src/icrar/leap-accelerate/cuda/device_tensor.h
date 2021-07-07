@@ -70,6 +70,10 @@ namespace cuda
             }
         }
 
+        device_tensor3(Eigen::DSizes<Eigen::DenseIndex, 3> shape)
+        : device_tensor3(shape[0], shape[1], shape[2], nullptr) {}
+
+
         device_tensor3(const Eigen::Tensor<T, 3>& tensor)
         : device_tensor3(tensor.dimension(0), tensor.dimension(1), tensor.dimension(2), tensor.data()) {}
 
@@ -258,6 +262,9 @@ namespace cuda
                 checkCudaErrors(cudaMemsetAsync(m_buffer, 0, byteSize));
             }
         }
+
+        device_tensor4(Eigen::DSizes<Eigen::DenseIndex, 4> shape)
+        : device_tensor4(shape[0], shape[1], shape[2], shape[3], nullptr) {}
 
         device_tensor4(const Eigen::Tensor<T, 4>& tensor)
         : device_tensor4(tensor.dimension(0), tensor.dimension(1), tensor.dimension(2), tensor.dimension(3), tensor.data()) {}

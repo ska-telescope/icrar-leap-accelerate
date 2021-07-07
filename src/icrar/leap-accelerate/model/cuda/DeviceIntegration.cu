@@ -29,17 +29,19 @@ namespace icrar
 {
 namespace cuda
 {
-    DeviceIntegration::DeviceIntegration(int integrationNumber, Eigen::DSizes<Eigen::DenseIndex, 4> shape)
+    DeviceIntegration::DeviceIntegration(
+        int integrationNumber,
+        Eigen::DSizes<Eigen::DenseIndex, 3> uvwShape,
+        Eigen::DSizes<Eigen::DenseIndex, 4> visShape)
     : m_integrationNumber(integrationNumber)
-    , m_visibilities(shape[0], shape[1], shape[2], shape[3])
-    , m_rows(shape[2] * shape[3])
+    , m_uvws(uvwShape)
+    , m_visibilities(visShape)
     {
     }
 
     DeviceIntegration::DeviceIntegration(const icrar::cpu::Integration& integration)
     : m_integrationNumber(integration.GetIntegrationNumber())
     , m_visibilities(integration.GetVis())
-    , m_rows(integration.m_rows)
     {
     }
 
@@ -54,7 +56,6 @@ namespace cuda
         }
 
         m_visibilities.SetDataAsync(integration.m_visibilities);
-        m_rows = integration.m_rows;
     }
 
     __host__ void DeviceIntegration::Set(const icrar::cpu::Integration& integration)
