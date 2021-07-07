@@ -37,13 +37,12 @@ namespace cpu
         const icrar::MeasurementSet& ms,
         uint32_t startTimestep,
         uint32_t intervalTimesteps,
-        Slice polarizationSlice)
+        const Slice& polarizationSlice)
     : m_integrationNumber(integrationNumber)
     {
         uint32_t channels = ms.GetNumChannels();
         uint32_t baselines = ms.GetNumBaselines();
         uint32_t polarizations = ms.GetNumPols();
-        m_rows = baselines * intervalTimesteps;
 
         constexpr int startChannel = 0;
         size_t vis_size = baselines * (channels - startChannel) * (polarizations > 1 ? 2 : 1) * sizeof(std::complex<double>);

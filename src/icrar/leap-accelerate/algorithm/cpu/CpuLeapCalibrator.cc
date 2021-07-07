@@ -137,16 +137,15 @@ namespace cpu
             }
 
             profiling::timer phase_rotate_timer;
-            metadata.SetUVW(integration.GetUVW());
-            for(size_t i = 0; i < directions.size(); ++i)
+            for(size_t direction = 0; direction < directions.size(); ++direction)
             {
-                LOG(info) << "Processing direction " << i;
-                metadata.SetDirection(directions[i]);
+                LOG(info) << "Processing direction " << direction;
+                metadata.SetDirection(directions[direction]);
                 metadata.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
                 PhaseRotate(
                     metadata,
-                    directions[i],
-                    input_queues[i],
+                    directions[direction],
+                    input_queues[direction],
                     output_calibrations[solution].GetBeamCalibrations());
             }
 
@@ -195,6 +194,7 @@ namespace cpu
         output_calibrations.emplace_back(direction, (metadata.GetAd() * deltaPhaseColumn) + cal1);
     }
 
+    //TODO(calgray): pass constants and avgdata instead of metadata
     void CpuLeapCalibrator::RotateVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)
     {
         using namespace std::literals::complex_literals;
@@ -205,12 +205,12 @@ namespace cpu
         {
             for(size_t baseline = 0; baseline < integration.GetNumBaselines(); baseline++)
             {
-                //TODO: UVWs should alternatively be stored as a tensor  
-                //auto rotatedUVW = metadata.GetDD() * metadata.GetUVW().chip(0, 2).chip(baseline, 1);
+                //TODO(calgray): UVWs should alternatively be stored as a tensor  
+                //auto rotatedUVW = metadata.GetDD() * integration.GetUVW().chip(0, 2).chip(baseline, 1);
 
                 size_t row = baseline + (timestep * integration.GetNumBaselines());
-                auto rotatedUVW = metadata.GetDD() * metadata.GetUVW()[row];
-                double shiftFactor = -two_pi<double>() * (rotatedUVW(2) - metadata.GetUVW()[row](2));
+                auto rotatedUVW = metadata.GetDD() * integration.GetUVW()[row];
+                double shiftFactor = -two_pi<double>() * (rotatedUVW(2) - integration.GetUVW()[row](2));
 
                 // Loop over channels
                 for(uint32_t channel = 0; channel < integration.GetNumChannels(); channel++)

@@ -165,13 +165,13 @@ namespace cpu
     MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool computeInverse, bool useCache)
     : MetaData(ms, refAnt, minimumBaselineThreshold, computeInverse, useCache)
     {
-        SetUVW(uvws);
+        //TODO remove signature SetUVW(uvws);
     }
 
     MetaData::MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool computeInverse, bool useCache)
     : MetaData(ms, uvws, refAnt, minimumBaselineThreshold, computeInverse, useCache)
     {
-        SetUVW(uvws);
+        //TODO remove signature SetUVW(uvws);
         SetDirection(direction);
     }
 
@@ -235,11 +235,6 @@ namespace cpu
         
         m_dd = GenerateDDMatrix(direction);
         LOG(trace) << "dd: " << pretty_matrix(m_dd);
-    }
-
-    void MetaData::SetUVW(const std::vector<icrar::MVuvw>& uvw)
-    {
-        m_UVW = uvw;
     }
 
     bool MetaData::operator==(const MetaData& rhs) const

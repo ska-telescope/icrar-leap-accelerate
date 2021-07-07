@@ -63,8 +63,6 @@ namespace cpu
     {
     protected:
         int m_integrationNumber;
-        int64_t m_rows;
-
         std::vector<MVuvw> m_UVW; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
         Eigen::Tensor<std::complex<double>, 4> m_visibilities;
 
@@ -74,13 +72,11 @@ namespace cpu
         const icrar::MeasurementSet& ms,
         uint32_t startTimestep,
         uint32_t intervalTimesteps,
-        Slice polarizationSlice = Slice(0, boost::none, 1));
+        const Slice& polarizationSlice = Slice(0, boost::none, 1));
 
         bool operator==(const Integration& rhs) const;
 
         int GetIntegrationNumber() const { return m_integrationNumber; }
-
-        size_t GetRows() const { return m_rows; }
 
         size_t GetNumPolarizations() const { return m_visibilities.dimension(0); }
         size_t GetNumChannels() const { return m_visibilities.dimension(1); }

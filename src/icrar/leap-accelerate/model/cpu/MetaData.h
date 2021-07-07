@@ -169,7 +169,7 @@ namespace cpu
         const Eigen::MatrixXd& GetA() const;
 
         /**
-         * @brief Vector of indexes of the stations that are not flagged, shape [stations]
+         * @brief Vector of indexes of the stations that are not flagged in A of shape [baselines]
          */
         const Eigen::VectorXi& GetI() const;
 
@@ -181,21 +181,24 @@ namespace cpu
 
         /**
          * @brief Matrix of baselines using the reference antenna of shape [stations+1, stations]
-         * the last row represents the reference antenna
+         * where the last row represents the reference antenna
          */
         const Eigen::MatrixXd& GetA1() const;
+
+        /**
+         * @brief Vector of indexes of the stations that are not flagged in A1 of shape [stations]
+         * 
+         * @return const Eigen::VectorXi& 
+         */
         const Eigen::VectorXi& GetI1() const;
 
         const Eigen::MatrixXd& GetAd1() const;
         virtual void SetAd1(Eigen::MatrixXd&& ad1) { m_Ad1 = ad1; }
 
-        const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
-
         const SphericalDirection& GetDirection() const { return m_direction; }
         const Eigen::Matrix3d& GetDD() const { return m_dd; }
         void SetDirection(const SphericalDirection& direction);
 
-        void SetUVW(const std::vector<icrar::MVuvw>& uvws);
 
         /**
          * @brief Computes the A and A1 inverse matrices 
