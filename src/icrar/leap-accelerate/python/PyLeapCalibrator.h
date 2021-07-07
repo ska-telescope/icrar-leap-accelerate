@@ -57,7 +57,8 @@ namespace python
         void Calibrate(
             std::string msPath,
             const boost::python::numpy::ndarray& directions,
-            std::optional<std::string> outputPath);
+            const Slice& solutionInterval,
+            boost::optional<std::string> outputPath);
 
         void Calibrate(
             std::string msPath,
@@ -70,10 +71,11 @@ namespace python
         void PythonCalibrate(
             boost::python::object& msPath,
             const boost::python::numpy::ndarray& directions,
+            const boost::python::slice& solutionInterval,
             boost::python::object& outputPath);
 
         void PythonPlasmaCalibrate(
-            boost::python::object& plasmaTM,
+            const boost::python::object& plasmaTM,
             const boost::python::numpy::ndarray& directions,
             boost::python::object& outputPath);
 

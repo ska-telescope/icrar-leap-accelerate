@@ -205,7 +205,7 @@ namespace cpu
         {
             for(size_t baseline = 0; baseline < integration.GetNumBaselines(); baseline++)
             {
-                //TODO: UVWs should alternatively be stored as a tensor  
+                //TODO(calgray): UVWs should alternatively be stored as a tensor  
                 //auto rotatedUVW = metadata.GetDD() * metadata.GetUVW().chip(0, 2).chip(baseline, 1);
 
                 size_t row = baseline + (timestep * integration.GetNumBaselines());
