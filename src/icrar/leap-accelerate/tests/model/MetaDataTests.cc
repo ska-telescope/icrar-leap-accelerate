@@ -215,7 +215,7 @@ namespace icrar
 #ifdef CUDA_ENABLED
         void TestCudaBufferCopy()
         {
-            auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumTimesteps())));
+            auto meta = icrar::cpu::MetaData(*ms);
             auto direction = SphericalDirection(); direction << 0.0, 0.0;
             auto uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
             meta.SetDirection(direction);
@@ -232,16 +232,13 @@ namespace icrar
                 icrar::cuda::device_matrix<double>(expectedhostMetadata.GetAd1())
             );
 
-            auto solutionIntervalBuffer = std::make_shared<icrar::cuda::SolutionIntervalBuffer>(
-                expectedhostMetadata.GetUVW()
-            );
             auto directionBuffer = std::make_shared<icrar::cuda::DirectionBuffer>(
                 expectedhostMetadata.GetDirection(),
                 expectedhostMetadata.GetDD(),
                 expectedhostMetadata.GetAvgData()
             );
 
-            auto deviceMetadata = icrar::cuda::DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
+            auto deviceMetadata = icrar::cuda::DeviceMetaData(constantBuffer, directionBuffer);
 
             // copy from device back to host
             icrar::cpu::MetaData hostMetadata = deviceMetadata.ToHost();

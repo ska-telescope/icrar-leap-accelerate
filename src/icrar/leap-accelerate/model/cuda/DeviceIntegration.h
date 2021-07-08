@@ -104,6 +104,8 @@ namespace cuda
         size_t GetNumBaselines() const { return m_visibilities.GetDimensionSize(2); }
         size_t GetNumTimesteps() const { return m_visibilities.GetDimensionSize(3); }
 
+        const device_tensor3<double>& GetUVW() const { return m_uvws; }
+
         const device_tensor4<std::complex<double>>& GetVis() const { return m_visibilities; }
         device_tensor4<std::complex<double>>& GetVis() { return m_visibilities; }
 

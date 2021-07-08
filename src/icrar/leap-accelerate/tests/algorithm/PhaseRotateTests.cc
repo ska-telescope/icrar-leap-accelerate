@@ -334,7 +334,6 @@ namespace icrar
 
         void CalibrateTest(ComputeImplementation impl, const ComputeOptionsDTO computeOptions, const Slice solutionInterval, std::function<cpu::CalibrationCollection()> getExpected)
         {
-            auto solutionRange = solutionInterval.Evaluate(boost::numeric_cast<int32_t>(ms->GetNumTimesteps()));
             auto metadata = icrar::cpu::MetaData(*ms);
             std::vector<icrar::SphericalDirection> directions =
             {
