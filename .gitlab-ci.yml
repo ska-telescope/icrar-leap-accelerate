@@ -340,11 +340,11 @@ pages:
   script:
     - apt update && apt install -y curl gcovr moreutils python3-pip jq
     - pip3 install yq
-    - mkdir -p .public/build/reports/code-coverage
-    - cd .public
+    - mkdir -p public/build/reports/code-coverage
+    - cd public
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o build/reports/code-coverage/index.html | sponge gcovr-html.log
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml | sponge gcovr-xml.log
-    
+  after_script:
     # Combine Linting XML
     - cp ../build/unit-tests.xml build/reports/unit-tests.xml
     - cp ../build/cppcheck-junit.xml build/reports/cppcheck-junit.xml
@@ -359,11 +359,6 @@ pages:
     - 'xq ".testsuites |= {\"@tests\": .testsuite | map(.\"@tests\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
     - 'xq ".testsuites |= {\"@errors\": .testsuite | map(.\"@errors\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
     - 'xq ".testsuites |= {\"@failures\": .testsuite | map(.\"@failures\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
-
-    # Create and upload GitLab badges
-    - curl -s https://gitlab.com/ska-telescope/ci-metrics-utilities/raw/master/scripts/ci-badges-func.sh | sh
-    - cd ..
-    - mv .public public
   artifacts:
     when: always
     paths:
@@ -371,6 +366,10 @@ pages:
     reports:
       cobertura: public/build/reports/code-coverage.xml
   allow_failure: true
+
+include:
+  - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/post_step.yml'
 
 #########
 # Docker
