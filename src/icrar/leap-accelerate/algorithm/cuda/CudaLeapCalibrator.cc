@@ -288,9 +288,8 @@ namespace cuda
                 // Load cache into hostAd then deviceAd,
                 // or load hostA into deviceA, compute deviceAd then load into hostAd
                 metadata.SetAd(ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
-                    matrix_hash<Eigen::MatrixXd>(hostA),
                     hostA,
-                    "A.hash", "Ad.cache",
+                    "Ad.cache",
                     invertA));
 
                 deviceAd = device_matrix<double>(metadata.GetAd());
@@ -325,8 +324,8 @@ namespace cuda
             {
                 metadata.SetAd(
                     ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
-                        matrix_hash<Eigen::MatrixXd>(hostA), hostA,
-                        "A.hash", "Ad.cache",
+                        hostA,
+                        "Ad.cache",
                         invertA));
             }
             else
