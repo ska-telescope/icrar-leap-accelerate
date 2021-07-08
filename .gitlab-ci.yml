@@ -345,10 +345,10 @@ pages:
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml | sponge gcovr-xml.log
   after_script:
     # Combine Linting XML
-    - cp ../build/unit-tests.xml build/reports/unit-tests.xml
-    - cp ../build/cppcheck-junit.xml build/reports/cppcheck-junit.xml
-    - cp ../build/clang-tidy-junit.xml build/reports/clang-tidy-junit.xml
-    - cp ../build/iwyu-junit.xml build/reports/iwyu-junit.xml
+    - cp build/unit-tests.xml build/reports/unit-tests.xml
+    - cp build/cppcheck-junit.xml build/reports/cppcheck-junit.xml
+    - cp build/clang-tidy-junit.xml build/reports/clang-tidy-junit.xml
+    - cp build/iwyu-junit.xml build/reports/iwyu-junit.xml
     - 'xq -s "{testsuites: { testsuite: [ .[0].testsuite, .[1].testsuite, .[2].testsuite ] } }"
       build/reports/clang-tidy-junit.xml
       build/reports/cppcheck-junit.xml
