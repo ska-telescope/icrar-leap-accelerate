@@ -57,7 +57,6 @@ namespace cuda
 
         m_A.ToHost(host.m_A);
         m_I.ToHost(host.m_I);
-        std::cout << "Ad matrix" << std::endl;
         m_Ad.ToHost(host.m_Ad);
         m_A1.ToHost(host.m_A1);
         m_I1.ToHost(host.m_I1);
