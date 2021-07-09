@@ -71,12 +71,12 @@ namespace cuda
         device_tensor(size_t sizeDim0, size_t sizeDim1, size_t sizeDim2, const T* data = nullptr)
         : device_tensor({sizeDim0, sizeDim1, sizeDim2}, data)
         {
-            eigen_assert(NumDims == 3);
+            EIGEN_STATIC_ASSERT(NumDims == 3, YOU_MADE_A_PROGRAMMING_MISTAKE);
         }
         device_tensor(size_t sizeDim0, size_t sizeDim1, size_t sizeDim2, size_t sizeDim3, const T* data = nullptr)
         : device_tensor({sizeDim0, sizeDim1, sizeDim2, sizeDim3}, data)
         {
-            eigen_assert(NumDims == 4);
+            EIGEN_STATIC_ASSERT(NumDims == 4, YOU_MADE_A_PROGRAMMING_MISTAKE);
         }
 
         device_tensor(const Eigen::Tensor<T, NumDims>& tensor)
