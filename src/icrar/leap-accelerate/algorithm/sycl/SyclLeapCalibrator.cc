@@ -20,7 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
-#ifdef SYCL_ENABLED
+#ifdef HIPSYCL_ENABLED
 
 #include "SyclLeapCalibrator.h"
 
@@ -30,7 +30,6 @@
 #include <icrar/leap-accelerate/algorithm/cpu/CpuComputeOptions.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/model/cpu/MetaData.h>
-#include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 #include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
@@ -68,6 +67,16 @@ namespace icrar
 {
 namespace sycl
 {
+    SyclLeapCalibrator::SyclLeapCalibrator()
+    {
+
+    }
+
+    SyclLeapCalibrator::~SyclLeapCalibrator()
+    {
+
+    }
+
     void SyclLeapCalibrator::Calibrate(
         std::function<void(const cpu::Calibration&)> outputCallback,
         const icrar::MeasurementSet& ms,
@@ -102,46 +111,52 @@ namespace sycl
         std::vector<double> epochs = ms.GetEpochs();
         
         profiling::timer metadata_read_timer;
-        auto metadata = icrar::MetaData(
+        auto metadata = icrar::cpu::MetaData(
             ms,
             referenceAntenna,
             minimumBaselineThreshold,
             false,
             false);
 
-        device_matrix<double> deviceA, deviceAd;
-        CalculateAd(metadata, deviceA, deviceAd, cudaComputeOptions.isFileSystemCacheEnabled, cudaComputeOptions.useCusolver);
+        // device_matrix<double> deviceA, deviceAd;
+        // CalculateAd(metadata, deviceA, deviceAd, cudaComputeOptions.isFileSystemCacheEnabled, cudaComputeOptions.useCusolver);
 
-        device_matrix<double> deviceA1, deviceAd1;
-        CalculateAd1(metadata, deviceA1, deviceAd1);
+        // device_matrix<double> deviceA1, deviceAd1;
+        // CalculateAd1(metadata, deviceA1, deviceAd1);
 
-        cl::sycl::float4 a = { 1.0, 2.0, 3.0, 4.0 };
-        cl::sycl::float4 b = { 4.0, 3.0, 2.0, 1.0 };
-        cl::sycl::float4 c = { 0.0, 0.0, 0.0, 0.0 };
+        std::vector<float> a = { 1.0, 2.0, 3.0, 4.0 };
+        std::vector<float> b = { 4.0, 3.0, 2.0, 1.0 };
+        std::vector<float> c = { 0.0, 0.0, 0.0, 0.0 };
 
         cl::sycl::default_selector device_selector;
 
         cl::sycl::queue queue(device_selector);
         std::cout << "Running on " << queue.get_device().get_info<cl::sycl::info::device::name>() << "\n";
         {
-            cl::sycl::buffer<cl::sycl::float4, 1> a_sycl(&a, cl::sycl::range<1>(1));
-            cl::sycl::buffer<cl::sycl::float4, 1> b_sycl(&b, cl::sycl::range<1>(1));
-            cl::sycl::buffer<cl::sycl::float4, 1> c_sycl(&c, cl::sycl::range<1>(1));
+            cl::sycl::buffer<float, 1> a_sycl(&a[0], cl::sycl::range<1>(a.size()));
+            cl::sycl::buffer<float, 1> b_sycl(&b[0], cl::sycl::range<1>(b.size()));
+            cl::sycl::buffer<float, 1> c_sycl(&c[0], cl::sycl::range<1>(c.size()));
         
-            queue.submit([&] (cl::sycl::handler& cgh) {
+            queue.submit([&](cl::sycl::handler& cgh) {
                 auto a_acc = a_sycl.get_access<cl::sycl::access::mode::read>(cgh);
                 auto b_acc = b_sycl.get_access<cl::sycl::access::mode::read>(cgh);
                 auto c_acc = c_sycl.get_access<cl::sycl::access::mode::discard_write>(cgh);
 
-                cgh.single_task<class vector_addition>([=] () {
-                c_acc[0] = a_acc[0] + b_acc[0];
+                // Single Task
+                // cgh.single_task<class vector_addition>([=] () {
+                // c_acc[0] = a_acc[0] + b_acc[0];
+                // });
+
+                // Parallel Task
+                cgh.parallel_for<class vector_addition>(cl::sycl::range<1>(a.size()), [=](cl::sycl::id<1> idx){
+                    c_acc[idx[0]] = a_acc[idx[0]] + b_acc[idx[0]];
                 });
             });
         }
-        std::cout << "  A { " << a.x() << ", " << a.y() << ", " << a.z() << ", " << a.w() << " }\n"
-                << "+ B { " << b.x() << ", " << b.y() << ", " << b.z() << ", " << b.w() << " }\n"
+        std::cout << "  A { " << a[0] << ", " << a[1] << ", " << a[2] << ", " << a[3] << " }\n"
+                << "+ B { " << b[0] << ", " << b[1] << ", " << b[2] << ", " << b[3] << " }\n"
                 << "------------------\n"
-                << "= C { " << c.x() << ", " << c.y() << ", " << c.z() << ", " << c.w() << " }"
+                << "= C { " << c[0] << ", " << c[1] << ", " << c[2] << ", " << c[3] << " }"
                 << std::endl;
     }
 
@@ -160,4 +175,4 @@ namespace sycl
     }
 } // namespace cpu
 } // namespace icrar
-#endif // SYCL_ENABLED
+#endif // HIPSYCL_ENABLED

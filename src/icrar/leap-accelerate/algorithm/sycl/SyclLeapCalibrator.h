@@ -21,7 +21,7 @@
  */
 
 #pragma once
-#ifdef SYCL_ENABLED
+#ifdef HIPSYCL_ENABLED
 
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
 
@@ -53,6 +53,9 @@ namespace sycl
     class SyclLeapCalibrator : public ILeapCalibrator
     {
     public:
+        SyclLeapCalibrator();
+        ~SyclLeapCalibrator();
+
         /**
          * @copydoc ILeapCalibrator
          * Calibrates by performing phase rotation for each direction in @p directions
@@ -93,4 +96,4 @@ namespace sycl
     };
 } // namespace cpu
 } // namespace icrar
-#endif // SYCL_ENABLED
+#endif // HIPSYCL_ENABLED

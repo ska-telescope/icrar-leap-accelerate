@@ -152,8 +152,8 @@ if(CUDA_ENABLED)
   endif()
 endif()
 
-if(SYCL_ENABLED)
-  target_compile_definitions(${TARGET_NAME} PUBLIC SYCL_ENABLED)
+if(HIPSYCL_ENABLED)
+  target_compile_definitions(${TARGET_NAME} PUBLIC HIPSYCL_ENABLED)
 endif()
 
 if(PYTHON_ENABLED)

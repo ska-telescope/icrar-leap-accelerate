@@ -44,7 +44,7 @@ namespace icrar
         }
         else if(impl == ComputeImplementation::sycl)
         {
-#ifdef SYCL_ENABLED
+#ifdef HIPSYCL_ENABLED
             return std::make_unique<sycl::SyclLeapCalibrator>();
 #else
             throw invalid_argument_exception("sycl build option not enabled", "impl", __FILE__, __LINE__);
