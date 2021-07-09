@@ -58,7 +58,6 @@ namespace cuda
         assert(constants.num_pols == integration.GetNumPolarizations());
         assert(constants.channels == integration.GetNumChannels());
         assert(constants.nbaselines == integration.GetNumBaselines());
-        assert(constants.timesteps == integration.GetNumTimesteps());
 
         auto integrationDataMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 4>>(
             reinterpret_cast<cuDoubleComplex*>(integration.GetVis().Get()),
