@@ -158,7 +158,9 @@ namespace cuda
             false);
 
         device_matrix<double> deviceA, deviceAd;
-        CalculateAd(metadata, deviceA, deviceAd, false, false);
+        CalculateAd(metadata, deviceA, deviceAd,
+            cudaComputeOptions.isFileSystemCacheEnabled,
+            cudaComputeOptions.useCusolver);
 
         device_matrix<double> deviceA1, deviceAd1;
         CalculateAd1(metadata, deviceA1, deviceAd1);
