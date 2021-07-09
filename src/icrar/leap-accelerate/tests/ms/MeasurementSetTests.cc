@@ -57,7 +57,7 @@ public:
     {
         unsigned int start_timestep = 0;
         unsigned int timesteps = 2;
-        Eigen::Tensor<double, 3> uvws = msMwa.GetCoords(start_timestep, timesteps);
+        Eigen::Tensor<double, 3> uvws = msMwa.ReadCoords(start_timestep, timesteps);
 
         ASSERT_EQ(3,                       uvws.dimension(0));
         ASSERT_EQ(msMwa.GetNumBaselines(), uvws.dimension(1));
@@ -98,7 +98,7 @@ public:
         uint32_t total_baselines = 5253;
         //uint32_t total_timesteps = 14;
 
-        auto visibilities = msMwa.GetVis(
+        auto visibilities = msMwa.ReadVis(
             start_timestep, num_timesteps,
             icrar::Slice(0,4,1)
         );
@@ -116,7 +116,7 @@ public:
         ASSERT_EQCD(-10.9083280563354 + 11.3552942276001i, visibilities(2,0,1,0), TOLERANCE);
         ASSERT_EQCD(-28.7867774963379 + 20.7210712432861i, visibilities(3,0,1,0), TOLERANCE);
 
-        visibilities = msMwa.GetVis(
+        visibilities = msMwa.ReadVis(
             start_timestep, num_timesteps,
             icrar::Slice(0,4,3)
         );

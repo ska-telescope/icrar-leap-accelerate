@@ -47,10 +47,10 @@ namespace cpu
         constexpr int startChannel = 0;
         size_t vis_size = baselines * (channels - startChannel) * (polarizations > 1 ? 2 : 1) * sizeof(std::complex<double>);
         LOG(info) << "vis: " << memory_amount(vis_size);
-        size_t uvw_size = baselines * 3;
+        size_t uvw_size = baselines * 3 * sizeof(double);
         LOG(info) << "uvw: " << memory_amount(uvw_size);
-        m_visibilities = ms.GetVis(startTimestep, intervalTimesteps, polarizationSlice); // TODO: rename to ReadVis
-        m_UVW = ms.GetCoords(startTimestep, intervalTimesteps);
+        m_visibilities = ms.ReadVis(startTimestep, intervalTimesteps, polarizationSlice);
+        m_UVW = ms.ReadCoords(startTimestep, intervalTimesteps);
     }
 
     bool Integration::operator==(const Integration& rhs) const

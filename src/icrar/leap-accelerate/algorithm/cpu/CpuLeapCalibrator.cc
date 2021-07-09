@@ -194,7 +194,6 @@ namespace cpu
         output_calibrations.emplace_back(direction, (metadata.GetAd() * deltaPhaseColumn) + cal1);
     }
 
-    //TODO(calgray): pass constants and avgdata instead of metadata
     void CpuLeapCalibrator::RotateVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)
     {
         using namespace std::literals::complex_literals;

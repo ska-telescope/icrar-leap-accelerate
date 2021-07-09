@@ -128,7 +128,7 @@ namespace cuda
             if(dim == 0) return m_sizeDim0;
             if(dim == 1) return m_sizeDim1;
             if(dim == 2) return m_sizeDim2;
-            return 0; //TODO(calgray): not a great interface
+            return 0;
         }
 
         __host__ __device__ Eigen::DSizes<Eigen::DenseIndex, 3> GetDimensions() const

@@ -247,39 +247,12 @@ namespace icrar
         return boost::numeric_cast<uint32_t>(std::count(filteredBaselines.cbegin(), filteredBaselines.cend(), true));
 	}
 
-    Eigen::Tensor<double, 3> MeasurementSet::GetCoords() const
+    Eigen::Tensor<double, 3> MeasurementSet::ReadCoords() const
     {
-        return GetCoords(0, 1);
+        return ReadCoords(0, 1);
     }
 
-    // Eigen::MatrixX3d MeasurementSet::GetCoords(uint32_t startTimestep, uint32_t intervalTimesteps) const
-    // {
-    //     // See https://github.com/OxfordSKA/OSKAR/blob/f018c03bb34c16dcf8fb985b46b3e9dc1cf0812c/oskar/ms/src/oskar_ms_read.cpp
-    //     uint32_t start_row = startTimestep * GetNumBaselines();
-    //     uint32_t num_rows = intervalTimesteps * GetNumBaselines();
-    //     uint32_t total_rows = GetNumRows();
-
-    //     if(start_row >= total_rows)
-    //     {
-    //         std::stringstream ss;
-    //         ss << "ms out of range " << start_row << " >= " << total_rows; 
-    //         throw icrar::exception(ss.str(), __FILE__, __LINE__);
-    //     }
-
-    //     // reduce selection if selecting out of range
-    //     if(start_row + num_rows > total_rows)
-    //     {
-    //         std::stringstream ss;
-    //         ss << "ms out of range " << start_row + num_rows << " >= " << total_rows; 
-    //         throw icrar::exception(ss.str(), __FILE__, __LINE__);
-    //     }
-
-    //     casacore::Slice slice(start_row, num_rows, 1);
-    //     return Eigen::Map<Eigen::Matrix<double, -1, 3, Eigen::RowMajorBit>>(
-    //         m_msmc->uvw().getColumnRange(slice).data(), num_rows, 3);
-    // }
-
-    Eigen::Tensor<double, 3> MeasurementSet::GetCoords(uint32_t startTimestep, uint32_t intervalTimesteps) const
+    Eigen::Tensor<double, 3> MeasurementSet::ReadCoords(uint32_t startTimestep, uint32_t intervalTimesteps) const
     {
         // See https://github.com/OxfordSKA/OSKAR/blob/f018c03bb34c16dcf8fb985b46b3e9dc1cf0812c/oskar/ms/src/oskar_ms_read.cpp
         uint32_t num_baselines = GetNumBaselines();
@@ -310,12 +283,12 @@ namespace icrar
             intervalTimesteps);
     }
 
-    Eigen::Tensor<std::complex<double>, 4> MeasurementSet::GetVis() const
+    Eigen::Tensor<std::complex<double>, 4> MeasurementSet::ReadVis() const
     {
-        return GetVis(0, 1);
+        return ReadVis(0, 1);
     }
 
-    Eigen::Tensor<std::complex<double>, 4> MeasurementSet::GetVis(
+    Eigen::Tensor<std::complex<double>, 4> MeasurementSet::ReadVis(
         uint32_t startTimestep,
         uint32_t intervalTimesteps,
         Slice polarizationSlice) const
@@ -324,78 +297,10 @@ namespace icrar
         
         int32_t nPolarizations = GetNumPols();
         Range<int32_t> polarizationRange = polarizationSlice.Evaluate(nPolarizations);
-        return ReadVisExperimental(startTimestep, intervalTimesteps, polarizationRange, "DATA");
+        return ReadVis(startTimestep, intervalTimesteps, polarizationRange, "DATA");
     }
 
-    Eigen::Tensor<std::complex<double>, 3> MeasurementSet::ReadVis(
-        uint32_t startTimestep,
-        uint32_t intervalTimesteps,
-        Range<int32_t> polarizationRange,
-        const char* column) const
-    {
-        const uint32_t num_baselines = GetNumBaselines();
-        const uint32_t num_channels = GetNumChannels();
-        const unsigned int total_rows = GetNumRows();
-
-        //auto timestep_slice = Eigen::seq(startTimestep, startTimestep+intervalTimesteps, intervalTimesteps);
-        const unsigned int start_row = startTimestep * num_baselines;
-        const unsigned int rows = intervalTimesteps * num_baselines;
-        
-        auto pols_slice = polarizationRange.ToSeq();
-        const unsigned int pol_length = boost::numeric_cast<unsigned int>(pols_slice.sizeObject());
-        const unsigned int pol_stride = boost::numeric_cast<unsigned int>(pols_slice.incrObject());
-        
-        if(!m_measurementSet->tableDesc().isColumn(column))
-        {
-            throw icrar::exception("ms column not found", __FILE__, __LINE__);
-        }
-
-        if(strcmp(column, "DATA")
-        && strcmp(column, "CORRECTED_DATA")
-        && strcmp(column, "MODEL_DATA"))
-        {
-            throw icrar::exception("expected a data column", __FILE__, __LINE__);
-        }
-
-        if (start_row >= total_rows)
-        {
-            std::stringstream ss;
-            ss << "ms out of range " << start_row << " >= " << total_rows; 
-            throw icrar::exception(ss.str(), __FILE__, __LINE__);
-        }
-
-        // clamp num_baselines
-        if (start_row + rows > total_rows)
-        {
-            std::stringstream ss;
-            ss << "row selection [" << start_row << "," << start_row + rows << "] exceeds total range [" << 0 << "," << total_rows << "]";
-            throw icrar::exception(ss.str(), __FILE__, __LINE__);
-        }
-
-        // Create slicers for table DATA
-        // Slicer for table rows: array[baselines,timesteps]
-        casacore::IPosition start1(1, start_row);
-        casacore::IPosition length1(1, rows);
-        casacore::Slicer row_range(start1, length1);
-
-        // Slicer for row entries: matrix[polarizations,channels]
-        casacore::IPosition start2(2, 0, 0);
-        casacore::IPosition length2(2, pol_length, num_channels);
-        casacore::IPosition stride2(2, pol_stride, 1u);
-        casacore::Slicer array_section(start2, length2, stride2);
-
-        // Read the data.
-        casacore::ArrayColumn<std::complex<float>> ac(*m_measurementSet, column);
-        casacore::Array<std::complex<float>> column_range = ac.getColumnRange(row_range, array_section);
-        Eigen::TensorMap<Eigen::Tensor<std::complex<float>, 3>> view(column_range.data(), pol_length, num_channels, num_baselines * intervalTimesteps);
-
-        //TODO: Converting ICD format from [pol, channels, baselines*timesteps] to [pol, baselines*timesteps, channels]
-        const Eigen::array<Eigen::DenseIndex, 3> shuffle = { 0, 2, 1 };
-        Eigen::Tensor<std::complex<double>, 3> output = view.shuffle(shuffle).cast<std::complex<double>>();
-        return output;
-    }
-
-    Eigen::Tensor<std::complex<double>, 4> MeasurementSet::ReadVisExperimental(
+    Eigen::Tensor<std::complex<double>, 4> MeasurementSet::ReadVis(
         uint32_t startTimestep,
         uint32_t intervalTimesteps,
         Range<int32_t> polarizationRange,
