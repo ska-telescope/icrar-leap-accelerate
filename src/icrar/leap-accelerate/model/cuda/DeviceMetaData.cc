@@ -55,9 +55,7 @@ namespace cuda
     {
         host.m_constants = m_constants;
 
-        std::cout << "A matrix" << std::endl;
         m_A.ToHost(host.m_A);
-        std::cout << "I matrix" << std::endl;
         m_I.ToHost(host.m_I);
         m_Ad.ToHost(host.m_Ad);
         m_A1.ToHost(host.m_A1);
