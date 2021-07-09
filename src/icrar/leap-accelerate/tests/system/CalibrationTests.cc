@@ -91,10 +91,10 @@ public:
         const auto& calibration = calibrations[0];
 
         // 0 values are better
-        EXPECT_NEAR(calibration.GetBeamCalibrations()[0].GetPhaseCalibration().mean(),                          std::get<0>(expected[0]), TOLERANCE);
-        EXPECT_NEAR(icrar::cpu::standard_deviation(calibration.GetBeamCalibrations()[0].GetPhaseCalibration()), std::get<1>(expected[0]), TOLERANCE);
-        EXPECT_NEAR(calibration.GetBeamCalibrations()[1].GetPhaseCalibration().mean(),                          std::get<0>(expected[1]), TOLERANCE);
-        EXPECT_NEAR(icrar::cpu::standard_deviation(calibration.GetBeamCalibrations()[1].GetPhaseCalibration()), std::get<1>(expected[1]), TOLERANCE);
+        EXPECT_NEAR(calibration.GetBeamCalibrations()[0].GetPhaseCalibration().mean(),               std::get<0>(expected[0]), TOLERANCE);
+        EXPECT_NEAR(calibration.GetBeamCalibrations()[0].GetPhaseCalibration().standard_deviation(), std::get<1>(expected[0]), TOLERANCE);
+        EXPECT_NEAR(calibration.GetBeamCalibrations()[1].GetPhaseCalibration().mean(),               std::get<0>(expected[1]), TOLERANCE);
+        EXPECT_NEAR(calibration.GetBeamCalibrations()[1].GetPhaseCalibration().standard_deviation(), std::get<1>(expected[1]), TOLERANCE);
     }
 };
 

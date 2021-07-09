@@ -37,7 +37,7 @@
 
 namespace icrar
 {
-    CudaComputeOptions::CudaComputeOptions(const ComputeOptionsDTO& computeOptions, const icrar::MeasurementSet& ms, const Range& solutionRange)
+    CudaComputeOptions::CudaComputeOptions(const ComputeOptionsDTO& computeOptions, const icrar::MeasurementSet& ms, const Rangei& solutionRange)
     {
         LOG(info) << "Determining cuda compute options";
 

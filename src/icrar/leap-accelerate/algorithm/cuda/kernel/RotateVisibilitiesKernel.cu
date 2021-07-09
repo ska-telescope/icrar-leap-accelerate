@@ -58,7 +58,7 @@ namespace cuda
     {
         const auto& constants = metadata.GetConstants(); 
         assert(constants.channels == integration.GetChannels() && integration.GetChannels() == integration.GetVis().GetDimensionSize(2));
-        assert(constants.nbaselines == metadata.GetAvgData().GetRows() && integration.GetBaselines() == integration.GetVis().GetDimensionSize(1));
+        assert(constants.nbaselines == metadata.GetAvgData().GetRows() && integration.GetRows() == integration.GetVis().GetDimensionSize(1));
         assert(constants.num_pols == integration.GetVis().GetDimensionSize(0));
 
         auto integrationDataMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>>(
@@ -82,7 +82,7 @@ namespace cuda
 
         dim3 blockSize = dim3(128, 8, 1); // block size can be any value where the product is 1024
         dim3 gridSize = dim3(
-            cpu::ceil_div<int64_t>(integration.GetBaselines(), blockSize.x),
+            cpu::ceil_div<int64_t>(integration.GetRows(), blockSize.x),
             cpu::ceil_div<int64_t>(integration.GetChannels(), blockSize.y),
             1
         );

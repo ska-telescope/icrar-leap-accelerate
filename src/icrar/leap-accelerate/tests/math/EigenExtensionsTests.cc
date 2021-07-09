@@ -72,7 +72,7 @@ namespace icrar
             0, 1,
             1i, -1i;
 
-            Eigen::MatrixXd v = cpu::arg(m);
+            Eigen::MatrixXd v = m.arg();
 
             auto expected = Eigen::MatrixXd(2,2);
             expected <<
@@ -80,9 +80,27 @@ namespace icrar
             boost::math::constants::pi<double>() / 2, -boost::math::constants::pi<double>() / 2;
             ASSERT_MEQD(expected, v, THRESHOLD);
         }
+
+        void TestNumpySlice()
+        {
+            Eigen::VectorXi v(5);
+            v << 0, 1, 2, 3, 4;
+            auto vr = v(v.numpy(-1,0,-1));
+            ASSERT_MEQI(v(Eigen::seq(Eigen::last, 0, -1)), vr, 0);
+            ASSERT_MEQI(v.reverse(), vr, 0);
+
+            Eigen::MatrixXi m(2,3);
+            m <<
+            0, 1, 2,
+            3, 4, 5;
+            auto mr = m(m.numpy_rows(-1,0,-1), m.numpy_cols(-1,0,-1));
+            ASSERT_MEQI(m(Eigen::seq(Eigen::last, 0, -1), Eigen::seq(Eigen::last, 0, -1)), mr, 0);
+            ASSERT_MEQI(m.reverse(), mr, 0);
+        }
     };
 
     TEST_F(EigenExtensionsTests, TestWrappedRowSelect32) { TestWrappedRowSelect<int32_t>(); }
-    TEST_F(EigenExtensionsTests, TestWrappedRowSelect64) { TestWrappedRowSelect<int64_t>(); }
+    TEST_F(EigenExtensionsTests, TestWrappedRowSelect64) { TestWrappedRowSelect<Eigen::Index>(); }
     TEST_F(EigenExtensionsTests, TestArg) { TestArg(); }
+    TEST_F(EigenExtensionsTests, TestNumpySlice) { TestNumpySlice(); }
 } // namespace icrar

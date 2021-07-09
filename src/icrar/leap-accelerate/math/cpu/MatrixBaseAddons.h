@@ -26,11 +26,70 @@
 //NOTE: MatrixBase class templates are already defined
 
 /**
+ * @brief Provides numpy behaviour slicing.
+ * @note Eigen does not allow the increment to be a symbolic expression
+ * but numpy can
+ * 
+ * @tparam Index 
+ * @param start 
+ * @param end 
+ * @param step 
+ * @return ArithmaticSequence 
+ */
+inline auto numpy(Index start, Index end, Index step)
+{
+    if(cols() == 1)
+    {
+        Index total = rows();
+        start = start < 0 ? start + total : start;
+        end = end < 0 ? end + total : end;
+        return Eigen::seq(start, end, step);
+    }
+    else if(rows() == 1)
+    {
+        Index total = cols();
+        start = start < 0 ? start + total : start;
+        end = end < 0 ? end + total : end;
+        return Eigen::seq(start, end, step);
+    }
+    else
+    {
+        return Eigen::seq(start, end, step);
+    }
+}
+
+inline auto numpy_rows(Index start, Index end, Index step)
+{
+    Index total = rows();
+    start = start < 0 ? start + total : start;
+    end = end < 0 ? end + total : end;
+    return Eigen::seq(start, end, step);
+}
+
+inline auto numpy_cols(Index start, Index end, Index step)
+{
+    Index total = cols();
+    start = start < 0 ? start + total : start;
+    end = end < 0 ? end + total : end;
+    return Eigen::seq(start, end, step);
+}
+
+inline auto numpy(std::initializer_list<std::initializer_list<Index>> slice)
+{
+    if(slice.size() == 3)
+    {
+        auto it = slice.begin();
+        return numpy(*slice.begin(), *std::next(slice.begin()), *std::prev(slice.end()));
+    }
+}
+
+/**
  * @brief Wraps around negative indices for slicing an eigen matrix
  * 
- * @tparam OtherIndex a signed integer type
- * @param indices 
- * @return Matrix<OtherIndex, Dynamic, 1> 
+ * @tparam Vector 
+ * @param rowIndices a range of row indices to select
+ * @param rowIndices 
+ * @return auto 
  */
 template<typename OtherIndex>
 Matrix<OtherIndex, Dynamic, 1> wrap_indices(const Matrix<OtherIndex, Dynamic, 1>& indices) const
@@ -60,14 +119,30 @@ Matrix<OtherIndex, Dynamic, 1> wrap_indices(const Matrix<OtherIndex, Dynamic, 1>
  * @return auto 
  */
 template<typename OtherIndex>
-inline auto wrapped_row_select(const Matrix<OtherIndex, Dynamic, 1>& rowIndices)
+inline auto wrapped_row_select(const Matrix<OtherIndex, Dynamic, 1>& rowIndices) const
 {
     return this->operator()(wrap_indices(rowIndices), Eigen::all);
 }
 template<typename OtherIndex>
-inline auto wrapped_row_select(const Matrix<OtherIndex, Dynamic, 1>& rowIndices) const
+inline auto wrapped_row_select(const Matrix<OtherIndex, Dynamic, 1>& rowIndices)
 {
     return this->operator()(wrap_indices(rowIndices), Eigen::all);
+}
+
+/**
+ * @brief Computes the element-wise standard deviation
+ * 
+ * @return Scalar 
+ */
+double standard_deviation() const
+{
+    double mean = this->sum() / static_cast<double>(size());
+    double sumOfSquareDifferences = 0;
+    for(const Scalar& e : this->reshaped())
+    {
+        sumOfSquareDifferences += std::pow(e - mean, 2);
+    }
+    return std::sqrt(sumOfSquareDifferences / static_cast<double>(size()));
 }
 
 /**

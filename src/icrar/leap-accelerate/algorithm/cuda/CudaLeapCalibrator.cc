@@ -119,8 +119,8 @@ namespace cuda
     {
         checkCudaErrors(cudaGetLastError());
 
-        uint32_t timesteps = ms.GetNumTimesteps();
-        Range validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
+        int32_t timesteps = ms.GetNumTimesteps();
+        Rangei validatedSolutionInterval = solutionInterval.Evaluate(timesteps);
 
         auto cudaComputeOptions = CudaComputeOptions(computeOptions, ms, validatedSolutionInterval);
 
@@ -201,10 +201,8 @@ namespace cuda
             auto integration = cuda::HostIntegration(
                 integrationNumber,
                 ms,
-                solution * validatedSolutionInterval.GetInterval() * ms.GetNumBaselines(),
-                ms.GetNumChannels(),
-                validatedSolutionInterval.GetInterval() * ms.GetNumBaselines(),
-                ms.GetNumPols());
+                boost::numeric_cast<int32_t>(solution * validatedSolutionInterval.GetInterval()),
+                boost::numeric_cast<int32_t>(validatedSolutionInterval.GetInterval()));
             checkCudaErrors(cudaGetLastError());
             LOG(info) << "Read integration data in " << integration_read_timer;
 
