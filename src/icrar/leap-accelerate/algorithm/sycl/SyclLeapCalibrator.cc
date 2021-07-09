@@ -133,9 +133,9 @@ namespace sycl
         cl::sycl::queue queue(device_selector);
         std::cout << "Running on " << queue.get_device().get_info<cl::sycl::info::device::name>() << "\n";
         {
-            cl::sycl::buffer<float, 1> a_sycl(&a[0], cl::sycl::range<1>(a.size()));
-            cl::sycl::buffer<float, 1> b_sycl(&b[0], cl::sycl::range<1>(b.size()));
-            cl::sycl::buffer<float, 1> c_sycl(&c[0], cl::sycl::range<1>(c.size()));
+            cl::sycl::buffer<float, 2> a_sycl(&a[0], cl::sycl::range<2>(2,2));
+            cl::sycl::buffer<float, 2> b_sycl(&b[0], cl::sycl::range<2>(2,2));
+            cl::sycl::buffer<float, 2> c_sycl(&c[0], cl::sycl::range<2>(2,2));
         
             queue.submit([&](cl::sycl::handler& cgh) {
                 auto a_acc = a_sycl.get_access<cl::sycl::access::mode::read>(cgh);
@@ -148,8 +148,9 @@ namespace sycl
                 // });
 
                 // Parallel Task
-                cgh.parallel_for<class vector_addition>(cl::sycl::range<1>(a.size()), [=](cl::sycl::id<1> idx){
-                    c_acc[idx[0]] = a_acc[idx[0]] + b_acc[idx[0]];
+                cgh.parallel_for<class vector_addition>(cl::sycl::range<2>(2,2), [=](cl::sycl::id<2> idx)
+                {
+                    c_acc[idx[0]][idx[1]] = a_acc[idx[0]][idx[1]] + b_acc[idx[0]][idx[1]];
                 });
             });
         }
