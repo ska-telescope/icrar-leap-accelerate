@@ -119,7 +119,7 @@ namespace cuda
         if(baseline < integration_baselines && channel < integration_channels)
         {
             // Rotation
-            Eigen::VectorXd uvw = ToVector(Eigen::Tensor<double, 1>(UVWs.chip(timestep, 2).chip(baseline, 1)));
+            auto uvw = Eigen::Vector3d(UVWs(0, baseline, timestep), UVWs(1, baseline, timestep), UVWs(2, baseline, timestep));
             Eigen::Vector3d rotatedUVW = dd * uvw;
             double shiftFactor = -two_pi * (rotatedUVW.z() - uvw.z());
             double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);

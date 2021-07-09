@@ -43,7 +43,7 @@ namespace Eigen
     using VectorXb = Eigen::Vector<bool, Eigen::Dynamic>;
 
     template<typename Scalar>
-    auto EIGEN_DEVICE_FUNC ToMatrix(const Eigen::Tensor<Scalar, 2>& tensor)
+    auto ToMatrix(const Eigen::Tensor<Scalar, 2>& tensor)
     {
         return Eigen::Map<const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>>(
             tensor.data(),
@@ -53,7 +53,7 @@ namespace Eigen
     }
 
     template<typename Scalar>
-    auto EIGEN_DEVICE_FUNC ToVector(const Eigen::Tensor<Scalar, 1>& tensor)
+    auto ToVector(const Eigen::Tensor<Scalar, 1>& tensor)
     {
         return Eigen::Map<const Eigen::Matrix<Scalar, Eigen::Dynamic, 1>>(
             tensor.data(),
