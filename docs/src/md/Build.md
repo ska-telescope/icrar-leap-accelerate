@@ -99,7 +99,7 @@ SYCL builds using HipSYCL currently do not support Python or precompiled headers
 
 `mkdir -p build/sycl/Release && cd build/sycl/Release`
 
-`cmake ../../../ -DCMAKE_BUILD_TYPE=Release -DHIPSYCL_ENABLED=TRUE -DUSE_PCH=FALSE -DHIPSYCL_CUDA_PATH=/opt/hipSYCL/cuda -DBoost_NO_BOOST_CMAKE=TRUE -DBoost_NO_SYSTEM_PATHS=TRUE -DBOOST_ROOT=/opt/hipSYCL/boost/boost -DHIPSYCL_TARGETS=cuda:sm_60`
+`cmake ../../../ -DCMAKE_BUILD_TYPE=Release -DSYCL_ENABLED=TRUE -DUSE_PCH=FALSE -DHIPSYCL_CUDA_PATH=/opt/hipSYCL/cuda -DBoost_NO_BOOST_CMAKE=TRUE -DBoost_NO_SYSTEM_PATHS=TRUE -DBOOST_ROOT=/opt/hipSYCL/boost/boost -DHIPSYCL_TARGETS=cuda:sm_60`
 
 ## Testing
 

@@ -20,7 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
-#ifdef HIPSYCL_ENABLED
+#ifdef SYCL_ENABLED
 
 #include "SyclLeapCalibrator.h"
 
@@ -132,6 +132,7 @@ namespace sycl
 
         cl::sycl::queue queue(device_selector);
         std::cout << "Running on " << queue.get_device().get_info<cl::sycl::info::device::name>() << "\n";
+        
         {
             cl::sycl::buffer<float, 2> a_sycl(&a[0], cl::sycl::range<2>(2,2));
             cl::sycl::buffer<float, 2> b_sycl(&b[0], cl::sycl::range<2>(2,2));
@@ -148,6 +149,7 @@ namespace sycl
                 // });
 
                 // Parallel Task
+                // https://intel.github.io/llvm-docs/doxygen/classcl_1_1sycl_1_1handler.html
                 cgh.parallel_for<class vector_addition>(cl::sycl::range<2>(2,2), [=](cl::sycl::id<2> idx)
                 {
                     auto a_m = Eigen::Map<const Eigen::Matrix2f>(&a_acc[0][0], a_acc.get_range()[0], a_acc.get_range()[1]);
@@ -181,4 +183,4 @@ namespace sycl
     }
 } // namespace cpu
 } // namespace icrar
-#endif // HIPSYCL_ENABLED
+#endif // SYCL_ENABLED
