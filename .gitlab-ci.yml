@@ -59,7 +59,8 @@ variables:
 
 .doc_packages: &doc_packages
   - apt install -y python3-pip doxygen graphviz
-  - pip3 install -U sphinx breathe exhale recommonmark sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary
+  #- pip3 install -U sphinx breathe exhale recommonmark sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary
+  - pip3 install -r docs/requirements.txt 
 
 .lint_packages: &lint_packages
   - apt install -y python3-pip clang clang-tidy clang-tools iwyu cppcheck
