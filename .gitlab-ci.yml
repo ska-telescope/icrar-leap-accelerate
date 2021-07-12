@@ -181,6 +181,7 @@ build_docs:
     when: always
     paths:
       - build
+      - /tmp
 
 .build_export_compile_commands:
   stage: build
