@@ -1,13 +1,13 @@
-build/
+/build/
 .public/
-Testing/
-docs/Doxyfile
-docs/build
-docs/src/api
-docs/src/_build
-testdata/*
+/docs/Doxyfile
+/docs/build
+/docs/src/api
+/docs/src/_build
+/testdata/*
 !testdata/README.md
 !testdata/install.sh
+/Testing/
 
 *.orig
 

@@ -76,7 +76,7 @@ namespace cuda
             {
                 cudaHostUnregister(m_Ad.data());
             }
-            m_Ad = Ad;
+            m_Ad = std::move(Ad);
             cudaHostRegister(m_Ad.data(), m_Ad.size() * sizeof(decltype(*m_Ad.data())), cudaHostRegisterPortable);
         }
 
@@ -86,7 +86,7 @@ namespace cuda
             {
                 cudaHostUnregister(m_Ad1.data());
             }
-            m_Ad1 = Ad1;
+            m_Ad1 = std::move(Ad1);
             cudaHostRegister(m_Ad1.data(), m_Ad1.size() * sizeof(decltype(*m_Ad1.data())), cudaHostRegisterPortable);
         }
     };

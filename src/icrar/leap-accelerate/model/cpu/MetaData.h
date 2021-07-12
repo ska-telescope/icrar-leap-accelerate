@@ -177,7 +177,7 @@ namespace cpu
          * @brief The pseudoinverse of A with shape [stations, baselines]
          */
         const Eigen::MatrixXd& GetAd() const;
-        virtual void SetAd(Eigen::MatrixXd&& Ad) { m_Ad = Ad; }
+        virtual void SetAd(Eigen::MatrixXd&& Ad) { m_Ad = std::move(Ad); }
 
         /**
          * @brief Matrix of baselines using the reference antenna of shape [stations+1, stations]
@@ -187,7 +187,7 @@ namespace cpu
         const Eigen::VectorXi& GetI1() const;
 
         const Eigen::MatrixXd& GetAd1() const;
-        virtual void SetAd1(Eigen::MatrixXd&& ad1) { m_Ad1 = ad1; }
+        virtual void SetAd1(Eigen::MatrixXd&& ad1) { m_Ad1 = std::move(ad1); }
 
         const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
 
