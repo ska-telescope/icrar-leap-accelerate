@@ -150,7 +150,12 @@ namespace sycl
                 // Parallel Task
                 cgh.parallel_for<class vector_addition>(cl::sycl::range<2>(2,2), [=](cl::sycl::id<2> idx)
                 {
-                    c_acc[idx[0]][idx[1]] = a_acc[idx[0]][idx[1]] + b_acc[idx[0]][idx[1]];
+                    auto a_m = Eigen::Map<const Eigen::Matrix2f>(&a_acc[0][0], a_acc.get_range()[0], a_acc.get_range()[1]);
+                    auto b_m = Eigen::Map<const Eigen::Matrix2f>(&b_acc[0][0], b_acc.get_range()[0], b_acc.get_range()[1]);
+                    auto c_m = Eigen::Map<Eigen::Matrix2f>(&c_acc[0][0], c_acc.get_range()[0], c_acc.get_range()[1]);
+
+                    c_m(idx[0],idx[1]) = a_m(idx[0],idx[1]) + b_m(idx[0],idx[1]);
+                    //c_acc[idx[0]][idx[1]] = a_acc[idx[0]][idx[1]] + b_acc[idx[0]][idx[1]];
                 });
             });
         }
