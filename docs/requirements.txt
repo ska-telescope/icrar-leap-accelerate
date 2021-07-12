@@ -1,7 +1,7 @@
-sphinx>=2.0
-breathe==4.26.1
+sphinx==4.0.2
+breathe==4.30.0
 exhale==0.2.3
-sphinx_rtd_theme==0.5.1
+sphinx_rtd_theme==0.5.2
 sphinxcontrib-autodoc-doxygen==0.6.0
 sphinx-autopackagesummary
 recommonmark
