@@ -178,10 +178,8 @@ build_docs:
     - cmake .. -DCMAKE_BUILD_TYPE=Release
     - make sphinx -j2
   artifacts:
-    when: always
     paths:
       - build
-      - /tmp
 
 .build_export_compile_commands:
   stage: build
