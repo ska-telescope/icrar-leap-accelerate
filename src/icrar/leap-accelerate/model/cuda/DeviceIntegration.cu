@@ -31,7 +31,7 @@ namespace cuda
 {
     DeviceIntegration::DeviceIntegration(int integrationNumber, Eigen::DSizes<Eigen::DenseIndex, 4> shape)
     : m_integrationNumber(integrationNumber)
-    , m_visibilities(shape[0], shape[1], shape[2], shape[3])
+    , m_visibilities(shape)
     , m_rows(shape[2] * shape[3])
     {
     }
