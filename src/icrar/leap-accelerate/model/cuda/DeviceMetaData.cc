@@ -147,7 +147,6 @@ namespace cuda
     void DeviceMetaData::ToHost(cpu::MetaData& metadata) const
     {
         m_constantBuffer->ToHost(metadata);
-
         m_solutionIntervalBuffer->GetUVW().ToHostAsync(metadata.m_UVW);
         metadata.m_direction = m_directionBuffer->GetDirection();
         metadata.m_dd = m_directionBuffer->GetDD();

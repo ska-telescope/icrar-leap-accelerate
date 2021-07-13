@@ -133,32 +133,32 @@ namespace cuda
             checkCudaErrors(cudaFree(m_buffer));
         }
 
-        __host__ __device__ T* Get()
+        __host__ T* Get()
         {
             return m_buffer;
         }
 
-        __host__ __device__ const T* Get() const
+        __host__ const T* Get() const
         {
             return m_buffer;
         }
 
-        __host__ __device__ size_t GetRows() const
+        __host__ size_t GetRows() const
         {
             return m_rows;
         }
 
-        __host__ __device__ size_t GetCols() const
+        __host__ size_t GetCols() const
         {
             return m_cols;
         }
 
-        __host__ __device__ size_t GetCount() const
+        __host__ size_t GetCount() const
         {
             return m_rows * m_cols;
         }
 
-        __host__ __device__ size_t GetSize() const
+        __host__ size_t GetSize() const
         {
             return GetCount() * sizeof(T);
         }
@@ -185,7 +185,7 @@ namespace cuda
         }
 
         /**
-         * @brief Set the Data Async object
+         * @brief Copies data from device to host memory
          * 
          * @param data 
          * @return __host__ 
@@ -193,9 +193,7 @@ namespace cuda
         __host__ void SetDataAsync(const T* data)
         {
             size_t bytes = GetSize();
-            //cudaHostRegister(data, bytes, cudaHostRegisterPortable);
             checkCudaErrors(cudaMemcpyAsync(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
-            //cudaHostUnregister(data);
         }
 
         __host__ void ToHost(T* out) const

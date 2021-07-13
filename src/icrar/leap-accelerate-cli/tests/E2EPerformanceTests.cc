@@ -62,7 +62,6 @@ namespace icrar
 
         void MultiDirectionTest(ComputeImplementation impl, const std::string& msname)
         {
-            std::cout << "loading ms" << std::endl;
             std::string filepath = std::string(TEST_DATA_DIR) + msname;
             ms = std::make_unique<icrar::MeasurementSet>(filepath);
 

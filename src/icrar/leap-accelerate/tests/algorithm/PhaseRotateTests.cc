@@ -258,7 +258,6 @@ namespace icrar
             boost::optional<icrar::cpu::MetaData> metadataOptionalOutput;
             if(impl == ComputeImplementation::cpu)
             {
-                
                 auto integration = cpu::Integration(0, *ms, 0, 1);
                 auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
                 cpu::CpuLeapCalibrator::RotateVisibilities(integration, hostMetadata);
@@ -272,8 +271,7 @@ namespace icrar
                 auto deviceIntegration = icrar::cuda::DeviceIntegration(integration);
                 auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
                 auto deviceMetadata = icrar::cuda::DeviceMetaData(hostMetadata);
-
-                icrar::cuda::RotateVisibilities(deviceIntegration, deviceMetadata);
+                icrar::cuda::RotateVisibilities(deviceIntegration, deviceMetadata);                
                 deviceMetadata.ToHost(hostMetadata);
                 metadataOptionalOutput = hostMetadata;
             }

@@ -102,28 +102,30 @@ public:
         );
 
         ASSERT_EQ(total_pols, visibilities.dimension(0));
-        ASSERT_EQ(total_baselines * num_timesteps, visibilities.dimension(1));
-        ASSERT_EQ(total_channels, visibilities.dimension(2));
-        ASSERT_EQCD(0.0+0.0i, visibilities(0,0,0), TOLERANCE);
-        ASSERT_EQCD(0.0+0.0i, visibilities(1,0,0), TOLERANCE);
-        ASSERT_EQCD(0.0+0.0i, visibilities(2,0,0), TOLERANCE);
-        ASSERT_EQCD(0.0+0.0i, visibilities(3,0,0), TOLERANCE);
-        ASSERT_EQCD(-0.703454494476318 + -24.7045249938965i, visibilities(0,1,0), TOLERANCE);
-        ASSERT_EQCD(5.16687202453613 + -1.57053351402283i, visibilities(1,1,0), TOLERANCE);
-        ASSERT_EQCD(-10.9083280563354 + 11.3552942276001i, visibilities(2,1,0), TOLERANCE);
-        ASSERT_EQCD(-28.7867774963379 + 20.7210712432861i, visibilities(3,1,0), TOLERANCE);
+        ASSERT_EQ(total_channels, visibilities.dimension(1));
+        ASSERT_EQ(total_baselines, visibilities.dimension(2));
+        ASSERT_EQ(num_timesteps, visibilities.dimension(3));
+        ASSERT_EQCD(0.0+0.0i, visibilities(0,0,0,0), TOLERANCE);
+        ASSERT_EQCD(0.0+0.0i, visibilities(1,0,0,0), TOLERANCE);
+        ASSERT_EQCD(0.0+0.0i, visibilities(2,0,0,0), TOLERANCE);
+        ASSERT_EQCD(0.0+0.0i, visibilities(3,0,0,0), TOLERANCE);
+        ASSERT_EQCD(-0.703454494476318 + -24.7045249938965i, visibilities(0,0,1,0), TOLERANCE);
+        ASSERT_EQCD(5.16687202453613 + -1.57053351402283i, visibilities(1,0,1,0), TOLERANCE);
+        ASSERT_EQCD(-10.9083280563354 + 11.3552942276001i, visibilities(2,0,1,0), TOLERANCE);
+        ASSERT_EQCD(-28.7867774963379 + 20.7210712432861i, visibilities(3,0,1,0), TOLERANCE);
 
         visibilities = msMwa.GetVis(
             start_timestep, num_timesteps,
             icrar::Slice(0,4,3)
         );
         ASSERT_EQ(2, visibilities.dimension(0));
-        ASSERT_EQ(total_baselines, visibilities.dimension(1));
-        ASSERT_EQ(total_channels, visibilities.dimension(2));
-        ASSERT_EQCD(0.0+0.0i, visibilities(0,0,0), TOLERANCE);
-        ASSERT_EQCD(0.0+0.0i, visibilities(1,0,0), TOLERANCE);
-        ASSERT_EQCD(-0.703454494476318 + -24.7045249938965i, visibilities(0,1,0), TOLERANCE);
-        ASSERT_EQCD(-28.7867774963379 + 20.7210712432861i, visibilities(1,1,0), TOLERANCE);
+        ASSERT_EQ(total_channels, visibilities.dimension(1));
+        ASSERT_EQ(total_baselines, visibilities.dimension(2));
+        ASSERT_EQ(num_timesteps, visibilities.dimension(3));
+        ASSERT_EQCD(0.0+0.0i, visibilities(0,0,0,0), TOLERANCE);
+        ASSERT_EQCD(0.0+0.0i, visibilities(1,0,0,0), TOLERANCE);
+        ASSERT_EQCD(-0.703454494476318 + -24.7045249938965i, visibilities(0,0,1,0), TOLERANCE);
+        ASSERT_EQCD(-28.7867774963379 + 20.7210712432861i, visibilities(1,0,1,0), TOLERANCE);
     }
 
 private:

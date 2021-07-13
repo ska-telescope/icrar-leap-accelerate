@@ -198,35 +198,42 @@ namespace cpu
     void CpuLeapCalibrator::RotateVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)
     {
         using namespace std::literals::complex_literals;
-        Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.GetVis();
+        Eigen::Tensor<std::complex<double>, 4>& integration_data = integration.GetVis();
 
         // loop over smeared baselines ('baseline' is always 'row' when timesteps = 1)
-        for(size_t row = 0; row < integration.GetRows(); ++row)
+        for(size_t timestep = 0; timestep < integration.GetNumTimesteps(); ++timestep)
         {
-            auto baseline = static_cast<int>(row % static_cast<size_t>(metadata.GetConstants().nbaselines));
-            auto rotatedUVW = metadata.GetDD() * metadata.GetUVW()[row];
-            double shiftFactor = -two_pi<double>() * (rotatedUVW(2) - metadata.GetUVW()[row](2));
-
-            // Loop over channels
-            for(uint32_t channel = 0; channel < metadata.GetConstants().channels; channel++)
+            for(size_t baseline = 0; baseline < integration.GetNumBaselines(); baseline++)
             {
-                double shiftRad = shiftFactor / metadata.GetConstants().GetChannelWavelength(channel);
-                for(uint32_t polarization = 0; polarization < integration_data.dimension(0); ++polarization)
-                {
-                    integration_data(polarization, row, channel) *= std::exp(std::complex<double>(0.0, shiftRad));
-                }
+                //TODO: UVWs should alternatively be stored as a tensor  
+                //auto rotatedUVW = metadata.GetDD() * metadata.GetUVW().chip(0, 2).chip(baseline, 1);
 
-                bool hasNaN = false;
-                for(uint32_t polarization = 0; polarization < integration_data.dimension(0); ++polarization)
-                {
-                    hasNaN |= std::isnan(integration_data(polarization, row, channel).real()) || std::isnan(integration_data(polarization, row, channel).imag());
-                }
+                size_t row = baseline + (timestep * integration.GetNumBaselines());
+                auto rotatedUVW = metadata.GetDD() * metadata.GetUVW()[row];
+                double shiftFactor = -two_pi<double>() * (rotatedUVW(2) - metadata.GetUVW()[row](2));
 
-                if(!hasNaN)
+                // Loop over channels
+                for(uint32_t channel = 0; channel < integration.GetNumChannels(); channel++)
                 {
-                    // Averaging with XX and YY polarizations
-                    metadata.GetAvgData()(baseline) += integration_data(0, row, channel);
-                    metadata.GetAvgData()(baseline) += integration_data(integration_data.dimension(0) - 1, row, channel);
+                    double shiftRad = shiftFactor / metadata.GetConstants().GetChannelWavelength(channel);
+                    for(uint32_t polarization = 0; polarization < integration.GetNumPolarizations(); ++polarization)
+                    {
+                        integration_data(polarization, channel, baseline, timestep) *= std::exp(std::complex<double>(0.0, shiftRad));
+                    }
+
+                    bool hasNaN = false;
+                    for(uint32_t polarization = 0; polarization < integration.GetNumPolarizations(); ++polarization)
+                    {
+                        hasNaN |= std::isnan(integration_data(polarization, channel, baseline, timestep).real())
+                               || std::isnan(integration_data(polarization, channel, baseline, timestep).imag());
+                    }
+
+                    if(!hasNaN)
+                    {
+                        // Averaging with XX and YY polarizations
+                        metadata.GetAvgData()(baseline) += integration_data(0, channel, baseline, timestep);
+                        metadata.GetAvgData()(baseline) += integration_data(integration_data.dimension(0) - 1, channel, baseline, timestep);
+                    }
                 }
             }
         }
