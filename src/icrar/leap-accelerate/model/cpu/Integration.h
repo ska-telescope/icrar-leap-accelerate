@@ -63,9 +63,7 @@ namespace cpu
     {
     protected:
         int m_integrationNumber;
-        int64_t m_rows;
-
-        std::vector<MVuvw> m_UVW; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
+        Eigen::Tensor<double, 3> m_UVW; //uvw is an array uvw[3][nbl][timesteps]
         Eigen::Tensor<std::complex<double>, 4> m_visibilities;
 
     public:
@@ -74,13 +72,11 @@ namespace cpu
         const icrar::MeasurementSet& ms,
         uint32_t startTimestep,
         uint32_t intervalTimesteps,
-        Slice polarizationSlice = Slice(0, boost::none, 1));
+        const Slice& polarizationSlice = Slice(0, boost::none, 1));
 
         bool operator==(const Integration& rhs) const;
 
         int GetIntegrationNumber() const { return m_integrationNumber; }
-
-        size_t GetRows() const { return m_rows; }
 
         size_t GetNumPolarizations() const { return m_visibilities.dimension(0); }
         size_t GetNumChannels() const { return m_visibilities.dimension(1); }
@@ -92,8 +88,7 @@ namespace cpu
          * 
          * @return const std::vector<icrar::MVuvw>& 
          */
-        const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
-        std::vector<icrar::MVuvw>& GetUVW() { return m_UVW; }
+        const Eigen::Tensor<double, 3>& GetUVW() const { return m_UVW; }
 
         /**
          * @brief Get the Visibilities object of size (polarizations, channels, baselines, timesteps)

@@ -37,7 +37,7 @@ namespace icrar
 {
 namespace cuda
 {
-    /**
+/**
      * @brief A cuda device tensor buffer object that references a tensor in cuda device memory buffer for manipulation by
      * the host.
      * 

@@ -259,7 +259,7 @@ namespace icrar
             if(impl == ComputeImplementation::cpu)
             {
                 auto integration = cpu::Integration(0, *ms, 0, 1);
-                auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
+                auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction));
                 cpu::CpuLeapCalibrator::RotateVisibilities(integration, hostMetadata);
 
                 metadataOptionalOutput = hostMetadata;
@@ -269,9 +269,9 @@ namespace icrar
             {
                 auto integration = icrar::cpu::Integration(0, *ms, 0, 1);
                 auto deviceIntegration = icrar::cuda::DeviceIntegration(integration);
-                auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
+                auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction));
                 auto deviceMetadata = icrar::cuda::DeviceMetaData(hostMetadata);
-                icrar::cuda::RotateVisibilities(deviceIntegration, deviceMetadata);                
+                icrar::cuda::RotateVisibilities(deviceIntegration, deviceMetadata);
                 deviceMetadata.ToHost(hostMetadata);
                 metadataOptionalOutput = hostMetadata;
             }
@@ -334,8 +334,7 @@ namespace icrar
 
         void CalibrateTest(ComputeImplementation impl, const ComputeOptionsDTO computeOptions, const Slice solutionInterval, std::function<cpu::CalibrationCollection()> getExpected)
         {
-            auto solutionRange = solutionInterval.Evaluate(boost::numeric_cast<int32_t>(ms->GetNumTimesteps()));
-            auto metadata = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, solutionRange.GetInterval())));
+            auto metadata = icrar::cpu::MetaData(*ms);
             std::vector<icrar::SphericalDirection> directions =
             {
                 { -0.4606549305661674,-0.29719233792392513 },
@@ -430,7 +429,7 @@ namespace icrar
          */
         void ReferenceAntennaTest(const ComputeImplementation impl, std::vector<int> referenceAntennas, const Slice solutionInterval)
         {
-            auto metadata = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, boost::numeric_cast<int32_t>(solutionInterval.GetInterval().get()))));
+            auto metadata = icrar::cpu::MetaData(*ms);
             std::vector<icrar::SphericalDirection> directions =
             {
                 { -0.4606549305661674,-0.29719233792392513 },
