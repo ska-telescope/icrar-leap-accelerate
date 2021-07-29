@@ -23,7 +23,6 @@
 #include "RotateVisibilitiesKernel.h"
 #include <icrar/leap-accelerate/math/cuda/math.cuh>
 #include <icrar/leap-accelerate/math/cpu/math.h>
-#include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 
 
 namespace icrar
@@ -49,7 +48,7 @@ namespace cuda
     __global__ void g_RotateVisibilities(
         const icrar::cpu::Constants constants,
         const Eigen::Matrix3d dd,
-        const Eigen::TensorMap<const Eigen::Tensor<double, 3>> UVWs,
+        const Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>> UVWs,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 4>> integrationData,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> rotAvgVis);
 
@@ -74,11 +73,10 @@ namespace cuda
             static_cast<int>(metadata.GetAvgData().GetCols()) // inferring (const int) causes error
         );
 
-        const auto UVWMap = Eigen::TensorMap<const Eigen::Tensor<double, 3>>(
-            integration.GetUVW().Get(),
-            integration.GetUVW().GetDimensionSize(0),
-            integration.GetUVW().GetDimensionSize(1),
-            integration.GetUVW().GetDimensionSize(2)
+        const auto UVWMap = Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>>(
+            reinterpret_cast<const double*>(metadata.GetUVW().Get()),
+            3,
+            metadata.GetUVW().GetCount()
         );
 
         dim3 blockSize = dim3(8, 128, 1); // block size can be any value where the product is <=1024
@@ -99,7 +97,7 @@ namespace cuda
     __global__ void g_RotateVisibilities(
         const icrar::cpu::Constants constants,
         const Eigen::Matrix3d dd,
-        const Eigen::TensorMap<const Eigen::Tensor<double, 3>> UVWs,
+        const Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>> UVWs,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 4>> integrationData,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> rotAvgVis)
     {
@@ -114,13 +112,13 @@ namespace cuda
         int channel = blockDim.x * blockIdx.x + threadIdx.x;
         int baseline = blockDim.y * blockIdx.y + threadIdx.y;
         int timestep = blockDim.z * blockIdx.z + threadIdx.z;
+        int row = baseline + (integration_baselines * timestep);
 
         if(baseline < integration_baselines && channel < integration_channels)
         {
             // Rotation
-            auto uvw = Eigen::Vector3d(UVWs(0, baseline, timestep), UVWs(1, baseline, timestep), UVWs(2, baseline, timestep));
-            Eigen::Vector3d rotatedUVW = dd * uvw;
-            double shiftFactor = -two_pi * (rotatedUVW.z() - uvw.z());
+            Eigen::Vector3d rotatedUVW = dd * UVWs.col(row);
+            double shiftFactor = -two_pi * (rotatedUVW.z() - UVWs.col(row).z());
             double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
             cuDoubleComplex shiftCoeff = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
             for(int polarization = 0; polarization < integration_polarizations; polarization++)

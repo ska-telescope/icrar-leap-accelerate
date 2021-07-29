@@ -29,31 +29,22 @@ namespace icrar
 {
 namespace cuda
 {
-    DeviceIntegration::DeviceIntegration(
-        int integrationNumber,
-        Eigen::DSizes<Eigen::DenseIndex, 3> uvwShape,
-        Eigen::DSizes<Eigen::DenseIndex, 4> visShape)
+    DeviceIntegration::DeviceIntegration(int integrationNumber, Eigen::DSizes<Eigen::DenseIndex, 4> shape)
     : m_integrationNumber(integrationNumber)
-    , m_uvws(uvwShape)
-    , m_visibilities(visShape)
+    , m_visibilities(shape)
+    , m_rows(shape[2] * shape[3])
     {
     }
 
     DeviceIntegration::DeviceIntegration(const icrar::cpu::Integration& integration)
     : m_integrationNumber(integration.GetIntegrationNumber())
-    , m_uvws(integration.GetUVW())
     , m_visibilities(integration.GetVis())
+    , m_rows(integration.m_rows)
     {
     }
 
     __host__ void DeviceIntegration::Set(const DeviceIntegration& integration)
     {
-        if(m_uvws.GetSize() != integration.GetUVW().GetSize())
-        {
-            throw icrar::invalid_argument_exception("uvw", "integration", __FILE__, __LINE__);
-        }
-        m_uvws.SetDataAsync(integration.m_uvws);
-
         if(m_visibilities.GetSize() != integration.m_visibilities.GetSize())
         {
             std::ostringstream os;
@@ -61,17 +52,13 @@ namespace cuda
             os << "other " << integration.m_visibilities.GetDimensions() << "(" << integration.m_visibilities.GetSize() << ")";
             throw icrar::invalid_argument_exception(os.str(), "integration", __FILE__, __LINE__);
         }
+
         m_visibilities.SetDataAsync(integration.m_visibilities);
+        m_rows = integration.m_rows;
     }
 
     __host__ void DeviceIntegration::Set(const icrar::cpu::Integration& integration)
     {
-        if(m_uvws.GetSize() != integration.GetUVW().size())
-        {
-            throw icrar::invalid_argument_exception("uvw", "integration", __FILE__, __LINE__);
-        }
-        m_uvws.SetDataAsync(integration.GetUVW().data());
-
         if(m_visibilities.GetSize() != integration.GetVis().size())
         {
             std::ostringstream os;
@@ -81,11 +68,13 @@ namespace cuda
         }
 
         m_visibilities.SetDataAsync(integration.GetVis().data());
+        m_rows = integration.m_rows;
     }
 
     __host__ void DeviceIntegration::ToHost(cpu::Integration& host) const
     {
         //m_visibilities.ToHost(host.m_data); //TODO(calgray): unsupported constant variant!
+        host.m_rows = m_rows;
     }
 } // namespace cuda
 } // namespace icrar

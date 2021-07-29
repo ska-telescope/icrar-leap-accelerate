@@ -71,7 +71,7 @@ namespace icrar
 
         void TestRawReadFromFile()
         {
-            auto meta = icrar::cpu::MetaData(*ms);
+            auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumTimesteps())), boost::none);
             ASSERT_EQ(102, ms->GetNumStations());
             ASSERT_EQ(5253, ms->GetNumBaselines());
             ASSERT_EQ(48, meta.GetConstants().channels);
@@ -109,7 +109,7 @@ namespace icrar
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
             auto rawms = std::make_unique<icrar::MeasurementSet>(filename);
-            auto meta = icrar::cpu::MetaData(*rawms);
+            auto meta = icrar::cpu::MetaData(*rawms, ToUVWVector(rawms->GetCoords(0, rawms->GetNumTimesteps())), boost::none);
 
             ASSERT_EQ(102, rawms->GetNumStations());
             ASSERT_EQ(5253, rawms->GetNumBaselines());
@@ -146,7 +146,7 @@ namespace icrar
 
         void TestDD()
         {
-            auto meta = icrar::cpu::MetaData(*ms);
+            auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumTimesteps())), boost::none);
             auto direction = SphericalDirection(-0.4606549305661674,-0.29719233792392513);
             
             EXPECT_EQ(-0.4606549305661674, direction(0));
@@ -181,7 +181,7 @@ namespace icrar
 
         void TestChannelWavelengths()
         {
-            auto meta = icrar::cpu::MetaData(*ms, SphericalDirection());
+            auto meta = icrar::cpu::MetaData(*ms, SphericalDirection(), std::vector<icrar::MVuvw>());
 
             ASSERT_EQ(48, meta.GetConstants().channels);
             EXPECT_DOUBLE_EQ(2.1537588131757608, meta.GetConstants().GetChannelWavelength(0));
@@ -189,24 +189,24 @@ namespace icrar
 
         void TestReferenceAntenna()
         {
-            auto meta = icrar::cpu::MetaData(*ms, SphericalDirection(), boost::none);
+            auto meta = icrar::cpu::MetaData(*ms, SphericalDirection(), std::vector<icrar::MVuvw>(), boost::none);
             auto k = boost::numeric_cast<uint32_t>(meta.GetA1().rows() - 1);
             auto n = boost::numeric_cast<uint32_t>(meta.GetA1().cols() - 1);
             ASSERT_EQ(0, meta.GetA1()(k, 0));
             ASSERT_EQ(1, meta.GetA1()(k, n));
 
-            meta = icrar::cpu::MetaData(*ms, SphericalDirection(), n);
+            meta = icrar::cpu::MetaData(*ms, SphericalDirection(), std::vector<icrar::MVuvw>(), n);
             k = boost::numeric_cast<uint32_t>(meta.GetA1().rows() - 1);
             n = boost::numeric_cast<uint32_t>(meta.GetA1().cols() - 1);
             ASSERT_EQ(0, meta.GetA1()(k, 0));
             ASSERT_EQ(1, meta.GetA1()(k, n));
 
-            meta = icrar::cpu::MetaData(*ms, SphericalDirection(), 0);
+            meta = icrar::cpu::MetaData(*ms, SphericalDirection(), std::vector<icrar::MVuvw>(), 0);
             k = boost::numeric_cast<uint32_t>(meta.GetA1().rows() - 1);
             ASSERT_EQ(1, meta.GetA1()(k, 0));
             ASSERT_EQ(0, meta.GetA1()(k, 1));
 
-            meta = icrar::cpu::MetaData(*ms, SphericalDirection(), 1);
+            meta = icrar::cpu::MetaData(*ms, SphericalDirection(), std::vector<icrar::MVuvw>(), 1);
             k = boost::numeric_cast<uint32_t>(meta.GetA1().rows() - 1);
             ASSERT_EQ(0, meta.GetA1()(k, 0));
             ASSERT_EQ(1, meta.GetA1()(k, 1));
@@ -215,7 +215,7 @@ namespace icrar
 #ifdef CUDA_ENABLED
         void TestCudaBufferCopy()
         {
-            auto meta = icrar::cpu::MetaData(*ms);
+            auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumTimesteps())));
             auto direction = SphericalDirection(); direction << 0.0, 0.0;
             auto uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
             meta.SetDirection(direction);
@@ -232,13 +232,16 @@ namespace icrar
                 icrar::cuda::device_matrix<double>(expectedhostMetadata.GetAd1())
             );
 
+            auto solutionIntervalBuffer = std::make_shared<icrar::cuda::SolutionIntervalBuffer>(
+                expectedhostMetadata.GetUVW()
+            );
             auto directionBuffer = std::make_shared<icrar::cuda::DirectionBuffer>(
                 expectedhostMetadata.GetDirection(),
                 expectedhostMetadata.GetDD(),
                 expectedhostMetadata.GetAvgData()
             );
 
-            auto deviceMetadata = icrar::cuda::DeviceMetaData(constantBuffer, directionBuffer);
+            auto deviceMetadata = icrar::cuda::DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
 
             // copy from device back to host
             icrar::cpu::MetaData hostMetadata = deviceMetadata.ToHost();

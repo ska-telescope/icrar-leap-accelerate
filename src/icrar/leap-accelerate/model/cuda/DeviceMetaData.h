@@ -24,6 +24,7 @@
 
 #ifdef CUDA_ENABLED
 
+#include <icrar/leap-accelerate/model/cpu/MVuvw.h>
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
 
 #include <icrar/leap-accelerate/common/constants.h>
@@ -33,6 +34,7 @@
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
 
 #include <casacore/measures/Measures/MDirection.h>
+#include <casacore/casa/Quanta/MVuvw.h>
 
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Vector.h>
@@ -106,6 +108,26 @@ namespace cuda
     };
 
     /**
+     * @brief MetaData variables allocated per solution interval 
+     * 
+     */
+    class SolutionIntervalBuffer
+    {
+        device_vector<icrar::MVuvw> m_UVW;
+    public:
+        explicit SolutionIntervalBuffer(const std::vector<icrar::MVuvw>& UVW);
+        explicit SolutionIntervalBuffer(size_t baselines);
+        
+        const device_vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
+
+        void SetUVW(std::vector<icrar::MVuvw> UVW)
+        {
+            assert(UVW.size() == m_UVW.GetCount());
+            m_UVW.SetDataAsync(UVW.data());
+        }
+    };
+
+    /**
      * @brief MetaData Variables allocated per direction
      * 
      */
@@ -120,6 +142,7 @@ namespace cuda
         /**
          * @brief Constructs a new Direction Buffer object initializing all memory
          * 
+         * @param uvw 
          * @param direction 
          * @param dd 
          * @param avgData 
@@ -155,6 +178,7 @@ namespace cuda
     class DeviceMetaData
     {
         std::shared_ptr<ConstantBuffer> m_constantBuffer; // Constant buffer, never null
+        std::shared_ptr<SolutionIntervalBuffer> m_solutionIntervalBuffer;
         std::shared_ptr<DirectionBuffer> m_directionBuffer;
 
     public:
@@ -174,14 +198,17 @@ namespace cuda
          * all device buffers
          * 
          * @param constantBuffer 
+         * @param SolutionIntervalBuffer 
          * @param directionBuffer 
          */
         DeviceMetaData(
             std::shared_ptr<ConstantBuffer> constantBuffer,
+            std::shared_ptr<SolutionIntervalBuffer> SolutionIntervalBuffer,
             std::shared_ptr<DirectionBuffer> directionBuffer);
 
         const icrar::cpu::Constants& GetConstants() const;
 
+        const device_vector<icrar::MVuvw>& GetUVW() const { return m_solutionIntervalBuffer->GetUVW(); }
         const SphericalDirection& GetDirection() const { return m_directionBuffer->GetDirection(); }
         const Eigen::Matrix3d& GetDD() const { return m_directionBuffer->GetDD(); }
         

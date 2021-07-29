@@ -114,18 +114,6 @@ namespace cpu
         }
     }
 
-    MetaData::MetaData(
-        const icrar::MeasurementSet& ms,
-        const SphericalDirection& direction,
-        boost::optional<unsigned int> refAnt,
-        double minimumBaselineThreshold,
-        bool computeInverse,
-        bool useCache)
-    : MetaData(ms, refAnt, minimumBaselineThreshold, computeInverse, useCache)
-    {
-        SetDirection(direction);
-    }
-
     void MetaData::ComputeInverse()
     {
         auto invertA1 = [](const Eigen::MatrixXd& a)
@@ -145,10 +133,10 @@ namespace cpu
         {
             //cache Ad with A hash
             ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
-                m_A,
-                "Ad.cache",
-                invertA,
-                m_Ad);
+                matrix_hash<Eigen::MatrixXd>(m_A),
+                m_A, m_Ad,
+                "A.hash", "Ad.cache",
+                invertA);
         }
         else
         {
@@ -172,6 +160,19 @@ namespace cpu
         {
             LOG(warning) << "Ad1 is degenerate";
         }
+    }
+
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool computeInverse, bool useCache)
+    : MetaData(ms, refAnt, minimumBaselineThreshold, computeInverse, useCache)
+    {
+        SetUVW(uvws);
+    }
+
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const SphericalDirection& direction, const std::vector<icrar::MVuvw>& uvws, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool computeInverse, bool useCache)
+    : MetaData(ms, uvws, refAnt, minimumBaselineThreshold, computeInverse, useCache)
+    {
+        SetUVW(uvws);
+        SetDirection(direction);
     }
 
     const Constants& MetaData::GetConstants() const
@@ -234,6 +235,11 @@ namespace cpu
         
         m_dd = GenerateDDMatrix(direction);
         LOG(trace) << "dd: " << pretty_matrix(m_dd);
+    }
+
+    void MetaData::SetUVW(const std::vector<icrar::MVuvw>& uvw)
+    {
+        m_UVW = uvw;
     }
 
     bool MetaData::operator==(const MetaData& rhs) const

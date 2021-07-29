@@ -33,16 +33,8 @@
 #include <functional>
 #include <type_traits>
 
-#include <sys/stat.h>
-
 namespace icrar
 {
-    inline bool exists(const std::string& name)
-    {
-        struct stat buffer;
-        return (stat(name.c_str(), &buffer) == 0); 
-    }
-
     /**
      * @brief Hash function for Eigen matrix and vector.
      * The code is from `hash_combine` function of the Boost library. See
@@ -82,17 +74,7 @@ namespace icrar
         out.write(reinterpret_cast<const char*>(&cols), sizeof(typename Matrix::Index)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         out.write(reinterpret_cast<const char*>(matrix.data()), rows * cols * sizeof(typename Matrix::Scalar) );
-    }
-
-    template<class Matrix>
-    void write_binary(std::ofstream& stream, const Matrix& matrix)
-    {
-        typename Matrix::Index rows = matrix.rows(), cols = matrix.cols();
-        LOG(info) << "Writing " << memory_amount(rows * cols * sizeof(typename Matrix::Scalar));
-        stream.write(reinterpret_cast<const char*>(&rows), sizeof(typename Matrix::Index)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-        stream.write(reinterpret_cast<const char*>(&cols), sizeof(typename Matrix::Index)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        stream.write(reinterpret_cast<const char*>(matrix.data()), rows * cols * sizeof(typename Matrix::Scalar) );
+        out.close();
     }
 
     /**
@@ -115,18 +97,7 @@ namespace icrar
         << " from " << filepath << "(" << rows << "," << cols << ")";
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         in.read(reinterpret_cast<char*>(matrix.data()), rows * cols * sizeof(typename Matrix::Scalar) );
-    }
-
-    template<class Matrix>
-    void read_binary(std::ifstream& in, Matrix& matrix)
-    {
-        typename Matrix::Index rows = 0, cols = 0;
-        in.read(reinterpret_cast<char*>(&rows), sizeof(typename Matrix::Index)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-        in.read(reinterpret_cast<char*>(&cols), sizeof(typename Matrix::Index)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-        matrix.resize(rows, cols);
-        LOG(info) << "Reading " << memory_amount(rows * cols * sizeof(typename Matrix::Scalar));
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        in.read(reinterpret_cast<char*>(matrix.data()), rows * cols * sizeof(typename Matrix::Scalar) );
+        in.close();
     }
 
     /**
@@ -139,29 +110,15 @@ namespace icrar
     template<typename T>
     void read_hash(const char* filename, T& hash)
     {
-        std::ifstream stream(filename, std::ios::in | std::ios::binary);
-        if(stream.good())
+        std::ifstream hashIn(filename, std::ios::in | std::ios::binary);
+        if(hashIn.good())
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            stream.read(reinterpret_cast<char*>(&hash), sizeof(T));
+            hashIn.read(reinterpret_cast<char*>(&hash), sizeof(T));
         }
         else
         {
             throw icrar::file_exception("could not read hash from file", filename, __FILE__, __LINE__);
-        }
-    }
-
-    template<typename T>
-    void read_hash(std::ifstream& stream, T& hash)
-    {
-        if(stream.good())
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            stream.read(reinterpret_cast<char*>(&hash), sizeof(T));
-        }
-        else
-        {
-            throw icrar::invalid_argument_exception("could not read hash from stream", "stream", __FILE__, __LINE__);
         }
     }
 
@@ -184,20 +141,6 @@ namespace icrar
         else
         {
             throw icrar::file_exception("could not write file", filename, __FILE__, __LINE__);
-        }
-    }
-
-    template<typename T>
-    void write_hash(std::ofstream& stream, T hash)
-    {
-        if(stream.good())
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            stream.write(reinterpret_cast<char*>(&hash), sizeof(T));
-        }
-        else
-        {
-            throw icrar::invalid_argument_exception("could not write to stream", "stream", __FILE__, __LINE__);
         }
     }
 
@@ -261,65 +204,4 @@ namespace icrar
         return out;
     }
 
-    template<typename In, typename Out,  typename Lambda>
-    void ProcessCache(
-        const In& in,
-        const std::string& cacheFile,
-        Lambda transform,
-        Out& out)
-    {
-        size_t hash = matrix_hash<In>(in);
-        bool cacheRead = false;
-        if(exists(cacheFile))
-        {
-            try
-            {
-                size_t fileHash = 0;
-                LOG(info) << "reading cache from " << cacheFile;
-                std::ifstream inputStream(cacheFile, std::ios::in | std::ios::binary);
-                read_hash(inputStream, fileHash);
-                if(fileHash == hash)
-                {
-                    // Cache hit, read second part of file for matrix
-                    read_binary<Out>(inputStream, out);
-                    cacheRead = true;
-                }
-                else
-                {
-                    LOG(info) << "cachefile outdated";
-                }
-            }
-            catch(const std::exception& e)
-            {
-                LOG(warning) << e.what() << '\n';
-            }
-        }
-
-        if(!cacheRead)
-        {
-            out = transform(in);
-            try
-            {
-                LOG(info) << "writing cache to " << cacheFile;
-                std::ofstream outStream(cacheFile, std::ios::out | std::ios::binary | std::ios::trunc);
-                write_hash(outStream, hash);
-                write_binary<Out>(outStream, out);
-            }
-            catch(const std::exception& e)
-            {
-                LOG(error) << e.what() << '\n';
-            }
-        }
-    }
-
-    template<typename In, typename Out, typename Lambda>
-    Out ProcessCache(
-        const In& in,
-        const std::string& cacheFile,
-        Lambda transform)
-    {
-        Out out;
-        ProcessCache(in, cacheFile, transform, out);
-        return out;
-    }
 } // namespace icrar
