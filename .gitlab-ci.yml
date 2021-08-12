@@ -152,6 +152,7 @@ build_debug_minimal:
 
 build_debug:
   extends: [.complete_build_dependencies, .build_debug]
+  tags: ["cuda", "docker"]
 
 .build_release:
   stage: build
@@ -168,7 +169,6 @@ build_release_minimal:
   extends: [.minimal_build_dependencies, .build_release]
 
 build_release:
-  tags: ["cuda", "docker"]
   extends: [.complete_build_dependencies, .build_release]
 
 build_docs:
@@ -207,6 +207,7 @@ build_export_compile_commands:
   script:
     - cd build
     - pip3 install pyyaml
+    # produce metrics file even if failure occurs
     - python3 -u /usr/bin/run-clang-tidy-11.py -quiet 2>&1 | tee clang-tidy.log || FAILED=true
     - cd ..
     - cat build/clang-tidy.log | python3 .clang-tidy-to-junit.py $PWD/ clang-tidy > build/clang-tidy-junit.xml
