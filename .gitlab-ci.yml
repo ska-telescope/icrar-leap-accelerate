@@ -168,6 +168,7 @@ build_release_minimal:
   extends: [.minimal_build_dependencies, .build_release]
 
 build_release:
+  tags: ["cuda", "docker"]
   extends: [.complete_build_dependencies, .build_release]
 
 build_docs:
