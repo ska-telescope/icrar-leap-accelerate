@@ -68,7 +68,8 @@ namespace python
             PyObject* callback);
 
         /**
-         * @brief A boost python interop compatible signature
+         * @brief A boost python interop compatible signature for 
+         *calibrate
          */
         void PythonCalibrate(
             boost::python::object& msPath,
@@ -76,6 +77,10 @@ namespace python
             const boost::python::slice& solutionInterval,
             boost::python::object& outputPath);
 
+        /**
+         * @brief A boost python interop campatible signature for
+         * calibrate
+         */
         void PythonPlasmaCalibrate(
             const boost::python::object& plasmaTM,
             const boost::python::numpy::ndarray& directions,

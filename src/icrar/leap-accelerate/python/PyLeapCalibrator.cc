@@ -197,23 +197,4 @@ namespace python
 } // namespace python
 } // namespace icrar
 
-
-BOOST_PYTHON_MODULE(LeapAccelerate)
-{
-    bp::numpy::initialize();
-
-    bp::class_<icrar::python::PyLeapCalibrator>("LeapCalibrator", bp::init<icrar::ComputeImplementation>())
-        .def(bp::init<std::string>())
-        .def("calibrate", &icrar::python::PyLeapCalibrator::PythonCalibrate, (
-            bp::arg("ms_path"),
-            bp::arg("directions"),
-            bp::arg("solution_interval")=bp::slice(0,1,1),
-            bp::arg("output_path")=bp::object()
-        ));
-
-    bp::enum_<icrar::ComputeImplementation>("compute_implementation")
-        .value("cpu", icrar::ComputeImplementation::cpu)
-        .value("cuda", icrar::ComputeImplementation::cuda);
-}
-
 #endif // PYTHON_ENABLED

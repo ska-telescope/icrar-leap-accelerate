@@ -207,13 +207,18 @@ namespace icrar
          */
         //Eigen::VectorXb GetFilteredStations(double minimumBaselineThreshold) const;
 
+        /**
+         * @brief Get the Coords/UVWs of the 
+         * 
+         * @return Eigen::MatrixX3d 
+         */
         Eigen::MatrixX3d GetCoords() const;
 
         /**
          * @brief Gets the Coords/UVWs of a specified time interval.
          * 
-         * @param startTimestep 
-         * @param intervalTimesteps 
+         * @param startTimestep
+         * @param intervalTimesteps
          * @return Eigen::MatrixX3d of dimensions (3, baselines * timesteps)
          */
         Eigen::MatrixX3d GetCoords(
@@ -243,8 +248,8 @@ namespace icrar
          * @brief Gets visibilities from the specificed dimension slices
          * of a specified timestep slice
          * 
-         * @param startTimestep 
-         * @param intervalTimesteps 
+         * @param startTimestep start timestep index
+         * @param intervalTimesteps number of timesteps
          * @return Eigen::Tensor<std::complex<double>, 4> of dimensions (polarizations, channels, baselines, timesteps)
          */
         Eigen::Tensor<std::complex<double>, 4> GetVis(
@@ -255,8 +260,8 @@ namespace icrar
         /**
          * @brief Reads from file visibilities using specified dimension slices
          * 
-         * @param startTimestep 
-         * @param intervalTimesteps 
+         * @param startTimestep start timestep index
+         * @param intervalTimesteps number of timesteps
          * @param polarizationSlice 
          * @return Eigen::Tensor<std::complex<double>, 3> of dimensions (polarizations, baselines * timesteps, channels)
          */

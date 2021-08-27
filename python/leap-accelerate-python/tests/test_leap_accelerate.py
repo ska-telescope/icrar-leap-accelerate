@@ -5,7 +5,7 @@ import pytest
 import os
 import tempfile
 
-import ska_sdp_dal as rpc
+# import ska_sdp_dal as rpc
 import numpy as np
 import LeapAccelerate as leap
 import json

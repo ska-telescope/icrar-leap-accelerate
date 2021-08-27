@@ -59,7 +59,9 @@ set(sources
     algorithm/cuda/CudaComputeOptions.cc
     algorithm/cuda/CudaLeapCalibrator.cc
 
+    python/LeapAccelerateModule.cc
     python/PyLeapCalibrator.cc
+    python/PyMeasurementSet.cc
 )
 set(cuda_headers
     cuda/cuda_info.h
@@ -156,6 +158,7 @@ if(SYCL_ENABLED)
 endif()
 
 if(PYTHON_ENABLED)
+  target_compile_definitions(${TARGET_NAME} PUBLIC PYTHON_ENABLED)
   target_link_libraries(${TARGET_NAME} PUBLIC Boost::python)
   target_link_libraries(${TARGET_NAME} PUBLIC Boost::numpy)
   target_link_libraries(${TARGET_NAME} PUBLIC Python3::Python)
