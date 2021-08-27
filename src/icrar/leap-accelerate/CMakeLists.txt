@@ -82,6 +82,19 @@ set(cuda_sources
     algorithm/cuda/kernel/CopyPhaseDeltaKernel.cu
 )
 
+if(CUDA_ENABLED)
+  list(APPEND private_headers ${cuda_headers})
+  list(APPEND sources ${cuda_sources})
+endif()
+
+#python_add_library(
+PYTHON_ADD_MODULE(
+  ${TARGET_NAME} SHARED
+  ${sources}
+  ${private_headers}
+  ${public_headers}
+)
+
 # Libraries
 option(CASA_ENABLED "Casa Enabled" TRUE)
 option(GSL_ENABLED "GSL Enabled" OFF)
@@ -89,18 +102,6 @@ option(GSL_ENABLED "GSL Enabled" OFF)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-if(CUDA_ENABLED)
-  list(APPEND private_headers ${cuda_headers})
-  list(APPEND sources ${cuda_headers})
-endif()
-
-
-PYTHON_ADD_MODULE( # #python_add_library(
-  ${TARGET_NAME} SHARED
-  ${sources}
-  ${private_headers}
-  ${public_headers}
-)
 
 if(HIPSYCL_ENABLED)
   add_sycl_to_target(TARGET ${TARGET_NAME} SOURCES ${sources})
