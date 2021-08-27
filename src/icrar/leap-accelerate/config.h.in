@@ -12,3 +12,5 @@ constexpr int LEAP_ACCELERATE_VERSION_MINOR = @LEAP-Accelerate_VERSION_MINOR@;
 
 /// The patch version of this package
 constexpr int LEAP_ACCELERATE_VERSION_PATCH = @LEAP-Accelerate_VERSION_PATCH@;
+
+#define EIGEN_MATRIXBASE_PLUGIN "icrar/leap-accelerate/math/cpu/MatrixBaseAddons.h"

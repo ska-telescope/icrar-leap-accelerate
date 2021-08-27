@@ -43,32 +43,32 @@ namespace cuda
      * @param dd direction dependent rotation 
      * @param UVW unrotated uvws
      * @param integrationData inout integration data 
-     * @param avgData output avgData to increment
+     * @param rotAvgVis output rotAvgVis to increment
      */
     __global__ void g_RotateVisibilities(
         const icrar::cpu::Constants constants,
         const Eigen::Matrix3d dd,
         const Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>> UVWs,
-        Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>> integrationData,
-        Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> avgData);
+        Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 4>> integrationData,
+        Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> rotAvgVis);
 
-    __host__ void RotateVisibilities(
-        DeviceIntegration& integration,
-        DeviceMetaData& metadata)
+    __host__ void RotateVisibilities(DeviceIntegration& integration, DeviceMetaData& metadata)
     {
         const auto& constants = metadata.GetConstants(); 
-        assert(constants.channels == integration.GetChannels() && integration.GetChannels() == integration.GetVis().GetDimensionSize(2));
-        assert(constants.nbaselines == metadata.GetAvgData().GetRows() && integration.GetBaselines() == integration.GetVis().GetDimensionSize(1));
-        assert(constants.num_pols == integration.GetVis().GetDimensionSize(0));
+        assert(constants.num_pols == integration.GetNumPolarizations());
+        assert(constants.channels == integration.GetNumChannels());
+        assert(constants.nbaselines == integration.GetNumBaselines());
+        assert(constants.timesteps == integration.GetNumTimesteps());
 
-        auto integrationDataMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>>(
+        auto integrationDataMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 4>>(
             reinterpret_cast<cuDoubleComplex*>(integration.GetVis().Get()),
             static_cast<int>(integration.GetVis().GetDimensionSize(0)), // inferring (const int) causes error
             static_cast<int>(integration.GetVis().GetDimensionSize(1)), // inferring (const int) causes error
-            static_cast<int>(integration.GetVis().GetDimensionSize(2)) // inferring (const int) causes error
+            static_cast<int>(integration.GetVis().GetDimensionSize(2)), // inferring (const int) causes error
+            static_cast<int>(integration.GetVis().GetDimensionSize(3)) // inferring (const int) causes error
         );
 
-        auto avgDataMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>>(
+        auto rotAvgVisMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>>(
             reinterpret_cast<cuDoubleComplex*>(metadata.GetAvgData().Get()),
             static_cast<int>(metadata.GetAvgData().GetRows()), // inferring (const int) causes error
             static_cast<int>(metadata.GetAvgData().GetCols()) // inferring (const int) causes error
@@ -80,66 +80,68 @@ namespace cuda
             metadata.GetUVW().GetCount()
         );
 
-        dim3 blockSize = dim3(128, 8, 1); // block size can be any value where the product is 1024
+        dim3 blockSize = dim3(8, 128, 1); // block size can be any value where the product is <=1024
         dim3 gridSize = dim3(
-            cpu::ceil_div<int64_t>(integration.GetBaselines(), blockSize.x),
-            cpu::ceil_div<int64_t>(integration.GetChannels(), blockSize.y),
-            1
+            cpu::ceil_div<int64_t>(integration.GetNumChannels(), blockSize.x),
+            cpu::ceil_div<int64_t>(integration.GetNumBaselines(), blockSize.y),
+            cpu::ceil_div<int64_t>(integration.GetNumTimesteps(), blockSize.z)
         );
         g_RotateVisibilities<<<gridSize, blockSize>>>(
             constants,
             metadata.GetDD(),
             UVWMap,
             integrationDataMap,
-            avgDataMap);
+            rotAvgVisMap);
+        checkCudaErrors(cudaGetLastError());
     }
 
     __global__ void g_RotateVisibilities(
         const icrar::cpu::Constants constants,
         const Eigen::Matrix3d dd,
         const Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>> UVWs,
-        Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 3>> integrationData,
-        Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> avgData)
+        Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 4>> integrationData,
+        Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> rotAvgVis)
     {
-        const int integration_baselines = integrationData.dimension(1);
-        const int integration_channels = integrationData.dimension(2);
-        const int md_baselines = constants.nbaselines; //metadata baselines
-        const int polarizations = constants.num_pols;
+        const int integration_polarizations = integrationData.dimension(0);
+        const int integration_channels = integrationData.dimension(1);
+        const int integration_baselines = integrationData.dimension(2);
+        const int integration_timesteps = integrationData.dimension(3);
+
         constexpr double two_pi = 2 * CUDART_PI;
 
         //parallel execution per channel
-        int baseline = blockDim.x * blockIdx.x + threadIdx.x; //baseline amongst all time smeared baselines
-        int channel = blockDim.y * blockIdx.y + threadIdx.y;
+        int channel = blockDim.x * blockIdx.x + threadIdx.x;
+        int baseline = blockDim.y * blockIdx.y + threadIdx.y;
+        int timestep = blockDim.z * blockIdx.z + threadIdx.z;
+        int row = baseline + (integration_baselines * timestep);
 
         if(baseline < integration_baselines && channel < integration_channels)
         {
-            int md_baseline = baseline % md_baselines; 
-
-            Eigen::Vector3d rotatedUVW = dd * UVWs.col(baseline);
-            double shiftFactor = -two_pi * (rotatedUVW.z() - UVWs.col(baseline).z());
-
-            // loop over channels
+            // Rotation
+            Eigen::Vector3d rotatedUVW = dd * UVWs.col(row);
+            double shiftFactor = -two_pi * (rotatedUVW.z() - UVWs.col(row).z());
             double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
-            cuDoubleComplex exp = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
-
-            for(int polarization = 0; polarization < polarizations; polarization++)
+            cuDoubleComplex shiftCoeff = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
+            for(int polarization = 0; polarization < integration_polarizations; polarization++)
             {
-                integrationData(polarization, baseline, channel) = cuCmul(integrationData(polarization, baseline, channel), exp);
+                integrationData(polarization, channel, baseline, timestep)
+                = cuCmul(integrationData(polarization, channel, baseline, timestep), shiftCoeff);
             }
+
+            // Averaging
             bool hasNaN = false;
-            for(int polarization = 0; polarization < polarizations; polarization++)
+            for(int polarization = 0; polarization < integration_polarizations; polarization++)
             {
-                cuDoubleComplex n = integrationData(polarization, baseline, channel);
+                cuDoubleComplex n = integrationData(polarization, channel, baseline, timestep);
                 hasNaN |= isnan(n.x) || isnan(n.y);
             }
-
             if(!hasNaN)
             {
-                for(int polarization = 0; polarization < polarizations; ++polarization)
-                {
-                    atomicAdd(&avgData(md_baseline, polarization).x, integrationData(polarization, baseline, channel).x);
-                    atomicAdd(&avgData(md_baseline, polarization).y, integrationData(polarization, baseline, channel).y);
-                }
+                // XX + YY
+                atomicAdd(&rotAvgVis(baseline, 0).x, integrationData(0, channel, baseline, timestep).x);
+                atomicAdd(&rotAvgVis(baseline, 0).y, integrationData(0, channel, baseline, timestep).y);
+                atomicAdd(&rotAvgVis(baseline, 0).x, integrationData(integration_polarizations - 1, channel, baseline, timestep).x);
+                atomicAdd(&rotAvgVis(baseline, 0).y, integrationData(integration_polarizations - 1, channel, baseline, timestep).y);
             }
         }
     }

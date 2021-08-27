@@ -224,7 +224,7 @@ namespace icrar
             // Tests whether cuda SVD on ASKAP gives consistant results
 
             std::string filename = std::string(TEST_DATA_DIR) + "/askap/askap-SS-1100.ms";
-            auto ms = icrar::MeasurementSet(filename, boost::none, false);
+            auto ms = icrar::MeasurementSet(filename);
             auto msmc = ms.GetMSMainColumns();
 
             auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1); //TODO(calgray): assuming epoch indices are sorted
@@ -244,7 +244,7 @@ namespace icrar
         void TestPseudoInverseAskap()
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/askap/askap-SS-1100.ms";
-            auto ms = icrar::MeasurementSet(filename, boost::none, false);
+            auto ms = icrar::MeasurementSet(filename);
             auto msmc = ms.GetMSMainColumns();
 
             auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1);

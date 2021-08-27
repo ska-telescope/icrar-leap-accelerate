@@ -78,7 +78,7 @@ namespace icrar
         void SetUp() override
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, 102, true);
+            ms = std::make_unique<icrar::MeasurementSet>(filename);
             std::cout << std::setprecision(15);
         }
 
@@ -97,7 +97,7 @@ namespace icrar
                 {
                     auto a1 = Eigen::VectorXi();
                     auto a2 = Eigen::VectorXi();
-                    auto fg = Eigen::Matrix<bool, Eigen::Dynamic, 1>();
+                    auto fg = Eigen::VectorXb();
                     icrar::cpu::PhaseMatrixFunction(a1, a2, fg, refAnt, false);
                 }
                 else
@@ -258,15 +258,7 @@ namespace icrar
             boost::optional<icrar::cpu::MetaData> metadataOptionalOutput;
             if(impl == ComputeImplementation::cpu)
             {
-                
-                auto integration = cpu::Integration(
-                    0,
-                    *ms,
-                    0,
-                    ms->GetNumChannels(),
-                    ms->GetNumBaselines(),
-                    ms->GetNumPols());
-
+                auto integration = cpu::Integration(0, *ms, 0, 1);
                 auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
                 cpu::CpuLeapCalibrator::RotateVisibilities(integration, hostMetadata);
 
@@ -275,18 +267,11 @@ namespace icrar
 #ifdef CUDA_ENABLED
             if(impl == ComputeImplementation::cuda)
             {
-                auto integration = icrar::cpu::Integration(
-                    0,
-                    *ms,
-                    0,
-                    ms->GetNumChannels(),
-                    ms->GetNumBaselines(),
-                    ms->GetNumPols());
+                auto integration = icrar::cpu::Integration(0, *ms, 0, 1);
                 auto deviceIntegration = icrar::cuda::DeviceIntegration(integration);
                 auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
                 auto deviceMetadata = icrar::cuda::DeviceMetaData(hostMetadata);
-
-                icrar::cuda::RotateVisibilities(deviceIntegration, deviceMetadata);
+                icrar::cuda::RotateVisibilities(deviceIntegration, deviceMetadata);                
                 deviceMetadata.ToHost(hostMetadata);
                 metadataOptionalOutput = hostMetadata;
             }
@@ -343,16 +328,14 @@ namespace icrar
             EXPECT_DOUBLE_EQ(expectedDD(2,2), metadataOutput.GetDD()(2,2));
 
             ASSERT_EQ(5253, metadataOutput.GetAvgData().rows());
-            ASSERT_EQ(4, metadataOutput.GetAvgData().cols());
-            ASSERT_EQCD(-527.143090304241 + -89.9946133549982i, metadataOutput.GetAvgData()(1,0), TOLERANCE);
-            ASSERT_EQCD(55.4651357651697 + 60.5911844734979i, metadataOutput.GetAvgData()(1,1), TOLERANCE);
-            ASSERT_EQCD(0.800572867605558 + -9.05853723508164i, metadataOutput.GetAvgData()(1,2), TOLERANCE);
-            ASSERT_EQCD(-251.31739125869 + 39.6303072927434i, metadataOutput.GetAvgData()(1,3), TOLERANCE);
+            ASSERT_EQ(1, metadataOutput.GetAvgData().cols());
+            ASSERT_EQCD(-778.460481562931 + -50.3643060622548i, metadataOutput.GetAvgData()(1), TOLERANCE);
         }
 
         void CalibrateTest(ComputeImplementation impl, const ComputeOptionsDTO computeOptions, const Slice solutionInterval, std::function<cpu::CalibrationCollection()> getExpected)
         {
-            auto metadata = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())));
+            auto solutionRange = solutionInterval.Evaluate(boost::numeric_cast<int32_t>(ms->GetNumTimesteps()));
+            auto metadata = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, solutionRange.GetInterval())));
             std::vector<icrar::SphericalDirection> directions =
             {
                 { -0.4606549305661674,-0.29719233792392513 },
@@ -447,7 +430,7 @@ namespace icrar
          */
         void ReferenceAntennaTest(const ComputeImplementation impl, std::vector<int> referenceAntennas, const Slice solutionInterval)
         {
-            auto metadata = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())));
+            auto metadata = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, boost::numeric_cast<int32_t>(solutionInterval.GetInterval().get()))));
             std::vector<icrar::SphericalDirection> directions =
             {
                 { -0.4606549305661674,-0.29719233792392513 },
@@ -495,14 +478,14 @@ namespace icrar
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::cpu); }
     TEST_F(PhaseRotateTests, ReferenceAntennaTestCpu) { ReferenceAntennaTest(ComputeImplementation::cpu, {0, 1, 2, 3, 4, 5, 126, 127}, Slice(0, 1, 1)); }
 
-    TEST_F(PhaseRotateTests, PhaseRotateFirstTimestepTestCpu) { CalibrateTest(ComputeImplementation::cpu, ComputeOptionsDTO{false, false, false}, Slice(0, 1), &GetFirstTimestepMWACalibration); }
-    TEST_F(PhaseRotateTests, PhaseRotateAllTimesteps0TestCpu) { CalibrateTest(ComputeImplementation::cpu, ComputeOptionsDTO{false, false, false}, Slice(0,14), &GetAllTimestepsMWACalibration); }
-    TEST_F(PhaseRotateTests, PhaseRotateAllTimesteps1TestCpu) { CalibrateTest(ComputeImplementation::cpu, ComputeOptionsDTO{false, false, false}, Slice(0,-1), &GetAllTimestepsMWACalibration); }
-    TEST_F(PhaseRotateTests, PhaseRotateEachTimestepTestCpu) { CalibrateTest(ComputeImplementation::cpu, ComputeOptionsDTO{false, false, false}, Slice(1), &GetEachTimestepMWACalibration); }
+    TEST_F(PhaseRotateTests, PhaseRotateFirstTimestepTestCpu) { CalibrateTest(ComputeImplementation::cpu, ComputeOptionsDTO{false, false, false}, Slice::First(), &GetFirstTimestepMWACalibration); }
+    TEST_F(PhaseRotateTests, PhaseRotateAllTimesteps0TestCpu) { CalibrateTest(ComputeImplementation::cpu, ComputeOptionsDTO{false, false, false}, Slice::All(), &GetAllTimestepsMWACalibration); }
+    TEST_F(PhaseRotateTests, PhaseRotateAllTimesteps1TestCpu) { CalibrateTest(ComputeImplementation::cpu, ComputeOptionsDTO{false, false, false}, Slice(0,14,14), &GetAllTimestepsMWACalibration); }
+    TEST_F(PhaseRotateTests, PhaseRotateEachTimestepTestCpu) { CalibrateTest(ComputeImplementation::cpu, ComputeOptionsDTO{false, false, false}, Slice::Each(), &GetEachTimestepMWACalibration); }
 
 #ifdef CUDA_ENABLED
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(ComputeImplementation::cuda); }
-    TEST_F(PhaseRotateTests, ReferenceAntennaTestCuda) { ReferenceAntennaTest(ComputeImplementation::cuda, {0, 1, 2, 3, 4, 5, 126, 127}, Slice(0, 1, 1)); }
+    TEST_F(PhaseRotateTests, ReferenceAntennaTestCuda) { ReferenceAntennaTest(ComputeImplementation::cuda, {0, 1, 2, 3, 4, 5, 126, 127}, Slice::First()); }
 
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateCacheTestCuda) { CalibrateTest(ComputeImplementation::cuda, ComputeOptionsDTO{true, false, false}, Slice(0,1), &GetFirstTimestepMWACalibration); }
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateIntermediateBufferTestCuda) { CalibrateTest(ComputeImplementation::cuda, ComputeOptionsDTO{true, true, false}, Slice(0,1), &GetFirstTimestepMWACalibration); }
@@ -511,7 +494,7 @@ namespace icrar
     
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateFirstTimestepsTestCuda) { CalibrateTest(ComputeImplementation::cuda, ComputeOptionsDTO{false, false, false}, Slice(0,1), &GetFirstTimestepMWACalibration); }
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTimestepsTestCuda) { CalibrateTest(ComputeImplementation::cuda, ComputeOptionsDTO{false, false, false}, Slice(0,14), &GetAllTimestepsMWACalibration); }
-    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateAllTimestepsTestCuda) { CalibrateTest(ComputeImplementation::cuda, ComputeOptionsDTO{false, false, false}, Slice(0,-1), &GetAllTimestepsMWACalibration); }
+    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateAllTimestepsTestCuda) { CalibrateTest(ComputeImplementation::cuda, ComputeOptionsDTO{false, false, false}, Slice::All(), &GetAllTimestepsMWACalibration); }
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateEachTimestepTestCuda) { CalibrateTest(ComputeImplementation::cuda, ComputeOptionsDTO{false, false, false}, Slice(1), &GetEachTimestepMWACalibration); }
 #endif
 } // namespace icrar

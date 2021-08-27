@@ -26,7 +26,6 @@ set(sources
 
     exception/exception.cc
 
-    ms/utils.cc
     ms/MeasurementSet.cc
 
     core/compute_implementation.cc
@@ -206,6 +205,17 @@ install(
   DESTINATION
     include/icrar/${SOLUTION_NAME_LOWER}
 )
+
+# TODO: Developer Use
+# Move python dll
+add_custom_target(${TARGET_NAME}.DynLib ALL
+  COMMAND ${CMAKE_COMMAND}
+  -Dsrc_dir=${PROJECT_BINARY_DIR}/lib
+  -Ddst_dir=${PROJECT_SOURCE_DIR}/python/leap-accelerate-python
+  -P ${PROJECT_SOURCE_DIR}/cmake/update_directory.cmake
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
+add_dependencies(${TARGET_NAME}.DynLib ${TARGET_NAME})
 
 unset(CASA_ENABLED CACHE)
 unset(GSL_ENABLED CACHE)

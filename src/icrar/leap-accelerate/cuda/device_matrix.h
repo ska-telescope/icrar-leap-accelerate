@@ -185,7 +185,7 @@ namespace cuda
         }
 
         /**
-         * @brief Set the Data Async object
+         * @brief Copies data from device to host memory
          * 
          * @param data 
          * @return __host__ 
@@ -193,9 +193,7 @@ namespace cuda
         __host__ void SetDataAsync(const T* data)
         {
             size_t bytes = GetSize();
-            //cudaHostRegister(data, bytes, cudaHostRegisterPortable);
             checkCudaErrors(cudaMemcpyAsync(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
-            //cudaHostUnregister(data);
         }
 
         __host__ void ToHost(T* out) const
@@ -239,6 +237,16 @@ namespace cuda
         __host__ void ToHostAsync(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& out) const
         {
             out.resize(GetRows(), GetCols());
+            ToHostAsync(out.data());
+        }
+
+        __host__ void ToHostVectorAsync(Eigen::Matrix<T, Eigen::Dynamic, 1>& out) const
+        {
+            if(GetCols() != 1)
+            {
+                throw std::runtime_error("columns not 1");
+            }
+            out.resize(GetRows());
             ToHostAsync(out.data());
         }
 

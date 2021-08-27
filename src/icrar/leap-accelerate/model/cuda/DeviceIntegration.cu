@@ -29,23 +29,17 @@ namespace icrar
 {
 namespace cuda
 {
-    DeviceIntegration::DeviceIntegration(int integrationNumber, Eigen::DSizes<Eigen::DenseIndex, 3> shape)
+    DeviceIntegration::DeviceIntegration(int integrationNumber, Eigen::DSizes<Eigen::DenseIndex, 4> shape)
     : m_integrationNumber(integrationNumber)
-    , m_visibilities(shape[0], shape[1], shape[2])
-    , index(0)
-    , x(0)
-    , channels(0)
-    , baselines(0)
+    , m_visibilities(shape[0], shape[1], shape[2], shape[3])
+    , m_rows(shape[2] * shape[3])
     {
     }
 
     DeviceIntegration::DeviceIntegration(const icrar::cpu::Integration& integration)
     : m_integrationNumber(integration.GetIntegrationNumber())
     , m_visibilities(integration.GetVis())
-    , index(integration.index)
-    , x(integration.x)
-    , channels(integration.channels)
-    , baselines(integration.baselines)
+    , m_rows(integration.m_rows)
     {
     }
 
@@ -60,10 +54,7 @@ namespace cuda
         }
 
         m_visibilities.SetDataAsync(integration.m_visibilities);
-        index = integration.index;
-        x = integration.x;
-        channels = integration.channels;
-        baselines = integration.baselines;
+        m_rows = integration.m_rows;
     }
 
     __host__ void DeviceIntegration::Set(const icrar::cpu::Integration& integration)
@@ -77,19 +68,13 @@ namespace cuda
         }
 
         m_visibilities.SetDataAsync(integration.GetVis().data());
-        index = integration.index;
-        x = integration.x;
-        channels = integration.channels;
-        baselines = integration.baselines;
+        m_rows = integration.m_rows;
     }
 
     __host__ void DeviceIntegration::ToHost(cpu::Integration& host) const
     {
         //m_visibilities.ToHost(host.m_data); //TODO(calgray): unsupported constant variant!
-        host.index = index;
-        host.x = x;
-        host.channels = channels;
-        host.baselines = baselines;
+        host.m_rows = m_rows;
     }
 } // namespace cuda
 } // namespace icrar

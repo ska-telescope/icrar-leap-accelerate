@@ -24,6 +24,7 @@
 
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
+#include <icrar/leap-accelerate/common/Slice.h>
 
 #include <casacore/ms/MeasurementSets.h>
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
@@ -62,9 +63,13 @@ namespace icrar
         std::set<std::int32_t> m_antennas;
         int m_stations;
         bool m_readAutocorrelations;
+        uint32_t m_numBaselines;
+        uint32_t m_numRows;
+        uint32_t m_numTimesteps;
+        uint32_t m_numPols;
 
     public:
-        MeasurementSet(const std::string& filepath, boost::optional<int> overrideNStations, bool readAutocorrelations);
+        MeasurementSet(const std::string& filepath);
 
         boost::optional<std::string> GetFilepath() const { return m_filepath; }
         
@@ -202,17 +207,79 @@ namespace icrar
          */
         //Eigen::VectorXb GetFilteredStations(double minimumBaselineThreshold) const;
 
-        //std::vector<casacore::MVuvw> MeasurementSet::GetCoordsCasa(uint32_t start_row) const;
         Eigen::MatrixX3d GetCoords() const;
-        Eigen::MatrixX3d GetCoords(uint32_t start_row, uint32_t nBaselines) const;
 
-        Eigen::Tensor<std::complex<double>, 3> GetVis(
-            std::uint32_t startBaseline,
-            std::uint32_t startChannel,
-            std::uint32_t nChannels,
-            std::uint32_t nBaselines,
-            std::uint32_t nPolarizations) const;
-        Eigen::Tensor<std::complex<double>, 3> GetVis() const;
+        /**
+         * @brief Gets the Coords/UVWs of a specified time interval.
+         * 
+         * @param startTimestep 
+         * @param intervalTimesteps 
+         * @return Eigen::MatrixX3d of dimensions (3, baselines * timesteps)
+         */
+        Eigen::MatrixX3d GetCoords(
+            std::uint32_t startTimestep,
+            std::uint32_t intervalTimesteps) const;
+
+        /**
+         * @brief Gets the Coords/UVWs of a specified time interval.
+         * 
+         * @param startTimestep 
+         * @param intervalTimesteps 
+         * @return Eigen::Tensor<double, 3> of dimensions (3, baselines, timesteps)
+         */
+        Eigen::Tensor<double, 3> GetCoordsExperimental(
+            uint32_t startTimestep,
+            uint32_t intervalTimesteps);
+
+        /**
+         * @brief Gets the visibilities from all baselines, channels and polarizations
+         * for the first timestep
+         * 
+         * @return Eigen::Tensor<std::complex<double>, 4> of dimensions (polarizations, channels, baselines, timesteps)
+         */
+        Eigen::Tensor<std::complex<double>, 4> GetVis() const;
+
+        /**
+         * @brief Gets visibilities from the specificed dimension slices
+         * of a specified timestep slice
+         * 
+         * @param startTimestep 
+         * @param intervalTimesteps 
+         * @return Eigen::Tensor<std::complex<double>, 4> of dimensions (polarizations, channels, baselines, timesteps)
+         */
+        Eigen::Tensor<std::complex<double>, 4> GetVis(
+            std::uint32_t startTimestep,
+            std::uint32_t intervalTimesteps,
+            Slice polarizationSlice = Slice(0, boost::none, 1)) const;
+
+        /**
+         * @brief Reads from file visibilities using specified dimension slices
+         * 
+         * @param startTimestep 
+         * @param intervalTimesteps 
+         * @param polarizationSlice 
+         * @return Eigen::Tensor<std::complex<double>, 3> of dimensions (polarizations, baselines * timesteps, channels)
+         */
+        Eigen::Tensor<std::complex<double>, 3> ReadVis(
+            uint32_t startTimestep,
+            uint32_t intervalTimesteps,
+            Range<int32_t> polarizationRange,
+            const char* column) const;
+
+        /**
+         * @brief Reads from file visibilities using specified dimension slices
+         * 
+         * @param startTimestep 
+         * @param intervalTimesteps 
+         * @param polarizationRange 
+         * @param column 
+         * @return Eigen::Tensor<std::complex<double>, 4> of dimensions (polarizations, channels, baselines, timesteps)
+         */
+        Eigen::Tensor<std::complex<double>, 4> ReadVisExperimental(
+            uint32_t startTimestep,
+            uint32_t intervalTimesteps,
+            Range<int32_t> polarizationRange,
+            const char* column) const;
 
         /**
          * @brief Gets the antennas that are not present in any baselines
@@ -236,18 +303,18 @@ namespace icrar
         void Validate() const;
 
         /**
-         * @brief Get the number of baselines in the measurement set (e.g. (0,0), (1,1), (2,2))
+         * @brief Calculates the number of baselines in the measurement set (e.g. (0,0), (1,1), (2,2))
          * 
          * @return uint32_t 
          */
-        uint32_t GetNumBaselines(bool useAutocorrelations) const;
+        uint32_t CalculateNumBaselines(bool useAutocorrelations) const;
 
         /**
          * @brief Calculates the set of unique antenna present in baselines
          * 
          * @return uint32_t 
          */
-        std::set<int32_t> CalculateUniqueAntennas() const;
+        std::tuple<std::set<int32_t>, bool> CalculateUniqueAntennas() const;
 
     };
 } // namespace icrar

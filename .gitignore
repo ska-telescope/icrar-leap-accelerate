@@ -1,15 +1,25 @@
-build/
+/build/
 .public/
-Testing/
-docs/Doxyfile
-docs/build
-docs/src/api
-docs/src/_build
-testdata/*
+/docs/Doxyfile
+/docs/build
+/docs/src/api
+/docs/src/_build
+/testdata/*
 !testdata/README.md
 !testdata/install.sh
+/Testing/
+log/
 
+# Git
 *.orig
+
+# Python
+.pytest_cache/
+*.pyc
+*.a
+*.so
+*.hash
+*.cache
 
 # Eclipse IDE files
 .project

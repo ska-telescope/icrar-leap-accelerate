@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/config.h>
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
 
 #include <icrar/leap-accelerate/common/Slice.h>
@@ -79,7 +80,7 @@ namespace cpu
             std::vector<BeamCalibration>& output_calibrations);
 
         /**
-         * @brief Performs averaging over each baseline, channel and polarization.
+         * @brief Performs rotation and averaging over each baseline, channel and polarization.
          * 
          * @param integration The input integration batch of uvws and visibilities
          * @param metadata The metadata object where AverageData is written to

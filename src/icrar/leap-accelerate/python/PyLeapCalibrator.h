@@ -38,21 +38,6 @@
 
 #include <iostream>
 
-namespace np = boost::python::numpy;
-namespace bp = boost::python;
-
-template<typename T>
-inline T ternary(bool condition, T trueValue, T falseValue)
-{
-    return condition ? trueValue : falseValue;
-}
-
-template<typename T>
-inline std::optional<T> PythonToOptional(boost::python::object& o)
-{
-    return ternary<std::optional<T>>(o.is_none(), std::optional<T>(), bp::extract<T>(o));
-} 
-
 namespace icrar
 {
 namespace python
@@ -72,21 +57,37 @@ namespace python
         PyLeapCalibrator(const PyLeapCalibrator& other);
 
         void Calibrate(
-            PyObject* callback,
             std::string msPath,
-            bool useAutoCorrelations,
-            const np::ndarray& directions,
-            std::optional<std::string> outputPath);
+            const boost::python::numpy::ndarray& directions,
+            const Slice& solutionInterval,
+            boost::optional<std::string> outputPath);
+
+        void Calibrate(
+            std::string msPath,
+            const boost::python::numpy::ndarray& directions,
+            PyObject* callback);
 
         /**
          * @brief A boost python interop compatible signature
          */
         void PythonCalibrate(
-            PyObject* callback,
             boost::python::object& msPath,
-            boost::python::object& useAutoCorrelations,
-            const np::ndarray& directions,
+            const boost::python::numpy::ndarray& directions,
+            const boost::python::slice& solutionInterval,
             boost::python::object& outputPath);
+
+        void PythonPlasmaCalibrate(
+            const boost::python::object& plasmaTM,
+            const boost::python::numpy::ndarray& directions,
+            boost::python::object& outputPath);
+
+        /**
+         * @brief Performs calibration that 
+         */
+        boost::python::object PythonCalibrateAsync(
+            boost::python::object& msPath,
+            const boost::python::numpy::ndarray& directions,
+            PyObject* callback);
     };
 } // namespace python
 } // namespace icrar

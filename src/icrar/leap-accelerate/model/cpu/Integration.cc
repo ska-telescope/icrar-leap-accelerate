@@ -22,7 +22,6 @@
 
 #include "Integration.h"
 #include <icrar/leap-accelerate/math/math_conversion.h>
-#include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 
@@ -36,23 +35,23 @@ namespace cpu
     Integration::Integration(
         int integrationNumber,
         const icrar::MeasurementSet& ms,
-        uint32_t startBaseline,
-        uint32_t channels,
-        uint32_t baselines,
-        uint32_t polarizations)
+        uint32_t startTimestep,
+        uint32_t intervalTimesteps,
+        Slice polarizationSlice)
     : m_integrationNumber(integrationNumber)
-    , index(startBaseline)
-    , x(baselines)
-    , channels(channels)
-    , baselines(baselines)
     {
+        uint32_t channels = ms.GetNumChannels();
+        uint32_t baselines = ms.GetNumBaselines();
+        uint32_t polarizations = ms.GetNumPols();
+        m_rows = baselines * intervalTimesteps;
+
         constexpr int startChannel = 0;
-        size_t vis_size = baselines * (channels - startChannel) * polarizations * sizeof(std::complex<double>);
+        size_t vis_size = baselines * (channels - startChannel) * (polarizations > 1 ? 2 : 1) * sizeof(std::complex<double>);
         LOG(info) << "vis: " << memory_amount(vis_size);
         size_t uvw_size = baselines * 3;
         LOG(info) << "uvw: " << memory_amount(uvw_size);
-        m_visibilities = ms.GetVis(startBaseline, startChannel, channels, baselines, polarizations);
-        m_UVW = ToUVWVector(ms.GetCoords(startBaseline, baselines));
+        m_visibilities = ms.GetVis(startTimestep, intervalTimesteps, polarizationSlice);
+        m_UVW = ToUVWVector(ms.GetCoords(startTimestep, intervalTimesteps));
     }
 
     bool Integration::operator==(const Integration& rhs) const

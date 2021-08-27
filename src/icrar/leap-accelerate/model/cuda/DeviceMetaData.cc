@@ -55,8 +55,11 @@ namespace cuda
     {
         host.m_constants = m_constants;
 
+        std::cout << "A matrix" << std::endl;
         m_A.ToHost(host.m_A);
+        std::cout << "I matrix" << std::endl;
         m_I.ToHost(host.m_I);
+        std::cout << "Ad matrix" << std::endl;
         m_Ad.ToHost(host.m_Ad);
         m_A1.ToHost(host.m_A1);
         m_I1.ToHost(host.m_I1);
@@ -147,7 +150,6 @@ namespace cuda
     void DeviceMetaData::ToHost(cpu::MetaData& metadata) const
     {
         m_constantBuffer->ToHost(metadata);
-
         m_solutionIntervalBuffer->GetUVW().ToHostAsync(metadata.m_UVW);
         metadata.m_direction = m_directionBuffer->GetDirection();
         metadata.m_dd = m_directionBuffer->GetDD();
@@ -168,7 +170,7 @@ namespace cuda
         m_solutionIntervalBuffer->GetUVW().ToHostAsync(metadata.m_UVW);
         metadata.m_direction = m_directionBuffer->GetDirection();
         metadata.m_dd = m_directionBuffer->GetDD();
-        m_directionBuffer->GetAvgData().ToHostAsync(metadata.m_avgData);
+        m_directionBuffer->GetAvgData().ToHostVectorAsync(metadata.m_avgData);
     }
 } // namespace cuda
 } // namespace icrar

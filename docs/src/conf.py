@@ -89,7 +89,7 @@ autodoc_default_flags = ['members']
 # Automatically generate stub pages
 # autosummary_generate = True
 
-cpp_id_attributes = ["__host__", "__device__"]
+cpp_id_attributes = ["__host__", "__device__", "EIGEN_DEVICE_FUNC"]
 
 # Breathe Config
 
