@@ -89,24 +89,19 @@ option(GSL_ENABLED "GSL Enabled" OFF)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-# if(CUDA_ENABLED)
-  PYTHON_ADD_MODULE(
-  #python_add_library(
-    ${TARGET_NAME} SHARED
-      ${sources}
-      ${cuda_sources}
-      ${private_headers}
-      ${cuda_headers}
-      ${public_headers}
-  )
-# else()
-#   python_add_library(
-#     ${TARGET_NAME} SHARED
-#       ${sources}
-#       ${private_headers}
-#       ${public_headers}
-#   )
-# endif()
+if(CUDA_ENABLED)
+  list(APPEND private_headers ${cuda_headers})
+  list(APPEND sources ${cuda_headers})
+endif()
+
+
+PYTHON_ADD_MODULE( # #python_add_library(
+  ${TARGET_NAME} SHARED
+  ${sources}
+  ${private_headers}
+  ${public_headers}
+)
+
 if(HIPSYCL_ENABLED)
   add_sycl_to_target(TARGET ${TARGET_NAME} SOURCES ${sources})
 endif()
@@ -125,7 +120,14 @@ if(USE_PCH)
   )
 endif()
 
-#target_compile_definitions(${TARGET_NAME} PUBLIC PRETTY_WRITER)
+target_link_libraries(${TARGET_NAME} PUBLIC Threads::Threads)
+target_link_libraries(${TARGET_NAME} PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(${TARGET_NAME} PUBLIC Boost::log)
+target_link_libraries(${TARGET_NAME} PUBLIC Boost::log_setup)
+target_link_libraries(${TARGET_NAME} PUBLIC Boost::program_options)
+target_link_libraries(${TARGET_NAME} PUBLIC Boost::filesystem)
+target_link_libraries(${TARGET_NAME} PUBLIC Eigen3::Eigen)
+
 
 if(CUDA_ENABLED)
   if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
@@ -149,15 +151,19 @@ if(CUDA_ENABLED)
   endif()
 endif()
 
-target_link_libraries(${TARGET_NAME} PUBLIC Threads::Threads)
-target_link_libraries(${TARGET_NAME} PUBLIC ${Boost_LIBRARIES})
-target_link_libraries(${TARGET_NAME} PUBLIC Eigen3::Eigen)
+if(SYCL_ENABLED)
+  target_compile_definitions(${TARGET_NAME} PUBLIC SYCL_ENABLED)
+endif()
 
-target_link_libraries(${TARGET_NAME} PUBLIC Python3::Python)
-if(Python3_NumPy_FOUND)
-  target_link_libraries(${TARGET_NAME} PUBLIC Python3::NumPy)
-else()
-  target_include_directories(${TARGET_NAME} SYSTEM PUBLIC /usr/lib/python3/dist-packages/numpy/core/include)
+if(PYTHON_ENABLED)
+  target_link_libraries(${TARGET_NAME} PUBLIC Boost::python)
+  target_link_libraries(${TARGET_NAME} PUBLIC Boost::numpy)
+  target_link_libraries(${TARGET_NAME} PUBLIC Python3::Python)
+  if(Python3_NumPy_FOUND)
+    target_link_libraries(${TARGET_NAME} PUBLIC Python3::NumPy)
+  else()
+    target_include_directories(${TARGET_NAME} SYSTEM PUBLIC /usr/lib/python3/dist-packages/numpy/core/include)
+  endif()
 endif()
 
 if(CASA_ENABLED)

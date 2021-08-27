@@ -20,6 +20,8 @@
  * MA 02111 - 1307  USA
  */
 
+#if PYTHON_ENABLED
+
 #include "PyLeapCalibrator.h"
 
 namespace icrar
@@ -139,3 +141,5 @@ BOOST_PYTHON_MODULE(LeapAccelerate)
         .value("cpu", icrar::ComputeImplementation::cpu)
         .value("cuda", icrar::ComputeImplementation::cuda);
 }
+
+#endif // PYTHON_ENABLED

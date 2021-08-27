@@ -151,7 +151,11 @@ if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
 endif()
 
 add_definitions(-DBOOST_ALL_DYN_LINK)
-find_package(Boost REQUIRED COMPONENTS log log_setup program_options filesystem python numpy)
+find_package(Boost REQUIRED
+  COMPONENTS log log_setup filesystem program_options
+  OPTIONAL_COMPONENTS python numpy
+)
+set(PYTHON_ENABLED ${Boost_PYTHON_FOUND})
 
 set(CASACORE_FIND_QUIETLY ON)
 find_package(Casacore COMPONENTS ms)
