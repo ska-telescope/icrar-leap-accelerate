@@ -40,22 +40,22 @@ namespace icrar
 namespace python
 {
     PyMeasurementSet::PyMeasurementSet(std::string msPath)
+    : m_measurementSet(std::make_shared<MeasurementSet>(msPath))
     {
-        
     }
 
     np::ndarray PyMeasurementSet::ReadCoords(
         std::uint32_t startTimestep,
         std::uint32_t intervalTimesteps)
     {
-
+        //m_measurementSet->ReadCoords(startTimestep, intervalTimesteps);
     }
 
     np::ndarray PyMeasurementSet::ReadVis(
         std::uint32_t startTimestep,
         std::uint32_t intervalTimesteps)
     {
-
+        //m_measurementSet->ReadVis(startTimestep, intervalTimesteps);
     }
 } // namespace python
 } // namespace icrar

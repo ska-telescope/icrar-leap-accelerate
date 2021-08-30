@@ -388,11 +388,13 @@ pages:
     - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
     - docker info
 
+# This manual job builds and deploys a development image for building leap accelerate with
+# required packages included.
 docker_ci_build_deploy:
   stage: build
   extends: .docker_common
   variables:
-    DOCKER_TAG: "latest"
+    DOCKER_TAG: ${CI_COMMIT_SHA}
   when: manual
   script:
     # Registry folder not system defined
