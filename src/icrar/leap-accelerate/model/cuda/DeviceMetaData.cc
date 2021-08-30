@@ -55,11 +55,8 @@ namespace cuda
     {
         host.m_constants = m_constants;
 
-        std::cout << "A matrix" << std::endl;
         m_A.ToHost(host.m_A);
-        std::cout << "I matrix" << std::endl;
         m_I.ToHost(host.m_I);
-        std::cout << "Ad matrix" << std::endl;
         m_Ad.ToHost(host.m_Ad);
         m_A1.ToHost(host.m_A1);
         m_I1.ToHost(host.m_I1);
@@ -77,14 +74,6 @@ namespace cuda
         m_I1.ToHostAsync(host.m_I1);
         m_Ad1.ToHostAsync(host.m_Ad1);
     }
-
-    SolutionIntervalBuffer::SolutionIntervalBuffer(const std::vector<icrar::MVuvw>& uvw)
-    : m_UVW(uvw)
-    {}
-
-    SolutionIntervalBuffer::SolutionIntervalBuffer(size_t baselines)
-    : m_UVW(baselines, nullptr)
-    {}
 
     DirectionBuffer::DirectionBuffer(
         const SphericalDirection& direction,
@@ -120,8 +109,6 @@ namespace cuda
         device_matrix<double>(metadata.GetA1()),
         device_vector<int>(metadata.GetI1()),
         device_matrix<double>(metadata.GetAd1())))
-    , m_solutionIntervalBuffer(std::make_shared<SolutionIntervalBuffer>(
-        metadata.GetUVW()))
     , m_directionBuffer(std::make_shared<DirectionBuffer>(
         metadata.GetDirection(),
         metadata.GetDD(),
@@ -130,10 +117,8 @@ namespace cuda
 
     DeviceMetaData::DeviceMetaData(
         std::shared_ptr<ConstantBuffer> constantBuffer,
-        std::shared_ptr<SolutionIntervalBuffer> solutionIntervalBuffer,
         std::shared_ptr<DirectionBuffer> directionBuffer)
     : m_constantBuffer(std::move(constantBuffer))
-    , m_solutionIntervalBuffer(std::move(solutionIntervalBuffer))
     , m_directionBuffer(std::move(directionBuffer))
     {}
 
@@ -150,7 +135,6 @@ namespace cuda
     void DeviceMetaData::ToHost(cpu::MetaData& metadata) const
     {
         m_constantBuffer->ToHost(metadata);
-        m_solutionIntervalBuffer->GetUVW().ToHostAsync(metadata.m_UVW);
         metadata.m_direction = m_directionBuffer->GetDirection();
         metadata.m_dd = m_directionBuffer->GetDD();
         m_directionBuffer->GetAvgData().ToHost(metadata.m_avgData);
@@ -167,7 +151,6 @@ namespace cuda
     {
         m_constantBuffer->ToHostAsync(metadata);
 
-        m_solutionIntervalBuffer->GetUVW().ToHostAsync(metadata.m_UVW);
         metadata.m_direction = m_directionBuffer->GetDirection();
         metadata.m_dd = m_directionBuffer->GetDD();
         m_directionBuffer->GetAvgData().ToHostVectorAsync(metadata.m_avgData);

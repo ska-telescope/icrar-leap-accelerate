@@ -200,30 +200,11 @@ namespace icrar
         uint32_t GetNumFilteredBaselines(double minimumBaselineThreshold = 0.0) const;
 
         /**
-         * @brief Gets a flag vector of filtered stations
-         * 
-         * @param minimumBaselineThreshold 
-         * @return Eigen::VectorXb 
-         */
-        //Eigen::VectorXb GetFilteredStations(double minimumBaselineThreshold) const;
-
-        /**
          * @brief Get the Coords/UVWs of the 
          * 
          * @return Eigen::MatrixX3d 
          */
-        Eigen::MatrixX3d GetCoords() const;
-
-        /**
-         * @brief Gets the Coords/UVWs of a specified time interval.
-         * 
-         * @param startTimestep
-         * @param intervalTimesteps
-         * @return Eigen::MatrixX3d of dimensions (3, baselines * timesteps)
-         */
-        Eigen::MatrixX3d GetCoords(
-            std::uint32_t startTimestep,
-            std::uint32_t intervalTimesteps) const;
+        Eigen::Tensor<double, 3> ReadCoords() const;
 
         /**
          * @brief Gets the Coords/UVWs of a specified time interval.
@@ -232,9 +213,9 @@ namespace icrar
          * @param intervalTimesteps 
          * @return Eigen::Tensor<double, 3> of dimensions (3, baselines, timesteps)
          */
-        Eigen::Tensor<double, 3> GetCoordsExperimental(
+        Eigen::Tensor<double, 3> ReadCoords(
             uint32_t startTimestep,
-            uint32_t intervalTimesteps);
+            uint32_t intervalTimesteps) const;
 
         /**
          * @brief Gets the visibilities from all baselines, channels and polarizations
@@ -242,7 +223,7 @@ namespace icrar
          * 
          * @return Eigen::Tensor<std::complex<double>, 4> of dimensions (polarizations, channels, baselines, timesteps)
          */
-        Eigen::Tensor<std::complex<double>, 4> GetVis() const;
+        Eigen::Tensor<std::complex<double>, 4> ReadVis() const;
 
         /**
          * @brief Gets visibilities from the specificed dimension slices
@@ -252,24 +233,10 @@ namespace icrar
          * @param intervalTimesteps number of timesteps
          * @return Eigen::Tensor<std::complex<double>, 4> of dimensions (polarizations, channels, baselines, timesteps)
          */
-        Eigen::Tensor<std::complex<double>, 4> GetVis(
+        Eigen::Tensor<std::complex<double>, 4> ReadVis(
             std::uint32_t startTimestep,
             std::uint32_t intervalTimesteps,
             Slice polarizationSlice = Slice(0, boost::none, 1)) const;
-
-        /**
-         * @brief Reads from file visibilities using specified dimension slices
-         * 
-         * @param startTimestep start timestep index
-         * @param intervalTimesteps number of timesteps
-         * @param polarizationSlice 
-         * @return Eigen::Tensor<std::complex<double>, 3> of dimensions (polarizations, baselines * timesteps, channels)
-         */
-        Eigen::Tensor<std::complex<double>, 3> ReadVis(
-            uint32_t startTimestep,
-            uint32_t intervalTimesteps,
-            Range<int32_t> polarizationRange,
-            const char* column) const;
 
         /**
          * @brief Reads from file visibilities using specified dimension slices
@@ -280,7 +247,7 @@ namespace icrar
          * @param column 
          * @return Eigen::Tensor<std::complex<double>, 4> of dimensions (polarizations, channels, baselines, timesteps)
          */
-        Eigen::Tensor<std::complex<double>, 4> ReadVisExperimental(
+        Eigen::Tensor<std::complex<double>, 4> ReadVis(
             uint32_t startTimestep,
             uint32_t intervalTimesteps,
             Range<int32_t> polarizationRange,

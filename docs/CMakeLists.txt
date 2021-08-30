@@ -43,7 +43,7 @@ if(Sphinx_FOUND AND Doxygen_FOUND)
   # - The Sphinx config has been updated
   add_custom_command(OUTPUT ${SPHINX_INDEX_FILE}
                     COMMAND 
-                      ${SPHINX_EXECUTABLE} -b html
+                      ${SPHINX_EXECUTABLE} -b html -T
                       # Tell Breathe where to find the Doxygen output
                       -Dbreathe_projects.LeapAccelerate=${DOXYGEN_OUTPUT_DIR}/xml
                       -Ddoxygen_xml=${DOXYGEN_OUTPUT_DIR}/xml

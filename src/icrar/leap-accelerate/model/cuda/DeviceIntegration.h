@@ -64,8 +64,9 @@ namespace cuda
     class DeviceIntegration
     {
         int m_integrationNumber;
+
+        device_tensor3<double> m_uvws; // [3][baselines][timesteps]
         device_tensor4<std::complex<double>> m_visibilities; //[polarizations][channels][baselines][timesteps]
-        int64_t m_rows;
         
     public:
         /**
@@ -73,7 +74,7 @@ namespace cuda
          * 
          * @param shape 
          */
-        DeviceIntegration(int integrationNumber, Eigen::DSizes<Eigen::DenseIndex, 4> shape);
+        DeviceIntegration(int integrationNumber, Eigen::DSizes<Eigen::DenseIndex, 3> uvwShape, Eigen::DSizes<Eigen::DenseIndex, 4> visShape);
 
         /**
          * @brief Construct a new Device Integration object with a data syncronous copy
@@ -102,10 +103,9 @@ namespace cuda
         size_t GetNumChannels() const { return m_visibilities.GetDimensionSize(1); }
         size_t GetNumBaselines() const { return m_visibilities.GetDimensionSize(2); }
         size_t GetNumTimesteps() const { return m_visibilities.GetDimensionSize(3); }
-        
-        [[deprecated]]
-        int64_t GetRows() const { return m_rows; }
-        
+
+        const device_tensor3<double>& GetUVW() const { return m_uvws; }
+
         const device_tensor4<std::complex<double>>& GetVis() const { return m_visibilities; }
         device_tensor4<std::complex<double>>& GetVis() { return m_visibilities; }
 

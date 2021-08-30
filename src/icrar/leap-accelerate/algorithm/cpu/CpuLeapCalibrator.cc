@@ -137,16 +137,15 @@ namespace cpu
             }
 
             profiling::timer phase_rotate_timer;
-            metadata.SetUVW(integration.GetUVW());
-            for(size_t i = 0; i < directions.size(); ++i)
+            for(size_t direction = 0; direction < directions.size(); ++direction)
             {
-                LOG(info) << "Processing direction " << i;
-                metadata.SetDirection(directions[i]);
+                LOG(info) << "Processing direction " << direction;
+                metadata.SetDirection(directions[direction]);
                 metadata.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
                 PhaseRotate(
                     metadata,
-                    directions[i],
-                    input_queues[i],
+                    directions[direction],
+                    input_queues[direction],
                     output_calibrations[solution].GetBeamCalibrations());
             }
 
@@ -198,19 +197,15 @@ namespace cpu
     void CpuLeapCalibrator::RotateVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)
     {
         using namespace std::literals::complex_literals;
-        Eigen::Tensor<std::complex<double>, 4>& integration_data = integration.GetVis();
+        Eigen::Tensor<std::complex<double>, 4>& visibilities = integration.GetVis();
 
-        // loop over smeared baselines ('baseline' is always 'row' when timesteps = 1)
         for(size_t timestep = 0; timestep < integration.GetNumTimesteps(); ++timestep)
         {
             for(size_t baseline = 0; baseline < integration.GetNumBaselines(); baseline++)
             {
-                //TODO(calgray): UVWs should alternatively be stored as a tensor  
-                //auto rotatedUVW = metadata.GetDD() * metadata.GetUVW().chip(0, 2).chip(baseline, 1);
-
-                size_t row = baseline + (timestep * integration.GetNumBaselines());
-                auto rotatedUVW = metadata.GetDD() * metadata.GetUVW()[row];
-                double shiftFactor = -two_pi<double>() * (rotatedUVW(2) - metadata.GetUVW()[row](2));
+                Eigen::VectorXd uvw = ToVector(Eigen::Tensor<double, 1>(integration.GetUVW().chip(timestep, 2).chip(baseline, 1)));
+                auto rotatedUVW = metadata.GetDD() * uvw;
+                double shiftFactor = -two_pi<double>() * (rotatedUVW.z() - uvw.z());
 
                 // Loop over channels
                 for(uint32_t channel = 0; channel < integration.GetNumChannels(); channel++)
@@ -218,21 +213,21 @@ namespace cpu
                     double shiftRad = shiftFactor / metadata.GetConstants().GetChannelWavelength(channel);
                     for(uint32_t polarization = 0; polarization < integration.GetNumPolarizations(); ++polarization)
                     {
-                        integration_data(polarization, channel, baseline, timestep) *= std::exp(std::complex<double>(0.0, shiftRad));
+                        visibilities(polarization, channel, baseline, timestep) *= std::exp(std::complex<double>(0.0, shiftRad));
                     }
 
                     bool hasNaN = false;
                     for(uint32_t polarization = 0; polarization < integration.GetNumPolarizations(); ++polarization)
                     {
-                        hasNaN |= std::isnan(integration_data(polarization, channel, baseline, timestep).real())
-                               || std::isnan(integration_data(polarization, channel, baseline, timestep).imag());
+                        hasNaN |= std::isnan(visibilities(polarization, channel, baseline, timestep).real())
+                               || std::isnan(visibilities(polarization, channel, baseline, timestep).imag());
                     }
 
                     if(!hasNaN)
                     {
                         // Averaging with XX and YY polarizations
-                        metadata.GetAvgData()(baseline) += integration_data(0, channel, baseline, timestep);
-                        metadata.GetAvgData()(baseline) += integration_data(integration_data.dimension(0) - 1, channel, baseline, timestep);
+                        metadata.GetAvgData()(baseline) += visibilities(0, channel, baseline, timestep);
+                        metadata.GetAvgData()(baseline) += visibilities(visibilities.dimension(0) - 1, channel, baseline, timestep);
                     }
                 }
             }

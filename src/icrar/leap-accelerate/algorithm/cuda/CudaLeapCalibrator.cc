@@ -158,7 +158,9 @@ namespace cuda
             false);
 
         device_matrix<double> deviceA, deviceAd;
-        CalculateAd(metadata, deviceA, deviceAd, cudaComputeOptions.isFileSystemCacheEnabled, cudaComputeOptions.useCusolver);
+        CalculateAd(metadata, deviceA, deviceAd,
+            cudaComputeOptions.isFileSystemCacheEnabled,
+            cudaComputeOptions.useCusolver);
 
         device_matrix<double> deviceA1, deviceAd1;
         CalculateAd1(metadata, deviceA1, deviceAd1);
@@ -173,11 +175,10 @@ namespace cuda
             std::move(deviceAd1)
         );
 
-        auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetConstants().nbaselines * validatedSolutionInterval.GetInterval());
         auto directionBuffer = std::make_shared<DirectionBuffer>(
                 metadata.GetAvgData().rows(),
                 metadata.GetAvgData().cols());
-        auto deviceMetadata = DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
+        auto deviceMetadata = DeviceMetaData(constantBuffer, directionBuffer);
         LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
         auto solutions = boost::numeric_cast<uint32_t>(validatedSolutionInterval.GetSize());
@@ -206,9 +207,6 @@ namespace cuda
             checkCudaErrors(cudaGetLastError());
             LOG(info) << "Read integration data in " << integration_read_timer;
 
-            LOG(info) << "Loading Metadata UVW";
-            solutionIntervalBuffer->SetUVW(integration.GetUVW());
-            LOG(info) << "Cuda metadata loaded";
 
             boost::optional<DeviceIntegration> deviceIntegration;
             if(cudaComputeOptions.useIntermediateBuffer)
@@ -217,8 +215,8 @@ namespace cuda
                 deviceIntegration = DeviceIntegration(integration);
             }
 
-            // Emplace a single zero'd tensor
-            auto input_vis = cuda::DeviceIntegration(0, integration.GetVis().dimensions());
+            // Emplace a single zero'd tensor of equal size
+            auto input_vis = cuda::DeviceIntegration(0, integration.GetUVW().dimensions(), integration.GetVis().dimensions());
 
             profiling::timer phase_rotate_timer;
             for(size_t i = 0; i < directions.size(); ++i)
@@ -292,9 +290,8 @@ namespace cuda
                 // Load cache into hostAd then deviceAd,
                 // or load hostA into deviceA, compute deviceAd then load into hostAd
                 metadata.SetAd(ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
-                    matrix_hash<Eigen::MatrixXd>(hostA),
                     hostA,
-                    "A.hash", "Ad.cache",
+                    "Ad.cache",
                     invertA));
 
                 deviceAd = device_matrix<double>(metadata.GetAd());
@@ -329,8 +326,8 @@ namespace cuda
             {
                 metadata.SetAd(
                     ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
-                        matrix_hash<Eigen::MatrixXd>(hostA), hostA,
-                        "A.hash", "Ad.cache",
+                        hostA,
+                        "Ad.cache",
                         invertA));
             }
             else

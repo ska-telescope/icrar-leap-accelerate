@@ -59,7 +59,8 @@ variables:
 
 .doc_packages: &doc_packages
   - apt install -y python3-pip doxygen graphviz
-  - pip3 install -U sphinx breathe exhale recommonmark sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary
+  #- pip3 install -U sphinx breathe exhale recommonmark sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary
+  - pip3 install -r docs/requirements.txt 
 
 .lint_packages: &lint_packages
   - apt install -y python3-pip clang clang-tidy clang-tools iwyu cppcheck
@@ -205,10 +206,13 @@ build_export_compile_commands:
   script:
     - cd build
     - pip3 install pyyaml
-    - python3 -u /usr/bin/run-clang-tidy-11.py -quiet 2>&1 | tee clang-tidy.log || true
+    - python3 -u /usr/bin/run-clang-tidy-11.py -quiet 2>&1 | tee clang-tidy.log || FAILED=true
     - cd ..
     - cat build/clang-tidy.log | python3 .clang-tidy-to-junit.py $PWD/ clang-tidy > build/clang-tidy-junit.xml
+    - if [ $FAILED ]; then exit 1; fi
+  allow_failure: true
   artifacts:
+    when: always
     paths:
       - build
     reports:
@@ -221,11 +225,9 @@ lint_clang_tidy:
 .lint_iwyu:
   stage: linting
   script:
-    # iwyu pre 0.12
-    - iwyu_tool -j 2 -p ./build -- --transitive_includes_only 2>&1 | tee build/iwyu.log || true
-    # iwyu 0.12+
-    # iwyu_tool -j 2 -p ./build -- -Xiwyu --transitive_includes_only 2>&1 | tee build/iwyu.log
+    - iwyu_tool -j 2 -p ./build -- -Xiwyu --transitive_includes_only 2>&1 | tee build/iwyu.log
     - cat build/iwyu.log | python3 .clang-tidy-to-junit.py $PWD/ iwyu > build/iwyu-junit.xml
+  allow_failure: true
   artifacts:
     when: always
     paths:
@@ -248,9 +250,11 @@ lint_iwyu:
       --project=compile_commands.json
       --platform=unix64
       -q --std=c++14
-      --library=googletest 2>&1 | tee cppcheck.xml || true'
+      --library=googletest 2>&1 | tee cppcheck.xml'
     - cppcheck_junit cppcheck.xml cppcheck-junit.xml
+  allow_failure: true
   artifacts:
+    when: always
     paths:
       - build
     reports:
@@ -258,7 +262,6 @@ lint_iwyu:
 
 # clang pre-11.0 cannot parse gunit tests
 .lint_cppcheck_no_tests:
-  stage: linting
   script:
     - pip3 install cppcheck-junit
     - cd build
@@ -270,16 +273,11 @@ lint_iwyu:
       --std=c++14
       -i $PWD/../external
       -i $PWD/../src/icrar/leap-accelerate/tests
-      -i $PWD/../src/icrar/leap-accelerate-cli/tests 2>&1 | tee cppcheck.xml || true'
+      -i $PWD/../src/icrar/leap-accelerate-cli/tests 2>&1 | tee cppcheck.xml'
     - cppcheck_junit cppcheck.xml cppcheck-junit.xml
-  artifacts:
-    paths:
-      - build
-    reports:
-      junit: build/cppcheck-junit.xml
 
 lint_cppcheck:
-  extends: [.lint_dependencies, .lint_cppcheck_no_tests]
+  extends: [.lint_dependencies, .lint_cppcheck]
   needs: ["build_export_compile_commands"]
 
 #######
@@ -294,7 +292,7 @@ lint_cppcheck:
   timeout: 1h
   artifacts:
     paths:
-      - build/
+      - build
     reports:
       junit: build/unit-tests.xml
 
@@ -343,16 +341,15 @@ pages:
   script:
     - apt update && apt install -y curl gcovr moreutils python3-pip jq
     - pip3 install yq
-    - mkdir -p .public/build/reports/code-coverage
-    - cd .public
+    - mkdir -p build/reports/code-coverage
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o build/reports/code-coverage/index.html | sponge gcovr-html.log
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml | sponge gcovr-xml.log
-    - cp ../build/unit-tests.xml build/reports/unit-tests.xml
-    - cp ../build/cppcheck-junit.xml build/reports/cppcheck-junit.xml
-    - cp ../build/clang-tidy-junit.xml build/reports/clang-tidy-junit.xml
-    - cp ../build/iwyu-junit.xml build/reports/iwyu-junit.xml
-    
+  after_script:
     # Combine Linting XML
+    - cp build/unit-tests.xml build/reports/unit-tests.xml
+    - cp build/cppcheck-junit.xml build/reports/cppcheck-junit.xml
+    - cp build/clang-tidy-junit.xml build/reports/clang-tidy-junit.xml
+    - cp build/iwyu-junit.xml build/reports/iwyu-junit.xml
     - 'xq -s "{testsuites: { testsuite: [ .[0].testsuite, .[1].testsuite, .[2].testsuite ] } }"
       build/reports/clang-tidy-junit.xml
       build/reports/cppcheck-junit.xml
@@ -362,23 +359,22 @@ pages:
     - 'xq ".testsuites |= {\"@tests\": .testsuite | map(.\"@tests\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
     - 'xq ".testsuites |= {\"@errors\": .testsuite | map(.\"@errors\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
     - 'xq ".testsuites |= {\"@failures\": .testsuite | map(.\"@failures\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
-
-    # Create and upload GitLab badges
-    - python3 ../.produce-ci-metrics.py build/reports > ci-metrics.json
-    - curl -s https://gitlab.com/ska-telescope/ci-metrics-utilities/raw/master/scripts/ci-badges-func.sh | sh
-    - cd ..
-    - mv .public public
   artifacts:
     when: always
     paths:
-      - public
+      - ./build
     reports:
-      cobertura: public/build/reports/code-coverage.xml
+      cobertura: build/reports/code-coverage.xml
   allow_failure: true
 
-########
+# https://gitlab.com/ska-telescope/templates-repository/-/blob/master/gitlab-ci/includes/post_step.yml
+include:
+  - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/post_step.yml'
+
+#########
 # Docker
-########
+#########
 
 .docker_common:
   image: docker:stable
