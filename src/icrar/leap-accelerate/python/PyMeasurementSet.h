@@ -28,10 +28,12 @@
 
 #include <Eigen/Core>
 
-#include <boost/python.hpp>
-#include <boost/python/call.hpp>
-#include <boost/python/numpy.hpp>
-#include <boost/python/object.hpp>
+// #include <boost/python.hpp>
+// #include <boost/python/call.hpp>
+// #include <boost/python/numpy.hpp>
+// #include <boost/python/object.hpp>
+
+#include <pybind11/pybind11.h>
 
 #include <iostream>
 
@@ -50,8 +52,8 @@ namespace python
     public:
         PyMeasurementSet(std::string msPath);
 
-        boost::python::numpy::ndarray ReadCoords(std::uint32_t startTimestep, std::uint32_t intervalTimesteps);
-        boost::python::numpy::ndarray ReadVis(std::uint32_t startTimestep, std::uint32_t intervalTimesteps);
+        Eigen::Tensor<double, 3> ReadCoords(std::uint32_t startTimestep, std::uint32_t intervalTimesteps);
+        Eigen::Tensor<std::complex<double>, 4> ReadVis(std::uint32_t startTimestep, std::uint32_t intervalTimesteps);
     };
 } // namespace python
 } // namespace icrar

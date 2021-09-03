@@ -30,12 +30,6 @@ namespace icrar
 {
 namespace cuda
 {
-    template<typename T>
-    constexpr int64_t CeilDiv(int x, int y)
-    {
-        return (x + y - T(1)) / y;
-    }
-
     /**
      * @brief Rotates visibilities in parallel for baselines and channels
      * @note Atomic operator required for writing to @p pAvgData

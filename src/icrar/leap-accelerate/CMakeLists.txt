@@ -88,12 +88,26 @@ if(CUDA_ENABLED)
 endif()
 
 #python_add_library(
-PYTHON_ADD_MODULE(
-  ${TARGET_NAME} SHARED
-  ${sources}
-  ${private_headers}
-  ${public_headers}
-)
+#PYTHON_ADD_MODULE(
+
+# if(PYTHON_ENABLED)
+#   pybind11_add_module(
+#     ${TARGET_NAME} SHARED
+#     ${sources}
+#     ${private_headers}
+#     ${public_headers}
+#   )
+# else()
+  add_library(
+    ${TARGET_NAME} SHARED
+    ${sources}
+    ${private_headers}
+    ${public_headers}
+  )
+  pybind11_extension(${TARGET_NAME})
+  pybind11_strip(${TARGET_NAME})
+
+# endif()
 
 # Libraries
 option(CASA_ENABLED "Casa Enabled" TRUE)
@@ -158,16 +172,19 @@ if(SYCL_ENABLED)
 endif()
 
 if(PYTHON_ENABLED)
+  target_link_options(${TARGET_NAME} PUBLIC "-fPIE")
+  #target_link_options(${TARGET_NAME} PUBLIC "-fPIC")
   target_compile_definitions(${TARGET_NAME} PUBLIC PYTHON_ENABLED)
-  target_link_libraries(${TARGET_NAME} PUBLIC Boost::python)
-  target_link_libraries(${TARGET_NAME} PUBLIC Boost::numpy)
+  #target_link_libraries(${TARGET_NAME} PUBLIC Boost::python)
+  #target_link_libraries(${TARGET_NAME} PUBLIC Boost::numpy)
   target_link_libraries(${TARGET_NAME} PUBLIC Python3::Python)
-  target_link_libraries(${TARGET_NAME} PUBLIC Python3::NumPy)
+  #target_link_libraries(${TARGET_NAME} PUBLIC Python3::NumPy)
   target_link_libraries(${TARGET_NAME} PUBLIC pybind11::pybind11)
+  target_link_libraries(${TARGET_NAME} PUBLIC pybind11::module)
+  #target_link_libraries(${TARGET_NAME} PUBLIC pybind11::thin_lto)
   #target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/external/xtl-0.7.2/include)
   #target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/external/xtensor-0.23.10/include)
-  if(Python3_NumPy_FOUND)
-  else()
+  if(NOT Python3_NumPy_FOUND)
     target_include_directories(${TARGET_NAME} SYSTEM PUBLIC /usr/lib/python3/dist-packages/numpy/core/include)
     target_include_directories(${TARGET_NAME} SYSTEM PUBLIC /usr/lib/python3.9/site-packages/numpy/core/include)
   endif()

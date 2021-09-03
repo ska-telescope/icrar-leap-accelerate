@@ -70,7 +70,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIE")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
   if(WERROR)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
@@ -153,9 +152,10 @@ endif()
 add_definitions(-DBOOST_ALL_DYN_LINK)
 find_package(Boost REQUIRED
   COMPONENTS log log_setup filesystem program_options
-  OPTIONAL_COMPONENTS python numpy
 )
-set(PYTHON_ENABLED ${Boost_PYTHON_FOUND})
+
+find_package(pybind11 CONFIG)
+set(PYTHON_ENABLED ${pybind11_FOUND})
 
 set(CASACORE_FIND_QUIETLY ON)
 find_package(Casacore COMPONENTS ms)
@@ -188,8 +188,6 @@ endif()
 #add_subdirectory(external/eigen-3.3.90) # builds eigen3 tests
 set(EIGEN3_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/eigen-3.3.90)
 find_package(Eigen3 REQUIRED)
-
-find_package(pybind11 CONFIG)
 
 # Use local rapidjson if available
 find_package(RapidJSON)

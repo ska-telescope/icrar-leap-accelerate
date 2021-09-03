@@ -39,7 +39,7 @@ namespace icrar
 namespace cuda
 {
     /**
-     * @brief A cuda device buffer object that represents a memory buffer on a cuda device. Matrix size is fixed
+     * @brief A cuda device buffer object that represents a global memory buffer on a cuda device. Matrix size is fixed
      * at construction and can only be resized using move semantics.
      * 
      * @tparam T numeric type

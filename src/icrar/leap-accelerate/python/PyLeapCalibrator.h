@@ -31,10 +31,13 @@
 
 #include <Eigen/Core>
 
-#include <boost/python.hpp>
-#include <boost/python/call.hpp>
-#include <boost/python/numpy.hpp>
-#include <boost/python/object.hpp>
+// #include <boost/python.hpp>
+// #include <boost/python/call.hpp>
+// #include <boost/python/numpy.hpp>
+// #include <boost/python/object.hpp>
+
+#include <pybind11/eigen.h>
+#include <pybind11/numpy.h>
 
 #include <iostream>
 
@@ -57,42 +60,44 @@ namespace python
         PyLeapCalibrator(const PyLeapCalibrator& other);
 
         void Calibrate(
-            std::string msPath,
-            const boost::python::numpy::ndarray& directions,
+            const std::string msPath,
+            const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
             const Slice& solutionInterval,
             boost::optional<std::string> outputPath);
 
         void Calibrate(
-            std::string msPath,
-            const boost::python::numpy::ndarray& directions,
-            PyObject* callback);
+            const std::string msPath,
+            const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
+            pybind11::function& callback);
+
+
 
         /**
          * @brief A boost python interop compatible signature for 
          *calibrate
          */
         void PythonCalibrate(
-            boost::python::object& msPath,
-            const boost::python::numpy::ndarray& directions,
-            const boost::python::slice& solutionInterval,
-            boost::python::object& outputPath);
+            const std::string& msPath,
+            const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
+            const pybind11::slice& solutionInterval,
+            const pybind11::object& outputPath);
 
         /**
          * @brief A boost python interop campatible signature for
          * calibrate
          */
         void PythonPlasmaCalibrate(
-            const boost::python::object& plasmaTM,
-            const boost::python::numpy::ndarray& directions,
-            boost::python::object& outputPath);
+            const pybind11::object& plasmaTM,
+            const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
+            pybind11::object& outputPath);
 
         /**
          * @brief Performs calibration that 
          */
-        boost::python::object PythonCalibrateAsync(
-            boost::python::object& msPath,
-            const boost::python::numpy::ndarray& directions,
-            PyObject* callback);
+        pybind11::object PythonCalibrateAsync(
+            const pybind11::object& msPath,
+            const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
+            pybind11::function& callback);
     };
 } // namespace python
 } // namespace icrar

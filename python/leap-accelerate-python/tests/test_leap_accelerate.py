@@ -15,7 +15,7 @@ def test_calibrate_minimal():
     output_file = tempfile.mktemp(suffix='.json', prefix='output_')
     cal.calibrate(
         ms_path="../../testdata/mwa/1197638568-split.ms",
-        directions=np.array([[0.1,0.2],[0.3, 0.4],[0.5, 0.6]]),
+        directions=np.array([[0.1,0.2],[0.3, 0.4],[0.5,0.6]], np.float64),
         output_path=output_file)
 
     with open(output_file) as f:

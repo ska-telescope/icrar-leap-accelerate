@@ -25,9 +25,47 @@
 #include "PyLeapCalibrator.h"
 #include "PyMeasurementSet.h"
 
-namespace np = boost::python::numpy;
-namespace bp = boost::python;
+// #include <Eigen/Core>
+#include <pybind11/eigen.h>
+#include <pybind11/numpy.h>
 
+//namespace np = boost::python::numpy;
+//namespace bp = boost::python;
+
+namespace py = pybind11;
+
+PYBIND11_MODULE(LeapAccelerate, m)
+{
+    m.doc() = "Linear Execision of the Atmosphere in Parallel";
+    
+    py::enum_<icrar::ComputeImplementation>(m, "compute_implementation")
+        .value("cpu", icrar::ComputeImplementation::cpu)
+        .value("cuda", icrar::ComputeImplementation::cuda)
+        .export_values();
+
+    py::class_<icrar::python::PyLeapCalibrator>(m, "LeapCalibrator")
+        .def(py::init<icrar::ComputeImplementation>())
+        .def(py::init<std::string>())
+        .def("calibrate", &icrar::python::PyLeapCalibrator::PythonCalibrate,
+            py::arg("ms_path"),
+            py::arg("directions").noconvert(),
+            py::arg("solution_interval")=py::slice(0,1,1),
+            py::arg("output_path")
+        );
+
+    py::class_<icrar::python::PyMeasurementSet>(m, "MeasurementSet")
+        .def(py::init<std::string>())
+        .def("read_coords", &icrar::python::PyMeasurementSet::ReadCoords,
+            py::arg("start_timestep"),
+            py::arg("num_timesteps")
+        )
+        .def("read_vis", &icrar::python::PyMeasurementSet::ReadVis,
+            py::arg("start_timestep"),
+            py::arg("num_timesteps")
+        );
+}
+
+/**
 BOOST_PYTHON_MODULE(LeapAccelerate)
 {
     bp::numpy::initialize();
@@ -56,5 +94,5 @@ BOOST_PYTHON_MODULE(LeapAccelerate)
         .value("cpu", icrar::ComputeImplementation::cpu)
         .value("cuda", icrar::ComputeImplementation::cuda);
 }
-
+**/
 #endif // PYTHON_ENABLED

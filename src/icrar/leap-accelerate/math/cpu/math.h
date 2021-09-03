@@ -30,7 +30,7 @@ namespace cpu
      * 
      * @tparam T integer type
      * @param x numerator
-     * @param y denominator 
+     * @param y denominator
      */
     template<typename T>
     constexpr T ceil_div(T x, T y)

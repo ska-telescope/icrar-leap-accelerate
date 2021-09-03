@@ -62,7 +62,7 @@ namespace cuda
         auto deltaPhaseMap = Eigen::Map<Eigen::VectorXd>(deltaPhase.Get(), deltaPhase.GetRows());
 
         dim3 blockSize = dim3(1024, 1, 1);
-        dim3 gridSize = dim3(cpu::ceil_div<int64_t>(A.GetRows() , blockSize.x), 1, 1);
+        dim3 gridSize = dim3(cpu::ceil_div<int64_t>(A.GetRows(), blockSize.x), 1, 1);
         g_CalcDeltaPhase<<<blockSize,gridSize>>>(AMap, cal1Map, avgDataMap, deltaPhaseMap);
     }
 

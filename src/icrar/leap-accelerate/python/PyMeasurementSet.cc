@@ -29,8 +29,8 @@
 
 #include <future>
 
-namespace np = boost::python::numpy;
-namespace bp = boost::python;
+// namespace np = boost::python::numpy;
+// namespace bp = boost::python;
 
 template<typename T>
 inline T ternary(bool condition, T trueValue, T falseValue)
@@ -47,18 +47,19 @@ namespace python
     {
     }
 
-    np::ndarray PyMeasurementSet::ReadCoords(
+    Eigen::Tensor<double, 3> PyMeasurementSet::ReadCoords(
         std::uint32_t startTimestep,
         std::uint32_t intervalTimesteps)
     {
         const auto coords = m_measurementSet->ReadCoords(startTimestep, intervalTimesteps);
         Eigen::DSizes<long, 3> shape = coords.dimensions();
         Eigen::DSizes<long, 3> offset = Eigen::DSizes<long, 3>();
-        bp::object owner;
-        return np::from_data(coords.data(), np::dtype::get_builtin<decltype(*coords.data())>(), shape, offset, owner);
+        //bp::object owner;
+        //return np::from_data(coords.data(), np::dtype::get_builtin<decltype(*coords.data())>(), shape, offset, owner);
+        return coords;
     }
 
-    np::ndarray PyMeasurementSet::ReadVis(
+    Eigen::Tensor<std::complex<double>, 4> PyMeasurementSet::ReadVis(
         std::uint32_t startTimestep,
         std::uint32_t intervalTimesteps)
     {
@@ -73,10 +74,8 @@ namespace python
             vis.dimension(0) * sizeof(double),
             sizeof(double)
         };
-
-        return np::from_data(vis.data(), np::dtype::get_builtin<std::complex<double>>(), shape, strides, bp::object()).copy();
-
-
+        return vis;
+        //return np::from_data(vis.data(), np::dtype::get_builtin<std::complex<double>>(), shape, strides, bp::object()).copy();
     }
 } // namespace python
 } // namespace icrar

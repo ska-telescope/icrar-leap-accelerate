@@ -26,8 +26,7 @@
 
 #include <future>
 
-namespace np = boost::python::numpy;
-namespace bp = boost::python;
+namespace py = pybind11;
 
 template<typename T>
 inline T ternary(bool condition, T trueValue, T falseValue)
@@ -40,49 +39,41 @@ namespace icrar
 namespace python
 {
     template<typename T>
-    inline boost::optional<T> ToOptional(const bp::object& obj)
+    inline boost::optional<T> ToOptional(const py::object& obj)
     {
         boost::optional<T> output;
         if(!obj.is_none())
         {
-            output = bp::extract<T>(obj);
+            output = obj.cast<T>();
         }
         return output;
     }
 
-    Slice ToSlice(const bp::slice& obj)
+    Slice ToSlice(const py::slice& obj)
     {
         return Slice(
-            ToOptional<int64_t>(obj.start()),
-            ToOptional<int64_t>(obj.stop()),
-            ToOptional<int64_t>(obj.step())
+            ToOptional<int64_t>(obj.attr("start")),
+            ToOptional<int64_t>(obj.attr("stop")),
+            ToOptional<int64_t>(obj.attr("step"))
         );
     }
 
-    std::vector<SphericalDirection> ToSphericalDirectionVector(const np::ndarray& array)
+    std::vector<SphericalDirection> ToSphericalDirectionVector(const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions)
     {
-        assert(array.get_nd() == 2);
-        assert(array.shape(0) == 2);
-        assert(array.get_dtype().get_itemsize() == 8); // double
-        auto directionMatrix = Eigen::Map<const Eigen::Matrix<double, -1, -1, Eigen::RowMajor>>(
-            reinterpret_cast<double*>(array.get_data()), array.shape(0), array.shape(1)
-        );
-
         auto output = std::vector<SphericalDirection>();
-        output.reserve(directionMatrix.rows());
-        for(int row = 0; row < directionMatrix.rows(); ++row)
+        for(size_t row = 0; row < directions.rows(); ++row)
         {
-            output.push_back(directionMatrix(row, Eigen::all));
+            output.push_back(directions(row, Eigen::all));
         }
         return output;
     }
 
-    bp::object ToPython(std::future<void>&& future)
+    py::object ToPython(std::future<void>&& future)
     {
         // TODO(calgray): Not implemented
         throw std::runtime_error("not implemented");
-        auto asyncio = bp::import("asyncio");
-        return asyncio.attr("Future")();
+        auto asyncio = py::module::import("asyncio");
+        //return asyncio.attr("Future")();
     }
 
     PyLeapCalibrator::PyLeapCalibrator(ComputeImplementation impl)
@@ -102,8 +93,8 @@ namespace python
     }
 
     void PyLeapCalibrator::Calibrate(
-        std::string msPath,
-        const np::ndarray& directions,
+        const std::string msPath,
+        const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
         const Slice& solutionInterval,
         boost::optional<std::string> outputPath)
     {
@@ -138,9 +129,9 @@ namespace python
     }
 
     void PyLeapCalibrator::Calibrate(
-        std::string msPath,
-        const np::ndarray& directions,
-        PyObject* callback)
+        const std::string msPath,
+        const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
+        py::function& callback)
     {
         icrar::log::Initialize(icrar::log::Verbosity::warn);
 
@@ -153,9 +144,9 @@ namespace python
 
         auto outputCallback = [&](const cpu::Calibration& cal)
         {
-            if(callback != nullptr)
+            if(callback != py::none()) // TODO: check pybind gotchas
             {
-                bp::call<void>(callback, cal);
+                callback(cal);
             }
         };
 
@@ -170,26 +161,26 @@ namespace python
     }
 
     void PyLeapCalibrator::PythonCalibrate(
-        bp::object& msPath,
-        const np::ndarray& directions,
-        const bp::slice& solutionInterval,
-        bp::object& outputPath)
+        const std::string& msPath,
+        const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
+        const py::slice& solutionInterval,
+        const py::object& outputPath)
     {
         Calibrate(
-            bp::extract<std::string>(msPath),
+            msPath,
             directions,
             ToSlice(solutionInterval),
             ToOptional<std::string>(outputPath));
     }
 
-    bp::object PyLeapCalibrator::PythonCalibrateAsync(
-        bp::object& msPath,
-        const np::ndarray& directions,
-        PyObject* callback)
+    py::object PyLeapCalibrator::PythonCalibrateAsync(
+        const py::object& msPath,
+        const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
+        py::function& callback)
     {
         return ToPython(std::async(std::launch::async, [&]() {
             Calibrate(
-                bp::extract<std::string>(msPath),
+                msPath.cast<std::string>(),
                 directions,
                 callback);
         }));
