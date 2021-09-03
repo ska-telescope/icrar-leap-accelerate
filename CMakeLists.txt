@@ -116,7 +116,7 @@ endif()
 
 # Global Libraries
 find_package(PythonLibs 3 REQUIRED) # required for PYTHON_ADD_MODULE macro
-find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED NumPy)
 
 if(HIPSYCL_ENABLED)
   find_package(hipSYCL CONFIG REQUIRED)
@@ -188,6 +188,8 @@ endif()
 #add_subdirectory(external/eigen-3.3.90) # builds eigen3 tests
 set(EIGEN3_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/eigen-3.3.90)
 find_package(Eigen3 REQUIRED)
+
+find_package(pybind11 CONFIG)
 
 # Use local rapidjson if available
 find_package(RapidJSON)

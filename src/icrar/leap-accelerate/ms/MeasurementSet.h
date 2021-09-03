@@ -200,7 +200,7 @@ namespace icrar
         uint32_t GetNumFilteredBaselines(double minimumBaselineThreshold = 0.0) const;
 
         /**
-         * @brief Get the Coords/UVWs of the 
+         * @brief Gets the Coords/UVWs of the first timestep.
          * 
          * @return Eigen::MatrixX3d 
          */

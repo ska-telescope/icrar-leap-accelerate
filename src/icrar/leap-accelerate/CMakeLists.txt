@@ -2,9 +2,8 @@
 # to the source code
 configure_file(config.h.in config.h)
 
-include("${PROJECT_SOURCE_DIR}/cmake/CUDAConfig.cmake")
-
-include("${PROJECT_SOURCE_DIR}/cmake/GetGitRevisionDescription.cmake")
+include("${CMAKE_SOURCE_DIR}/cmake/CUDAConfig.cmake")
+include("${CMAKE_SOURCE_DIR}/cmake/GetGitRevisionDescription.cmake")
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 git_local_changes(GIT_HAS_LOCAL_CHANGES)
 set(git_revision_cc "${CMAKE_CURRENT_BINARY_DIR}/core/git_revision.cc")
@@ -129,6 +128,7 @@ target_link_libraries(${TARGET_NAME} PUBLIC Boost::log_setup)
 target_link_libraries(${TARGET_NAME} PUBLIC Boost::program_options)
 target_link_libraries(${TARGET_NAME} PUBLIC Boost::filesystem)
 target_link_libraries(${TARGET_NAME} PUBLIC Eigen3::Eigen)
+#target_link_libraries(${TARGET_NAME} PUBLIC xtensor)
 
 
 if(CUDA_ENABLED)
@@ -162,10 +162,14 @@ if(PYTHON_ENABLED)
   target_link_libraries(${TARGET_NAME} PUBLIC Boost::python)
   target_link_libraries(${TARGET_NAME} PUBLIC Boost::numpy)
   target_link_libraries(${TARGET_NAME} PUBLIC Python3::Python)
+  target_link_libraries(${TARGET_NAME} PUBLIC Python3::NumPy)
+  target_link_libraries(${TARGET_NAME} PUBLIC pybind11::pybind11)
+  #target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/external/xtl-0.7.2/include)
+  #target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/external/xtensor-0.23.10/include)
   if(Python3_NumPy_FOUND)
-    target_link_libraries(${TARGET_NAME} PUBLIC Python3::NumPy)
   else()
     target_include_directories(${TARGET_NAME} SYSTEM PUBLIC /usr/lib/python3/dist-packages/numpy/core/include)
+    target_include_directories(${TARGET_NAME} SYSTEM PUBLIC /usr/lib/python3.9/site-packages/numpy/core/include)
   endif()
 endif()
 
