@@ -27,6 +27,7 @@
 #include "PyTensor.h"
 
 // #include <Eigen/Core>
+#include <pybind11/buffer_info.h>
 #include <pybind11/eigen.h>
 #include <pybind11/numpy.h>
 
@@ -35,30 +36,51 @@
 
 namespace py = pybind11;
 
+template<typename Scalar, size_t Dims>
+std::vector<long int> DimensionsVector(const typename Eigen::DSizes<long int, Dims>& dimensions)
+{
+    std::vector<long int> result;
+    for(size_t i = 0; i < dimensions.size(); ++i)
+    {
+        result.push_back(dimensions[i]);
+    }
+    return result;
+}
+
+// template<class T, size_t>
+// using Type = T;
+
+// template<std::size_t... S>
+// struct AHelper<std::index_sequence<S...>> {
+//     std::function<size_t(Type<int, S>...)> foo;
+// };
+
+template<typename Scalar, size_t Dims, typename... InitArgs>
+void PybindEigenTensor(py::module& m, const char* name)
+{
+    py::class_<Eigen::Tensor<Scalar, Dims>>(m, name, py::buffer_protocol())
+        .def(py::init<InitArgs...>())
+        .def_buffer([](Eigen::Tensor<Scalar, Dims>& t) -> py::buffer_info {
+            const auto shape = DimensionsVector<Scalar, Dims>(t.dimensions());
+            return py::buffer_info(
+                t.data(),
+                sizeof(Scalar),
+                py::format_descriptor<Scalar>::format(),
+                Dims,
+                shape,
+                py::detail::f_strides(shape, sizeof(Scalar))
+            );
+        });
+}
+
 PYBIND11_MODULE(LeapAccelerate, m)
 {
     m.doc() = "Linear Execision of the Atmosphere in Parallel";
     
-
-    py::class_<Tensor3dWrapper>(m, "Tensor3dWrapper")
-        .def(py::init<int>());
-
-    py::class_<Eigen::Tensor<double, 3>>(m, "Tensor3d", py::buffer_protocol())
-            .def(py::init<int, int, int>())
-            .def_buffer([](Eigen::Tensor<double, 3>& t) -> py::buffer_info {
-            return py::buffer_info(
-                t.data(),
-                sizeof(double),
-                py::format_descriptor<double>::format(),
-                3,
-                { t.dimension(0), t.dimension(1), t.dimension(2) },
-                {
-                    sizeof(float),
-                    sizeof(float),
-                    sizeof(float)
-                }
-            );
-        });
+    PybindEigenTensor<double, 3, int, int, int>(m, "Tensor3d");
+    PybindEigenTensor<double, 4, int, int, int, int>(m, "Tensor4d");
+    PybindEigenTensor<std::complex<double>, 3, int, int, int>(m, "Tensor3cd");
+    PybindEigenTensor<std::complex<double>, 4, int, int, int, int>(m, "Tensor4cd");
 
     py::enum_<icrar::ComputeImplementation>(m, "compute_implementation")
         .value("cpu", icrar::ComputeImplementation::cpu)
