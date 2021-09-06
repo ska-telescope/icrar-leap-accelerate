@@ -43,8 +43,8 @@ namespace icrar
 namespace python
 {
     /**
-     * @brief An boost::python adapter for the LeapMeasurement
-     * wrapper class.
+     * @brief An boost::python adapter/wrapper for MeasurementSets. Method overloading
+     * and types without python bindings are not allowed in signatures.
      */
     class PyMeasurementSet
     {

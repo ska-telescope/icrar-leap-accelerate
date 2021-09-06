@@ -28,7 +28,7 @@ def test_readcoords():
     coords = np.array(ms.read_coords(0,2), order = 'F', copy = False)
     assert coords.shape == (3,5253,2)
     assert coords.flags.f_contiguous == True
-    assert coords.flags.owndata == False
+    assert coords.flags.owndata == False # This is preferred
     # TODO: check values
 
 def test_readcoords_numpy():
@@ -36,11 +36,11 @@ def test_readcoords_numpy():
     coords = ms.read_coords(0,1).numpy_view
     assert coords.shape == (3,5253,1)
     assert coords.flags.f_contiguous == True
-    assert coords.flags.owndata == True
+    assert coords.flags.owndata == False
     coords = ms.read_coords(0,2).numpy_view
     assert coords.shape == (3,5253,2)
     assert coords.flags.f_contiguous == True
-    assert coords.flags.owndata == True
+    assert coords.flags.owndata == False
     # TODO: check values
 
 def test_readvis():
@@ -65,7 +65,7 @@ def test_readvis_numpy():
     vis = ms.read_vis(0,1).numpy_view
     assert vis.shape == (4,48,5253,1)
     assert vis.flags.f_contiguous == True
-    assert vis.flags.owndata == True
+    assert vis.flags.owndata == False
 
     # same as MeasurementSetTests.cc
     assert vis[0][0][0][0] == 0

@@ -24,7 +24,6 @@
 
 #include "PyLeapCalibrator.h"
 #include "PyMeasurementSet.h"
-#include "PyTensor.h"
 
 // #include <Eigen/Core>
 #include <pybind11/buffer_info.h>
@@ -67,8 +66,17 @@ void PybindEigenTensor(py::module& m, const char* name)
                 py::detail::f_strides(shape, sizeof(Scalar))
             );
         })
+        // TODO: this appears to do a copy and not provide a view
+        // or take pointer ownership, use capsules
+        // https://github.com/pybind/pybind11/issues/1042#issuecomment-325941022
         .def_property_readonly("numpy_view", [](Eigen::Tensor<Scalar, Dims>& t) {
-            return py::array_t<Scalar, py::array::f_style>(t.dimensions(), t.data());
+            
+            // pybind11 already wraps the lifetime of class instances. Capsule
+            // is required for python to know the memory will not go out of scope
+            auto capsule = py::capsule(&t, [](void *p) {
+                //delete reinterpret_cast<Eigen::Tensor<Scalar, Dims>*>(p);
+            });
+            return py::array_t<Scalar, py::array::f_style>(t.dimensions(), t.data(), capsule);
         });
 }
 
@@ -112,6 +120,7 @@ PYBIND11_MODULE(LeapAccelerate, m)
         .def("read_vis", &icrar::python::PyMeasurementSet::ReadVis,
             py::arg("start_timestep"),
             py::arg("num_timesteps")
+            //py::arg("polarizationSlice")=py::slice(0,-1,1)
         );
 }
 
