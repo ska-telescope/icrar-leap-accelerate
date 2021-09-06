@@ -24,6 +24,7 @@
 
 #include "PyLeapCalibrator.h"
 #include "PyMeasurementSet.h"
+#include "PyTensor.h"
 
 // #include <Eigen/Core>
 #include <pybind11/eigen.h>
@@ -38,6 +39,27 @@ PYBIND11_MODULE(LeapAccelerate, m)
 {
     m.doc() = "Linear Execision of the Atmosphere in Parallel";
     
+
+    py::class_<Tensor3dWrapper>(m, "Tensor3dWrapper")
+        .def(py::init<int>());
+
+    py::class_<Eigen::Tensor<double, 3>>(m, "Tensor3d", py::buffer_protocol())
+            .def(py::init<int, int, int>())
+            .def_buffer([](Eigen::Tensor<double, 3>& t) -> py::buffer_info {
+            return py::buffer_info(
+                t.data(),
+                sizeof(double),
+                py::format_descriptor<double>::format(),
+                3,
+                { t.dimension(0), t.dimension(1), t.dimension(2) },
+                {
+                    sizeof(float),
+                    sizeof(float),
+                    sizeof(float)
+                }
+            );
+        });
+
     py::enum_<icrar::ComputeImplementation>(m, "compute_implementation")
         .value("cpu", icrar::ComputeImplementation::cpu)
         .value("cuda", icrar::ComputeImplementation::cuda)
