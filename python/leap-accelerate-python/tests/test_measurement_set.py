@@ -24,12 +24,34 @@ def test_readcoords():
     coords = np.array(ms.read_coords(0,1), order = 'F', copy = False)
     assert coords.shape == (3,5253,1)
     assert coords.flags.f_contiguous == True
-    assert coords.flags.owndata == False
+    assert coords.flags.owndata == False # owndata==False is preferred
     coords = np.array(ms.read_coords(0,2), order = 'F', copy = False)
     assert coords.shape == (3,5253,2)
     assert coords.flags.f_contiguous == True
-    assert coords.flags.owndata == False # This is preferred
-    # TODO: check values
+    assert coords.flags.owndata == False # owndata==False is preferred
+
+    TOLERANCE = 0.00000001
+    assert coords[0][0][0]    == pytest.approx(0,                   TOLERANCE)
+    assert coords[1][0][0]    == pytest.approx(0,                   TOLERANCE)
+    assert coords[2][0][0]    == pytest.approx(0,                   TOLERANCE)
+    assert coords[0][1][0]    == pytest.approx(-213.234574834057,   TOLERANCE)
+    assert coords[1][1][0]    == pytest.approx( 135.473926784922,   TOLERANCE)
+    assert coords[2][1][0]    == pytest.approx( 136.990822255294,   TOLERANCE)
+    assert coords[0][2][0]    == pytest.approx(-126.130233053304,   TOLERANCE)
+    assert coords[1][2][0]    == pytest.approx( 169.064851738458,   TOLERANCE)
+    assert coords[2][2][0]    == pytest.approx( 139.291586460673,   TOLERANCE)
+    assert coords[0][5251][0] == pytest.approx(-366.52924769051333, TOLERANCE)
+    assert coords[1][5251][0] == pytest.approx(-437.91497202478854, TOLERANCE)
+    assert coords[2][5251][0] == pytest.approx(-207.55869675563417, TOLERANCE)
+    assert coords[0][5252][0] == pytest.approx(0,                   TOLERANCE)
+    assert coords[1][5252][0] == pytest.approx(0,                   TOLERANCE)
+    assert coords[2][5252][0] == pytest.approx(0,                   TOLERANCE)
+    assert coords[0][0][1]    == pytest.approx(0,                   TOLERANCE)
+    assert coords[1][0][1]    == pytest.approx(0,                   TOLERANCE)
+    assert coords[2][0][1]    == pytest.approx(0,                   TOLERANCE)
+    assert coords[0][1][1]    == pytest.approx(-213.16346997196314, TOLERANCE)
+    assert coords[1][1][1]    == pytest.approx( 135.46083100163386, TOLERANCE)
+    assert coords[2][1][1]    == pytest.approx( 137.11437728855378, TOLERANCE)
 
 def test_readcoords_numpy():
     ms = leap.MeasurementSet("../../testdata/mwa/1197638568-split.ms")
@@ -41,7 +63,29 @@ def test_readcoords_numpy():
     assert coords.shape == (3,5253,2)
     assert coords.flags.f_contiguous == True
     assert coords.flags.owndata == False
-    # TODO: check values
+    
+    TOLERANCE = 0.00000001
+    assert coords[0][0][0]    == pytest.approx(0,                   TOLERANCE)
+    assert coords[1][0][0]    == pytest.approx(0,                   TOLERANCE)
+    assert coords[2][0][0]    == pytest.approx(0,                   TOLERANCE)
+    assert coords[0][1][0]    == pytest.approx(-213.234574834057,   TOLERANCE)
+    assert coords[1][1][0]    == pytest.approx( 135.473926784922,   TOLERANCE)
+    assert coords[2][1][0]    == pytest.approx( 136.990822255294,   TOLERANCE)
+    assert coords[0][2][0]    == pytest.approx(-126.130233053304,   TOLERANCE)
+    assert coords[1][2][0]    == pytest.approx( 169.064851738458,   TOLERANCE)
+    assert coords[2][2][0]    == pytest.approx( 139.291586460673,   TOLERANCE)
+    assert coords[0][5251][0] == pytest.approx(-366.52924769051333, TOLERANCE)
+    assert coords[1][5251][0] == pytest.approx(-437.91497202478854, TOLERANCE)
+    assert coords[2][5251][0] == pytest.approx(-207.55869675563417, TOLERANCE)
+    assert coords[0][5252][0] == pytest.approx(0,                   TOLERANCE)
+    assert coords[1][5252][0] == pytest.approx(0,                   TOLERANCE)
+    assert coords[2][5252][0] == pytest.approx(0,                   TOLERANCE)
+    assert coords[0][0][1]    == pytest.approx(0,                   TOLERANCE)
+    assert coords[1][0][1]    == pytest.approx(0,                   TOLERANCE)
+    assert coords[2][0][1]    == pytest.approx(0,                   TOLERANCE)
+    assert coords[0][1][1]    == pytest.approx(-213.16346997196314, TOLERANCE)
+    assert coords[1][1][1]    == pytest.approx( 135.46083100163386, TOLERANCE)
+    assert coords[2][1][1]    == pytest.approx( 137.11437728855378, TOLERANCE)
 
 def test_readvis():
     ms = leap.MeasurementSet("../../testdata/mwa/1197638568-split.ms")
