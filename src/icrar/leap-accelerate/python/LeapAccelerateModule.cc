@@ -28,11 +28,8 @@
 
 // #include <Eigen/Core>
 #include <pybind11/buffer_info.h>
-#include <pybind11/eigen.h>
 #include <pybind11/numpy.h>
-
-//namespace np = boost::python::numpy;
-//namespace bp = boost::python;
+#include <pybind11/eigen.h>
 
 namespace py = pybind11;
 
@@ -40,21 +37,20 @@ template<typename Scalar, size_t Dims>
 std::vector<long int> DimensionsVector(const typename Eigen::DSizes<long int, Dims>& dimensions)
 {
     std::vector<long int> result;
-    for(size_t i = 0; i < dimensions.size(); ++i)
-    {
-        result.push_back(dimensions[i]);
-    }
+    result.assign(dimensions.begin(), dimensions.end());
     return result;
 }
 
-// template<class T, size_t>
-// using Type = T;
-
-// template<std::size_t... S>
-// struct AHelper<std::index_sequence<S...>> {
-//     std::function<size_t(Type<int, S>...)> foo;
-// };
-
+/**
+ * @brief Creates a class binding for an Eigen Tensor template. Supports both
+ * buffer protocol and eigen array wrappers to python types.
+ * 
+ * @tparam Scalar scalar datatype
+ * @tparam Dims number of dimensions
+ * @tparam InitArgs constructor argument types
+ * @param m module
+ * @param name class name
+ */
 template<typename Scalar, size_t Dims, typename... InitArgs>
 void PybindEigenTensor(py::module& m, const char* name)
 {
@@ -70,6 +66,9 @@ void PybindEigenTensor(py::module& m, const char* name)
                 shape,
                 py::detail::f_strides(shape, sizeof(Scalar))
             );
+        })
+        .def_property_readonly("numpy_view", [](Eigen::Tensor<Scalar, Dims>& t) {
+            return py::array_t<Scalar, py::array::f_style>(t.dimensions(), t.data());
         });
 }
 
@@ -77,6 +76,8 @@ PYBIND11_MODULE(LeapAccelerate, m)
 {
     m.doc() = "Linear Execision of the Atmosphere in Parallel";
     
+    // See https://stackoverflow.com/questions/39995149/expand-a-type-n-times-in-template-parameter
+    // for automatically generating parameter packs (requires a wrapper type)
     PybindEigenTensor<double, 3, int, int, int>(m, "Tensor3d");
     PybindEigenTensor<double, 4, int, int, int, int>(m, "Tensor4d");
     PybindEigenTensor<std::complex<double>, 3, int, int, int>(m, "Tensor3cd");
@@ -96,6 +97,11 @@ PYBIND11_MODULE(LeapAccelerate, m)
             py::arg("solution_interval")=py::slice(0,1,1),
             py::arg("output_path")
         );
+    
+    m.def("create_matrix", []()
+    {
+        return Eigen::MatrixXd::Zero(5,5);
+    });
 
     py::class_<icrar::python::PyMeasurementSet>(m, "MeasurementSet")
         .def(py::init<std::string>())
@@ -109,34 +115,4 @@ PYBIND11_MODULE(LeapAccelerate, m)
         );
 }
 
-/**
-BOOST_PYTHON_MODULE(LeapAccelerate)
-{
-    bp::numpy::initialize();
-
-    bp::class_<icrar::python::PyLeapCalibrator>("LeapCalibrator", bp::init<icrar::ComputeImplementation>())
-        .def(bp::init<std::string>())
-        .def("calibrate", &icrar::python::PyLeapCalibrator::PythonCalibrate, (
-            bp::arg("ms_path"),
-            bp::arg("directions"),
-            bp::arg("solution_interval")=bp::slice(0,1,1),
-            bp::arg("output_path")=bp::object()
-        ));
-        //.def("async_calibrate")
-
-    bp::class_<icrar::python::PyMeasurementSet>("MeasurementSet", bp::init<std::string>())
-        .def("read_coords", &icrar::python::PyMeasurementSet::ReadCoords, (
-            bp::arg("start_timestep"),
-            bp::arg("num_timesteps")
-        ))
-        .def("read_vis", &icrar::python::PyMeasurementSet::ReadVis, (
-            bp::arg("start_timestep"),
-            bp::arg("num_timesteps")
-        ));
-
-    bp::enum_<icrar::ComputeImplementation>("compute_implementation")
-        .value("cpu", icrar::ComputeImplementation::cpu)
-        .value("cuda", icrar::ComputeImplementation::cuda);
-}
-**/
 #endif // PYTHON_ENABLED
