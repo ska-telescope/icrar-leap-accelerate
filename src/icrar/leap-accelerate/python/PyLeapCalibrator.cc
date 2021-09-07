@@ -23,6 +23,7 @@
 #if PYTHON_ENABLED
 
 #include "PyLeapCalibrator.h"
+#include "PyMeasurementSet.h"
 
 #include <future>
 
@@ -80,19 +81,17 @@ namespace python
 
     PyLeapCalibrator::PyLeapCalibrator(const PyLeapCalibrator& other)
     {
-        m_measurementSet = other.m_measurementSet;
         m_calibrator = other.m_calibrator;
     }
 
     void PyLeapCalibrator::Calibrate(
-        const std::string msPath,
+        const MeasurementSet& measurementSet,
         const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
         const Slice& solutionInterval,
         boost::optional<std::string> outputPath)
     {
         icrar::log::Initialize(icrar::log::Verbosity::warn);
 
-        m_measurementSet = std::make_unique<MeasurementSet>(msPath);
         auto validatedDirections = ToSphericalDirectionVector(directions);
         double minimumBaselineThreshold = 0.0;
         int referenceAntenna = 0;
@@ -101,7 +100,7 @@ namespace python
         std::vector<cpu::Calibration> calibrations;
         m_calibrator->Calibrate(
             [&](const cpu::Calibration& cal) { calibrations.push_back(cal); },
-            *m_measurementSet,
+            measurementSet,
             validatedDirections,
             solutionInterval,
             minimumBaselineThreshold,
@@ -121,14 +120,13 @@ namespace python
     }
 
     void PyLeapCalibrator::Calibrate(
-        const std::string msPath,
+        const MeasurementSet& measurementSet,
         const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
         const Slice& solutionInterval,
         const std::function<void(const cpu::Calibration&)>& callback)
     {
         icrar::log::Initialize(icrar::log::Verbosity::warn);
 
-        m_measurementSet = std::make_unique<MeasurementSet>(msPath);
         auto validatedDirections = ToSphericalDirectionVector(directions);
         double minimumBaselineThreshold = 0.0;
         int referenceAntenna = 0;
@@ -136,7 +134,7 @@ namespace python
 
         m_calibrator->Calibrate(
             callback,
-            *m_measurementSet,
+            measurementSet,
             validatedDirections,
             solutionInterval,
             minimumBaselineThreshold,
@@ -150,35 +148,53 @@ namespace python
         const py::slice& solutionInterval,
         const py::object& outputPath)
     {
+        auto measurementSet = std::make_unique<MeasurementSet>(msPath);
         Calibrate(
-            msPath,
+            *measurementSet,
             directions,
             ToSlice(solutionInterval),
             ToOptional<std::string>(outputPath));
     }
 
     void PyLeapCalibrator::PythonCalibrateAsync(
-        const std::string& msPath,
+        const PyMeasurementSet& measurementSet,
         const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
         const pybind11::slice& solutionInterval,
         const std::function<void(const cpu::Calibration&)>& callback)
     {
         Calibrate(
-            msPath,
+            measurementSet.Get(),
             directions,
             ToSlice(solutionInterval),
             callback);
     }
 
     std::future<void> PyLeapCalibrator::PythonCalibrateAsync2(
-        const std::string& msPath,
+        const PyMeasurementSet& measurementSet,
         const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
         const pybind11::slice& solutionInterval,
         const std::function<void(const cpu::Calibration&)>& callback)
     {
         return std::async(std::launch::async, [&]() {
+
+            // thread safe
+            // callback(cpu::Calibration(1,1));
+            // callback(cpu::Calibration(2,2));
+            // callback(cpu::Calibration(3,3));
+            // callback(cpu::Calibration(4,4));
+            // callback(cpu::Calibration(5,5));
+            // callback(cpu::Calibration(6,6));
+            // callback(cpu::Calibration(7,7));
+            // callback(cpu::Calibration(8,8));
+            // callback(cpu::Calibration(9,9));
+            // callback(cpu::Calibration(10,10));
+            // callback(cpu::Calibration(11,11));
+            // callback(cpu::Calibration(12,12));
+            // callback(cpu::Calibration(13,13));
+            // callback(cpu::Calibration(14,14));
+
             Calibrate(
-                msPath,
+                measurementSet.Get(),
                 directions,
                 ToSlice(solutionInterval),
                 callback);

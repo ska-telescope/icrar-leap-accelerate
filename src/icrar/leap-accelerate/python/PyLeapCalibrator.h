@@ -46,13 +46,14 @@ namespace icrar
 {
 namespace python
 {
+    class PyMeasurementSet;
+
     /**
      * @brief An adapter to a boost::python compatible class
      * @note the Calibrate signature may change as needed
      */
     class PyLeapCalibrator
     {
-        std::shared_ptr<MeasurementSet> m_measurementSet;
         std::shared_ptr<ILeapCalibrator> m_calibrator;
 
     public:
@@ -61,13 +62,13 @@ namespace python
         PyLeapCalibrator(const PyLeapCalibrator& other);
 
         void Calibrate(
-            const std::string msPath,
+            const MeasurementSet& msPath,
             const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
             const Slice& solutionInterval,
             boost::optional<std::string> outputPath);
 
         void Calibrate(
-            const std::string msPath,
+            const MeasurementSet& msPath,
             const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
             const Slice& solutionInterval,
             const std::function<void(const cpu::Calibration&)>& callback);
@@ -92,13 +93,13 @@ namespace python
             const pybind11::object& outputPath);
 
         void PythonCalibrateAsync(
-            const std::string& msPath,
+            const PyMeasurementSet& ms,
             const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
             const pybind11::slice& solutionInterval,
             const std::function<void(const cpu::Calibration&)>& callback);
 
         std::future<void> PythonCalibrateAsync2(
-            const std::string& msPath,
+            const PyMeasurementSet& ms,
             const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
             const pybind11::slice& solutionInterval,
             const std::function<void(const cpu::Calibration&)>& callback);

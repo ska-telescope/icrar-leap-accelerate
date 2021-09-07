@@ -47,6 +47,7 @@ namespace python
 
     public:
         PyMeasurementSet(std::string msPath);
+        const MeasurementSet& Get() const { return *m_measurementSet; }
 
         Eigen::Tensor<double, 3> ReadCoords(std::uint32_t startTimestep, std::uint32_t intervalTimesteps);
         Eigen::Tensor<std::complex<double>, 4> ReadVis(std::uint32_t startTimestep, std::uint32_t intervalTimesteps);
