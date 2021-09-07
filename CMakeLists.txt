@@ -114,9 +114,6 @@ if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/gtest-1.11.0/CMakeLists.txt")
 endif()
 
 # Global Libraries
-find_package(PythonLibs 3 REQUIRED) # required for PYTHON_ADD_MODULE macro
-find_package(Python3 COMPONENTS Interpreter Development REQUIRED NumPy)
-
 if(HIPSYCL_ENABLED)
   find_package(hipSYCL CONFIG REQUIRED)
 endif()
@@ -125,6 +122,7 @@ if(CUDA_ENABLED)
   find_package(CUDA 9.0)
   enable_language(CUDA)
 endif()
+
 #modify exported compile commands for linting
 if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
   
@@ -154,11 +152,15 @@ find_package(Boost REQUIRED
   COMPONENTS log log_setup filesystem program_options
 )
 
-find_package(pybind11 CONFIG)
-set(PYTHON_ENABLED ${pybind11_FOUND})
-
 set(CASACORE_FIND_QUIETLY ON)
 find_package(Casacore COMPONENTS ms)
+
+find_package(pybind11 CONFIG)
+set(PYTHON_ENABLED ${pybind11_FOUND})
+if(PYTHON_ENABLED)
+  find_package(PythonLibs 3 REQUIRED) # required for PYTHON_ADD_MODULE macro
+  find_package(Python3 COMPONENTS Interpreter Development REQUIRED NumPy)
+endif()
 
 # Eigen Acceleration
 # find_package(BLAS REQUIRED)

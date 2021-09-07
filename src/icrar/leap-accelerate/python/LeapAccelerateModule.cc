@@ -25,10 +25,15 @@
 #include "PyLeapCalibrator.h"
 #include "PyMeasurementSet.h"
 
-// #include <Eigen/Core>
+#include <Eigen/Core>
+
 #include <pybind11/buffer_info.h>
 #include <pybind11/numpy.h>
 #include <pybind11/eigen.h>
+#include <pybind11/functional.h>
+
+#include <future>
+#include <string>
 
 namespace py = pybind11;
 
@@ -53,6 +58,8 @@ std::vector<long int> DimensionsVector(const typename Eigen::DSizes<long int, Di
 template<typename Scalar, size_t Dims, typename... InitArgs>
 void PybindEigenTensor(py::module& m, const char* name)
 {
+    //TODO: see pybind11/functional.h for simple type caster to
+    // convert to pytypes
     py::class_<Eigen::Tensor<Scalar, Dims>>(m, name, py::buffer_protocol())
         .def(py::init<InitArgs...>())
         .def_buffer([](Eigen::Tensor<Scalar, Dims>& t) -> py::buffer_info {
@@ -67,7 +74,7 @@ void PybindEigenTensor(py::module& m, const char* name)
             );
         })
         // TODO: this appears to do a copy and not provide a view
-        // or take pointer ownership, use capsules
+        // or take pointer ownership, use capsules for this
         // https://github.com/pybind/pybind11/issues/1042#issuecomment-325941022
         .def_property_readonly("numpy_view", [](Eigen::Tensor<Scalar, Dims>& t) {
             
@@ -84,6 +91,18 @@ PYBIND11_MODULE(LeapAccelerate, m)
 {
     m.doc() = "Linear Execision of the Atmosphere in Parallel";
     
+    py::class_<std::future<void>>(m, "Future")
+        .def(py::init<>())
+        .def("done", [](const std::future<void>& f) -> bool {
+            return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
+        })
+        .def("wait", [](const std::future<void>& f) -> void {
+            f.wait();
+        })
+        .def("result", [](std::future<void>& f) -> void {
+            f.get();
+        });
+
     // See https://stackoverflow.com/questions/39995149/expand-a-type-n-times-in-template-parameter
     // for automatically generating parameter packs (requires a wrapper type)
     PybindEigenTensor<double, 3, int, int, int>(m, "Tensor3d");
@@ -91,7 +110,13 @@ PYBIND11_MODULE(LeapAccelerate, m)
     PybindEigenTensor<std::complex<double>, 3, int, int, int>(m, "Tensor3cd");
     PybindEigenTensor<std::complex<double>, 4, int, int, int, int>(m, "Tensor4cd");
 
-    py::enum_<icrar::ComputeImplementation>(m, "compute_implementation")
+    py::class_<icrar::cpu::BeamCalibration>(m, "BeamCalibration")
+        .def(py::init<Eigen::Vector2d, Eigen::MatrixXd>());
+
+    py::class_<icrar::cpu::Calibration>(m, "Calibration")
+        .def(py::init<int, int>());
+
+    py::enum_<icrar::ComputeImplementation>(m, "ComputeImplementation")
         .value("cpu", icrar::ComputeImplementation::cpu)
         .value("cuda", icrar::ComputeImplementation::cuda)
         .export_values();
@@ -104,12 +129,19 @@ PYBIND11_MODULE(LeapAccelerate, m)
             py::arg("directions").noconvert(),
             py::arg("solution_interval")=py::slice(0,1,1),
             py::arg("output_path")
+        )
+        .def("calibrate", &icrar::python::PyLeapCalibrator::PythonCalibrateAsync,
+            py::arg("ms_path"),
+            py::arg("directions").noconvert(),
+            py::arg("solution_interval")=py::slice(0,1,1),
+            py::arg("callback")
+        )
+        .def("calibrate_async", &icrar::python::PyLeapCalibrator::PythonCalibrateAsync2,
+            py::arg("ms_path"),
+            py::arg("directions").noconvert(),
+            py::arg("solution_interval")=py::slice(0,1,1),
+            py::arg("callback")
         );
-    
-    m.def("create_matrix", []()
-    {
-        return Eigen::MatrixXd::Zero(5,5);
-    });
 
     py::class_<icrar::python::PyMeasurementSet>(m, "MeasurementSet")
         .def(py::init<std::string>())

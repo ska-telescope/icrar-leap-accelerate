@@ -68,14 +68,6 @@ namespace python
         return output;
     }
 
-    py::object ToPython(std::future<void>&& future)
-    {
-        // TODO(calgray): Not implemented
-        throw std::runtime_error("not implemented");
-        auto asyncio = py::module::import("asyncio");
-        //return asyncio.attr("Future")();
-    }
-
     PyLeapCalibrator::PyLeapCalibrator(ComputeImplementation impl)
     {
         m_calibrator = LeapCalibratorFactory::Create(impl);
@@ -131,27 +123,19 @@ namespace python
     void PyLeapCalibrator::Calibrate(
         const std::string msPath,
         const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
-        py::function& callback)
+        const Slice& solutionInterval,
+        const std::function<void(const cpu::Calibration&)>& callback)
     {
         icrar::log::Initialize(icrar::log::Verbosity::warn);
 
         m_measurementSet = std::make_unique<MeasurementSet>(msPath);
         auto validatedDirections = ToSphericalDirectionVector(directions);
-        auto solutionInterval = Slice(0,1,1);
         double minimumBaselineThreshold = 0.0;
         int referenceAntenna = 0;
         ComputeOptionsDTO computeOptions = {boost::none, boost::none, boost::none};
 
-        auto outputCallback = [&](const cpu::Calibration& cal)
-        {
-            if(callback != py::none()) // TODO: check pybind gotchas
-            {
-                callback(cal);
-            }
-        };
-
         m_calibrator->Calibrate(
-            outputCallback,
+            callback,
             *m_measurementSet,
             validatedDirections,
             solutionInterval,
@@ -173,17 +157,32 @@ namespace python
             ToOptional<std::string>(outputPath));
     }
 
-    py::object PyLeapCalibrator::PythonCalibrateAsync(
-        const py::object& msPath,
+    void PyLeapCalibrator::PythonCalibrateAsync(
+        const std::string& msPath,
         const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
-        py::function& callback)
+        const pybind11::slice& solutionInterval,
+        const std::function<void(const cpu::Calibration&)>& callback)
     {
-        return ToPython(std::async(std::launch::async, [&]() {
+        Calibrate(
+            msPath,
+            directions,
+            ToSlice(solutionInterval),
+            callback);
+    }
+
+    std::future<void> PyLeapCalibrator::PythonCalibrateAsync2(
+        const std::string& msPath,
+        const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
+        const pybind11::slice& solutionInterval,
+        const std::function<void(const cpu::Calibration&)>& callback)
+    {
+        return std::async(std::launch::async, [&]() {
             Calibrate(
-                msPath.cast<std::string>(),
+                msPath,
                 directions,
+                ToSlice(solutionInterval),
                 callback);
-        }));
+        });
     }
 } // namespace python
 } // namespace icrar

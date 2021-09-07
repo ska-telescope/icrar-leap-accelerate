@@ -14,11 +14,6 @@ def test_tensor():
     array[:] = 0
     assert array.shape == (1,2,3)
 
-    mat = leap.create_matrix()
-    assert mat.shape == (5,5)
-    assert mat.flags.f_contiguous == True
-    assert mat.flags.owndata == False
-
 def test_readcoords():
     ms = leap.MeasurementSet("../../testdata/mwa/1197638568-split.ms")
     coords = np.array(ms.read_coords(0,1), order = 'F', copy = False)

@@ -57,6 +57,11 @@ variables:
 .project_packages: &project_packages
   - apt install -y wget casacore-dev libboost-all-dev rapidjson-dev
 
+# .cuda_packages: &cuda_packages
+
+.python_packages: &python_packages
+  - apt install python3-pip pybind11
+
 .doc_packages: &doc_packages
   - apt install -y python3-pip doxygen graphviz
   #- pip3 install -U sphinx breathe exhale recommonmark sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary
@@ -76,7 +81,7 @@ variables:
     - *generator_packages
     - *project_packages
 
-.cuda_build_dependencies:
+.complete_build_dependencies:
   extends: .common
   image: nexus.engageska-portugal.pt/ska-docker/icrar-leap-accelerate-build:0.10.0
   variables:
@@ -86,12 +91,10 @@ variables:
     - apt update
     - *generator_packages
     - *project_packages
+    - *python_packages
     - export CUDA_HOME=/usr/local/cuda
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
     - export PATH=$PATH:$CUDA_HOME/bin
-
-.complete_build_dependencies:
-  extends: .cuda_build_dependencies
 
 .docs_dependencies:
   extends: .minimal_build_dependencies

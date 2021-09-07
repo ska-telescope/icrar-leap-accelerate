@@ -28,11 +28,6 @@
 
 #include <Eigen/Core>
 
-// #include <boost/python.hpp>
-// #include <boost/python/call.hpp>
-// #include <boost/python/numpy.hpp>
-// #include <boost/python/object.hpp>
-
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 

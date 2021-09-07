@@ -40,6 +40,7 @@
 #include <pybind11/numpy.h>
 
 #include <iostream>
+#include <future>
 
 namespace icrar
 {
@@ -68,9 +69,8 @@ namespace python
         void Calibrate(
             const std::string msPath,
             const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
-            pybind11::function& callback);
-
-
+            const Slice& solutionInterval,
+            const std::function<void(const cpu::Calibration&)>& callback);
 
         /**
          * @brief A boost python interop compatible signature for 
@@ -89,15 +89,19 @@ namespace python
         void PythonPlasmaCalibrate(
             const pybind11::object& plasmaTM,
             const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
-            pybind11::object& outputPath);
+            const pybind11::object& outputPath);
 
-        /**
-         * @brief Performs calibration that 
-         */
-        pybind11::object PythonCalibrateAsync(
-            const pybind11::object& msPath,
+        void PythonCalibrateAsync(
+            const std::string& msPath,
             const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
-            pybind11::function& callback);
+            const pybind11::slice& solutionInterval,
+            const std::function<void(const cpu::Calibration&)>& callback);
+
+        std::future<void> PythonCalibrateAsync2(
+            const std::string& msPath,
+            const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
+            const pybind11::slice& solutionInterval,
+            const std::function<void(const cpu::Calibration&)>& callback);
     };
 } // namespace python
 } // namespace icrar
