@@ -50,7 +50,7 @@ def test_calibrate_callback():
     ms = leap.MeasurementSet("../../testdata/mwa/1197638568-split.ms")
     
     output = list()
-    cal.calibrate_callback(
+    cal.calibrate(
         ms=ms,
         directions=np.array([[0.1,0.2],[0.3, 0.4],[0.5, 0.6]]),
         solution_interval=slice(0,None,1),
@@ -60,16 +60,17 @@ def test_calibrate_callback():
 
 def test_calibrate_callback2():
     cal = leap.LeapCalibrator("cpu")
+    ms = leap.MeasurementSet("../../testdata/mwa/1197638568-split.ms")
     
     output = list()
-    ms = leap.MeasurementSet("../../testdata/mwa/1197638568-split.ms")
+
+    # python threading never executes in parallel
     async def calibrate_async(calibrator, callback):
-        cal.calibrate_callback(
+        cal.calibrate(
             ms=ms,
             directions=np.array([[0.1,0.2],[0.3, 0.4],[0.5, 0.6]]),
             solution_interval=slice(0,None,1),
             callback=callback)
-
 
     t1 = threading.Thread(target=asyncio.run, args=(calibrate_async(cal, output.append), ))
     t2 = threading.Thread(target=asyncio.run, args=(calibrate_async(cal, output.append), ))

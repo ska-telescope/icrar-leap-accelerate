@@ -65,19 +65,24 @@ namespace python
             const MeasurementSet& msPath,
             const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
             const Slice& solutionInterval,
-            boost::optional<std::string> outputPath);
+            const std::function<void(const cpu::Calibration&)>& callback);
 
-        void Calibrate(
+        void PythonCalibrate(
+            const PyMeasurementSet& ms,
+            const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
+            const pybind11::slice& solutionInterval,
+            const std::function<void(const cpu::Calibration&)>& callback);
+
+        void CalibrateToFile(
             const MeasurementSet& msPath,
             const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
             const Slice& solutionInterval,
-            const std::function<void(const cpu::Calibration&)>& callback);
+            boost::optional<std::string> outputPath);
 
         /**
-         * @brief A boost python interop compatible signature for 
-         *calibrate
+         * @brief A boost python interop compatible signature for leap calibration
          */
-        void PythonCalibrate(
+        void PythonCalibrateToFile(
             const std::string& msPath,
             const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
             const pybind11::slice& solutionInterval,
@@ -91,18 +96,6 @@ namespace python
             const pybind11::object& plasmaTM,
             const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
             const pybind11::object& outputPath);
-
-        void PythonCalibrateAsync(
-            const PyMeasurementSet& ms,
-            const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
-            const pybind11::slice& solutionInterval,
-            const std::function<void(const cpu::Calibration&)>& callback);
-
-        std::future<void> PythonCalibrateAsync2(
-            const PyMeasurementSet& ms,
-            const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
-            const pybind11::slice& solutionInterval,
-            const std::function<void(const cpu::Calibration&)>& callback);
     };
 } // namespace python
 } // namespace icrar

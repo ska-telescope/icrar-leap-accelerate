@@ -88,10 +88,42 @@ namespace python
         const MeasurementSet& measurementSet,
         const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
         const Slice& solutionInterval,
+        const std::function<void(const cpu::Calibration&)>& callback)
+    {
+        auto validatedDirections = ToSphericalDirectionVector(directions);
+        double minimumBaselineThreshold = 0.0;
+        int referenceAntenna = 0;
+        ComputeOptionsDTO computeOptions = {boost::none, boost::none, boost::none};
+
+        m_calibrator->Calibrate(
+            callback,
+            measurementSet,
+            validatedDirections,
+            solutionInterval,
+            minimumBaselineThreshold,
+            referenceAntenna,
+            computeOptions);
+    }
+
+    void PyLeapCalibrator::PythonCalibrate(
+        const PyMeasurementSet& measurementSet,
+        const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
+        const pybind11::slice& solutionInterval,
+        const std::function<void(const cpu::Calibration&)>& callback)
+    {
+        Calibrate(
+            measurementSet.Get(),
+            directions,
+            ToSlice(solutionInterval),
+            callback);
+    }
+
+    void PyLeapCalibrator::CalibrateToFile(
+        const MeasurementSet& measurementSet,
+        const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
+        const Slice& solutionInterval,
         boost::optional<std::string> outputPath)
     {
-        icrar::log::Initialize(icrar::log::Verbosity::warn);
-
         auto validatedDirections = ToSphericalDirectionVector(directions);
         double minimumBaselineThreshold = 0.0;
         int referenceAntenna = 0;
@@ -119,86 +151,19 @@ namespace python
         }
     }
 
-    void PyLeapCalibrator::Calibrate(
-        const MeasurementSet& measurementSet,
-        const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
-        const Slice& solutionInterval,
-        const std::function<void(const cpu::Calibration&)>& callback)
-    {
-        icrar::log::Initialize(icrar::log::Verbosity::warn);
-
-        auto validatedDirections = ToSphericalDirectionVector(directions);
-        double minimumBaselineThreshold = 0.0;
-        int referenceAntenna = 0;
-        ComputeOptionsDTO computeOptions = {boost::none, boost::none, boost::none};
-
-        m_calibrator->Calibrate(
-            callback,
-            measurementSet,
-            validatedDirections,
-            solutionInterval,
-            minimumBaselineThreshold,
-            referenceAntenna,
-            computeOptions);
-    }
-
-    void PyLeapCalibrator::PythonCalibrate(
+    void PyLeapCalibrator::PythonCalibrateToFile(
         const std::string& msPath,
         const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
         const py::slice& solutionInterval,
         const py::object& outputPath)
     {
+        icrar::log::Initialize(icrar::log::Verbosity::warn);
         auto measurementSet = std::make_unique<MeasurementSet>(msPath);
-        Calibrate(
+        CalibrateToFile(
             *measurementSet,
             directions,
             ToSlice(solutionInterval),
             ToOptional<std::string>(outputPath));
-    }
-
-    void PyLeapCalibrator::PythonCalibrateAsync(
-        const PyMeasurementSet& measurementSet,
-        const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
-        const pybind11::slice& solutionInterval,
-        const std::function<void(const cpu::Calibration&)>& callback)
-    {
-        Calibrate(
-            measurementSet.Get(),
-            directions,
-            ToSlice(solutionInterval),
-            callback);
-    }
-
-    std::future<void> PyLeapCalibrator::PythonCalibrateAsync2(
-        const PyMeasurementSet& measurementSet,
-        const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions,
-        const pybind11::slice& solutionInterval,
-        const std::function<void(const cpu::Calibration&)>& callback)
-    {
-        return std::async(std::launch::async, [&]() {
-
-            // thread safe
-            // callback(cpu::Calibration(1,1));
-            // callback(cpu::Calibration(2,2));
-            // callback(cpu::Calibration(3,3));
-            // callback(cpu::Calibration(4,4));
-            // callback(cpu::Calibration(5,5));
-            // callback(cpu::Calibration(6,6));
-            // callback(cpu::Calibration(7,7));
-            // callback(cpu::Calibration(8,8));
-            // callback(cpu::Calibration(9,9));
-            // callback(cpu::Calibration(10,10));
-            // callback(cpu::Calibration(11,11));
-            // callback(cpu::Calibration(12,12));
-            // callback(cpu::Calibration(13,13));
-            // callback(cpu::Calibration(14,14));
-
-            Calibrate(
-                measurementSet.Get(),
-                directions,
-                ToSlice(solutionInterval),
-                callback);
-        });
     }
 } // namespace python
 } // namespace icrar

@@ -92,25 +92,10 @@ void PybindEigenTensor(py::module& m, const char* name)
 PYBIND11_MODULE(LeapAccelerate, m)
 {
     m.doc() = "Linear Execision of the Atmosphere in Parallel";
-    
-    // py::class_<std::future<void>>(m, "Future")
-    //     .def(py::init<>())
-    //     .def("done", [](const std::future<void>& f) -> bool {
-    //         return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
-    //     })
-    //     .def("wait", [](const std::future<void>& f) -> void {
-    //         f.wait();
-    //     })
-    //     .def("result", [](std::future<void>& f) -> void {
-    //         f.get();
-    //     });
 
-    // py::class_<py::Awaitable<void>, std::shared_ptr<py::Awaitable<void>>>(m, "Awaitable")
-    //     .def(py::init<>())
-    //     .def("__iter__", &py::Awaitable<void>::__iter__)
-    //     .def("__await__", &py::Awaitable<void>::__await__)
-    //     .def("__next__", &py::Awaitable<void>::__next__);
-    py::async::enable_async(m);
+    m.def("enable_log", []() {
+        icrar::log::Initialize(icrar::log::Verbosity::warn);
+    });
 
     // See https://stackoverflow.com/questions/39995149/expand-a-type-n-times-in-template-parameter
     // for automatically generating parameter packs (requires a wrapper type)
@@ -132,8 +117,9 @@ PYBIND11_MODULE(LeapAccelerate, m)
 
     // def_async extension on available on class_async, need to cast def() return type to move elsewhere
     // or integrate into 
+    py::async::enable_async(m);
     py::async::class_async<icrar::python::PyLeapCalibrator>(m, "LeapCalibrator")
-        .def_async("calibrate_async", &icrar::python::PyLeapCalibrator::PythonCalibrateAsync,
+        .def_async("calibrate_async", &icrar::python::PyLeapCalibrator::PythonCalibrate,
             py::arg("ms"),
             py::arg("directions").noconvert(),
             py::arg("solution_interval")=py::slice(0,1,1),
@@ -142,22 +128,16 @@ PYBIND11_MODULE(LeapAccelerate, m)
         .def(py::init<icrar::ComputeImplementation>())
         .def(py::init<std::string>())
         .def("calibrate", &icrar::python::PyLeapCalibrator::PythonCalibrate,
+            py::arg("ms"),
+            py::arg("directions").noconvert(),
+            py::arg("solution_interval")=py::slice(0,1,1),
+            py::arg("callback")
+        )
+        .def("calibrate", &icrar::python::PyLeapCalibrator::PythonCalibrateToFile,
             py::arg("ms_path"),
             py::arg("directions").noconvert(),
             py::arg("solution_interval")=py::slice(0,1,1),
             py::arg("output_path")
-        )
-        .def("calibrate_callback", &icrar::python::PyLeapCalibrator::PythonCalibrateAsync,
-            py::arg("ms"),
-            py::arg("directions").noconvert(),
-            py::arg("solution_interval")=py::slice(0,1,1),
-            py::arg("callback")
-        )
-        .def("calibrate_async2", &icrar::python::PyLeapCalibrator::PythonCalibrateAsync2,
-            py::arg("ms"),
-            py::arg("directions").noconvert(),
-            py::arg("solution_interval")=py::slice(0,1,1),
-            py::arg("callback")
         );
 
     py::class_<icrar::python::PyMeasurementSet>(m, "MeasurementSet")
