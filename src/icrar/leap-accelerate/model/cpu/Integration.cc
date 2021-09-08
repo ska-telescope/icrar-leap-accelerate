@@ -21,9 +21,11 @@
  */
 
 #include "Integration.h"
+
 #include <icrar/leap-accelerate/math/math_conversion.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
+#include <icrar/leap-accelerate/common/Slice.h>
 
 #include <icrar/leap-accelerate/core/memory/ioutils.h>
 #include <icrar/leap-accelerate/core/log/logging.h>

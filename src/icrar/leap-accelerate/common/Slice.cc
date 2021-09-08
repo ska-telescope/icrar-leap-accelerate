@@ -22,6 +22,7 @@
 
 #include "Slice.h"
 #include <icrar/leap-accelerate/exception/exception.h>
+#include <rapidjson/document.h>
 
 namespace icrar
 {

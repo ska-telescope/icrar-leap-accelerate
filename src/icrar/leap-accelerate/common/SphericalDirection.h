@@ -23,9 +23,20 @@
 #pragma once
 
 #include <Eigen/Core>
-
-#include <rapidjson/document.h>
 #include <vector>
+
+// NOTE: nvcc 11.4 no longer includes rapidjson successfully. Forward
+// declarations are taken from rapidjson headers.
+namespace rapidjson
+{
+    class CrtAllocator;
+    template <typename BaseAllocator>
+    class MemoryPoolAllocator;
+    template <typename Encoding, typename Allocator>
+    class GenericValue;
+    template<typename CharType>
+    struct UTF8;
+}
 
 namespace icrar
 {
@@ -43,5 +54,6 @@ namespace icrar
      * @brief Parses a json object to a collection of MVDirections
      * 
      */
-    std::vector<SphericalDirection> ParseDirections(const rapidjson::Value& doc);
+    std::vector<SphericalDirection> ParseDirections(
+        const rapidjson::GenericValue<rapidjson::UTF8<char>, rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator>>& doc);
 } // namespace icrar

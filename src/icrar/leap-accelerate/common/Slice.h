@@ -23,12 +23,23 @@
 #pragma once
 #include <icrar/leap-accelerate/common/Range.h>
 #include <icrar/leap-accelerate/exception/exception.h>
-#include <rapidjson/document.h>
+
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <string>
 #include <stdint.h>
+
+namespace rapidjson
+{
+    class CrtAllocator;
+    template <typename BaseAllocator>
+    class MemoryPoolAllocator;
+    template <typename Encoding, typename Allocator>
+    class GenericValue;
+    template<typename CharType>
+    struct UTF8;
+}
 
 namespace icrar
 {
@@ -91,5 +102,5 @@ namespace icrar
 
     Slice ParseSlice(const std::string& json);
 
-    Slice ParseSlice(const rapidjson::Value& doc);
+    Slice ParseSlice(const rapidjson::GenericValue<rapidjson::UTF8<char>, rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator>>& doc);
 } // namespace icrar

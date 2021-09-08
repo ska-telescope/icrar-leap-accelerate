@@ -22,11 +22,10 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/ms/MeasurementSet.h>
-
 #include <icrar/leap-accelerate/model/cpu/MVuvw.h>
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
+#include <icrar/leap-accelerate/common/Slice.h>
 
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
@@ -51,10 +50,9 @@ namespace cuda
 
 namespace icrar
 {
+    class MeasurementSet;
 namespace cpu
 {
-    class MeasurementSet;
-
     /**
      * @brief A container for storing a visibilities tensor for accumulation during phase rotating.
      * 
