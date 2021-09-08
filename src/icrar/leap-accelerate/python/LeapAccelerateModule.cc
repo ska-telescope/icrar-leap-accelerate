@@ -115,8 +115,8 @@ PYBIND11_MODULE(LeapAccelerate, m)
         .value("cuda", icrar::ComputeImplementation::cuda)
         .export_values();
 
-    // def_async extension on available on class_async, need to cast def() return type to move elsewhere
-    // or integrate into 
+    // def_async extension on available on class_async, need to cast def() return type
+    // to move elsewhere or integrate into pybind11::class_
     py::async::enable_async(m);
     py::async::class_async<icrar::python::PyLeapCalibrator>(m, "LeapCalibrator")
         .def_async("calibrate_async", &icrar::python::PyLeapCalibrator::PythonCalibrate,
