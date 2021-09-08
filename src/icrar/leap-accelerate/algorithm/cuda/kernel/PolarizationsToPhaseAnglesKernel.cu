@@ -53,7 +53,10 @@ namespace cuda
         auto avgDataMap = Eigen::Map<const MatrixXcd>((thrust::complex<double>*)avgData.Get(), avgData.GetRows(), avgData.GetCols());
         auto phaseAnglesI1Map = Eigen::Map<Eigen::VectorXd>(phaseAnglesI1.Get(), phaseAnglesI1.GetRows());
 
-        dim3 blockSize = dim3(1024, 1, 1);
+        cudaDeviceProp prop;
+        cudaGetDeviceProperties(&prop, 0);
+        const int threadsPerBlock = prop.maxThreadsPerBlock;
+        dim3 blockSize = dim3(threadsPerBlock, 1, 1);
         dim3 gridSize = dim3(cpu::ceil_div<int64_t>(I1.GetRows(), blockSize.x), 1, 1);
         g_AvgDataToPhaseAngles<<<blockSize, gridSize>>>(I1Map, avgDataMap, phaseAnglesI1Map);
     }

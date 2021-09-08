@@ -75,7 +75,12 @@ namespace cuda
             integration.GetUVW().GetDimensionSize(2)
         );
 
-        dim3 blockSize = dim3(8, 128, 1); // block size can be any value where the product is <=1024
+        cudaDeviceProp prop;
+        cudaGetDeviceProperties(&prop, 0);
+        const int threadsPerBlock = prop.maxThreadsPerBlock;
+        constexpr int channels = 4; 
+        // block size can be any value where the product is threadsperBlock
+        dim3 blockSize = dim3(channels, threadsPerBlock/channels, 1);
         dim3 gridSize = dim3(
             cpu::ceil_div<int64_t>(integration.GetNumChannels(), blockSize.x),
             cpu::ceil_div<int64_t>(integration.GetNumBaselines(), blockSize.y),
