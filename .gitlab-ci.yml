@@ -336,9 +336,6 @@ test_debug_all:
 
 doxygen:
  stage: test
- only:
-   - tags
-   - master
  before_script:
    - apt update && apt install -y doxygen
    - apt update && apt install -y git
