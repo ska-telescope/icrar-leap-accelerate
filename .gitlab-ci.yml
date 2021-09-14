@@ -335,7 +335,7 @@ test_debug_all:
     - schedules
 
 doxygen:
- stage: test
+ stage: build
  before_script:
    - apt update && apt install -y doxygen
    - apt update && apt install -y git

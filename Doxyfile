@@ -177,7 +177,7 @@ RECURSIVE              = YES
 # # Note that relative paths are relative to the directory from which doxygen is
 # # run.
 
-EXCLUDE                =
+EXCLUDE                = external
 
 #---------------------------------------------------------------------------
 # Configuration options related to the HTML output
