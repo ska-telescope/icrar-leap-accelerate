@@ -12,18 +12,12 @@ from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
 # @param gitrepo $(GIT_REPO)
 # @param version $(PROJECT_VERSION)
 # @param category PythonApp
-# @param[in] param/appclass/Application Class/leap_nodes.LeapGather.LeapGather/String/readonly
+# @param[in] param/appclass Application Class/leap_nodes.LeapGather.LeapGather/String/readonly/
 #     \~English The path to the class that implements this app\n
-#     \~Chinese \n
-#     \~
 # @param[in] port/Result
 #     \~English The JSON output from an instance of LeapAccelerateCLI
-#     \~Chinese \n
-#     \~
 # @param[out] port/Result
 #     \~English The combined output from many instances the LeapAccelerateCLI application (JSON)
-#     \~Chinese \n
-#     \~
 # @par EAGLE_END
 
 class LeapGather(BarrierAppDROP):
