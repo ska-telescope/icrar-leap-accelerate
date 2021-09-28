@@ -347,8 +347,8 @@ doxygen:
    - cd LEAP/xml
    - xsltproc combine.xslt index.xml >leap.xml
    - wget https://raw.githubusercontent.com/ICRAR/daliuge/master/tools/xml2palette/xml2palette.py
-   - python3 xml2palette.py -i leap.xml -o leap.palette
-   - mv leap.palette ../.
+   - python3 xml2palette.py -i leap.xml -o leap-$CI_COMMIT_REF_NAME.palette
+   - mv leap-$CI_COMMIT_REF_NAME.palette ../.
    - cd ..
    - rm -rf xml/
    - cd ..
@@ -356,10 +356,9 @@ doxygen:
    - git config --global user.email "$GITHUB_USERNAME@gmail.com"
    - git clone https://$GITHUB_TOKEN@github.com/ICRAR/EAGLE_test_repo
    - cd EAGLE_test_repo/
-   - rm -rf LEAP/
-   - mv ../LEAP/ .
+   - mv ../LEAP/* LEAP/
    - git add *
-   - git commit -m "Automatically generated LEAP palette (LEAP version $PROJECT_VERSION)"
+   - git commit -m "Automatically generated LEAP palette (branch $CI_COMMIT_REF_NAME, commit $PROJECT_VERSION)"
    - git push
 
 pages:
