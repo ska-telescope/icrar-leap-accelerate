@@ -334,16 +334,13 @@ test_debug_all:
     - tags
     - schedules
 
-doxygen:
+build_daliuge_palette:
  stage: build
  before_script:
-   - apt update && apt install -y doxygen
-   - apt update && apt install -y git
-   - apt update && apt install -y xsltproc
-   - apt update && apt install -y wget
+   - apt update && apt install -y doxygen git xsltproc wget
  script:
    - PROJECT_VERSION=$(git rev-parse --short HEAD)
-   - GIT_REPO=$(git config --get remote.origin.url) doxygen
+   - GIT_REPO=$(git config --get remote.origin.url) doxygen leap_drops/Doxyfile
    - cd LEAP/xml
    - xsltproc combine.xslt index.xml >leap.xml
    - wget https://raw.githubusercontent.com/ICRAR/daliuge/master/tools/xml2palette/xml2palette.py
