@@ -349,6 +349,7 @@ doxygen:
    - wget https://raw.githubusercontent.com/ICRAR/daliuge/master/tools/xml2palette/xml2palette.py
    - python3 xml2palette.py -i leap.xml -o leap-$CI_COMMIT_REF_NAME.palette
    - mv leap-$CI_COMMIT_REF_NAME.palette ../.
+   - mv leap.xml ../.
    - cd ..
    - rm -rf xml/
    - cd ..
