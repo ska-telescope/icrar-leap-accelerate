@@ -336,6 +336,9 @@ test_debug_all:
 
 build_daliuge_palette:
  stage: build
+ only:
+   - tags
+   - master
  before_script:
    - apt update && apt install -y doxygen git xsltproc wget
  script:
