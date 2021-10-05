@@ -60,7 +60,7 @@ variables:
 .doc_packages: &doc_packages
   - apt install -y python3-pip doxygen graphviz
   #- pip3 install -U sphinx breathe exhale recommonmark sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary
-  - pip3 install -r docs/requirements.txt 
+  - pip3 install -r docs/requirements.txt
 
 .lint_packages: &lint_packages
   - apt install -y python3-pip clang clang-tidy clang-tools iwyu cppcheck
@@ -333,6 +333,33 @@ test_debug_all:
   only:
     - tags
     - schedules
+
+build_daliuge_palette:
+ stage: build
+ only:
+   - tags
+   - master
+ before_script:
+   - apt update && apt install -y doxygen git xsltproc wget
+ script:
+   - PROJECT_VERSION=$(git rev-parse --short HEAD)
+   - GIT_REPO=$(git config --get remote.origin.url) doxygen leap_drops/Doxyfile
+   - cd LEAP/xml
+   - xsltproc combine.xslt index.xml >leap.xml
+   - wget https://raw.githubusercontent.com/ICRAR/daliuge/master/tools/xml2palette/xml2palette.py
+   - python3 xml2palette.py -i leap.xml -o leap-$CI_COMMIT_REF_NAME.palette
+   - mv leap-$CI_COMMIT_REF_NAME.palette ../.
+   - cd ..
+   - rm -rf xml/
+   - cd ..
+   - git config --global user.name $GITHUB_USERNAME
+   - git config --global user.email "$GITHUB_USERNAME@gmail.com"
+   - git clone https://$GITHUB_TOKEN@github.com/ICRAR/EAGLE_test_repo
+   - cd EAGLE_test_repo/
+   - mv ../LEAP/* LEAP/
+   - git add *
+   - git commit -m "Automatically generated LEAP palette (branch $CI_COMMIT_REF_NAME, commit $PROJECT_VERSION)"
+   - git push
 
 pages:
   extends: .minimal_build_dependencies
