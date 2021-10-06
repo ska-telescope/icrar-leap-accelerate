@@ -364,7 +364,7 @@ build_daliuge_palette:
    - git commit -m "Automatically generated LEAP palette (branch $CI_COMMIT_REF_NAME, commit $PROJECT_VERSION)"
    - git push
 
-pages:
+ci-metrics:
   extends: .minimal_build_dependencies
   stage: deploy
   needs: ["test_debug_minimal", "lint_clang_tidy", "lint_cppcheck", "lint_iwyu"]
@@ -428,7 +428,7 @@ docker_ci_build_deploy:
     #  * The git tag (without the initial "v") if building a git tag
     #  * "latest" when building the master branch
     #  * Other branches do not yield a docker image
-    - IMAGE_NAME=icrar-leap-accelerate-build
+    - IMAGE_NAME=ska-sdp-icrar-leap-accelerate-build
     # - docker build -t $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG ./docker/build
     - docker build -t $CAR_OCI_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG ./docker/build
     # - docker push $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG
@@ -447,7 +447,7 @@ docker_build:
     #  * The git tag (without the initial "v") if building a git tag
     #  * "latest" when building the master branch
     #  * Other branches do not yield a docker image
-    - IMAGE_NAME=icrar-leap-accelerate
+    - IMAGE_NAME=ska-sdp-icrar-leap-accelerate
     - BRANCH=${CI_COMMIT_TAG:-${CI_COMMIT_BRANCH}}
     - DOCKER_TAG=${BRANCH##v}
     - >
