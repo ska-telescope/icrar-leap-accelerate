@@ -366,7 +366,7 @@ build_daliuge_palette:
    - git commit -m "Automatically generated LEAP palette (branch $CI_COMMIT_REF_NAME, commit $PROJECT_VERSION)"
    - git push
 
-ci-metrics:
+pages:
   extends: .minimal_build_dependencies
   stage: deploy
   needs: ["test_debug_minimal", "lint_clang_tidy", "lint_cppcheck", "lint_iwyu"]
