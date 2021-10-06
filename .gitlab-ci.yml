@@ -306,7 +306,7 @@ test_debug_minimal:
   script:
     - cd build
     - find . -name \*.tcl -print
-    - ctest -T test --no-compress-output --verbose
+    - ctest -T test --no-compress-output --verbose --debug
 
 # Needs cuda enabled runner
 test_debug_all:
@@ -321,6 +321,8 @@ test_debug_all:
     - cd build
     - nvidia-smi
     - ctest -T test --no-compress-output --verbose
+  timeout: 30m
+  allow_failure: true
 
 # A job that runs the tests under valgrid
 # It might take a while, so not always run by default
