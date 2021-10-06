@@ -366,7 +366,6 @@ build_daliuge_palette:
    - git commit -m "Automatically generated LEAP palette (branch $CI_COMMIT_REF_NAME, commit $PROJECT_VERSION)"
    - git push
 
-
 pages:
   extends: .minimal_build_dependencies
   stage: deploy
