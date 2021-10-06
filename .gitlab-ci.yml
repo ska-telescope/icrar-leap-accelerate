@@ -67,7 +67,8 @@ variables:
 
 .minimal_build_dependencies:
   extends: .common
-  image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
+  #image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
+  image: $CAR_OCI_REGISTRY_HOST/ska-cicd-cpp-build-base:0.2.3
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "OFF"
@@ -124,7 +125,8 @@ stages:
 
 download_lfs:
   extends: .common
-  image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
+  #image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
+  image: $CAR_OCI_REGISTRY_HOST/ska-cicd-cpp-build-base:0.2.3
   stage: build
   before_script:
     - apt update && apt install -y wget gzip
@@ -408,7 +410,8 @@ include:
   tags:
     - docker-executor
   before_script:
-    - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
+    # - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
+    - echo $CAR_OCI_REGISTRY_PASSWORD | docker login -u $CAR_OCI_REGISTRY_USERNAME --password-stdin $CAR_OCI_REGISTRY_HOST
     - docker info
 
 docker_ci_build_deploy:
@@ -425,8 +428,10 @@ docker_ci_build_deploy:
     #  * "latest" when building the master branch
     #  * Other branches do not yield a docker image
     - IMAGE_NAME=icrar-leap-accelerate-build
-    - docker build -t $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG ./docker/build
-    - docker push $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG
+    # - docker build -t $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG ./docker/build
+    - docker build -t $CAR_OCI_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG ./docker/build
+    # - docker push $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG
+    - docker push $CAR_OCI_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG
 
 docker_build:
   stage: build
@@ -449,8 +454,10 @@ docker_build:
         DOCKER_TAG=latest
       fi
     - >
-      docker build -t $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG .
-    - docker save $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG > docker_image.tar
+      docker build -t $CAR_OCI_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG .
+      # docker build -t $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG .
+    # - docker save $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG > docker_image.tar
+    - docker save $CAR_OCI_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG > docker_image.tar
   artifacts:
     paths:
       - docker_image.tar
