@@ -51,7 +51,7 @@ variables:
   tags: [engageska, docker]
 
 .generator_packages: &generator_packages
-  - apt install -y git wget cmake xsltproc
+  - apt install -y make git wget cmake xsltproc
   - apt install -y gnupg2 software-properties-common jq moreutils
 
 .project_packages: &project_packages
@@ -74,7 +74,6 @@ variables:
     CUDA_ENABLED: "OFF"
   before_script:
     - apt update
-    - apt install make
     - *generator_packages
     - *project_packages
 
@@ -306,6 +305,7 @@ test_debug_minimal:
     GTEST_FILTER: "-*Cuda*:*cuda*:*Gpu*:*gpu*:*SKA*"
   script:
     - cd build
+    - find . -name \*.tcl -print
     - ctest -T test --no-compress-output --verbose
 
 # Needs cuda enabled runner
