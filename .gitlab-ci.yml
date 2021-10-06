@@ -74,6 +74,7 @@ variables:
     CUDA_ENABLED: "OFF"
   before_script:
     - apt update
+    - apt install make
     - *generator_packages
     - *project_packages
 
