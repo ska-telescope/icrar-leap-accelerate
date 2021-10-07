@@ -449,7 +449,7 @@ docker_build:
    - master
   script:
     # Registry folder not system defined
-    - DOCKER_REGISTRY_FOLDER=ska-docker
+    # - DOCKER_REGISTRY_FOLDER=ska-docker
     # The docker image tag is:
     #  * The git tag (without the initial "v") if building a git tag
     #  * "latest" when building the master branch
@@ -462,10 +462,10 @@ docker_build:
         DOCKER_TAG=latest
       fi
     - >
-      docker build -t $CAR_OCI_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG .
+      docker build -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG .
       # docker build -t $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG .
     # - docker save $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG > docker_image.tar
-    - docker save $CAR_OCI_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG > docker_image.tar
+    - docker save $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG > docker_image.tar
   artifacts:
     paths:
       - docker_image.tar
