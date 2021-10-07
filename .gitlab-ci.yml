@@ -307,6 +307,7 @@ test_debug_minimal:
     - cd build
     - find . -name \*.tcl -print
     - ctest -T test --no-compress-output --verbose --debug
+    - find . -name \*.tcl -print
 
 # Needs cuda enabled runner
 test_debug_all:
