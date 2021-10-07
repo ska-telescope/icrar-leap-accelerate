@@ -16,8 +16,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt -y --no-install-recommends install \
     ln -s /usr/local/cuda/targets/x86_64-linux/lib /usr/local/cuda/lib &&\
     ln -s /usr/local/cuda/targets/x86_64-linux/include /usr/local/cuda/include
 
-RUN wget https://raw.githubusercontent.com/ska-telescope/cpp_build_base/master/ctest2junit &&\
-    wget https://raw.githubusercontent.com/ska-telescope/cpp_build_base/master/ctest2junit.xsl &&\
+RUN wget https://gitlab.com/ska-telescope/ska-cicd-cpp-build-base/raw/master/images/ska-cicd-cpp-build-base/ctest2junit &&\
+    wget https://gitlab.com/ska-telescope/ska-cicd-cpp-build-base/raw/master/images/ska-cicd-cpp-build-base/ctest2junit.xsl &&\
     mkdir -p /usr/local/share/ctest2junit &&\
     mv ./ctest2junit.xsl /usr/local/share/ctest2junit &&\
     mv ./ctest2junit /usr/local/bin &&\
