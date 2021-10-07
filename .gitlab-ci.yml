@@ -79,8 +79,8 @@ variables:
 
 .cuda_build_dependencies:
   extends: .common
-  #image: nexus.engageska-portugal.pt/ska-docker/icrar-leap-accelerate-build:0.10.0
-  image: $CAR_OCI_REGISTRY_HOST/ska-docker/icrar-leap-accelerate-build:0.10.0
+  image: nexus.engageska-portugal.pt/ska-docker/icrar-leap-accelerate-build:0.10.0
+  #image: $CAR_OCI_REGISTRY_HOST/ska-docker/icrar-leap-accelerate-build:0.10.0
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
