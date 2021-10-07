@@ -425,7 +425,7 @@ docker_ci_build_deploy:
   stage: build
   extends: .docker_common
   variables:
-    DOCKER_TAG: "latest"
+    DOCKER_TAG: "beta-0.11.0"
   when: manual
   script:
     # Registry folder not system defined
@@ -438,7 +438,8 @@ docker_ci_build_deploy:
     # - docker build -t $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG ./docker/build
     - docker build -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG ./docker/build
     # - docker push $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG
-    - docker push $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG
+    - docker tag $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:latest
+    - docker push $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME
 
 docker_build:
   stage: build
