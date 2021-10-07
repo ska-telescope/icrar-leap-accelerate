@@ -307,6 +307,7 @@ test_debug_minimal:
   script:
     - cd build
     - find . -name \*.tcl -print
+    - sleep 5
     - ctest -T test --no-compress-output --verbose --debug
     - find . -name \*.tcl -print
 
