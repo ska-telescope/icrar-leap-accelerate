@@ -422,10 +422,9 @@ include:
 docker_ci_build_deploy:
   stage: build
   extends: .docker_common
-  variables:
-    DOCKER_TAG=beta-$(cat version.txt)
   when: manual
   script:
+    - DOCKER_TAG=beta-$(cat version.txt)
     # The docker image tag is:
     #  * The git tag (without the initial "v") if building a git tag
     #  * "latest" when building the master branch
