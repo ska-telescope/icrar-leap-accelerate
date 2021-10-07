@@ -67,7 +67,6 @@ variables:
 
 .minimal_build_dependencies:
   extends: .common
-  #image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
   image: $CAR_OCI_REGISTRY_HOST/ska-cicd-cpp-build-base:0.2.3
   variables:
     DEBIAN_FRONTEND: "noninteractive"
@@ -79,7 +78,6 @@ variables:
 
 .cuda_build_dependencies:
   extends: .common
-  # image: nexus.engageska-portugal.pt/ska-docker/icrar-leap-accelerate-build:0.10.0
   image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:beta-0.11.0
   variables:
     DEBIAN_FRONTEND: "noninteractive"
@@ -425,19 +423,15 @@ docker_ci_build_deploy:
   stage: build
   extends: .docker_common
   variables:
-    DOCKER_TAG: "beta-0.11.0"
+    DOCKER_TAG=beta-$(cat version.txt)
   when: manual
   script:
-    # Registry folder not system defined
-    # - DOCKER_REGISTRY_FOLDER=ska-docker
     # The docker image tag is:
     #  * The git tag (without the initial "v") if building a git tag
     #  * "latest" when building the master branch
     #  * Other branches do not yield a docker image
     - IMAGE_NAME=icrar-leap-accelerate-build
-    # - docker build -t $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG ./docker/build
     - docker build -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG ./docker/build
-    # - docker push $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG
     - docker tag $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:latest
     - docker push $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME
 
@@ -448,8 +442,6 @@ docker_build:
    - tags
    - master
   script:
-    # Registry folder not system defined
-    # - DOCKER_REGISTRY_FOLDER=ska-docker
     # The docker image tag is:
     #  * The git tag (without the initial "v") if building a git tag
     #  * "latest" when building the master branch
@@ -463,8 +455,6 @@ docker_build:
       fi
     - >
       docker build -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG .
-      # docker build -t $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG .
-    # - docker save $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG > docker_image.tar
     - docker save $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG > docker_image.tar
   artifacts:
     paths:
