@@ -79,8 +79,8 @@ variables:
 
 .cuda_build_dependencies:
   extends: .common
-  #image: nexus.engageska-portugal.pt/ska-docker/icrar-leap-accelerate-build:0.10.0
-  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:latest
+  image: nexus.engageska-portugal.pt/ska-docker/icrar-leap-accelerate-build:0.10.0
+  # image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
@@ -305,6 +305,7 @@ test_debug_minimal:
   variables:
     GTEST_FILTER: "-*Cuda*:*cuda*:*Gpu*:*gpu*:*SKA*"
   script:
+    - env
     - cd build
     - find . -name \*.tcl -print
     - sleep 5
