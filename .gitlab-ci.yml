@@ -79,7 +79,8 @@ variables:
 
 .cuda_build_dependencies:
   extends: .common
-  image: nexus.engageska-portugal.pt/ska-docker/icrar-leap-accelerate-build:0.10.0
+  #image: nexus.engageska-portugal.pt/ska-docker/icrar-leap-accelerate-build:0.10.0
+  image: $CAR_OCI_REGISTRY_HOST/ska-docker/icrar-leap-accelerate-build:0.10.0
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
@@ -426,16 +427,16 @@ docker_ci_build_deploy:
   when: manual
   script:
     # Registry folder not system defined
-    - DOCKER_REGISTRY_FOLDER=ska-docker
+    # - DOCKER_REGISTRY_FOLDER=ska-docker
     # The docker image tag is:
     #  * The git tag (without the initial "v") if building a git tag
     #  * "latest" when building the master branch
     #  * Other branches do not yield a docker image
     - IMAGE_NAME=icrar-leap-accelerate-build
     # - docker build -t $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG ./docker/build
-    - docker build -t $CAR_OCI_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG ./docker/build
+    - docker build -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG ./docker/build
     # - docker push $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG
-    - docker push $CAR_OCI_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG
+    - docker push $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG
 
 docker_build:
   stage: build
