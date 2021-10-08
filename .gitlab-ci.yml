@@ -346,7 +346,7 @@ build_daliuge_palette:
    - wget https://raw.githubusercontent.com/ICRAR/daliuge/master/tools/xml2palette/xml2palette.py
  script:
    - python3 xml2palette.py -i ./ -o leap-$CI_COMMIT_REF_NAME.palette
- after_success:
+ after_script:
    - git clone https://$GITHUB_TOKEN@github.com/ICRAR/EAGLE_test_repo
    - mkdir -p EAGLE_test_repo/$PROJECT_NAME
    - mv $PROJECT_NAME-$CI_COMMIT_REF_NAME.palette EAGLE_test_repo/$PROJECT_NAME/
