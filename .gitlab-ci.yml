@@ -347,6 +347,7 @@ build_daliuge_palette:
  script:
    - python3 xml2palette.py -i ./ -o leap-$CI_COMMIT_REF_NAME.palette
  after_script:
+   - export PROJECT_NAME=leap
    - echo $PROJECT_NAME
    - echo $CI_COMMIT_REF_NAME
    - echo mv $PROJECT_NAME-$CI_COMMIT_REF_NAME.palette EAGLE_test_repo/$PROJECT_NAME/
