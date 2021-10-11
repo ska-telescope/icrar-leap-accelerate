@@ -349,6 +349,8 @@ build_daliuge_palette:
  after_script:
    - git clone https://$GITHUB_TOKEN@github.com/ICRAR/EAGLE_test_repo
    - mkdir -p EAGLE_test_repo/$PROJECT_NAME
+   - echo $CI_COMMIT_REF_NAME
+   - echo mv $PROJECT_NAME-$CI_COMMIT_REF_NAME.palette EAGLE_test_repo/$PROJECT_NAME/
    - mv $PROJECT_NAME-$CI_COMMIT_REF_NAME.palette EAGLE_test_repo/$PROJECT_NAME/
    - cd EAGLE_test_repo
    - git add *
