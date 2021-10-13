@@ -348,24 +348,22 @@ build_daliuge_palette:
    - master
  before_script:
    - apt update && apt install -y doxygen git xsltproc wget
- script:
-   - PROJECT_VERSION=$(git rev-parse --short HEAD)
-   - GIT_REPO=$(git config --get remote.origin.url) doxygen leap_drops/Doxyfile
-   - cd LEAP/xml
-   - xsltproc combine.xslt index.xml >leap.xml
-   - wget https://raw.githubusercontent.com/ICRAR/daliuge/master/tools/xml2palette/xml2palette.py
-   - python3 xml2palette.py -i leap.xml -o leap-$CI_COMMIT_REF_NAME.palette
-   - mv leap-$CI_COMMIT_REF_NAME.palette ../.
-   - cd ..
-   - rm -rf xml/
-   - cd ..
+   - export PROJECT_NAME=leap
+   - export PROJECT_VERSION=$(git rev-parse --short HEAD)
+   - export GIT_REPO=$(git config --get remote.origin.url)
    - git config --global user.name $GITHUB_USERNAME
    - git config --global user.email "$GITHUB_USERNAME@gmail.com"
+   - wget https://raw.githubusercontent.com/ICRAR/daliuge/master/tools/xml2palette/xml2palette.py
+ script:
+   - python3 xml2palette.py -i ./ -o leap-$CI_COMMIT_REF_NAME.palette
+ after_script:
+   - export PROJECT_NAME=leap
    - git clone https://$GITHUB_TOKEN@github.com/ICRAR/EAGLE_test_repo
-   - cd EAGLE_test_repo/
-   - mv ../LEAP/* LEAP/
+   - mkdir -p EAGLE_test_repo/$PROJECT_NAME
+   - mv $PROJECT_NAME-$CI_COMMIT_REF_NAME.palette EAGLE_test_repo/$PROJECT_NAME/
+   - cd EAGLE_test_repo
    - git add *
-   - git commit -m "Automatically generated LEAP palette (branch $CI_COMMIT_REF_NAME, commit $PROJECT_VERSION)"
+   - git commit -m "Automatically generated $PROJECT_NAME palette (branch $CI_COMMIT_REF_NAME, commit $PROJECT_VERSION)"
    - git push
 
 pages:
