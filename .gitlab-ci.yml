@@ -67,7 +67,7 @@ variables:
 
 .minimal_build_dependencies:
   extends: .common
-  image: $SKA_CPP_DOCKER_BUILDER_IMAGE
+  image: $CAR_OCI_REGISTRY_HOST/ska-cicd-cpp-build-base:0.2.10
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "OFF"
@@ -125,7 +125,7 @@ stages:
 download_lfs:
   extends: .common
   #image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
-  image: $SKA_CPP_DOCKER_BUILDER_IMAGE
+  image: $CAR_OCI_REGISTRY_HOST/ska-cicd-cpp-build-base:0.2.10
   stage: build
   before_script:
     - apt update && apt install -y wget gzip
