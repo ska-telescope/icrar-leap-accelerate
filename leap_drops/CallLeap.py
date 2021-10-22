@@ -13,25 +13,19 @@ from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
 # @brief Call Leap
 # @details A BarrierAppDrop that reads a config file, generates a command line for the LeapAccelerateCLI application, and then executes the application
 # @par EAGLE_START
-# @param gitrepo $(GIT_REPO)
-# @param version $(PROJECT_VERSION)
 # @param category PythonApp
 # @param[in] param/measurementSetFilename Measurement Set Filename/""/String/readwrite/
 #     \~English The file from which the input measurement set should be loaded\n
-#     \~Chinese \n
-#     \~
+#     \~Chinese
 # @param[in] param/appclass Application Class/leap_nodes.CallLeap.CallLeap/String/readonly/
 #     \~English The path to the class that implements this app\n
-#     \~Chinese \n
-#     \~
-# @param[in] port/Config
+#     \~Chinese
+# @param[in] port/Config Config/File/
 #     \~English The Config file containing JSON specifying how this instance of LeapAccelerateCLI should be run
-#     \~Chinese \n
-#     \~
-# @param[out] port/Result
+#     \~Chinese
+# @param[out] port/Result Result/File/
 #     \~English The output of the LeapAccelerateCLI application (JSON)
-#     \~Chinese \n
-#     \~
+#     \~Chinese
 # @par EAGLE_END
 
 class CallLeap(BarrierAppDROP):
