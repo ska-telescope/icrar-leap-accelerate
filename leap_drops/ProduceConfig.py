@@ -13,22 +13,20 @@ from dlg.droputils import DROPFile
 # @brief Produce Config
 # @details A BarrierAppDrop that produces multiple config files suitable for the CallLeap BarrierAppDrop
 # @par EAGLE_START
-# @param gitrepo $(GIT_REPO)
-# @param version $(PROJECT_VERSION)
 # @param category PythonApp
 # @param[in] param/filePath File Path//String/readwrite/
-#     \~English Path to the MS\n
+#     \~English Path to the MS
 # @param[in] param/outputFilePath Output File Path//String/readwrite/
-#     \~English Path for output file\n
+#     \~English Path for output file
 # @param[in] param/implementation Implementation/cpu/String/readwrite/
-#     \~English The implementation of the LEAP algorithm to use (cpu, cuda)\n
+#     \~English The implementation of the LEAP algorithm to use (cpu, cuda)
 # @param[in] param/verbosity verbosity/info/String/readwrite/
-#     \~English The verbosity of the LEAP logging output (info|debug)\n
+#     \~English The verbosity of the LEAP logging output (info|debug)
 # @param[in] param/appclass Application Class/leap_nodes.ProduceConfig.ProduceConfig/String/readonly/
-#     \~English The path to the class that implements this app\n
-# @param[in] port/Directions
+#     \~English The path to the class that implements this app
+# @param[in] port/Directions Directions/File/
 #     \~English A CSV file containing directions for calibration
-# @param[out] port/Config
+# @param[out] port/Config Config/File/
 #     \~English A JSON config containing the specification for running an instance of LeapAccelerateCLI
 # @par EAGLE_END
 
