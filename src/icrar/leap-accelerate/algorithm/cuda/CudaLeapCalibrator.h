@@ -127,7 +127,7 @@ namespace cuda
         /**
          * Performs only visibilities rotation on the GPU
          */
-        void PhaseRotate(
+        void Calibrate(
             const HostMetaData& hostMetadata,
             DeviceMetaData& deviceMetadata,
             const SphericalDirection& direction,

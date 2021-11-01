@@ -46,6 +46,7 @@ namespace icrar
         bool isFileSystemCacheEnabled; ///< Enables caching of expensive calculations to the filesystem
         bool useIntermediateBuffer; ///< enables an intermediate buffer containing unrotated visibilities to improve per direction performance
         bool useCusolver; ///< Uses cusolver for Ad calculation
+        int timestepBatchSize; ///< Max number of timesteps to load into memory at any point
 
         /**
          * @brief Determines ideal calibration compute options for a given measurementSet 

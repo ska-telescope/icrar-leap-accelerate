@@ -20,39 +20,38 @@
  * MA 02111 - 1307  USA
  */
 
-namespace ska::sdp
+#pragma once
+#ifdef CUDA_ENABLED
+
+#include <icrar/leap-accelerate/model/cpu/MetaData.h>
+#include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
+#include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
+
+#include <icrar/leap-accelerate/cuda/device_vector.h>
+#include <icrar/leap-accelerate/cuda/device_matrix.h>
+
+#include <Eigen/Core>
+
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <math_constants.h>
+#include <cuComplex.h>
+#include <thrust/complex.h>
+#include <thrust/device_vector.h>
+
+namespace icrar
 {
-    class RecordBatch;
-
-    class BasicProcessor
-    {
-        BasicProcessor(std::vector<std::string> schema, std::string plasma_path, std::string prefix, std::string name)
-        {
-
-        }
-        
-    public:
-        virtual void process(double timeout) {}
-        virtual void parameter() {}
-        virtual void oid_parameter() {}
-        virtual void output_tensor(RecordBatch& batch, std::string name, std::string type) {}
-
-    protected:
-        void process_call(std::string proc_func, RecordBatch& batch)
-    };
-
-    class Processor : public BasicProcessor
-    {
-        void process_call(std:;string proc_func, RecordBatch& batch) override
-        {
-
-        }
-    };
-}
-
-int main()
+namespace cuda
 {
-    // SKA-SDP-DAL Processor
-
-
-}
+    /**
+     * @brief Calculates avgData in metadata
+     * 
+     * @param integration the input visibilities to integrate
+     * @param metadata the metadata container
+     */
+    __host__ void RotateAndAverage(
+        DeviceIntegration& integration,
+        DeviceMetaData& metadata);
+} // namespace cuda
+} // namespace icrar
+#endif // CUDA_ENABLED

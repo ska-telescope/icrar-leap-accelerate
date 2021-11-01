@@ -76,7 +76,7 @@ set(cuda_sources
     
     model/cuda/DeviceIntegration.cu
     algorithm/cuda/kernel/EmptyKernel.cu
-    algorithm/cuda/kernel/RotateVisibilitiesKernel.cu
+    algorithm/cuda/kernel/RotateVisibilitiesAndAverageKernel.cu
     algorithm/cuda/kernel/PolarizationsToPhaseAnglesKernel.cu
     algorithm/cuda/kernel/ComputePhaseDeltaKernel.cu
     algorithm/cuda/kernel/CopyPhaseDeltaKernel.cu

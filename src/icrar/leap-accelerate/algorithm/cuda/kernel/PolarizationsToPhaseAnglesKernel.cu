@@ -20,7 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
-#include "RotateVisibilitiesKernel.h"
+#include "RotateVisibilitiesAndAverageKernel.h"
 #include <icrar/leap-accelerate/math/cpu/math.h>
 #include <icrar/leap-accelerate/exception/exception.h>
 

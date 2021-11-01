@@ -29,7 +29,7 @@ set(sources
   model/MetaDataTests.cc
   model/IntegrationTests.cc
   
-  algorithm/PhaseRotateTests.cc
+  algorithm/CalibrateTests.cc
   
   system/CalibrationTests.cc
   system/ConfigTests.cc

@@ -29,7 +29,7 @@
 
 #include <icrar/leap-accelerate/algorithm/cuda/CudaComputeOptions.h>
 #include <icrar/leap-accelerate/algorithm/cuda/kernel/EmptyKernel.h>
-#include <icrar/leap-accelerate/algorithm/cuda/kernel/RotateVisibilitiesKernel.h>
+#include <icrar/leap-accelerate/algorithm/cuda/kernel/RotateVisibilitiesAndAverageKernel.h>
 #include <icrar/leap-accelerate/algorithm/cuda/kernel/PolarizationsToPhaseAnglesKernel.h>
 #include <icrar/leap-accelerate/algorithm/cuda/kernel/ComputePhaseDeltaKernel.h>
 #include <icrar/leap-accelerate/algorithm/cuda/kernel/CopyPhaseDeltaKernel.h>
@@ -239,16 +239,16 @@ namespace cuda
                     input_vis.Set(integration);
                 }
 
-                LOG(info) << "PhaseRotate";
+                LOG(info) << "Calibrate";
                 checkCudaErrors(cudaGetLastError());
-                PhaseRotate(
+                Calibrate(
                     metadata,
                     deviceMetadata,
                     directions[i],
                     input_vis,
                     output_calibrations[solution].GetBeamCalibrations());
             }
-            LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
+            LOG(info) << "Performed Calibrate in " << phase_rotate_timer;
             LOG(info) << "Calculated solution in " << solution_timer;
             outputCallback(output_calibrations[solution]);
         }
@@ -365,16 +365,15 @@ namespace cuda
         }
     }
 
-    void CudaLeapCalibrator::PhaseRotate(
+    void CudaLeapCalibrator::Calibrate(
         const HostMetaData& metadata,
         DeviceMetaData& deviceMetadata,
         const SphericalDirection& direction,
         cuda::DeviceIntegration& input,
         std::vector<cpu::BeamCalibration>& output_calibrations)
     {
-
         LOG(info) << "Rotating integration " << input.GetIntegrationNumber();
-        RotateVisibilities(input, deviceMetadata);
+        RotateAndAverage(input, deviceMetadata);
         LOG(info) << "Calibrating in cuda";
         auto devicePhaseAnglesI1 = device_vector<double>(metadata.GetI1().rows() + 1);
         auto deviceCal1 = device_vector<double>(metadata.GetA1().cols());

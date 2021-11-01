@@ -171,7 +171,7 @@ endif()
 # Testing Libraries
 if (BUILD_TESTING)
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # required for Win32
-  add_subdirectory(external/gtest-1.8.1 googletest EXCLUDE_FROM_ALL)
+  add_subdirectory(external/gtest-1.11.0 googletest EXCLUDE_FROM_ALL)
   enable_testing()
   
   include(GoogleTest)

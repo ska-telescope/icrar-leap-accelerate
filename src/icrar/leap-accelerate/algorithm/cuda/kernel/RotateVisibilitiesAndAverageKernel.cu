@@ -20,11 +20,19 @@
  * MA 02111 - 1307  USA
  */
 
-#include "RotateVisibilitiesKernel.h"
+#include "RotateVisibilitiesAndAverageKernel.h"
 #include <icrar/leap-accelerate/math/cuda/math.cuh>
 #include <icrar/leap-accelerate/math/cpu/math.h>
 #include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 
+namespace icrar
+{
+    template<typename Scalar, size_t Dims>
+    using CudaDeviceTensor = Eigen::TensorMap<Eigen::Tensor<Scalar, Dims>>;
+    
+    template<typename Scalar, size_t Dims>
+    using ConstCudaDeviceTensor = const Eigen::TensorMap<const Eigen::Tensor<Scalar, Dims>>;
+} // namespace icrar
 
 namespace icrar
 {
@@ -37,17 +45,17 @@ namespace cuda
      * @param constants measurement set constants
      * @param dd direction dependent rotation 
      * @param UVW unrotated uvws
-     * @param integrationData inout integration data 
+     * @param integrationData inout integration data
      * @param rotAvgVis output rotAvgVis to increment
      */
-    __global__ void g_RotateVisibilities(
+    __global__ void g_RotateAndAverage(
         const icrar::cpu::Constants constants,
         const Eigen::Matrix3d dd,
         const Eigen::TensorMap<const Eigen::Tensor<double, 3>> UVWs,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 4>> integrationData,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> rotAvgVis);
 
-    __host__ void RotateVisibilities(DeviceIntegration& integration, DeviceMetaData& metadata)
+    __host__ void RotateAndAverage(DeviceIntegration& integration, DeviceMetaData& metadata)
     {
         const auto& constants = metadata.GetConstants(); 
         assert(constants.num_pols == integration.GetNumPolarizations());
@@ -78,7 +86,7 @@ namespace cuda
         cudaDeviceProp prop;
         cudaGetDeviceProperties(&prop, 0);
         const int threadsPerBlock = prop.maxThreadsPerBlock;
-        constexpr int channels = 4; 
+        const int channels = integration.GetNumChannels(); 
         // block size can be any value where the product is threadsperBlock
         dim3 blockSize = dim3(channels, threadsPerBlock/channels, 1);
         dim3 gridSize = dim3(
@@ -86,7 +94,7 @@ namespace cuda
             cpu::ceil_div<int64_t>(integration.GetNumBaselines(), blockSize.y),
             cpu::ceil_div<int64_t>(integration.GetNumTimesteps(), blockSize.z)
         );
-        g_RotateVisibilities<<<gridSize, blockSize>>>(
+        g_RotateAndAverage<<<gridSize, blockSize>>>(
             constants,
             metadata.GetDD(),
             UVWMap,
@@ -95,7 +103,7 @@ namespace cuda
         checkCudaErrors(cudaGetLastError());
     }
 
-    __global__ void g_RotateVisibilities(
+    __global__ void g_RotateAndAverage(
         const icrar::cpu::Constants constants,
         const Eigen::Matrix3d dd,
         const Eigen::TensorMap<const Eigen::Tensor<double, 3>> UVWs,
