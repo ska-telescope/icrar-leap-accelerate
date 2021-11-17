@@ -51,7 +51,7 @@ variables:
   tags: [engageska, docker]
 
 .generator_packages: &generator_packages
-  - apt install -y git wget cmake xsltproc
+  - apt install -y make git wget cmake xsltproc
   - apt install -y gnupg2 software-properties-common jq moreutils
 
 .project_packages: &project_packages
@@ -60,14 +60,14 @@ variables:
 .doc_packages: &doc_packages
   - apt install -y python3-pip doxygen graphviz
   #- pip3 install -U sphinx breathe exhale recommonmark sphinx-rtd-theme sphinxcontrib-autodoc-doxygen sphinx-autopackagesummary
-  - pip3 install -r docs/requirements.txt 
+  - pip3 install -r docs/requirements.txt
 
 .lint_packages: &lint_packages
   - apt install -y python3-pip clang clang-tidy clang-tools iwyu cppcheck
 
 .minimal_build_dependencies:
   extends: .common
-  image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
+  image: $CAR_OCI_REGISTRY_HOST/ska-cicd-cpp-build-base:0.2.10
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "OFF"
@@ -78,7 +78,7 @@ variables:
 
 .cuda_build_dependencies:
   extends: .common
-  image: nexus.engageska-portugal.pt/ska-docker/icrar-leap-accelerate-build:0.10.0
+  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.12.0
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
@@ -124,7 +124,8 @@ stages:
 
 download_lfs:
   extends: .common
-  image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
+  #image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
+  image: $CAR_OCI_REGISTRY_HOST/ska-cicd-cpp-build-base:0.2.10
   stage: build
   before_script:
     - apt update && apt install -y wget gzip
@@ -303,10 +304,14 @@ test_debug_minimal:
     GTEST_FILTER: "-*Cuda*:*cuda*:*Gpu*:*gpu*:*SKA*"
   script:
     - cd build
+    - find . -name \*.tcl -print
+    - sleep 5
     # portable testing
     - rm CMakeCache.txt
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"
-    - ctest -T test --no-compress-output --verbose
+    - ctest -T test --no-compress-output --verbose --debug
+    - find . -name \*.tcl -print
+    - pwd
 
 # Needs cuda enabled runner
 test_debug_all:
@@ -321,6 +326,8 @@ test_debug_all:
     - cd build
     - nvidia-smi
     - ctest -T test --no-compress-output --verbose
+  timeout: 30m
+  allow_failure: true
 
 # A job that runs the tests under valgrid
 # It might take a while, so not always run by default
@@ -336,6 +343,32 @@ test_debug_all:
   only:
     - tags
     - schedules
+
+build_daliuge_palette:
+ stage: build
+ only:
+   - tags
+   - master
+ before_script:
+   - apt update && apt install -y doxygen git xsltproc wget
+   - export PROJECT_NAME=leap
+   - export PROJECT_VERSION=$(git rev-parse --short HEAD)
+   - export GIT_REPO=$(git config --get remote.origin.url)
+   - git config --global user.name $GITHUB_USERNAME
+   - git config --global user.email "$GITHUB_USERNAME@gmail.com"
+   - wget https://raw.githubusercontent.com/ICRAR/daliuge/master/tools/xml2palette/xml2palette.py
+ script:
+   - python3 xml2palette.py -i ./ -o leap-$CI_COMMIT_REF_NAME.palette
+ after_script:
+   - export PROJECT_NAME=leap
+   - export PROJECT_VERSION=$(git rev-parse --short HEAD)
+   - git clone https://$GITHUB_TOKEN@github.com/ICRAR/EAGLE_test_repo
+   - mkdir -p EAGLE_test_repo/$PROJECT_NAME
+   - mv $PROJECT_NAME-$CI_COMMIT_REF_NAME.palette EAGLE_test_repo/$PROJECT_NAME/
+   - cd EAGLE_test_repo
+   - git add *
+   - git commit -m "Automatically generated $PROJECT_NAME palette (branch $CI_COMMIT_REF_NAME, commit $PROJECT_VERSION)"
+   - git push
 
 pages:
   extends: .minimal_build_dependencies
@@ -384,25 +417,24 @@ include:
   tags:
     - docker-executor
   before_script:
-    - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
+    # - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
+    - echo $CAR_OCI_REGISTRY_PASSWORD | docker login -u $CAR_OCI_REGISTRY_USERNAME --password-stdin $CAR_OCI_REGISTRY_HOST
     - docker info
 
 docker_ci_build_deploy:
   stage: build
   extends: .docker_common
-  variables:
-    DOCKER_TAG: "latest"
   when: manual
   script:
-    # Registry folder not system defined
-    - DOCKER_REGISTRY_FOLDER=ska-docker
+    - DOCKER_TAG=$(cat version.txt)
     # The docker image tag is:
     #  * The git tag (without the initial "v") if building a git tag
     #  * "latest" when building the master branch
     #  * Other branches do not yield a docker image
     - IMAGE_NAME=icrar-leap-accelerate-build
-    - docker build -t $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG ./docker/build
-    - docker push $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG
+    - docker build -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG ./docker/build
+    - docker tag $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:latest
+    - docker push $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME
 
 docker_build:
   stage: build
@@ -411,8 +443,6 @@ docker_build:
    - tags
    - master
   script:
-    # Registry folder not system defined
-    - DOCKER_REGISTRY_FOLDER=ska-docker
     # The docker image tag is:
     #  * The git tag (without the initial "v") if building a git tag
     #  * "latest" when building the master branch
@@ -425,8 +455,8 @@ docker_build:
         DOCKER_TAG=latest
       fi
     - >
-      docker build -t $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG .
-    - docker save $DOCKER_REGISTRY_HOST/$DOCKER_REGISTRY_FOLDER/$IMAGE_NAME:$DOCKER_TAG > docker_image.tar
+      docker build -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG .
+    - docker save $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG > docker_image.tar
   artifacts:
     paths:
       - docker_image.tar
