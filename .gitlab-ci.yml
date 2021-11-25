@@ -303,16 +303,12 @@ test_debug_minimal:
   variables:
     GTEST_FILTER: "-*Cuda*:*cuda*:*Gpu*:*gpu*:*SKA*"
   script:
-    - cd build
-    - find . -name \*.tcl -print
-    - sleep 5
     # portable testing
+    - export TEST_DATA_DIR=$PWD/testdata
+    - cd build
     - rm CMakeCache.txt
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"
-    - export TEST_DATA_DIR=$PWD/testdata
     - ctest -T test --no-compress-output --verbose --debug
-    - find . -name \*.tcl -print
-    - pwd
 
 # Needs cuda enabled runner
 test_debug_all:
