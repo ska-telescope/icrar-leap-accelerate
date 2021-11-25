@@ -62,7 +62,7 @@ namespace icrar
 
         void MultiDirectionTest(ComputeImplementation impl, const std::string& msname)
         {
-            std::string filepath = std::string(TEST_DATA_DIR) + msname;
+            std::string filepath = get_test_data_dir() + msname;
             ms = std::make_unique<icrar::MeasurementSet>(filepath);
 
             std::vector<SphericalDirection> directions =

@@ -76,7 +76,7 @@ public:
         auto expected = std::string(std::istreambuf_iterator<char>(expectedStream), std::istreambuf_iterator<char>());
     
         auto rawArgs = CLIArgumentsDTO::GetDefaultArguments();
-        rawArgs.filePath = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
+        rawArgs.filePath = get_test_data_dir() + "/mwa/1197638568-split.ms";
         rawArgs.directions = "[[0,0]]";
         auto args = ArgumentsValidated(std::move(rawArgs));
         auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
@@ -140,7 +140,7 @@ public:
     void TestMWACpuConfig()
     {
         CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
-        rawArgs.filePath = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
+        rawArgs.filePath = get_test_data_dir() + "/mwa/1197638568-split.ms";
         rawArgs.outputFilePath = "testdata/MWACpuOutput.json";
         rawArgs.directions = m_mwaDirections;
         rawArgs.computeImplementation = "cpu";
@@ -151,7 +151,7 @@ public:
     void TestMWACudaConfig()
     {
         CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
-        rawArgs.filePath = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
+        rawArgs.filePath = get_test_data_dir() + "/mwa/1197638568-split.ms";
         rawArgs.outputFilePath = "testdata/MWACudaOutput.json";
         rawArgs.directions = m_mwaDirections;
         rawArgs.computeImplementation = "cuda";
@@ -163,7 +163,7 @@ public:
     void TestAA3CpuConfig()
     {
         CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
-        rawArgs.filePath = std::string(TEST_DATA_DIR) + "/aa3/aa3-SS-300.ms";
+        rawArgs.filePath = get_test_data_dir() + "/aa3/aa3-SS-300.ms";
         rawArgs.outputFilePath = "testdata/AA3CpuOutput.json";
         rawArgs.directions = m_simulationDirections;
         rawArgs.computeImplementation = "cpu";
@@ -174,7 +174,7 @@ public:
     void TestAA3CudaConfig()
     {
         CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
-        rawArgs.filePath = std::string(TEST_DATA_DIR) + "/aa3/aa3-SS-300.ms";
+        rawArgs.filePath = get_test_data_dir() + "/aa3/aa3-SS-300.ms";
         rawArgs.outputFilePath = "testdata/AA3CudaOutput.json";
         rawArgs.directions = m_simulationDirections;
         rawArgs.computeImplementation = "cuda";
@@ -196,7 +196,7 @@ public:
         }
 
         CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
-        rawArgs.filePath = std::string(TEST_DATA_DIR) + "/aa4/aa4-SS-33-120.ms";
+        rawArgs.filePath = get_test_data_dir() + "/aa4/aa4-SS-33-120.ms";
         rawArgs.outputFilePath = "testdata/AA4CpuOutput.json";
         rawArgs.directions = m_simulationDirections;
         rawArgs.computeImplementation = "cpu";
@@ -220,7 +220,7 @@ public:
         }
 
         CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
-        rawArgs.filePath = std::string(TEST_DATA_DIR) + "/aa4/aa4-SS-33-120.ms";
+        rawArgs.filePath = get_test_data_dir() + "/aa4/aa4-SS-33-120.ms";
         rawArgs.outputFilePath = "testdata/AA4CudaOutput.json";
         rawArgs.directions = m_simulationDirections;
         rawArgs.computeImplementation = "cuda";

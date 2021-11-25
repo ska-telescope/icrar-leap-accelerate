@@ -64,7 +64,7 @@ public:
     void TestAA3ClearCalibration(std::string impl, const std::vector<std::pair<double, double>>& expected)
     {
         auto rawArgs = CLIArgumentsDTO::GetDefaultArguments();
-        rawArgs.filePath = std::string(TEST_DATA_DIR) + "/aa3/aa3-SS-300.ms";
+        rawArgs.filePath = get_test_data_dir() + "/aa3/aa3-SS-300.ms";
         rawArgs.directions = m_simulationDirections;
         rawArgs.readAutocorrelations = false;
         rawArgs.referenceAntenna = 210;

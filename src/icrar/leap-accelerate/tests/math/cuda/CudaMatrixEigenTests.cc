@@ -223,7 +223,7 @@ namespace icrar
         {
             // Tests whether cuda SVD on ASKAP gives consistant results
 
-            std::string filename = std::string(TEST_DATA_DIR) + "/askap/askap-SS-1100.ms";
+            std::string filename = get_test_data_dir() + "/askap/askap-SS-1100.ms";
             auto ms = icrar::MeasurementSet(filename);
             auto msmc = ms.GetMSMainColumns();
 
@@ -243,7 +243,7 @@ namespace icrar
 
         void TestPseudoInverseAskap()
         {
-            std::string filename = std::string(TEST_DATA_DIR) + "/askap/askap-SS-1100.ms";
+            std::string filename = get_test_data_dir() + "/askap/askap-SS-1100.ms";
             auto ms = icrar::MeasurementSet(filename);
             auto msmc = ms.GetMSMainColumns();
 
