@@ -122,7 +122,7 @@ stages:
 # Build
 ########
 
-download_lfs:
+download_testdata:
   extends: .common
   #image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
   image: $CAR_OCI_REGISTRY_HOST/ska-cicd-cpp-build-base:0.2.10
@@ -299,7 +299,7 @@ lint_cppcheck:
 
 test_debug_minimal:
   extends: [.minimal_build_dependencies, .test]
-  needs: ["download_lfs", "build_debug_minimal"]
+  needs: ["download_testdata", "build_debug_minimal"]
   variables:
     GTEST_FILTER: "-*Cuda*:*cuda*:*Gpu*:*gpu*:*SKA*"
   script:
@@ -309,7 +309,7 @@ test_debug_minimal:
     # portable testing
     - rm CMakeCache.txt
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"
-    - export TEST_DATA_DIR=$pwd/testdata
+    - export TEST_DATA_DIR=$PWD/testdata
     - ctest -T test --no-compress-output --verbose --debug
     - find . -name \*.tcl -print
     - pwd
@@ -317,7 +317,7 @@ test_debug_minimal:
 # Needs cuda enabled runner
 test_debug_all:
   extends: [.complete_build_dependencies, .test]
-  needs: ["download_lfs", "build_debug"]
+  needs: ["download_testdata", "build_debug"]
   tags: ["cuda", "docker"]
   variables:
     DEBIAN_FRONTEND: "noninteractive"
@@ -335,7 +335,7 @@ test_debug_all:
 .test_memcheck:
   extends: .minimal_build_dependencies
   stage: test
-  needs: ["download_lfs", "build_debug_minimal"]
+  needs: ["download_testdata", "build_debug_minimal"]
   before_script:
     - apt update && apt install -y valgrind
   script:
