@@ -38,7 +38,6 @@ namespace icrar
      * Eigen equivalent is Eigen::seq(start, end, interval).
      * Matlab equivalent is slice operator (start:interval:end)
      * TODO(cgray) no support for reverse order, e.g. (end:0:-1)
-     * TODO(calgray): swap end <-> interval
      */
     class Slice
     {
