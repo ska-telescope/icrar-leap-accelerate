@@ -109,8 +109,8 @@ endif()
 if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/eigen-3.3.90/CMakeLists.txt")
   message(FATAL_ERROR "Submodule eigen-3.3.90 was not downloaded! Please update submodules and try again.")
 endif()
-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/gtest-1.8.1/CMakeLists.txt")
-  message(FATAL_ERROR "Submodule gtest-1.8.1 was not downloaded! Please update submodules and try again.")
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/gtest-1.11.0/CMakeLists.txt")
+  message(FATAL_ERROR "Submodule gtest-1.11.0 was not downloaded! Please update submodules and try again.")
 endif()
 
 # Global Libraries
@@ -177,7 +177,7 @@ find_package(Casacore COMPONENTS ms)
 # Testing Libraries
 if (BUILD_TESTING)
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # required for Win32
-  add_subdirectory(external/gtest-1.8.1 googletest EXCLUDE_FROM_ALL)
+  add_subdirectory(external/gtest-1.11.0 googletest EXCLUDE_FROM_ALL)
   enable_testing()
   
   include(GoogleTest)
