@@ -261,22 +261,6 @@ lint_iwyu:
     reports:
       junit: build/cppcheck-junit.xml
 
-# clang pre-11.0 cannot parse gunit tests
-.lint_cppcheck_no_tests:
-  script:
-    - pip3 install cppcheck-junit
-    - cd build
-    - 'cppcheck
-      --xml-version=2
-      --enable=all
-      --project=compile_commands.json
-      --platform=unix64
-      --std=c++14
-      -i $PWD/../external
-      -i $PWD/../src/icrar/leap-accelerate/tests
-      -i $PWD/../src/icrar/leap-accelerate-cli/tests 2>&1 | tee cppcheck.xml'
-    - cppcheck_junit cppcheck.xml cppcheck-junit.xml
-
 lint_cppcheck:
   extends: [.lint_dependencies, .lint_cppcheck]
   needs: ["build_export_compile_commands"]
