@@ -82,7 +82,7 @@ void PybindEigenTensor(py::module& m, const char* name)
             
             // pybind11 already wraps the lifetime of class instances. Capsule
             // is required for python to know the memory will not go out of scope
-            auto capsule = py::capsule(&t, [](void *p) {
+            auto capsule = py::capsule(&t, [](void *) {
                 //delete reinterpret_cast<Eigen::Tensor<Scalar, Dims>*>(p);
             });
             return py::array_t<Scalar, py::array::f_style>(t.dimensions(), t.data(), capsule);

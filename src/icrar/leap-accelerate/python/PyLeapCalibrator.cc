@@ -62,7 +62,7 @@ namespace python
     std::vector<SphericalDirection> ToSphericalDirectionVector(const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor>>& directions)
     {
         auto output = std::vector<SphericalDirection>();
-        for(size_t row = 0; row < directions.rows(); ++row)
+        for(int64_t row = 0; row < directions.rows(); ++row)
         {
             output.push_back(directions(row, Eigen::all));
         }
