@@ -158,7 +158,6 @@ find_package(Casacore COMPONENTS ms)
 find_package(pybind11 CONFIG)
 set(PYTHON_ENABLED ${pybind11_FOUND})
 if(PYTHON_ENABLED)
-  find_package(PythonLibs 3 REQUIRED) # required for PYTHON_ADD_MODULE macro
   find_package(Python3 COMPONENTS Interpreter Development REQUIRED NumPy)
 endif()
 
