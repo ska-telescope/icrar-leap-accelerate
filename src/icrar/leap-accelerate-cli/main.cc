@@ -46,8 +46,6 @@
 #include <string>
 #include <exception>
 
-#include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
-
 using namespace icrar;
 namespace po = boost::program_options;
 

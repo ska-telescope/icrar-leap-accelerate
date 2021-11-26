@@ -133,3 +133,7 @@ Doxygen documentation is generated for all C++ and cuda files with the following
 Sphinx/Breath/Exhale docs is a dependent target generated with the following command:
 
 `make sphinx`
+
+### gitlab repo
+
+The CI/CD on gitlab used a pre-built base build image along with a cpp_build_base image to speed this process.
