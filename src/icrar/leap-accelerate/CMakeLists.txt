@@ -99,16 +99,18 @@ endif()
 #     ${public_headers}
 #   )
 # else()
-  add_library(
+# endif()
+
+add_library(
     ${TARGET_NAME} SHARED
     ${sources}
     ${private_headers}
     ${public_headers}
   )
+if(PYTHON_ENABLED)
   pybind11_extension(${TARGET_NAME})
   pybind11_strip(${TARGET_NAME})
-
-# endif()
+endif()
 
 # Libraries
 option(CASA_ENABLED "Casa Enabled" TRUE)

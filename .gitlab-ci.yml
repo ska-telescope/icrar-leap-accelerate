@@ -58,7 +58,7 @@ variables:
   - apt install -y wget casacore-dev libboost-all-dev rapidjson-dev
 
 .python_packages: &python_packages
-  - apt install python3-pip python-pybind11
+  - apt install python3-pip pybind11-dev python3-pybind11
 
 .doc_packages: &doc_packages
   - apt install -y python3-pip doxygen graphviz
@@ -125,7 +125,6 @@ stages:
 
 download_testdata:
   extends: .common
-  #image: nexus.engageska-portugal.pt/ska-docker/cpp_build_base
   image: $CAR_OCI_REGISTRY_HOST/ska-cicd-cpp-build-base:0.2.10
   stage: build
   before_script:
