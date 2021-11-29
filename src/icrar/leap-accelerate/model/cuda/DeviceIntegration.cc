@@ -66,13 +66,13 @@ namespace cuda
 
     __host__ void DeviceIntegration::Set(const icrar::cpu::Integration& integration)
     {
-        if(m_uvws.GetSize() != integration.GetUVW().size())
+        if(boost::numeric_cast<int64_t>(m_uvws.GetSize()) != integration.GetUVW().size())
         {
             throw icrar::invalid_argument_exception("uvw", "integration", __FILE__, __LINE__);
         }
         m_uvws.SetDataAsync(integration.GetUVW().data());
 
-        if(m_visibilities.GetSize() != integration.GetVis().size())
+        if(boost::numeric_cast<int64_t>(m_visibilities.GetSize()) != integration.GetVis().size())
         {
             std::ostringstream os;
             os << "tensor size mismatch: device " << m_visibilities.GetDimensions() << "(" << m_visibilities.GetSize() << ")" << "\n";
@@ -83,8 +83,9 @@ namespace cuda
         m_visibilities.SetDataAsync(integration.GetVis().data());
     }
 
-    __host__ void DeviceIntegration::ToHost(cpu::Integration& host) const
+    __host__ void DeviceIntegration::ToHost(cpu::Integration&) const
     {
+        throw icrar::not_implemented_exception(__FILE__, __LINE__);
         //m_visibilities.ToHost(host.m_data); //TODO(calgray): unsupported constant variant!
     }
 } // namespace cuda

@@ -52,6 +52,7 @@ set(sources
     model/cpu/calibration/Calibration.cc
     model/cpu/calibration/BeamCalibration.cc
     model/cuda/DeviceMetaData.cc
+    model/cuda/DeviceIntegration.cc
 
     algorithm/LeapCalibratorFactory.cc
     algorithm/cpu/CpuLeapCalibrator.cc
@@ -75,7 +76,6 @@ set(cuda_sources
     math/cuda/matrix_multiply.cu
     math/cuda/matrix_invert.cu
     
-    model/cuda/DeviceIntegration.cu
     algorithm/cuda/kernel/EmptyKernel.cu
     algorithm/cuda/kernel/RotateVisibilitiesKernel.cu
     algorithm/cuda/kernel/PolarizationsToPhaseAnglesKernel.cu
