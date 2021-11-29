@@ -112,6 +112,8 @@ variables:
     - export CUDA_HOME=/usr/local/cuda
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
     - export PATH=$PATH:$CUDA_HOME/bin
+    # when building without cuda device enabled locate the stub driver for linking to libcuda.so
+    - export LIBRARY_PATH=$LIBRARY_PATH:${CUDA_HOME}/lib64/stubs
 
 stages:
   - build

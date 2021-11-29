@@ -135,7 +135,7 @@ if(USE_PCH)
   target_precompile_headers(${TARGET_NAME}
     PRIVATE
     [[pch.h]]
-  )
+)
 endif()
 
 target_link_libraries(${TARGET_NAME} PUBLIC Threads::Threads)
@@ -145,6 +145,7 @@ target_link_libraries(${TARGET_NAME} PUBLIC Boost::log_setup)
 target_link_libraries(${TARGET_NAME} PUBLIC Boost::program_options)
 target_link_libraries(${TARGET_NAME} PUBLIC Boost::filesystem)
 target_link_libraries(${TARGET_NAME} PUBLIC Eigen3::Eigen)
+target_link_libraries(${TARGET_NAME} PUBLIC RapidJSON::RapidJSON)
 #target_link_libraries(${TARGET_NAME} PUBLIC xtensor)
 
 
@@ -161,9 +162,9 @@ if(CUDA_ENABLED)
   #set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -lineinfo --default-stream per-thread)
   #message("CUDA_NVCC_FLAGS = ${CUDA_NVCC_FLAGS}")
   target_include_directories(${TARGET_NAME} SYSTEM PUBLIC ${CUDA_INCLUDE_DIRS})
+  target_link_libraries(${TARGET_NAME} PUBLIC cuda)  # libcuda.so may only be located in lib64/stubs
   target_link_libraries(${TARGET_NAME} PUBLIC ${CUDA_LIBRARIES})
   target_link_libraries(${TARGET_NAME} PUBLIC ${CUDA_CUBLAS_LIBRARIES})
-  target_link_libraries(${TARGET_NAME} PUBLIC cuda) # lcuda may be located in lib64/stubs
   if(CUDA_VERSION_MAJOR VERSION_GREATER_EQUAL "10.0")
     target_link_libraries(${TARGET_NAME} PUBLIC ${CUDA_cusolver_LIBRARY})
     #target_link_libraries(${TARGET_NAME} PUBLIC cublasLt)

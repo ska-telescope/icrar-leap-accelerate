@@ -20,6 +20,8 @@
  * MA 02111 - 1307  USA
  */
 
+#if CUDA_ENABLED
+
 #include "DeviceIntegration.h"
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
@@ -90,3 +92,5 @@ namespace cuda
     }
 } // namespace cuda
 } // namespace icrar
+
+#endif // CUDA_ENABLED
