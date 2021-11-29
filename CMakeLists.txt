@@ -119,7 +119,7 @@ if(HIPSYCL_ENABLED)
 endif()
 
 if(CUDA_ENABLED)
-  find_package(CUDA 9.0)
+  find_package(CUDAToolkit 9.0)
   enable_language(CUDA)
 endif()
 
