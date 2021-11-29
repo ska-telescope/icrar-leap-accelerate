@@ -28,6 +28,7 @@
 #include "async.h"
 
 #include <Eigen/Core>
+#include <unsupported/Eigen/CXX11/Tensor>
 
 #include <pybind11/buffer_info.h>
 #include <pybind11/numpy.h>
@@ -39,10 +40,18 @@
 
 namespace py = pybind11;
 
+/**
+ * @brief Converts eigen dimensions vector into a std::vector
+ * 
+ * @tparam Scalar 
+ * @tparam Dims 
+ * @param dimensions 
+ * @return std::vector<Eigen::Index> 
+ */
 template<typename Scalar, size_t Dims>
-std::vector<long int> DimensionsVector(const typename Eigen::DSizes<long int, Dims>& dimensions)
+std::vector<Eigen::Index> DimensionsVector(const typename Eigen::DSizes<Eigen::Index, Dims>& dimensions)
 {
-    std::vector<long int> result;
+    std::vector<Eigen::Index> result;
     result.assign(dimensions.begin(), dimensions.end());
     return result;
 }
