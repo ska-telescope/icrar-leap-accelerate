@@ -206,6 +206,12 @@ build_export_compile_commands:
   stage: linting
   script:
     - cd build
+    
+    # rexeport for portable clangtidy linting
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_COMPILER=clang++ -DUSE_PCH=OFF
+    # This filters out external source file dependencies such as gtest
+    - jq '[ . - map(select(.file | contains("/external/"))) | .[] ]' compile_commands.json | sponge compile_commands.json
+
     - pip3 install pyyaml
     - python3 -u /usr/bin/run-clang-tidy-11.py -quiet 2>&1 | tee clang-tidy.log || FAILED=true
     - cd ..
