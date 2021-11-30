@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <string>
+
 #define PROJECT_SOURCE_DIR "@PROJECT_SOURCE_DIR@/" // NOLINT(cppcoreguidelines-macro-usage)
 #define PROJECT_BINARY_DIR "@CMAKE_BINARY_DIR@/bin/" // NOLINT(cppcoreguidelines-macro-usage)
 
@@ -13,4 +15,8 @@ constexpr int LEAP_ACCELERATE_VERSION_MINOR = @LEAP-Accelerate_VERSION_MINOR@;
 /// The patch version of this package
 constexpr int LEAP_ACCELERATE_VERSION_PATCH = @LEAP-Accelerate_VERSION_PATCH@;
 
+#define TEST_DATA_DIR "@PROJECT_SOURCE_DIR@/testdata"
+
 #define EIGEN_MATRIXBASE_PLUGIN "icrar/leap-accelerate/math/cpu/MatrixBaseAddons.h"
+
+std::string get_test_data_dir();

@@ -26,6 +26,7 @@
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 
+#include <boost/dll.hpp>
 #include <gtest/gtest.h>
 
 #include <cstdlib>
@@ -40,13 +41,13 @@ namespace icrar
      */
     class CommandLineTests : public ::testing::Test
     {
-        std::string m_binDir = PROJECT_BINARY_DIR;
-        std::string m_srcDir = PROJECT_SOURCE_DIR;
+        std::string m_binPath = (boost::dll::program_location().parent_path().parent_path() / "LeapAccelerateCLI").string();
+        std::string m_testDataDir = get_test_data_dir();
     
     protected:
         void TestHelp()
         {
-            std::string command = m_binDir + "LeapAccelerateCLI";
+            std::string command = m_binPath;
             command += " --help";
 
             std::cout << command << std::endl;
@@ -55,8 +56,8 @@ namespace icrar
 
         void TestSimpleRun()
         {
-            std::string command = m_binDir + "LeapAccelerateCLI";
-            command += " -f " + m_srcDir + "testdata/mwa/1197638568-split.ms";
+            std::string command = m_binPath;
+            command += " -f " + m_testDataDir + "/mwa/1197638568-split.ms";
             command += " -s 102";
             command += " -d [[1.0,0.0]]";
 
@@ -66,8 +67,8 @@ namespace icrar
 
         void TestDeprecated()
         {
-            std::string command = m_binDir + "LeapAccelerateCLI";
-            command += " -f " + m_srcDir + "testdata/mwa/1197638568-split.ms";
+            std::string command = m_binPath;
+            command += " -f " + m_testDataDir + "/mwa/1197638568-split.ms";
             command += " -s 102";
             command += " -i casa";
             command += " -d ["
@@ -76,8 +77,8 @@ namespace icrar
             std::cout << command << std::endl;
             ASSERT_EQ(0, system(command.c_str()));
 
-            command = m_binDir + "LeapAccelerateCLI";
-            command += " -f " + m_srcDir + "testdata/mwa/1197638568-split.ms";
+            command = m_binPath;
+            command += " -f " + m_testDataDir + "/mwa/1197638568-split.ms";
             command += " -s 102";
             command += " -i eigen";
             command += " -d ["
@@ -89,8 +90,8 @@ namespace icrar
 
         void TestMultipleCpu()
         {
-            std::string command = m_binDir + "LeapAccelerateCLI";
-            command += " -f " + m_srcDir + "testdata/mwa/1197638568-split.ms";
+            std::string command = m_binPath;
+            command += " -f " + m_testDataDir + "/mwa/1197638568-split.ms";
             command += " -s 102";
             command += " -i cpu";
             command += " -d ["
@@ -111,8 +112,8 @@ namespace icrar
 
         void TestMultipleCuda()
         {
-            std::string command = m_binDir + "LeapAccelerateCLI";
-            command += " -f " + m_srcDir + "testdata/mwa/1197638568-split.ms";
+            std::string command = m_binPath;
+            command += " -f " + m_testDataDir + "/mwa/1197638568-split.ms";
             command += " -s 102";
             command += " -i cuda";
             command += " -d ["
@@ -133,8 +134,8 @@ namespace icrar
 
         void TestReferenceAntenna()
         {
-            std::string command = m_binDir + "LeapAccelerateCLI";
-            command += " -f " + m_srcDir + "testdata/mwa/1197638568-split.ms";
+            std::string command = m_binPath;
+            command += " -f " + m_testDataDir + "/mwa/1197638568-split.ms";
             command += " -i cpu";
             command += " -r 120";
             command += " -d ["
