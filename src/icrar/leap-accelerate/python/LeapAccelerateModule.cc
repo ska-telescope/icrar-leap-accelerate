@@ -48,7 +48,7 @@ namespace py = pybind11;
  * @param dimensions 
  * @return std::vector<Eigen::Index> 
  */
-template<typename Scalar, size_t Dims>
+template<typename Scalar, int Dims>
 std::vector<Eigen::Index> DimensionsVector(const typename Eigen::DSizes<Eigen::Index, Dims>& dimensions)
 {
     std::vector<Eigen::Index> result;
@@ -66,7 +66,7 @@ std::vector<Eigen::Index> DimensionsVector(const typename Eigen::DSizes<Eigen::I
  * @param m module
  * @param name class name
  */
-template<typename Scalar, size_t Dims, typename... InitArgs>
+template<typename Scalar, int Dims, typename... InitArgs>
 void PybindEigenTensor(py::module& m, const char* name)
 {
     //TODO: see pybind11/functional.h for simple type caster to
