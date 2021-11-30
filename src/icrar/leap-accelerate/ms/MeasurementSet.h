@@ -61,7 +61,7 @@ namespace icrar
 
         boost::optional<std::string> m_filepath;
         std::set<std::int32_t> m_antennas;
-        int m_stations;
+        uint32_t m_stations;
         bool m_readAutocorrelations;
         uint32_t m_numBaselines;
         uint32_t m_numRows;
@@ -250,7 +250,7 @@ namespace icrar
         Eigen::Tensor<std::complex<double>, 4> ReadVis(
             uint32_t startTimestep,
             uint32_t intervalTimesteps,
-            Range<int32_t> polarizationRange,
+            Range<uint32_t> polarizationRange,
             const char* column) const;
 
         /**

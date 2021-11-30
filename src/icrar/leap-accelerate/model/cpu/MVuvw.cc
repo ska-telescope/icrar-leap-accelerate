@@ -29,7 +29,7 @@ namespace icrar
     Eigen::Matrix<double, Eigen::Dynamic, 3> ToMatrix(const std::vector<MVuvw>& uvws)
     {
         Eigen::Matrix<double, Eigen::Dynamic, 3> res(uvws.size(), 3);
-        for(size_t row = 0; row < uvws.size(); row++)
+        for(Eigen::DenseIndex row = 0; row < uvws.size(); row++)
         {
             res(row,0) = uvws[row](0);
             res(row,1) = uvws[row](1);

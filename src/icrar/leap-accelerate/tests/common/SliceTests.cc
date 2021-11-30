@@ -35,7 +35,7 @@ namespace icrar
             using namespace boost;
 
             ASSERT_NO_THROW(Slice());
-            ASSERT_NO_THROW(Slice(boost::none));
+            ASSERT_NO_THROW(Slice(boost::optional<int64_t>()));
             ASSERT_THROW(Slice(0), icrar::exception);
             ASSERT_NO_THROW(Slice(1));
 

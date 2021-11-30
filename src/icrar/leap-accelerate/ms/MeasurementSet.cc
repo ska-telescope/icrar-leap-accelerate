@@ -43,18 +43,18 @@ namespace icrar
             LOG(warning) << "unique antennas = " << m_antennas.size();
             LOG(warning) << "using unique antennas";
 
-            m_stations = boost::numeric_cast<int>(m_antennas.size());
+            m_stations = boost::numeric_cast<uint32_t>(m_antennas.size());
         }
         else
         {
-            m_stations = boost::numeric_cast<int>(m_measurementSet->antenna().nrow());
+            m_stations = boost::numeric_cast<uint32_t>(m_measurementSet->antenna().nrow());
         }
 
         m_numBaselines = CalculateNumBaselines(m_readAutocorrelations);
         m_numRows = boost::numeric_cast<uint32_t>(m_msmc->uvw().nrow());
         m_numTimesteps = boost::numeric_cast<uint32_t>(m_numRows / m_numBaselines);
         assert(m_measurementSet->polarization().nrow() > 0);
-        m_numPols = m_msc->polarization().numCorr().get(0);
+        m_numPols = boost::numeric_cast<uint32_t>(m_msc->polarization().numCorr().get(0));
         Validate();
     }
 
@@ -135,7 +135,7 @@ namespace icrar
     {
         if(m_measurementSet->polarization().nrow() > 0)
         {
-            return m_msc->polarization().numCorr().get(0);
+            return boost::numeric_cast<uint32_t>(m_msc->polarization().numCorr().get(0));
         }
         else
         {
@@ -167,7 +167,7 @@ namespace icrar
     {
         if(m_msc->spectralWindow().nrow() > 0)
         {
-            return m_msc->spectralWindow().numChan().get(0);
+            return boost::numeric_cast<uint32_t>(m_msc->spectralWindow().numChan().get(0));
         }
         else
         {
@@ -294,15 +294,14 @@ namespace icrar
         Slice polarizationSlice) const
     {
         // See https://github.com/OxfordSKA/OSKAR/blob/f018c03bb34c16dcf8fb985b46b3e9dc1cf0812c/oskar/ms/src/oskar_ms_read.cpp
-        int32_t nPolarizations = GetNumPols();
-        Range<int32_t> polarizationRange = polarizationSlice.Evaluate(nPolarizations);
+        auto polarizationRange = polarizationSlice.Evaluate(GetNumPols());
         return ReadVis(startTimestep, intervalTimesteps, polarizationRange, "DATA");
     }
 
     Eigen::Tensor<std::complex<double>, 4> MeasurementSet::ReadVis(
         uint32_t startTimestep,
         uint32_t intervalTimesteps,
-        Range<int32_t> polarizationRange,
+        Range<uint32_t> polarizationRange,
         const char* columnName) const
     {
         const uint32_t num_baselines = GetNumBaselines();
@@ -314,8 +313,8 @@ namespace icrar
         const unsigned int rows = intervalTimesteps * num_baselines;
         
         auto pols_slice = polarizationRange.ToSeq();
-        const unsigned int pol_length = boost::numeric_cast<unsigned int>(pols_slice.sizeObject());
-        const unsigned int pol_stride = boost::numeric_cast<unsigned int>(pols_slice.incrObject());
+        const ssize_t pol_length = pols_slice.sizeObject();
+        const ssize_t pol_stride = pols_slice.incrObject();
 
         if(!m_measurementSet->tableDesc().isColumn(columnName))
         {
@@ -377,7 +376,7 @@ namespace icrar
     std::set<int32_t> MeasurementSet::GetFlaggedAntennas() const
     {
         auto fg = GetFilteredBaselines();        
-        int32_t totalStations = GetTotalAntennas();
+        uint32_t totalStations = GetTotalAntennas();
 
         // start with a set of all antennas flagged and unflag the ones 
         // that contain unflagged baseline data
