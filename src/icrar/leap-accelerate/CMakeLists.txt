@@ -24,6 +24,7 @@ set(private_headers
 set(sources
     ${git_revision_cc}
 
+    config.cc
     exception/exception.cc
 
     ms/MeasurementSet.cc
