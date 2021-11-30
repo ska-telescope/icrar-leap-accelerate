@@ -199,6 +199,7 @@ else()
   message("Loading submodule rapidjson")
   set(PC_RapidJSON_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external/rapidjson-1.1.0/include)
   find_package(RapidJSON REQUIRED)
+  message(STATUS "RapidJSON: ${RapidJSON_INCLUDE_DIRS}")
 endif()
 
 # Local Targets
