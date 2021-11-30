@@ -68,6 +68,13 @@ variables:
 .lint_packages: &lint_packages
   - apt install -y python3-pip clang clang-tidy clang-tools iwyu cppcheck
 
+.cuda_variables: &cuda_variables
+  - export CUDA_HOME=/usr/local/cuda
+  - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
+  - export PATH=$PATH:$CUDA_HOME/bin
+    # when building without cuda device enabled locate the stub driver for linking to libcuda.so
+  - export LIBRARY_PATH=$LIBRARY_PATH:${CUDA_HOME}/lib64/stubs
+
 .minimal_build_dependencies:
   extends: .common
   image: $CAR_OCI_REGISTRY_HOST/ska-cicd-cpp-build-base:0.2.10
@@ -90,9 +97,7 @@ variables:
     - *generator_packages
     - *project_packages
     - *python_packages
-    - export CUDA_HOME=/usr/local/cuda
-    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
-    - export PATH=$PATH:$CUDA_HOME/bin
+    - *cuda_variables
 
 .docs_dependencies:
   extends: .minimal_build_dependencies
@@ -109,11 +114,8 @@ variables:
     - *generator_packages
     - *project_packages
     - *lint_packages
-    - export CUDA_HOME=/usr/local/cuda
-    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
-    - export PATH=$PATH:$CUDA_HOME/bin
-    # when building without cuda device enabled locate the stub driver for linking to libcuda.so
-    - export LIBRARY_PATH=$LIBRARY_PATH:${CUDA_HOME}/lib64/stubs
+    - *cuda_variables
+
 
 stages:
   - build
