@@ -39,7 +39,7 @@ class MeasurementSetTests : public testing::Test
 
 public:
     MeasurementSetTests()
-    : msMwa(icrar::MeasurementSet(std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms"))
+    : msMwa(icrar::MeasurementSet(get_test_data_dir() + "/mwa/1197638568-split.ms"))
     {
     }
 
