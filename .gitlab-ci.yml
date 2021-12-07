@@ -385,8 +385,8 @@ pages:
     - apt update && apt install -y curl gcovr moreutils python3-pip jq
     - pip3 install yq
     - mkdir -p build/reports/code-coverage
-    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o build/reports/code-coverage/index.html | sponge gcovr-html.log
-    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml | sponge gcovr-xml.log
+    - gcovr -r ../ -e 'external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o build/reports/code-coverage/index.html | sponge gcovr-html.log
+    - gcovr -r ../ -e 'external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml | sponge gcovr-xml.log
   after_script:
     # Combine Linting XML
     - cp build/unit-tests.xml build/reports/unit-tests.xml
