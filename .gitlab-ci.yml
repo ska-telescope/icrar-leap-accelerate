@@ -195,14 +195,6 @@ build_release_minimal:
 build_release:
   extends: [.complete_build_dependencies, .build_release]
 
-build_release_clang:
-  extends: .minimal_build_dependencies
-  stage: build
-  script:
-    - mkdir -p build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++ -DWCONVERSION=TRUE -DWERROR=TRUE
-    - make -j2
-
 build_docs:
   extends: .docs_dependencies
   stage: build
@@ -264,9 +256,7 @@ build_daliuge_palette:
   stage: linting
   script:
     - cd build
-    
-    # reexport for portable clangtidy linting
-    #- cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_COMPILER=clang++ -DUSE_PCH=OFF
+
     # This filters out external source file dependencies such as gtest
     - jq '[ . - map(select(.file | contains("/external/"))) | .[] ]' compile_commands.json | sponge compile_commands.json
 
@@ -354,8 +344,6 @@ test_debug_minimal:
     # portable testing
     - export TEST_DATA_DIR=$PWD/testdata
     - cd build
-    #- rm CMakeCache.txt
-    #- cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"
     - ctest -T test --no-compress-output --verbose --debug
 
 # Needs cuda enabled runner
