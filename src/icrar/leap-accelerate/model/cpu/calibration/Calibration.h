@@ -28,7 +28,9 @@
 
 #include <rapidjson/writer.h>
 #include <rapidjson/prettywriter.h>
+#ifndef __NVCC__
 #include <rapidjson/document.h>
+#endif // __NVCC__
 #include <rapidjson/stringbuffer.h>
 
 #include <vector>
@@ -87,9 +89,11 @@ namespace cpu
             writer.EndObject();
         }
 
+#ifndef __NVCC__
         static Calibration Parse(const std::string& json);
 
         static Calibration Parse(const rapidjson::Value& doc);
+#endif // __NVCC__
     };
 }
 }

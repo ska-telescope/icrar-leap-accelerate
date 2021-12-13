@@ -23,14 +23,16 @@
 #pragma once
 
 #include <Eigen/Core>
-
+#ifndef __NVCC__
 #include <rapidjson/document.h>
+#endif // __NVCC__
 #include <vector>
 
 namespace icrar
 {
     using SphericalDirection = Eigen::Vector2d;
 
+#ifndef __NVCC__
     /**
      * @brief Parses a json string to a collection of MVDirections
      * 
@@ -44,4 +46,5 @@ namespace icrar
      * 
      */
     std::vector<SphericalDirection> ParseDirections(const rapidjson::Value& doc);
+#endif // __NVCC__
 } // namespace icrar

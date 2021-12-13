@@ -23,7 +23,9 @@
 #pragma once
 #include <icrar/leap-accelerate/common/Range.h>
 #include <icrar/leap-accelerate/exception/exception.h>
+#ifndef __NVCC__
 #include <rapidjson/document.h>
+#endif // __NVCC__
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 #include <boost/numeric/conversion/cast.hpp>
@@ -88,7 +90,9 @@ namespace icrar
         static Slice All() { return Slice(0, boost::none, boost::none); }
     };
 
+#ifndef __NVCC__
     Slice ParseSlice(const std::string& json);
 
     Slice ParseSlice(const rapidjson::Value& doc);
+#endif // __NVCC__
 } // namespace icrar

@@ -17,7 +17,6 @@ set(public_headers
     model/band_data.h
 )
 set(private_headers
-    math/casacore_helper.h
     math/math_conversion.h
     math/vector_extensions.h
 )

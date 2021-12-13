@@ -48,9 +48,9 @@ namespace cuda
     /**
      * @brief Computes the moore penrose pseudo inverse where A'A = I (left inverse)
      * 
-     * @param cusolverHandle 
-     * @param cublasHandle
-     * @param a 
+     * @param cusolverHandle cusolver handle
+     * @param cublasHandle cublas handle
+     * @param a cpu memory matrix to invert
      * @param jobtype SVD matrix dimension type
      * @return Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> 
      */
@@ -63,10 +63,11 @@ namespace cuda
     /**
      * @brief Computes the U, S and Vt values of matrix singular value decomposition
      * 
-     * @param cusolverHandle 
-     * @param deviceA 
-     * @param jobType 
-     * @return std::tuple<device_matrix<double>, device_vector<double>, device_matrix<double>> 
+     * @param cusolverHandle cusolver handle
+     * @param deviceA device memory matrix to invert
+     * @param jobType type of device buffer matrices used by kernel
+     * @return std::tuple<device_matrix<double>, device_vector<double>, device_matrix<double>>
+     * tuple of U, S and V matrices
      */
     std::tuple<device_matrix<double>, device_vector<double>, device_matrix<double>> svd(
         cusolverDnHandle_t cusolverHandle,
@@ -76,10 +77,10 @@ namespace cuda
     /**
      * @brief Performs matrix inversion using cusolver and cublas 
      * 
-     * @param cusolverHandle 
-     * @param cublasHandle 
-     * @param matrix 
-     * @param jobType 
+     * @param cusolverHandle cusolver handle
+     * @param cublasHandle cublas handle
+     * @param matrix device memory matrix to invert
+     * @param jobType type of device buffer matrices used by kernel
      * @return device_matrix<double> 
      */
     device_matrix<double> pseudo_inverse(
