@@ -45,8 +45,8 @@ namespace log
     /**
      * @brief Parses string argument into an enum, throws an exception otherwise.
      * 
-     * @param value 
-     * @return ComputeImplementation 
+     * @param value serialized verbosity string
+     * @return Verbosity 
      */
     Verbosity ParseVerbosity(const std::string& value);
 

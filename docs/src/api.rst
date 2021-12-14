@@ -20,7 +20,7 @@ create a calibrator object using the factory method and an output callback:
 
 .. code-block:: cpp
 
-    ArgumentValidated args;
+    ArgumentsValidated args;
     std::vector<cpu::Calibration> calibrations;
     auto outputCallback = [&](const cpu::Calibration& calibration)
     {
@@ -66,19 +66,19 @@ Modules
 =======
 
 
-* :ref:`core <dir__home_calgray_Code_icrar_leap-accelerate_src_icrar_leap-accelerate_core>`
-   - contains files required by other components
-* :ref:`log <dir__home_calgray_Code_icrar_leap-accelerate_src_icrar_leap-accelerate_core_log>`
+* :ref:`core <dir_core>`
+   - contains common classes and functions required by other modules
+* :ref:`log <dir_log>`
    - contains configuration and functions for logging info and warnings
-* :ref:`common <dir__home_calgray_Code_icrar_leap-accelerate_src_icrar_leap-accelerate_common>`
+* :ref:`common <dir_common>`
    - contains leap specific files used by other components
-* :ref:`model <dir__home_calgray_Code_icrar_leap-accelerate_src_icrar_leap-accelerate_model>`
+* :ref:`model <dir_model>`
    - contains data structures for leap calibration
-* :ref:`algorithm <dir__home_calgray_Code_icrar_leap-accelerate_src_icrar_leap-accelerate_algorithm>`
+* :ref:`algorithm <dir_algorithm>`
    - contains utility classes and functions for performing leap calibration
-* :ref:`math <dir__home_calgray_Code_icrar_leap-accelerate_src_icrar_leap-accelerate_math>`
+* :ref:`math <dir_math>`
    - contains generic math extensions
-* :ref:`ms <dir__home_calgray_Code_icrar_leap-accelerate_src_icrar_leap-accelerate_ms>`
+* :ref:`ms <dir_ms>`
    - contains abstraction layers for measurement set objects
-* :ref:`cuda <dir__home_calgray_Code_icrar_leap-accelerate_src_icrar_leap-accelerate_cuda>`
+* :ref:`cuda <dir_cuda>`
    - contains cuda specific classes and helpers
