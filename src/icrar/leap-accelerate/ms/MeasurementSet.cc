@@ -38,7 +38,7 @@ namespace icrar
         std::tie(m_antennas, m_readAutocorrelations) = CalculateUniqueAntennas();
         if(m_antennas.size() != m_measurementSet->antenna().nrow())
         {
-            // The antenna column may have blank entries for flagged antennas
+            // The antenna column may have blank entries for flagged antennas            
             LOG(warning) << "total antennas = " << m_measurementSet->antenna().nrow();
             LOG(warning) << "unique antennas = " << m_antennas.size();
             LOG(warning) << "using unique antennas";

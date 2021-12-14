@@ -27,7 +27,7 @@
 
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
-#include <icrar/leap-accelerate/math/math_conversion.h>
+#include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/common/eigen_stringutils.h>
@@ -90,12 +90,12 @@ namespace cpu
 
         //select the first epoch only
         auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1); //TODO(calgray): assuming epoch indices are sorted
-        auto a1 = ToVector(msmc->antenna1().getColumnRange(epochIndices));
-        auto a2 = ToVector(msmc->antenna2().getColumnRange(epochIndices));
+        casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumnRange(epochIndices);
+        casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
         
 
         LOG(info) << "Calculating PhaseMatrix A1";
-        std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(a1, a2, filteredBaselines, m_constants.referenceAntenna, false);
+        std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), filteredBaselines, m_constants.referenceAntenna, false);
         trace_matrix(m_A1, "A1");
         trace_matrix(m_I1, "I1");
         if(m_A1.rows() == 0 || m_I1.rows() == 0)
@@ -105,7 +105,7 @@ namespace cpu
         }
 
         LOG(info) << "Calculating PhaseMatrix A";
-        std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(a1, a2, filteredBaselines, m_constants.referenceAntenna, true);
+        std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), filteredBaselines, m_constants.referenceAntenna, true);
         trace_matrix(m_A, "A");
 
         if(computeInverse)

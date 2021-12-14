@@ -28,12 +28,10 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-#ifndef __NVCC__
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/stringbuffer.h>
-#endif // __NVCC__
 
 #include <boost/optional.hpp>
 #include <boost/noncopyable.hpp>
@@ -110,9 +108,7 @@ namespace cpu
             writer.EndObject();
         }
 
-#ifndef __NVCC__
         static BeamCalibration Parse(const rapidjson::Value& doc);
     };
-#endif // __NVCC__
 }
 }

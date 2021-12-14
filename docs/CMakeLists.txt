@@ -4,6 +4,10 @@ find_package(Sphinx)
 if(Sphinx_FOUND AND Doxygen_FOUND)
 
   # Find all the public headers
+  # get_target_property(PUBLIC_HEADER_DIR LeapAccelerate INTERFACE_INCLUDE_DIRECTORIES)
+  # file(GLOB_RECURSE PUBLIC_HEADERS ${PUBLIC_HEADER_DIR} *.h)
+  # message(${PUBLIC_HEADERS})
+
   get_target_property(PUBLIC_HEADER_DIR LeapAccelerate INTERFACE_INCLUDE_DIRECTORIES)
   file(GLOB_RECURSE PUBLIC_HEADERS "${PROJECT_SOURCE_DIR}/src/*.h")
 
@@ -18,12 +22,11 @@ if(Sphinx_FOUND AND Doxygen_FOUND)
   configure_file(${DOXYFILE_IN} ${DOXYFILE_OUT} @ONLY)
 
   file(MAKE_DIRECTORY ${DOXYGEN_OUTPUT_DIR}) #Doxygen won't create this for us
-
   add_custom_command(OUTPUT ${DOXYGEN_INDEX_FILE}
-                    DEPENDS ${PUBLIC_HEADERS}
-                    COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
-                    MAIN_DEPENDENCY ${DOXYFILE_OUT} ${DOXYFILE_IN}
-                    COMMENT "Generating doxygen")
+  DEPENDS ${PUBLIC_HEADERS}
+  COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
+  MAIN_DEPENDENCY ${DOXYFILE_OUT} ${DOXYFILE_IN}
+  COMMENT "Generating doxygen")
 
   # Nice named target so we can run the job easily
   add_custom_target(doxygen DEPENDS ${DOXYGEN_INDEX_FILE})
@@ -52,12 +55,6 @@ if(Sphinx_FOUND AND Doxygen_FOUND)
                     ${DOXYGEN_INDEX_FILE}
                     MAIN_DEPENDENCY ${SPHINX_SOURCE_DIR}/conf.py
                     COMMENT "Generating documentation with sphinx")
-
-  # TODO: clean needs to perform:
-  # rm -rf doxygen &&
-  # rm -rf sphinx &&
-  # rm -rf /icrar-leap-accelerate/docs/src/api
-  # TODO: Sphinx needs Doxyfile.in touched to rebuild
 
   # Nice named target so we can run the job easily
   add_custom_target(sphinx DEPENDS ${SPHINX_INDEX_FILE})

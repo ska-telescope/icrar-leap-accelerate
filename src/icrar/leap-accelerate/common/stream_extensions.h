@@ -49,15 +49,6 @@ std::ostream& operator<<(std::ostream& os, const std::set<T>& v)
     return os;
 }
 
-/**
- * @brief Prints a mapping of streamable key-value pairs
- * 
- * @tparam T streamable key type
- * @tparam S streamable value type
- * @param os output stream
- * @param m map
- * @return std::ostream& 
- */
 template <typename T, typename S> 
 std::ostream& operator<<(std::ostream& os, const std::map<T, S>& m) 
 { 

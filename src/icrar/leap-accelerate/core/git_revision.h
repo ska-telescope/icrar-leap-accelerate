@@ -20,6 +20,12 @@
  * MA 02111 - 1307  USA
  */
 
+/**
+ * @file
+ *
+ * Stores the version information of leap-accelerate
+ */
+
 #pragma once
 
 #include <string>

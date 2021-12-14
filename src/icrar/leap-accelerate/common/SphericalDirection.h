@@ -35,20 +35,19 @@ namespace icrar
 {
     using SphericalDirection = Eigen::Vector2d;
 
-#ifndef __NVCC__
     /**
      * @brief Parses a json string to a collection of MVDirections
      * 
-     * @param json json string of direction vectors
+     * @param json 
      * @return std::vector<SphericalDirection> 
      */
     std::vector<SphericalDirection> ParseDirections(const std::string& json);
 
+#ifndef __NVCC__
     /**
      * @brief Parses a json object to a collection of MVDirections
      * 
-     * @param doc rapidjson doc of direction vectors
      */
     std::vector<SphericalDirection> ParseDirections(const rapidjson::Value& doc);
-#endif // __NVCC__
+#endif
 } // namespace icrar

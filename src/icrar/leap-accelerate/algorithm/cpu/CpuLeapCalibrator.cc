@@ -34,6 +34,7 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/math/vector_extensions.h>
+#include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/timer.h>
@@ -171,8 +172,8 @@ namespace cpu
         }
 
         LOG(info) << "Calculating Calibration";
-        auto avgDataI1 = metadata.GetAvgData().wrapped_row_select(metadata.GetI1());
-        Eigen::VectorXd phaseAnglesI1 = avgDataI1.arg();
+        auto polarizationsI1 = metadata.GetAvgData().wrapped_row_select(metadata.GetI1());
+        Eigen::VectorXd phaseAnglesI1 = polarizationsI1.arg(); // arg(XX + YY)
 
         // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
         phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);

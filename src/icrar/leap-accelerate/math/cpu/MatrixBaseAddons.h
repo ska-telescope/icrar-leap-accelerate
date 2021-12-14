@@ -23,8 +23,7 @@
 /// See http://eigen.tuxfamily.org/dox-3.2/TopicCustomizingEigen.html
 /// for details on extending Eigen3.
 
-// NOTE: MatrixBase class templates are already defined:
-// Derived, Scalar, StorageKind, StorageIndex
+//NOTE: MatrixBase class templates are already defined
 
 /**
  * @brief Provides numpy behaviour slicing.
@@ -59,14 +58,6 @@ inline auto numpy(Index start, Index end, Index step)
     }
 }
 
-/**
- * @brief Returns a row slicer using numpy indexing arguments
- * 
- * @param start 
- * @param end 
- * @param step 
- * @return auto 
- */
 inline auto numpy_rows(Index start, Index end, Index step)
 {
     Index total = rows();
@@ -75,20 +66,21 @@ inline auto numpy_rows(Index start, Index end, Index step)
     return Eigen::seq(start, end, step);
 }
 
-/**
- * @brief Returns a column slicer using numpy indexing arguments
- * 
- * @param start 
- * @param end 
- * @param step 
- * @return auto 
- */
 inline auto numpy_cols(Index start, Index end, Index step)
 {
     Index total = cols();
     start = start < 0 ? start + total : start;
     end = end < 0 ? end + total : end;
     return Eigen::seq(start, end, step);
+}
+
+inline auto numpy(std::initializer_list<std::initializer_list<Index>> slice)
+{
+    if(slice.size() == 3)
+    {
+        auto it = slice.begin();
+        return numpy(*slice.begin(), *std::next(slice.begin()), *std::prev(slice.end()));
+    }
 }
 
 /**
@@ -140,7 +132,7 @@ inline auto wrapped_row_select(const Matrix<OtherIndex, Dynamic, 1>& rowIndices)
 /**
  * @brief Computes the element-wise standard deviation
  * 
- * @return Scalar
+ * @return Scalar 
  */
 double standard_deviation() const
 {

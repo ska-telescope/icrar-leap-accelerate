@@ -31,11 +31,10 @@ namespace icrar
      * @brief returns true if the magnitude of the difference between two
      * values are approximately equal (within the specified threshold)
      * 
-     * @tparam T input type
+     * @tparam T 
      * @param lhs left value
      * @param rhs right value
-     * @param threshold threshold where an equal absolute differance is
-     * considered as not approximately equal
+     * @param threshold  
      * @return true if left value approximately equals right value
      * @return false if left value does not approximately equals right value
      */

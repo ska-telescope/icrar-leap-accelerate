@@ -24,7 +24,7 @@
 
 #include "DeviceMetaData.h"
 #include <icrar/leap-accelerate/math/vector_extensions.h>
-#include <icrar/leap-accelerate/math/math_conversion.h>
+#include <icrar/leap-accelerate/math/casacore_helper.h>
 
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/math/cpu/matrix_invert.h>

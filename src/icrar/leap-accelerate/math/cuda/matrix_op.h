@@ -32,10 +32,10 @@ namespace cuda
 {
     enum class MatrixOp
     {
-        normal = CUBLAS_OP_N, //< No matrix operation
-        transpose = CUBLAS_OP_T, //< diagonal reflection
-        hermitian = CUBLAS_OP_C, //< conjugate and diagonal reflection
-        conjugate = CUBLAS_OP_T | CUBLAS_OP_C //< element-wise conjugates
+        normal = CUBLAS_OP_N,
+        transpose = CUBLAS_OP_T,
+        hermitian = CUBLAS_OP_C,
+        conjugate = CUBLAS_OP_T | CUBLAS_OP_C
     };
 
     /**

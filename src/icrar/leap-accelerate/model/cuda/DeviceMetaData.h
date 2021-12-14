@@ -32,6 +32,10 @@
 #include <icrar/leap-accelerate/cuda/device_vector.h>
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
 
+#include <casacore/measures/Measures/MDirection.h>
+
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Vector.h>
 
 #include <Eigen/Core>
 

@@ -29,15 +29,6 @@
 #include <functional>
 #include <type_traits>
 
-/**
- * @brief Provides stream operator for std::vector as
- * a json-like literal.
- * 
- * @tparam T streamable type
- * @param os output stream
- * @param v vector
- * @return std::ostream& 
- */
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
 {
@@ -60,10 +51,10 @@ namespace icrar
      * @brief returns a linear sequence of values from start at step sized
      * intervals to the stop value inclusive
      * 
-     * @tparam IntType integer type
-     * @param start start index
-     * @param stop exclusive end inex
-     * @param step increment between generated elements
+     * @tparam IntType 
+     * @param start 
+     * @param stop 
+     * @param step 
      * @return std::vector<IntType> 
      */
     template <typename IntType>
@@ -88,9 +79,9 @@ namespace icrar
     /**
      * @brief returns a linear sequence of values from start to stop
      * 
-     * @tparam IntType integer type
-     * @param start start index
-     * @param stop exclusive end index
+     * @tparam IntType 
+     * @param start 
+     * @param stop 
      * @return std::vector<IntType> 
      */
     template <typename IntType>
@@ -102,8 +93,8 @@ namespace icrar
     /**
      * @brief returns a linear sequence of values from 0 to stop
      * 
-     * @tparam IntType integer type
-     * @param stop exclusive end index
+     * @tparam IntType 
+     * @param stop 
      * @return std::vector<IntType> 
      */
     template <typename IntType>
@@ -113,8 +104,8 @@ namespace icrar
     }
 
     /**
-     * @brief Returns true if all vector elements of @p lhs are within the
-     * tolerance threshold to @p rhs
+     * @brief Returns true if all vector elements of @param lhs are within the
+     * tolerance threshold to @param rhs 
      * 
      * @tparam T numeric type
      * @param lhs left hand side
@@ -139,13 +130,12 @@ namespace icrar
     }
 
     /**
-     * @brief Performs a std::transform into a newly allocated std::vector
+     * @brief Performs a std::transform on a newly allocated std::vector 
      * 
      * @tparam T The input vector template type
-     * @tparam Op function of signature R(const T&)
-     * @param vector vector to transform
-     * @param lambda transformation of signature R(const T&)
-     * @return std::vector<std::result_of_t<Op(const T&)>>
+     * @tparam function of signature R(const T&)
+     * @param vector 
+     * @return std::vector<R> 
      */
     template<typename T, typename Op>
     std::vector<std::result_of_t<Op(const T&)>> vector_map(const std::vector<T>& vector, Op lambda)

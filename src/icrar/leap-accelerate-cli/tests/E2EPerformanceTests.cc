@@ -22,6 +22,7 @@
 
 
 #include <icrar/leap-accelerate/tests/test_helper.h>
+#include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 #include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>

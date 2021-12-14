@@ -41,6 +41,7 @@
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
+#include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 #include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 

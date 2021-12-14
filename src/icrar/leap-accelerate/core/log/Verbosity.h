@@ -26,6 +26,7 @@
 
 namespace icrar
 {
+/// log
 namespace log
 {
     /**
@@ -33,9 +34,9 @@ namespace log
      */
     enum class Verbosity
     {
-        fatal = 0, ///< Unexpected execution path, report issue to code maintainers
-        error = 1, ///< Known execution error, address exception message before reporting
-        warn = 2, ///< Automatically resolved user exception
+        fatal = 0, ///< brief Unexpected execution path, report issue to repo owner
+        error = 1, ///< Knwon execution error, address exception message before reporting
+        warn = 2, ///< Automatically resolved user exception 
         info = 3, ///< Regular execution reporting
         debug = 4, ///< Debug mode reporting
         trace = 5 ///< Developer targeted reporting
@@ -44,8 +45,8 @@ namespace log
     /**
      * @brief Parses string argument into an enum, throws an exception otherwise.
      * 
-     * @param value serialized verbosity string
-     * @return Verbosity 
+     * @param value 
+     * @return ComputeImplementation 
      */
     Verbosity ParseVerbosity(const std::string& value);
 

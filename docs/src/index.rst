@@ -35,7 +35,6 @@ Leap Accelerate consists of:
 
     md/Build
     md/Docker
-    md/Submodules
 
 .. toctree::
     :caption: Usage
@@ -45,13 +44,15 @@ Leap Accelerate consists of:
     md/LeapAccelerateCLI
 
 .. toctree::
-    :caption: Contributing
+    :caption: DocMap
+
+.. toctree::
+    :caption: Contributions
     :maxdepth: 2
     :glob:
 
     md/specs/CMakeStyleGuide
     md/specs/CPlusPlusStyleGuide
-    md/specs/CudaStyleGuide
 
 .. about.rst
 
@@ -60,3 +61,5 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`search`
+.. * :ref:`DocMap`
+

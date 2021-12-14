@@ -26,11 +26,9 @@
 #include <cuda_runtime.h>
 #else
 #ifndef __host__
-// Ignore __host__ keyword on non-cuda compilers
 #define __host__
 #endif // __host__
 #ifndef __device__
-// Ignore __device__ keyword on non-cuda compilers
 #define __device__
 #endif // __device__
 #endif // CUDA_ENABLED
@@ -136,7 +134,6 @@ namespace cpu
          * @param ms measurement set to read observations from
          * @param refAnt the reference antenna index, default is the last index
          * @param minimumBaselineThreshold baseline lengths less that the minimum in meters are flagged
-         * @param computeInverse whether to compute inverse using cpu inversion
          * @param useCache whether to load Ad matrix from cache
          */
         MetaData(
