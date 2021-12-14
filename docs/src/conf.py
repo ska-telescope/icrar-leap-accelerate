@@ -49,7 +49,7 @@ release = version
 
 # path relative to conf.py
 breathe_projects = {}
-doxygen_xml = ""
+#doxygen_xml = ""
 source_dir = "../../src"
 
 # Check if we're running on Read the Docs' servers
@@ -62,7 +62,7 @@ if read_the_docs_build:
     subprocess.call('mkdir -p ' + output_dir, cwd="..", shell=True)
     subprocess.call('doxygen', cwd="..", shell=True)
     breathe_projects['LeapAccelerate'] = '../' + output_dir + '/xml'
-    doxygen_xml = '../' + output_dir + '/xml'
+    #doxygen_xml = '../' + output_dir + '/xml'
 
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -112,11 +112,11 @@ exhale_args = {
     "containmentFolder":     "./api",
     "rootFileName":          "library_root.rst",
     "rootFileTitle":         "Leap Accelerate API Reference",
-    "afterTitleDescription": textwrap.dedent('''
-        .. note::
-
-        The following documentation presents the C++ API.
-    '''),
+    "afterTitleDescription": (
+        ".. note::"
+        ""
+        "The following documentation presents the C++ API."
+    ),
     "doxygenStripFromPath": ".",
     
     # Suggested optional arguments
@@ -162,4 +162,4 @@ html_theme = 'sphinx_rtd_theme'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']

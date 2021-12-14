@@ -43,7 +43,9 @@ if(Sphinx_FOUND AND Doxygen_FOUND)
                       ${SPHINX_EXECUTABLE} -b html -T
                       # Tell Breathe where to find the Doxygen output
                       -Dbreathe_projects.LeapAccelerate=${DOXYGEN_OUTPUT_DIR}/xml
-                      -Ddoxygen_xml=${DOXYGEN_OUTPUT_DIR}/xml
+                      # -Ddoxygen_xml=${DOXYGEN_OUTPUT_DIR}/xml
+                      -W
+                      --keep-going
                     ${SPHINX_SOURCE_DIR} ${SPHINX_BUILD_DIR}
                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                     DEPENDS

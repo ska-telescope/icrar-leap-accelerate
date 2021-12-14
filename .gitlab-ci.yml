@@ -206,6 +206,7 @@ build_docs:
   artifacts:
     paths:
       - build
+  allow_failure: true
 
 .build_export_compile_commands:
   stage: build
