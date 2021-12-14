@@ -37,7 +37,7 @@ PROJECT_NUMBER         = $(PROJECT_VERSION)
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = "src" "@DOXYGEN_INPUT_DIR@"
+INPUT                  = "@DOXYGEN_INPUT_DIR@"
 FILE_PATTERNS          = *.cpp *.h
 EXCLUDE_PATTERNS       = */pch.h */MatrixBaseAddons.h
 
@@ -84,7 +84,7 @@ FULL_PATH_NAMES        = YES
 # If left blank the directory from which doxygen is run is used as the
 # path to strip.
 
-STRIP_FROM_PATH        = 
+STRIP_FROM_PATH        = "@DOXYGEN_INPUT_DIR@"
 
 # The STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of
 # the path mentioned in the documentation of a class, which tells
@@ -93,7 +93,7 @@ STRIP_FROM_PATH        =
 # definition is used. Otherwise one should specify the include paths that
 # are normally passed to the compiler using the -I flag.
 
-STRIP_FROM_INC_PATH    = 
+STRIP_FROM_INC_PATH    = "@DOXYGEN_INPUT_DIR@"
 
 # If the SHORT_NAMES tag is set to YES, doxygen will generate much shorter
 # (but less readable) file names. This can be useful if your file system
@@ -286,32 +286,3 @@ ENABLE_PREPROCESSING   = NO
 # The default value is: YES.
 
 CLASS_DIAGRAMS         = NO
-
-
-
-
-FULL_PATH_NAMES        = NO
-
-# If the FULL_PATH_NAMES tag is set to YES then the STRIP_FROM_PATH tag
-# can be used to strip a user-defined part of the path. Stripping is
-# only done if one of the specified strings matches the left-hand part of
-# the path. The tag can be used to show relative paths in the file list.
-# If left blank the directory from which doxygen is run is used as the
-# path to strip.
-
-STRIP_FROM_PATH        =
-
-# The STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of
-# the path mentioned in the documentation of a class, which tells
-# the reader which header file to include in order to use a class.
-# If left blank only the name of the header file containing the class
-# definition is used. Otherwise one should specify the include paths that
-# are normally passed to the compiler using the -I flag.
-
-STRIP_FROM_INC_PATH    =
-
-# If the SHORT_NAMES tag is set to YES, doxygen will generate much shorter
-# (but less readable) file names. This can be useful if your file system
-# doesn't support long names like on DOS, Mac, or CD-ROM.
-
-SHORT_NAMES            = NO

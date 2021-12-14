@@ -47,14 +47,13 @@ release = version
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-# Check if we're running on Read the Docs' servers
-read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
-
+# path relative to conf.py
 breathe_projects = {}
 doxygen_xml = ""
-source_dir = "../../src/icrar"
+source_dir = "../../src"
 
-# relative to conf.py
+# Check if we're running on Read the Docs' servers
+read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 if read_the_docs_build:
     # build doxygen in docs folder
     input_dir = '../src'
@@ -99,16 +98,8 @@ breathe_separate_member_pages = True
 
 
 breathe_projects_source = {
-    "LeapAccelerate": (source_dir, [
-        "leap-accelerate/core/stream_out_type.h",
-        "leap-accelerate/core/compute_implementation.h",
-        "leap-accelerate/algorithm/ILeapCalibrator.h",
-        "leap-accelerate/algorithm/cpu/CpuLeapCalibrator.h",
-        "leap-accelerate/algorithm/cuda/CudaLeapCalibrator.h",
-        "leap-accelerate/math/math_conversion.h",
-        "leap-accelerate/math/complex_extensions.h",
-        "leap-accelerate/math/vector_extensions.h"
-    ])
+    #'LeapAccelerate': ("/home/callan/Code/icrar/icrar-leap-accelerate/src")
+    "LeapAccelerate": (source_dir)
 }
 
 # breathe_doxygen_config_options = { }
@@ -130,11 +121,13 @@ exhale_args = {
 
         The following documentation presents the C++ API.
     '''),
-    "doxygenStripFromPath": "/home/callan/Code/icrar/icrar-leap-accelerate",
+    "doxygenStripFromPath": "/home/callan/Code/icrar/icrar-leap-accelerate/src",
+    
     # Suggested optional arguments
     "createTreeView":        True,
     # TIP: if using the sphinx-bootstrap-theme, you need
     # "treeViewIsBootstrap": True,
+    #"unabridgedOrphanKinds": { "file", "namespace" },
     "exhaleExecutesDoxygen": False,
     #"exhaleDoxygenStdin":    "INPUT = ../../src",
     "lexerMapping": {

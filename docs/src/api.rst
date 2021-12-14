@@ -66,19 +66,17 @@ Modules
 =======
 
 
-* :ref:`core <dir_core>`
+* :ref:`core <dir_icrar_leap-accelerate_core>`
    - contains common classes and functions required by other modules
-* :ref:`log <dir_log>`
-   - contains configuration and functions for logging info and warnings
-* :ref:`common <dir_common>`
+* :ref:`common <dir_icrar_leap-accelerate_common>`
    - contains leap specific files used by other components
-* :ref:`model <dir_model>`
+* :ref:`model <dir_icrar_leap-accelerate_model>`
    - contains data structures for leap calibration
-* :ref:`algorithm <dir_algorithm>`
+* :ref:`algorithm <dir_icrar_leap-accelerate_algorithm>`
    - contains utility classes and functions for performing leap calibration
-* :ref:`math <dir_math>`
+* :ref:`math <dir_icrar_leap-accelerate_math>`
    - contains generic math extensions
-* :ref:`ms <dir_ms>`
+* :ref:`ms <dir_icrar_leap-accelerate_ms>`
    - contains abstraction layers for measurement set objects
-* :ref:`cuda <dir_cuda>`
+* :ref:`cuda <dir_icrar_leap-accelerate_cuda>`
    - contains cuda specific classes and helpers

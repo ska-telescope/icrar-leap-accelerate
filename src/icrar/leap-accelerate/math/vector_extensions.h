@@ -29,6 +29,15 @@
 #include <functional>
 #include <type_traits>
 
+/**
+ * @brief Provides stream operator for std::vector as
+ * a json-like literal.
+ * 
+ * @tparam T streamable type
+ * @param os output stream
+ * @param v vector
+ * @return std::ostream& 
+ */
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
 {

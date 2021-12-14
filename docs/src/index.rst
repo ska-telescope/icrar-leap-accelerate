@@ -27,6 +27,7 @@ Leap Accelerate consists of:
     api.rst
     cli.rst
     api/library_root.rst
+    docmap.rst
 
 .. toctree::
     :caption: Installation
@@ -42,11 +43,6 @@ Leap Accelerate consists of:
     :glob:
 
     md/LeapAccelerateCLI
-
-.. toctree::
-    :caption: DocMap
-
-    docmap.rst
 
 .. toctree::
     :caption: Contributions
