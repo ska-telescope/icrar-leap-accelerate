@@ -121,7 +121,7 @@ exhale_args = {
 
         The following documentation presents the C++ API.
     '''),
-    "doxygenStripFromPath": "/home/callan/Code/icrar/icrar-leap-accelerate/src",
+    "doxygenStripFromPath": ".",
     
     # Suggested optional arguments
     "createTreeView":        True,
