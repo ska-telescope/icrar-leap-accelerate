@@ -46,6 +46,8 @@ Leap Accelerate consists of:
 .. toctree::
     :caption: DocMap
 
+    docmap.rst
+
 .. toctree::
     :caption: Contributions
     :maxdepth: 2
@@ -53,6 +55,8 @@ Leap Accelerate consists of:
 
     md/specs/CMakeStyleGuide
     md/specs/CPlusPlusStyleGuide
+    md/specs/CudaStyleGuide
+    md/Submodules
 
 .. about.rst
 
@@ -61,5 +65,4 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`search`
-.. * :ref:`DocMap`
-
+* :ref:`DocMap`
