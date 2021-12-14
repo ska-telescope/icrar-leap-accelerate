@@ -130,7 +130,7 @@ exhale_args = {
 
         The following documentation presents the C++ API.
     '''),
-    "doxygenStripFromPath":  "../", #"/home/calgray/Code/icrar/leap-accelerate/src", # use src dir
+    "doxygenStripFromPath": "/home/callan/Code/icrar/icrar-leap-accelerate",
     # Suggested optional arguments
     "createTreeView":        True,
     # TIP: if using the sphinx-bootstrap-theme, you need
@@ -144,7 +144,7 @@ exhale_args = {
         r".*\.cu": "cuda",
         r".*\.txt": "cmake"
     },
-    #"verboseBuild": True,
+    "verboseBuild": True,
     "generateBreatheFileDirectives": False
 }
 
