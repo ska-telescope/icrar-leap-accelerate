@@ -30,6 +30,12 @@ namespace icrar
 {
 namespace detail
 {
+    /**
+     * @brief decimal places helper
+     * 
+     * @tparam N number of decimal places
+     * @tparam T input type
+     */
     template <int N, typename T>
     struct _fixed
     {
@@ -48,11 +54,11 @@ namespace detail
 namespace icrar
 {
     /**
-     * @brief Sent to a stream object, this manipulator will print the given value with a
-     * precision of N decimal places. 
+     * @brief When streamed, this manipulator will print the given value with a
+     * precision of N decimal places.
      * 
-     * @tparam N 
-     * @tparam T 
+     * @tparam N number of decimal places
+     * @tparam T input type
      * @param v The value to send to the stream 
      * @return detail::_fixed<N, T> 
      */

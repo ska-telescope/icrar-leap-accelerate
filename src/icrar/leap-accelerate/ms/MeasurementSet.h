@@ -170,7 +170,7 @@ namespace icrar
         /**
          * @brief Gets a flag vector of short baselines
          * 
-         * @param minimumBaselineThreshold 
+         * @param minimumBaselineThreshold baseline threshold
          * @return Eigen::VectorXb
          */
         Eigen::VectorXb GetShortBaselines(double minimumBaselineThreshold = 0.0) const;
@@ -178,7 +178,7 @@ namespace icrar
         /**
          * @brief Get the number of baselines that below the @p minimumBaselineThreshold
          * 
-         * @param minimumBaselineThreshold 
+         * @param minimumBaselineThreshold baseline threshold
          * @return uint32_t 
          */
         uint32_t GetNumShortBaselines(double minimumBaselineThreshold = 0.0) const;
@@ -186,7 +186,7 @@ namespace icrar
         /**
          * @brief Gets flag vector of filtered baselines that are either flagged or short
          * 
-         * @param minimumBaselineThreshold 
+         * @param minimumBaselineThreshold baseline threshold
          * @return Eigen::VectorXb 
          */
         Eigen::VectorXb GetFilteredBaselines(double minimumBaselineThreshold = 0.0) const;
@@ -194,20 +194,20 @@ namespace icrar
         /**
          * @brief Gets the number of baselines that are flagged baselines or short baselines
          * 
-         * @param minimumBaselineThreshold 
+         * @param minimumBaselineThreshold baseline threshold
          * @return uint32_t 
          */
         uint32_t GetNumFilteredBaselines(double minimumBaselineThreshold = 0.0) const;
 
         /**
-         * @brief Gets the Coords/UVWs of the first timestep.
+         * @brief Reads UVW coordinates from the measurement set
          * 
-         * @return Eigen::MatrixX3d 
+         * @return Eigen::Tensor<double, 3> 
          */
         Eigen::Tensor<double, 3> ReadCoords() const;
 
         /**
-         * @brief Gets the Coords/UVWs of a specified time interval.
+         * @brief Gets the Coords/UVWs of a specified time interval
          * 
          * @param startTimestep 
          * @param intervalTimesteps 
