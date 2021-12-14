@@ -63,9 +63,6 @@ if read_the_docs_build:
     subprocess.call('doxygen', cwd="..", shell=True)
     breathe_projects['LeapAccelerate'] = '../' + output_dir + '/xml'
     doxygen_xml = '../' + output_dir + '/xml'
-#else:
-#    doxygen_xml = "/home/calgray/Code/icrar/leap-accelerate/build/Release/docs/doxygen/xml"
-#    breathe_projects['LeapAccelerate'] = doxygen_xml
 
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -98,7 +95,6 @@ breathe_separate_member_pages = True
 
 
 breathe_projects_source = {
-    #'LeapAccelerate': ("/home/callan/Code/icrar/icrar-leap-accelerate/src")
     "LeapAccelerate": (source_dir)
 }
 
