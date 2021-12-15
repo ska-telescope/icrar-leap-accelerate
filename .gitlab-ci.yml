@@ -13,18 +13,6 @@
 # To run locally use docker command:
 # sudo docker run -it nexus.engageska-portugal.pt/ska-docker/cpp_build_base
 
-# CUDA Image Alternative
-# This base image is based on debian:stretch-slim and contains:
-#  * gcc 7.5.0
-#  * clang 6.0.0
-#  * cuda 10.1
-#  * and more
-#
-# For details see https://gitlab.com/ska-telescope/dspsr
-#
-# To run locally use docker command:
-# sudo docker run -it nexus.engageska-portugal.pt/ska-docker/dspsr-build
-
 variables:
   # Needed if you want automatic submodule checkout
   # For details see https://docs.gitlab.com/ee/ci/yaml/README.html#git-submodule-strategy
@@ -34,6 +22,8 @@ variables:
   - mkdir -p build
   - pwd > build/original_source_directory
 
+# Replaces all references to the location in 'original_source_directory' with $PWD
+# in artifact binaries
 .src_dir_ref_replacement: &src_dir_ref_replacement
   - old_sdir=`cat build/original_source_directory`
   - this_sdir=`pwd`
@@ -46,9 +36,6 @@ variables:
       \)
     \)
     -exec sed -i "s|$old_sdir|$this_sdir|g" {} +
-
-.common:
-  tags: [engageska, docker]
 
 .generator_packages: &generator_packages
   - apt install -y make git wget cmake xsltproc
@@ -75,6 +62,9 @@ variables:
     # when building without cuda device enabled locate the stub driver for linking to libcuda.so
   - export LIBRARY_PATH=$LIBRARY_PATH:${CUDA_HOME}/lib64/stubs
 
+.common:
+  tags: [engageska, docker]
+
 .minimal_build_dependencies:
   extends: .common
   image: $CAR_OCI_REGISTRY_HOST/ska-cicd-cpp-build-base:0.2.10
@@ -85,6 +75,7 @@ variables:
     - apt update
     - *generator_packages
     - *project_packages
+    - *src_dir_ref_storage
 
 .complete_build_dependencies:
   extends: .common
@@ -98,14 +89,43 @@ variables:
     - *project_packages
     - *python_packages
     - *cuda_variables
+    - *src_dir_ref_storage
 
 .docs_dependencies:
-  extends: .minimal_build_dependencies
+  extends: [.minimal_build_dependencies]
   before_script:
     - apt update
     - *generator_packages
     - *project_packages
     - *doc_packages
+    - *src_dir_ref_storage
+
+.lint_build_dependencies:
+  extends: .common
+  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.12.0
+  variables:
+    DEBIAN_FRONTEND: "noninteractive"
+    CUDA_ENABLED: "ON"
+  before_script:
+    - apt update
+    - *generator_packages
+    - *project_packages
+    - *python_packages
+    - *lint_packages
+    - *cuda_variables
+    - *src_dir_ref_storage
+
+.minimal_test_dependencies:
+  extends: .common
+  image: $CAR_OCI_REGISTRY_HOST/ska-cicd-cpp-build-base:0.2.10
+  variables:
+    DEBIAN_FRONTEND: "noninteractive"
+    CUDA_ENABLED: "OFF"
+  before_script:
+    - apt update
+    - *generator_packages
+    - *project_packages
+    - *src_dir_ref_replacement
 
 .lint_dependencies:
   extends: .complete_build_dependencies
@@ -115,7 +135,7 @@ variables:
     - *project_packages
     - *lint_packages
     - *cuda_variables
-
+    - *src_dir_ref_replacement
 
 stages:
   - build
@@ -144,7 +164,7 @@ download_testdata:
 .build_debug:
   stage: build
   script:
-    - mkdir build
+    - mkdir -p build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"
     - make -j2
@@ -161,9 +181,9 @@ build_debug:
 .build_release:
   stage: build
   script:
-    - mkdir build
+    - mkdir -p build
     - cd build
-    - cmake .. -DWCONVERSION=TRUE -DWERROR=TRUE -DCMAKE_BUILD_TYPE=Release
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DWCONVERSION=TRUE -DWERROR=TRUE
     - make -j2
   artifacts:
     paths:
@@ -179,7 +199,7 @@ build_docs:
   extends: .docs_dependencies
   stage: build
   script:
-    - mkdir build
+    - mkdir -p build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release
     - make sphinx -j2
@@ -190,7 +210,7 @@ build_docs:
 .build_export_compile_commands:
   stage: build
   script:
-    - rm -rf build && mkdir build
+    - mkdir -p build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_COMPILER=clang++ -DUSE_PCH=OFF
     # This filters out external source file dependencies such as gtest
@@ -200,7 +220,33 @@ build_docs:
       - build
 
 build_export_compile_commands:
-  extends: [.lint_dependencies, .build_export_compile_commands]
+  extends: [.lint_build_dependencies, .build_export_compile_commands]
+
+build_daliuge_palette:
+ stage: build
+ only:
+   - tags
+   - master
+ before_script:
+   - apt update && apt install -y doxygen git xsltproc wget
+   - export PROJECT_NAME=leap
+   - export PROJECT_VERSION=$(git rev-parse --short HEAD)
+   - export GIT_REPO=$(git config --get remote.origin.url)
+   - git config --global user.name $GITHUB_USERNAME
+   - git config --global user.email "$GITHUB_USERNAME@gmail.com"
+   - wget https://raw.githubusercontent.com/ICRAR/daliuge/master/tools/xml2palette/xml2palette.py
+ script:
+   - python3 xml2palette.py -i ./ -o leap-$CI_COMMIT_REF_NAME.palette
+ after_script:
+   - export PROJECT_NAME=leap
+   - export PROJECT_VERSION=$(git rev-parse --short HEAD)
+   - git clone https://$GITHUB_TOKEN@github.com/ICRAR/EAGLE_test_repo
+   - mkdir -p EAGLE_test_repo/$PROJECT_NAME
+   - mv $PROJECT_NAME-$CI_COMMIT_REF_NAME.palette EAGLE_test_repo/$PROJECT_NAME/
+   - cd EAGLE_test_repo
+   - git add *
+   - git commit -m "Automatically generated $PROJECT_NAME palette (branch $CI_COMMIT_REF_NAME, commit $PROJECT_VERSION)"
+   - git push
 
 #######
 # Lint
@@ -210,9 +256,7 @@ build_export_compile_commands:
   stage: linting
   script:
     - cd build
-    
-    # rexeport for portable clangtidy linting
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_COMPILER=clang++ -DUSE_PCH=OFF
+
     # This filters out external source file dependencies such as gtest
     - jq '[ . - map(select(.file | contains("/external/"))) | .[] ]' compile_commands.json | sponge compile_commands.json
 
@@ -292,7 +336,7 @@ lint_cppcheck:
       junit: build/unit-tests.xml
 
 test_debug_minimal:
-  extends: [.minimal_build_dependencies, .test]
+  extends: [.minimal_test_dependencies, .test]
   needs: ["download_testdata", "build_debug_minimal"]
   variables:
     GTEST_FILTER: "-*Cuda*:*cuda*:*Gpu*:*gpu*:*SKA*"
@@ -300,8 +344,6 @@ test_debug_minimal:
     # portable testing
     - export TEST_DATA_DIR=$PWD/testdata
     - cd build
-    - rm CMakeCache.txt
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"
     - ctest -T test --no-compress-output --verbose --debug
 
 # Needs cuda enabled runner
@@ -323,7 +365,7 @@ test_debug_all:
 # A job that runs the tests under valgrid
 # It might take a while, so not always run by default
 .test_memcheck:
-  extends: .minimal_build_dependencies
+  extends: .minimal_test_dependencies
   stage: test
   needs: ["download_testdata", "build_debug_minimal"]
   before_script:
@@ -335,34 +377,8 @@ test_debug_all:
     - tags
     - schedules
 
-build_daliuge_palette:
- stage: build
- only:
-   - tags
-   - master
- before_script:
-   - apt update && apt install -y doxygen git xsltproc wget
-   - export PROJECT_NAME=leap
-   - export PROJECT_VERSION=$(git rev-parse --short HEAD)
-   - export GIT_REPO=$(git config --get remote.origin.url)
-   - git config --global user.name $GITHUB_USERNAME
-   - git config --global user.email "$GITHUB_USERNAME@gmail.com"
-   - wget https://raw.githubusercontent.com/ICRAR/daliuge/master/tools/xml2palette/xml2palette.py
- script:
-   - python3 xml2palette.py -i ./ -o leap-$CI_COMMIT_REF_NAME.palette
- after_script:
-   - export PROJECT_NAME=leap
-   - export PROJECT_VERSION=$(git rev-parse --short HEAD)
-   - git clone https://$GITHUB_TOKEN@github.com/ICRAR/EAGLE_test_repo
-   - mkdir -p EAGLE_test_repo/$PROJECT_NAME
-   - mv $PROJECT_NAME-$CI_COMMIT_REF_NAME.palette EAGLE_test_repo/$PROJECT_NAME/
-   - cd EAGLE_test_repo
-   - git add *
-   - git commit -m "Automatically generated $PROJECT_NAME palette (branch $CI_COMMIT_REF_NAME, commit $PROJECT_VERSION)"
-   - git push
-
 pages:
-  extends: .minimal_build_dependencies
+  extends: .minimal_test_dependencies
   stage: deploy
   needs: ["test_debug_minimal", "lint_clang_tidy", "lint_cppcheck", "lint_iwyu"]
   script:
