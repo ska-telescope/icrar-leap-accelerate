@@ -121,6 +121,7 @@ exhale_args = {
     
     # Suggested optional arguments
     "createTreeView":        True,
+    "minifyTreeView":        False,
     # TIP: if using the sphinx-bootstrap-theme, you need
     # "treeViewIsBootstrap": True,
     #"unabridgedOrphanKinds": { "file", "namespace" },
