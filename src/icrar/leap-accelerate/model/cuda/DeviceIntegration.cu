@@ -22,7 +22,6 @@
 
 #include "DeviceIntegration.h"
 #include <icrar/leap-accelerate/math/vector_extensions.h>
-#include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 
 namespace icrar
