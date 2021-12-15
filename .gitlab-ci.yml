@@ -343,6 +343,7 @@ test_debug_minimal:
   script:
     # portable testing
     - export TEST_DATA_DIR=$PWD/testdata
+    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/build/lib
     - cd build
     - ctest -T test --no-compress-output --verbose --debug
 
@@ -356,8 +357,11 @@ test_debug_all:
     CUDA_ENABLED: "ON"
     NVIDIA_VISIBLE_DEVICES: "all"
   script:
-    - cd build
     - nvidia-smi
+    # portable testing
+    - export TEST_DATA_DIR=$PWD/testdata
+    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/build/lib
+    - cd build
     - ctest -T test --no-compress-output --verbose
   timeout: 30m
   allow_failure: true
@@ -384,6 +388,7 @@ pages:
   script:
     - apt update && apt install -y curl gcovr moreutils python3-pip jq
     - pip3 install yq
+    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/build/lib
     - mkdir -p build/reports/code-coverage
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o build/reports/code-coverage/index.html | sponge gcovr-html.log
     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml | sponge gcovr-xml.log
