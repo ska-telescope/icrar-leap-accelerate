@@ -322,6 +322,7 @@ lint_cppcheck:
 lint_docs:
   extends: .docs_dependencies
   stage: linting
+  dependencies: []
   script:
     - mkdir -p build
     - cd build
