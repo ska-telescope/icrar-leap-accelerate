@@ -23,7 +23,6 @@
 #include <icrar/leap-accelerate/config.h>
 
 #include <icrar/leap-accelerate/tests/test_helper.h>
-#include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 
 #include <boost/dll.hpp>

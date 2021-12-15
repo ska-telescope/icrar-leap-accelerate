@@ -39,7 +39,7 @@ PROJECT_NUMBER         = $(PROJECT_VERSION)
 
 INPUT                  = "@DOXYGEN_INPUT_DIR@"
 FILE_PATTERNS          = *.cpp *.h
-EXCLUDE_PATTERNS       = */pch.h
+EXCLUDE_PATTERNS       = */pch.h */MatrixBaseAddons.h
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is
@@ -71,15 +71,35 @@ OUTPUT_LANGUAGE        = English
 
 AUTOLINK_SUPPORT       = NO
 
-# For Microsoft's IDL there are propget and propput attributes to indicate
-# getter and setter methods for a property. Setting this option to YES will make
-# doxygen to replace the get and set methods by a property in the documentation.
-# This will only work if the methods are indeed getting or setting a simple
-# type. If this is not the case, or you want to show the methods anyway, you
-# should set this option to NO.
-# The default value is: YES.
+# If the FULL_PATH_NAMES tag is set to YES then Doxygen will prepend the full
+# path before files name in the file list and in the header files. If set
+# to NO the shortest path that makes the file name unique will be used.
 
-IDL_PROPERTY_SUPPORT   = NO
+FULL_PATH_NAMES        = YES
+
+# If the FULL_PATH_NAMES tag is set to YES then the STRIP_FROM_PATH tag
+# can be used to strip a user-defined part of the path. Stripping is
+# only done if one of the specified strings matches the left-hand part of
+# the path. The tag can be used to show relative paths in the file list.
+# If left blank the directory from which doxygen is run is used as the
+# path to strip.
+
+STRIP_FROM_PATH        = "@DOXYGEN_INPUT_DIR@"
+
+# The STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of
+# the path mentioned in the documentation of a class, which tells
+# the reader which header file to include in order to use a class.
+# If left blank only the name of the header file containing the class
+# definition is used. Otherwise one should specify the include paths that
+# are normally passed to the compiler using the -I flag.
+
+STRIP_FROM_INC_PATH    = "@DOXYGEN_INPUT_DIR@"
+
+# If the SHORT_NAMES tag is set to YES, doxygen will generate much shorter
+# (but less readable) file names. This can be useful if your file system
+# doesn't support long names like on DOS, Mac, or CD-ROM.
+
+SHORT_NAMES            = NO
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
 # # only. Doxygen will then generate output that is more tailored for C. For
@@ -96,6 +116,16 @@ OPTIMIZE_OUTPUT_FOR_C  = NO
 # # The default value is: NO.
 
 OPTIMIZE_OUTPUT_JAVA   = YES
+
+# For Microsoft's IDL there are propget and propput attributes to indicate
+# getter and setter methods for a property. Setting this option to YES will make
+# doxygen to replace the get and set methods by a property in the documentation.
+# This will only work if the methods are indeed getting or setting a simple
+# type. If this is not the case, or you want to show the methods anyway, you
+# should set this option to NO.
+# The default value is: YES.
+
+IDL_PROPERTY_SUPPORT   = NO
 
 #---------------------------------------------------------------------------
 # Configuration options related to warning and progress messages
