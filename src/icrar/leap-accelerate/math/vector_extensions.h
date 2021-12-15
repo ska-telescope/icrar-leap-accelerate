@@ -145,10 +145,10 @@ namespace icrar
      * @tparam Op function of signature R(const T&)
      * @param vector vector to transform
      * @param lambda transformation of signature R(const T&)
-     * @return std::vector<std::result_of_t<Op(const T&)>>
+     * @return mapped vector
      */
     template<typename T, typename Op>
-    std::vector<std::result_of_t<Op(const T&)>> vector_map(const std::vector<T>& vector, Op lambda)
+    auto vector_map(const std::vector<T>& vector, Op lambda)
     {
         using R = std::result_of_t<Op(const T&)>;
         static_assert(std::is_assignable<std::function<R(const T&)>, Op>::value, "lambda argument must be a function of signature R(const T&)");
