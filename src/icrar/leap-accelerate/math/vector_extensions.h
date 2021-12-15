@@ -49,7 +49,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
         { 
             os << ", ";
         }
-    } 
+    }
     os << "}\n"; 
     return os;
 }
