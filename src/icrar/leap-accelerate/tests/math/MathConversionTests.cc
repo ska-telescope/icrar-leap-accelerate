@@ -79,8 +79,7 @@ namespace icrar
 
         void TestConvertMatrix()
         {
-            auto expected = Eigen::MatrixXd(2,2);
-            expected << 0.0, 0.0, 0.0, 0.0;
+            Eigen::MatrixXd expected = Eigen::MatrixXd::Zero(1000,1000);
 
             ASSERT_EQ(
                 expected,
@@ -101,7 +100,7 @@ namespace icrar
             auto expected = std::vector<icrar::MVuvw>
             {
                 {1.0, 2.0, 3.0},
-                {0.0,0.0,0.0}
+                {0.0, 0.0, 0.0}
             };
 
             ASSERT_EQ(
