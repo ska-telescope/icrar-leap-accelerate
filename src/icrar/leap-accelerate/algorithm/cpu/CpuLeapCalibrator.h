@@ -48,6 +48,10 @@ namespace cpu
 {
     class MetaData;
 
+    /**
+     * @brief Leap Calibration implementation using 
+     * 
+     */
     class CpuLeapCalibrator : public ILeapCalibrator
     {
     public:

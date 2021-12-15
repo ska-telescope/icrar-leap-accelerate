@@ -48,6 +48,15 @@ namespace icrar
         return output;
     }
 
+    /**
+     * @brief Converts a casacore matrix to a fixed size eigen3 matrix
+     * 
+     * @tparam T scalar type
+     * @tparam R rows
+     * @tparam C columns
+     * @param value casacore matrix to convert
+     * @return Eigen::Matrix<T, R, C> 
+     */
     template<typename T, int R, int C>
     Eigen::Matrix<T, R, C> ToFixedMatrix(const casacore::Matrix<T>& value)
     {
@@ -105,8 +114,8 @@ namespace icrar
     /**
      * @brief Converts an Eigen3 column-vector into a casacore Array
      * 
-     * @tparam T 
-     * @param value 
+     * @tparam T scalar type
+     * @param value eigen3 vector
      * @return casacore::Array<T> 
      */
     template<typename T>
@@ -118,27 +127,74 @@ namespace icrar
     /**
      * @brief Converts a casacore UVW value to an icrar UVW value
      * 
-     * @param value 
+     * @param value casacore uvw
      * @return icrar::MVuvw 
      */
     icrar::MVuvw ToUVW(const casacore::MVuvw& value);
 
+    /**
+     * @brief Converts a casacore UVW vector to an icrar UVW vector
+     * 
+     * @param value value to convert 
+     * @return std::vector<icrar::MVuvw> 
+     */
     std::vector<icrar::MVuvw> ToUVWVector(const std::vector<casacore::MVuvw>& value);
     
     /**
      * @brief Converts a column-major matrix of size Nx3 into a vector of UVWs
+     * 
+     * @param value value to convert
+     * @return std::vector<icrar::MVuvw> 
      */
     std::vector<icrar::MVuvw> ToUVWVector(const Eigen::MatrixXd& value);
+
+    /**
+     * @brief Converts an icrar UVW value to a casacore UVW value
+     */
     casacore::MVuvw ToCasaUVW(const icrar::MVuvw& value);
+
+    /**
+     * @brief Converts an icrar UVW vector to a casacore UVW vector
+     */
     std::vector<casacore::MVuvw> ToCasaUVWVector(const std::vector<icrar::MVuvw>& value);
+
+    /**
+     * @brief Converts an icrar UVW vector to a casacore UVW vector
+     * 
+     * @param value value to convert
+     * @return std::vector<casacore::MVuvw> 
+     */
     std::vector<casacore::MVuvw> ToCasaUVWVector(const Eigen::MatrixX3d& value);
 
     /**
-     * @brief Converts a casacore direction to an icrar sperical direction 
+     * @brief Converts a casacore direction to an icrar spherical direction
+     * 
+     * @param value value to convert
+     * @return SphericalDirection 
      */
     SphericalDirection ToDirection(const casacore::MVDirection& value);
+
+    /**
+     * @brief Converts a casacore Direction vector to an icrar Spherical Direction
+     * 
+     * @param value value to convert
+     * @return std::vector<SphericalDirection> 
+     */
     std::vector<SphericalDirection> ToDirectionVector(const std::vector<casacore::MVDirection>& value);
 
+    /**
+     * @brief Converts an icrar spherical direction to a casacore direction
+     * 
+     * @param value value to convert
+     * @return casacore::MVDirection 
+     */
     casacore::MVDirection ToCasaDirection(const SphericalDirection& value);
+
+    /**
+     * @brief Convers an icrar spherical direction vector to a casacore direction vector
+     * 
+     * @param value value to convert
+     * @return std::vector<casacore::MVDirection> 
+     */
     std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<SphericalDirection>& value);
 } // namespace icrar

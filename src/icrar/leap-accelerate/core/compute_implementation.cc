@@ -52,28 +52,29 @@ namespace icrar
 
     bool TryParseComputeImplementation(const std::string& value, ComputeImplementation& out)
     {
+        bool result = false;
         if(value == "casa")
         {
             LOG(warning) << "argument 'casa' deprecated, use 'cpu' instead";
             out = ComputeImplementation::cpu;
-            return true;
+            result = true;
         }
         else if(value == "eigen")
         {
             LOG(warning) << "argument 'eigen' deprecated, use 'cpu' instead";
             out = ComputeImplementation::cpu;
-            return true;
+            result = true;
         }
         else if(value == "cpu")
         {
             out = ComputeImplementation::cpu;
-            return true;
+            result = true;
         }
         else if(value == "cuda")
         {
             out = ComputeImplementation::cuda;
-            return true;
+            result = true;
         }
-        return false;
+        return result;
     }
 } // namespace icrar

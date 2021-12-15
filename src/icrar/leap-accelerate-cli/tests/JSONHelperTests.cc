@@ -24,7 +24,6 @@
 #include <icrar/leap-accelerate/tests/test_helper.h>
 
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
-#include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 
 #include <icrar/leap-accelerate/exception/exception.h>

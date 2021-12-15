@@ -23,7 +23,9 @@
 #pragma once
 #include <icrar/leap-accelerate/common/Range.h>
 #include <icrar/leap-accelerate/exception/exception.h>
+#ifndef __NVCC__
 #include <rapidjson/document.h>
+#endif // __NVCC__
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 #include <boost/numeric/conversion/cast.hpp>
@@ -37,7 +39,7 @@ namespace icrar
      * Python equivalent is the slice operator [start:end:interval].
      * Eigen equivalent is Eigen::seq(start, end, interval).
      * Matlab equivalent is slice operator (start:interval:end)
-     * TODO(cgray) no support for reverse order, e.g. (end:0:-1)
+     * @note No support for reverse order, e.g. (end:0:-1)
      */
     class Slice
     {
@@ -71,6 +73,15 @@ namespace icrar
          */
         boost::optional<int64_t> GetInterval() const { return m_interval; }
 
+
+        /**
+         * @brief Evaluates a slice from an arbirary index range to a positive
+         * integer index range for use with C++ collections
+         * 
+         * @tparam T integer type
+         * @param collectionSize size of the collection that to evaluate against
+         * @return Range<T> 
+         */
         template<typename T>
         Range<T> Evaluate(T collectionSize) const
         {
@@ -88,7 +99,9 @@ namespace icrar
         static Slice All() { return Slice(0, boost::none, boost::none); }
     };
 
+#ifndef __NVCC__
     Slice ParseSlice(const std::string& json);
 
     Slice ParseSlice(const rapidjson::Value& doc);
+#endif // __NVCC__
 } // namespace icrar

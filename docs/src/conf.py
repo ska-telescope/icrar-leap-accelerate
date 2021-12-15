@@ -47,14 +47,13 @@ release = version
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-# Check if we're running on Read the Docs' servers
-read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
-
+# path relative to conf.py
 breathe_projects = {}
 doxygen_xml = ""
-source_dir = "../../src/icrar"
+source_dir = "../../src"
 
-# relative to conf.py
+# Check if we're running on Read the Docs' servers
+read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 if read_the_docs_build:
     # build doxygen in docs folder
     input_dir = '../src'
@@ -64,9 +63,6 @@ if read_the_docs_build:
     subprocess.call('doxygen', cwd="..", shell=True)
     breathe_projects['LeapAccelerate'] = '../' + output_dir + '/xml'
     doxygen_xml = '../' + output_dir + '/xml'
-#else:
-#    doxygen_xml = "/home/calgray/Code/icrar/leap-accelerate/build/Release/docs/doxygen/xml"
-#    breathe_projects['LeapAccelerate'] = doxygen_xml
 
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -99,16 +95,7 @@ breathe_separate_member_pages = True
 
 
 breathe_projects_source = {
-    "LeapAccelerate": (source_dir, [
-        "leap-accelerate/core/stream_out_type.h",
-        "leap-accelerate/core/compute_implementation.h",
-        "leap-accelerate/algorithm/ILeapCalibrator.h",
-        "leap-accelerate/algorithm/cpu/CpuLeapCalibrator.h",
-        "leap-accelerate/algorithm/cuda/CudaLeapCalibrator.h",
-        "leap-accelerate/math/math_conversion.h",
-        "leap-accelerate/math/complex_extensions.h",
-        "leap-accelerate/math/vector_extensions.h"
-    ])
+    "LeapAccelerate": (source_dir)
 }
 
 # breathe_doxygen_config_options = { }
@@ -130,11 +117,13 @@ exhale_args = {
 
         The following documentation presents the C++ API.
     '''),
-    "doxygenStripFromPath":  "../", #"/home/calgray/Code/icrar/leap-accelerate/src", # use src dir
+    "doxygenStripFromPath": ".",
+    
     # Suggested optional arguments
     "createTreeView":        True,
     # TIP: if using the sphinx-bootstrap-theme, you need
     # "treeViewIsBootstrap": True,
+    #"unabridgedOrphanKinds": { "file", "namespace" },
     "exhaleExecutesDoxygen": False,
     #"exhaleDoxygenStdin":    "INPUT = ../../src",
     "lexerMapping": {
@@ -144,7 +133,7 @@ exhale_args = {
         r".*\.cu": "cuda",
         r".*\.txt": "cmake"
     },
-    #"verboseBuild": True,
+    "verboseBuild": True,
     "generateBreatheFileDirectives": False
 }
 

@@ -55,12 +55,13 @@ namespace icrar
         /**
          * @brief Performs Leap calibration for single or multiple solutions.
          * 
+         * @param outputCallback callback for each solution interval calibration result
          * @param ms the mesurement set containing all input measurements
          * @param directions the directions to calibrate for
          * @param minimumBaselineThreshold the minimum baseline length to use in calibrations
          * @param solutionInterval the arbitrary interval to calculate solutions for
          * @param referenceAntenna the reference antenna of metrix A1
-         * @param isFileSystemCacheEnabled enable to use the filesystem to cache data between calibration calls
+         * @param computeOptions collection of compute implementation options
          * @return CalibrationCollection the calibrationn result
          */
         virtual void Calibrate(

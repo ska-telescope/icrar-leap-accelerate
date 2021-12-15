@@ -35,7 +35,7 @@
 #include <cublasLt.h>
 #else
 using cublasLtHandle_t = int;
-#endif
+#endif // CUBLAS_VER_MAJOR
 
 // C++ Style interface (templates not supported when linking to nvcc compiled sources)
 namespace icrar
@@ -59,16 +59,15 @@ namespace cuda
     __host__ void mat_mul(cublasLtHandle_t handle, MatrixOp transa, MatrixOp transb, const size_t m, const size_t n, const size_t k, const int* a, const int* b, int* out);
 
     /**
-     * @brief Performs matrix-vector multiplication where C = A * B. The transpose and hermetian of A and B can be used instead.
+     * @brief Performs matrix-vector multiplication where C = opA(A) * opB(B). The transpose and hermetian of A and B can be used instead.
      * 
-     * @tparam T 
-     * @param handle 
-     * @param a 
-     * @param b 
-     * @param c 
-     * @param transa 
-     * @param transb 
-     * @return __host__ 
+     * @tparam T scalar type
+     * @param handle cublas handle
+     * @param a A matrix in C = opA(A) * opB(B)
+     * @param b B matrix in C = opA(A) * opB(B)
+     * @param c C matrix in C = opA(A) * opB(B)
+     * @param opA A matrix operation in C = opA(A) * opB(B)
+     * @param opB B matrix operation in C = opA(A) * opB(B)
      */
     template<typename T>
     __host__ void multiply(cublasHandle_t handle,

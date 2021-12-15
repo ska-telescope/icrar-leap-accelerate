@@ -27,7 +27,7 @@
 // Note: NVCC no longer supports compiling rapidjson
 #ifndef __NVCC__
 #include <rapidjson/document.h>
-#endif
+#endif // __NVCC__
 
 #include <vector>
 
@@ -35,6 +35,7 @@ namespace icrar
 {
     using SphericalDirection = Eigen::Vector2d;
 
+#ifndef __NVCC__
     /**
      * @brief Parses a json string to a collection of MVDirections
      * 
@@ -43,11 +44,10 @@ namespace icrar
      */
     std::vector<SphericalDirection> ParseDirections(const std::string& json);
 
-#ifndef __NVCC__
     /**
      * @brief Parses a json object to a collection of MVDirections
      * 
      */
     std::vector<SphericalDirection> ParseDirections(const rapidjson::Value& doc);
-#endif
+#endif // __NVCC__
 } // namespace icrar
