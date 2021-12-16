@@ -34,16 +34,21 @@ if(Sphinx_FOUND AND Doxygen_FOUND)
 
   file(GLOB_RECURSE DOC_FILES "*.rst")
 
+  if(WERROR)
+    set(WARGS -W --keep-going)
+  endif()
+
   # Only regenerate Sphinx when:
   # - Doxygen has rerun
   # - Our doc files have been updated
   # - The Sphinx config has been updated
   add_custom_command(OUTPUT ${SPHINX_INDEX_FILE}
                     COMMAND 
-                      ${SPHINX_EXECUTABLE} -b html -T
-                      # Tell Breathe where to find the Doxygen output
-                      -Dbreathe_projects.LeapAccelerate=${DOXYGEN_OUTPUT_DIR}/xml
-                      -Ddoxygen_xml=${DOXYGEN_OUTPUT_DIR}/xml
+                    ${SPHINX_EXECUTABLE} -b html -T
+                    # Tell Breathe where to find the Doxygen output
+                    -Dbreathe_projects.LeapAccelerate=${DOXYGEN_OUTPUT_DIR}/xml
+                    # -Ddoxygen_xml=${DOXYGEN_OUTPUT_DIR}/xml
+                    ${WARGS}
                     ${SPHINX_SOURCE_DIR} ${SPHINX_BUILD_DIR}
                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                     DEPENDS

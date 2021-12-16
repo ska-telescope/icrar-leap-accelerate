@@ -319,6 +319,20 @@ lint_cppcheck:
   extends: [.lint_dependencies, .lint_cppcheck]
   needs: ["build_export_compile_commands"]
 
+lint_docs:
+  extends: .docs_dependencies
+  stage: linting
+  dependencies: []
+  script:
+    - mkdir -p build
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DWERROR=TRUE
+    - make sphinx -j2
+  artifacts:
+    paths:
+      - build
+  allow_failure: true
+
 #######
 # Test
 #######
