@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111 - 1307  USA
+ * MA  02110-1301  USA
  */
 
 #include "math_conversion.h"
@@ -34,7 +34,7 @@ namespace icrar
 
     std::vector<icrar::MVuvw> ToUVWVector(const std::vector<casacore::MVuvw>& value)
     {
-        return vector_map(value, ToUVW);
+        return vector_map(ToUVW, value);
     }
 
     std::vector<icrar::MVuvw> ToUVWVector(const Eigen::MatrixXd& value)
@@ -56,7 +56,7 @@ namespace icrar
 
     std::vector<casacore::MVuvw> ToCasaUVWVector(const std::vector<icrar::MVuvw>& value)
     {
-        return vector_map(value, ToCasaUVW);
+        return vector_map(ToCasaUVW, value);
     }
 
     std::vector<casacore::MVuvw> ToCasaUVWVector(const Eigen::MatrixX3d& value)
@@ -79,7 +79,7 @@ namespace icrar
 
     std::vector<SphericalDirection> ToDirectionVector(const std::vector<casacore::MVDirection>& value)
     {
-        return vector_map(value, ToDirection);
+        return vector_map(ToDirection, value);
     }
 
     casacore::MVDirection ToCasaDirection(const SphericalDirection& value)
@@ -89,6 +89,6 @@ namespace icrar
 
     std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<SphericalDirection>& value)
     {
-        return vector_map(value, ToCasaDirection);
+        return vector_map(ToCasaDirection, value);
     }
 } // namespace icrar
