@@ -7,13 +7,13 @@
 Leap Accelerate
 ###############
 
-.. image:: https://img.shields.io/badge/license-LGPLv2-blue
-	:alt: Project License: LGPL 2.1
-	:target: https://img.shields.io/badge/license-GPLv2-blue
+.. image:: https://img.shields.io/badge/license-GPLv2+-blue
+	:alt: Project License: GPLv2+
+	:target: https://img.shields.io/badge/license-GPLv2+-blue
 
 Leap Accelerate is a calibration tool implementing Low-frequency Excision of the Atmosphere in Parallel (`LEAP <https://arxiv.org/abs/1807.04685>`_) for low-frequency radio antenna arrays.
 Leap utilizes GPGPU acceleration for parallel computation across baselines,
-channels and polarizations and is freely available on `GitLab <https://gitlab.com/ska-telescope/icrar-leap-accelerate>`_ under the GPLv2 License.
+channels and polarizations and is freely available on `GitLab <https://gitlab.com/ska-telescope/icrar-leap-accelerate>`_ under the GPLv2+ License.
 
 Leap Accelerate consists of:
 
