@@ -35,8 +35,18 @@ constexpr int LEAP_ACCELERATE_VERSION_MINOR = @LEAP-Accelerate_VERSION_MINOR@;
 /// The patch version of this package
 constexpr int LEAP_ACCELERATE_VERSION_PATCH = @LEAP-Accelerate_VERSION_PATCH@;
 
+/// The absolute source test data directory populated by cmake. Source directory is used to avoid 
+/// Copying large data to the build directory, however an absolute path is required and 
+/// makes tests less portable. To override this value set environment variable "TEST_DATA_DIR"
+/// and retrieve the value using "get_test_data_dir"
 #define TEST_DATA_DIR "@PROJECT_SOURCE_DIR@/testdata"
 
+/// Predefined eigen extension macro. Ensure this is included before Eigen.
 #define EIGEN_MATRIXBASE_PLUGIN "icrar/leap-accelerate/math/cpu/MatrixBaseAddons.h"
 
+/**
+ * @brief Gets the test data directory absolute path
+ * 
+ * @return std::string
+ */
 std::string get_test_data_dir();
