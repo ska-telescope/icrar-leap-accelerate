@@ -42,7 +42,7 @@ namespace icrar
 namespace cuda
 {
     /**
-     * @brief A cuda device buffer object that represents a memory buffer on a cuda device.
+     * @brief A memory buffer on a cuda device containing a typed vector.
      * 
      * @tparam T numeric type
      * @note See https://www.quantstart.com/articles/Matrix-Matrix-Multiplication-on-the-GPU-with-Nvidia-CUDA/
@@ -52,7 +52,7 @@ namespace cuda
     class device_vector : boost::noncopyable
     {
         size_t m_count;
-        T* m_buffer = nullptr; // Pointer to cuda owned memory
+        T* m_buffer = nullptr; // Pointer to cuda malloc memory
 
     public:
         //device_vector(const device_vector&) = delete;
@@ -237,7 +237,7 @@ namespace cuda
             return result;
         }
     };
-}
-}
+} // namespace cuda
+} // namespace icrar
 
 #endif //CUDA_ENABLED

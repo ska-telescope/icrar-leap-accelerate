@@ -220,8 +220,7 @@ namespace cuda
         checkCudaErrors(cublasLtMatmulAlgoConfigSetAttribute(&algo, CUBLASLT_ALGO_CONFIG_TILE_ID, &tileId, sizeof(tileId)));
         checkCudaErrors(cublasLtMatmulAlgoConfigSetAttribute(&algo, CUBLASLT_ALGO_CONFIG_REDUCTION_SCHEME, &reductionMode, sizeof(reductionMode)));
         checkCudaErrors(cublasLtMatmulAlgoConfigSetAttribute(&algo, CUBLASLT_ALGO_CONFIG_SPLITK_NUM, &splitKFactor, sizeof(splitKFactor)));
-
-        size_t workspaceSize = 4 * 1024 * 1024;
+        size_t workspaceSize = 4 * 1024 * 1024; // 4MB?
         void *workspace = nullptr;
         checkCudaErrors(cudaMalloc(&workspace, workspaceSize));
 

@@ -29,6 +29,7 @@
 #include <icrar/leap-accelerate/common/enumutils.h>
 
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+#include <icrar/leap-accelerate/cuda/device_buffer.h>
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/core/memory/ioutils.h>
 
@@ -124,45 +125,75 @@ namespace cuda
 
         // Solve U, S, Vt with A
         // https://stackoverflow.com/questions/17401765/parallel-implementation-for-multiple-svds-using-cuda
+        cusolverDnParams_t cusolverParams = nullptr;
+        checkCudaErrors(cusolverDnCreateParams(&cusolverParams));
 
-        int* d_devInfo = nullptr;
-        size_t d_devInfoSize = sizeof(int);
-        checkCudaErrors(cudaMalloc(&d_devInfo, d_devInfoSize));
-
-        int workSize = 0;
-        checkCudaErrors(cusolverDnDgesvd_bufferSize(cusolverHandle, m, n, &workSize));
-        LOG(info) << "inverse matrix cuda worksize: " << memory_amount(workSize * sizeof(double));
-        double* d_work = nullptr; checkCudaErrors(cudaMalloc(&d_work, workSize * sizeof(double)));
-
-        LOG(info) << "inverse matrix cuda rworksize: " << memory_amount((m-1) * sizeof(double));
-        double* d_rwork = nullptr; checkCudaErrors(cudaMalloc(&d_rwork, (m-1) * sizeof(double)));
-
-        int h_devInfo = 0;
-        checkCudaErrors(cusolverDnDgesvd(
+        // Query workspace size
+        size_t workSizeOnDevice = 0;
+        size_t workSizeOnHost = 0;
+        checkCudaErrors(cusolverDnXgesvd_bufferSize(
             cusolverHandle,
+            cusolverParams,
             jobu, jobvt,
             m, n,
-            const_cast<double*>(d_A.Get()), // NOLINT(cppcoreguidelines-pro-type-const-cast)
+            cudaDataType_t::CUDA_R_64F, // A type
+            d_A.Get(),
             lda,
+            cudaDataType_t::CUDA_R_64F, // S type
             d_S.Get(),
+            cudaDataType_t::CUDA_R_64F, // U type
             d_U.Get(),
             ldu,
+            cudaDataType_t::CUDA_R_64F, // Vt type
             d_Vt.Get(),
             ldvt,
-            d_work,
-            workSize,
-            d_rwork,
-            d_devInfo));
-        checkCudaErrors(cudaMemcpyAsync(&h_devInfo, d_devInfo, d_devInfoSize, cudaMemcpyDeviceToHost));
+            cudaDataType_t::CUDA_R_64F, // compute type
+            &workSizeOnDevice,
+            &workSizeOnHost
+        ));
 
+        // Allocate workspace
+        LOG(info) << "inverse matrix cuda device worksize: " << memory_amount(workSizeOnDevice);
+        device_buffer<void> d_workspace(workSizeOnDevice);
+
+        LOG(info) << "inverse matrix cuda host worksize: " << memory_amount(workSizeOnHost);
+        host_buffer<void> h_workspace(workSizeOnHost);
+
+        device_buffer<int> d_deviceInfo(sizeof(int));
+        
+        // Perform gesvd
+        checkCudaErrors(cusolverDnXgesvd(
+            cusolverHandle,
+            cusolverParams,
+            jobu, jobvt,
+            m, n,
+            cudaDataType_t::CUDA_R_64F, // A type
+            const_cast<double*>(d_A.Get()), // NOLINT(cppcoreguidelines-pro-type-const-cast)
+            lda,
+            cudaDataType_t::CUDA_R_64F, // S type
+            d_S.Get(),
+            cudaDataType_t::CUDA_R_64F, // U type
+            d_U.Get(),
+            ldu,
+            cudaDataType_t::CUDA_R_64F, // Vt type
+            d_Vt.Get(),
+            ldvt,
+            cudaDataType_t::CUDA_R_64F, // compute type
+            d_workspace.get(),
+            d_workspace.size(),
+            h_workspace.get(),
+            h_workspace.size(),
+            d_deviceInfo.get()));
+
+        // Check Device Info for errors
+        int h_devInfo = 1;
+        checkCudaErrors(cudaMemcpyAsync(&h_devInfo, d_deviceInfo.get(), d_deviceInfo.size(), cudaMemcpyDeviceToHost));
         if(h_devInfo != 0)
         {
             std::stringstream ss;
             ss << "devInfo=" << h_devInfo;
             throw icrar::exception(ss.str(), __FILE__, __LINE__);
         }
-
-        checkCudaErrors(cudaFree(d_devInfo));
 
         return std::make_tuple(std::move(d_U), std::move(d_S), std::move(d_Vt));
     }
@@ -194,14 +225,17 @@ namespace cuda
         double tolerance = epsilon * std::max(m, n) * S.array().abs()(0);
         Sd.topLeftCorner(k, k) = (S.array().abs() > tolerance).select(S.array().inverse(), 0).matrix().asDiagonal();
 
-        auto d_Sd = device_matrix<double>(Sd);
-        auto d_result = device_matrix<double>(n, m);
-        auto d_result2 = device_matrix<double>(n, m);
-
+        // Smallest matmul:
         // result = V * (S * Uh)
-        icrar::cuda::multiply(cublasHandle, d_Sd, d_U, d_result, MatrixOp::normal, MatrixOp::hermitian);
-        icrar::cuda::multiply(cublasHandle, d_Vt, d_result, d_result2, MatrixOp::hermitian, MatrixOp::normal);
-        return d_result2;
+        auto d_SUh = device_matrix<double>(n, m);
+        {
+            auto d_Sd = device_matrix<double>(Sd);
+            icrar::cuda::multiply(cublasHandle, d_Sd, d_U, d_SUh, MatrixOp::normal, MatrixOp::hermitian);
+        }
+
+        auto d_VSUh = device_matrix<double>(n, m);
+        icrar::cuda::multiply(cublasHandle, d_Vt, d_SUh, d_VSUh, MatrixOp::hermitian, MatrixOp::normal);
+        return d_VSUh;
     }
 
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> pseudo_inverse(
