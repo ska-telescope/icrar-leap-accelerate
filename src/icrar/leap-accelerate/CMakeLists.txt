@@ -12,10 +12,7 @@ configure_file("core/git_revision.cc.in" "${git_revision_cc}" @ONLY)
 
 set(TARGET_NAME LeapAccelerate)
 
-set(public_headers
-    model/visibility.h
-    model/band_data.h
-)
+set(public_headers "")
 set(private_headers
     math/math_conversion.h
     math/vector_extensions.h
