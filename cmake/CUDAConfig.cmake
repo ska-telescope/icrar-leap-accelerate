@@ -88,16 +88,16 @@ endfunction()
 # Configure Cuda Warning Options
 function(configure_cuda_warnings TARGET_NAME)
   target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --display_error_number>)
-  if(CUDA_VERSION_STRING VERSION_GREATER_EQUAL "9.0")
+  if(CUDAToolkit_VERSION VERSION_GREATER_EQUAL "9.0")
     # 2829 annotation on a defaulted function is ignored
     target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=2829">)
   endif()
-  if(CUDA_VERSION_STRING VERSION_GREATER_EQUAL "10.0")
+  if(CUDAToolkit_VERSION VERSION_GREATER_EQUAL "10.0")
     # 3057 annotation is ignored on a function that is explicitly defaulted
     # 2929 annotation is ignored on a function that is explicitly defaulted
     target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=3057,2929">)
   endif()
-  if(CUDA_VERSION_STRING VERSION_GREATER_EQUAL "11.1")
+  if(CUDAToolkit_VERSION VERSION_GREATER_EQUAL "11.1")
     # 20012 annotation is ignored on a function that is explicitly defaulted
     target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=20012">)
   endif()

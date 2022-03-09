@@ -129,13 +129,15 @@ if(CUDA_ENABLED)
   #Set Cuda Stream Setting
   #set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -lineinfo --default-stream per-thread)
   #message("CUDA_NVCC_FLAGS = ${CUDA_NVCC_FLAGS}")
-  target_include_directories(${TARGET_NAME} SYSTEM PUBLIC ${CUDA_INCLUDE_DIRS})
-  target_link_libraries(${TARGET_NAME} PUBLIC ${CUDA_LIBRARIES})
-  target_link_libraries(${TARGET_NAME} PUBLIC cuda)
-  target_link_libraries(${TARGET_NAME} PUBLIC cublas)
-  if(CUDA_VERSION_MAJOR VERSION_GREATER_EQUAL "10.0")
-    target_link_libraries(${TARGET_NAME} PUBLIC ${CUDA_cusolver_LIBRARY})
-    target_link_libraries(${TARGET_NAME} PUBLIC cublasLt)
+  #target_link_libraries(${TARGET_NAME} PUBLIC cuda)  
+
+  target_link_libraries(${TARGET_NAME} PUBLIC CUDA::cudart)
+  target_link_libraries(${TARGET_NAME} PUBLIC CUDA::cuda_driver) # libcuda.so may only be located in lib64/stubs
+  target_link_libraries(${TARGET_NAME} PUBLIC CUDA::cublas)
+
+  if(CUDAToolkit_VERSION VERSION_GREATER_EQUAL "10.0")
+    target_link_libraries(${TARGET_NAME} PUBLIC CUDA::cusolver)
+    target_link_libraries(${TARGET_NAME} PUBLIC CUDA::cublasLt)
   endif()
 endif()
 

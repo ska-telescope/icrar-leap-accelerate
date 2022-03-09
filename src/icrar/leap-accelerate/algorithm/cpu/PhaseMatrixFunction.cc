@@ -22,12 +22,13 @@
 
 #include "PhaseMatrixFunction.h"
 
-#include <boost/numeric/conversion/cast.hpp>
 #include <icrar/leap-accelerate/exception/exception.h>
+#include <icrar/leap-accelerate/common/eigen_stringutils.h>
+#include <boost/numeric/conversion/cast.hpp>
 #include <sstream>
 #include <set>
+#include <string>
 
-#include <icrar/leap-accelerate/common/eigen_stringutils.h>
 
 namespace icrar
 {

@@ -360,7 +360,6 @@ test_debug_minimal:
     - cd build
     - ctest -T test --no-compress-output --verbose --debug
 
-# Needs cuda enabled runner
 test_debug_all:
   extends: [.complete_build_dependencies, .test]
   needs: ["download_testdata", "build_debug"]
@@ -370,6 +369,7 @@ test_debug_all:
     CUDA_ENABLED: "ON"
     NVIDIA_VISIBLE_DEVICES: "all"
   script:
+    - export TEST_DATA_DIR=$PWD/testdata
     - cd build
     - nvidia-smi
     - ctest -T test --no-compress-output --verbose
