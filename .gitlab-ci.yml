@@ -369,9 +369,13 @@ test_debug_all:
     CUDA_ENABLED: "ON"
     NVIDIA_VISIBLE_DEVICES: "all"
   script:
+    - nvidia-smi
+    # portable testing
     - export TEST_DATA_DIR=$PWD/testdata
     - cd build
-    - nvidia-smi
+    # regenerate ctest paths
+    - rm CMakeCache.txt
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"
     - ctest -T test --no-compress-output --verbose
   timeout: 30m
   allow_failure: true
