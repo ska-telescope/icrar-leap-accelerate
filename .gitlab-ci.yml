@@ -117,8 +117,7 @@ variables:
 
 .minimal_test_dependencies:
   extends: .common
-  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.12.0
-  #image: $CAR_OCI_REGISTRY_HOST/ska-cicd-cpp-build-base:0.2.10
+  image: $CAR_OCI_REGISTRY_HOST/ska-cicd-cpp-build-base:0.2.10
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "OFF"
@@ -367,6 +366,7 @@ lint_docs:
 test_debug_minimal:
   extends: [.minimal_test_dependencies, .test]
   needs: ["download_testdata", "build_debug_minimal"]
+  tags: [k8srunner-gpu] # TODO: gitlab-runner 14.4.0 -> 14.6.0 breaks TestMWACpuConfig
   variables:
     GTEST_FILTER: "-*Cuda*:*cuda*:*Gpu*:*gpu*:*SKA*"
   script:
