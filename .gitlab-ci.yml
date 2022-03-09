@@ -63,7 +63,7 @@ variables:
   - export LIBRARY_PATH=$LIBRARY_PATH:${CUDA_HOME}/lib64/stubs
 
 .common:
-  tags: [engageska, docker]
+  tags: [k8srunner]
 
 .minimal_build_dependencies:
   extends: .common
@@ -364,7 +364,7 @@ test_debug_minimal:
 test_debug_all:
   extends: [.complete_build_dependencies, .test]
   needs: ["download_testdata", "build_debug"]
-  tags: ["cuda", "docker"]
+  tags: ["k8srunner-gpu"]
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
