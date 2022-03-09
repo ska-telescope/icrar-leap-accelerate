@@ -117,7 +117,8 @@ variables:
 
 .minimal_test_dependencies:
   extends: .common
-  image: $CAR_OCI_REGISTRY_HOST/ska-cicd-cpp-build-base:0.2.10
+  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.12.0
+  #image: $CAR_OCI_REGISTRY_HOST/ska-cicd-cpp-build-base:0.2.10
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "OFF"
@@ -125,6 +126,20 @@ variables:
     - apt update
     - *generator_packages
     - *project_packages
+    - *src_dir_ref_replacement
+
+.complete_test_dependencies:
+  extends: .common
+  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.12.0
+  variables:
+    DEBIAN_FRONTEND: "noninteractive"
+    CUDA_ENABLED: "ON"
+  before_script: &cuda_test_dependencies
+    - apt update
+    - *generator_packages
+    - *project_packages
+    - *python_packages
+    - *cuda_variables
     - *src_dir_ref_replacement
 
 .lint_dependencies:
@@ -361,7 +376,7 @@ test_debug_minimal:
     - ctest -T test --no-compress-output --verbose --debug
 
 test_debug_all:
-  extends: [.complete_build_dependencies, .test]
+  extends: [.complete_test_dependencies, .test]
   needs: ["download_testdata", "build_debug"]
   tags: ["k8srunner-gpu"]
   variables:
@@ -373,9 +388,6 @@ test_debug_all:
     # portable testing
     - export TEST_DATA_DIR=$PWD/testdata
     - cd build
-    # regenerate ctest paths
-    - rm CMakeCache.txt
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"
     - ctest -T test --no-compress-output --verbose
   timeout: 30m
   allow_failure: true
