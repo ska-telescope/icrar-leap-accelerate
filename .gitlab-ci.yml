@@ -452,7 +452,7 @@ include:
 .docker_common:
   image: docker:stable
   tags:
-    - docker-executor
+    - k8srunner
   before_script:
     # - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
     - echo $CAR_OCI_REGISTRY_PASSWORD | docker login -u $CAR_OCI_REGISTRY_USERNAME --password-stdin $CAR_OCI_REGISTRY_HOST
