@@ -146,14 +146,14 @@ namespace cpu
                 LOG(debug) << "direction:" << direction << " hash: " << matrix_hash(metadata.GetDD());
             #endif
                 metadata.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
-                PhaseRotate(
+                PhaseRotateAvgCalibrate(
                     metadata,
                     directions[direction],
                     input_queues[direction],
                     output_calibrations[solution].GetBeamCalibrations());
             }
 
-            LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
+            LOG(info) << "Performed PhaseRotateAvgCalibrate in " << phase_rotate_timer;
             LOG(info) << "Calculated solution in " << solution_timer;
 
             profiling::timer write_timer;
@@ -163,7 +163,7 @@ namespace cpu
         LOG(info) << "Finished calibration in " << calibration_timer;
     }
 
-    void CpuLeapCalibrator::PhaseRotate(
+    void CpuLeapCalibrator::PhaseRotateAvgCalibrate(
         cpu::MetaData& metadata,
         const SphericalDirection& direction,
         std::vector<cpu::Integration>& input,
@@ -172,7 +172,7 @@ namespace cpu
         for(auto& integration : input)
         {
             LOG(info) << "Rotating Integration " << integration.GetIntegrationNumber();
-            RotateVisibilities(integration, metadata);
+            RotateAvgVisibilities(integration, metadata);
         }
 
         LOG(info) << "Calculating Calibration";
@@ -198,7 +198,7 @@ namespace cpu
         output_calibrations.emplace_back(direction, (metadata.GetAd() * deltaPhaseColumn) + cal1);
     }
 
-    void CpuLeapCalibrator::RotateVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)
+    void CpuLeapCalibrator::RotateAvgVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)
     {
         using namespace std::literals::complex_literals;
         Eigen::Tensor<std::complex<double>, 4>& visibilities = integration.GetVis();

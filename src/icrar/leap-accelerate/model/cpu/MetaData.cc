@@ -237,7 +237,9 @@ namespace cpu
 
     std::ostream& operator<<(std::ostream& os, const MetaData& metadata)
     {
-        os << "Ad:" << matrix_hash(metadata.GetAd());
+        os << "A:" << matrix_hash(metadata.GetA());
+        os << ", Ad:" << matrix_hash(metadata.GetAd());
+        os << ", A1:" << matrix_hash(metadata.GetA1());
         os << ", Ad1:" << matrix_hash(metadata.GetAd1());
         return os;
     }

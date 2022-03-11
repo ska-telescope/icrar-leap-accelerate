@@ -28,7 +28,7 @@
 
 #include <icrar/leap-accelerate/algorithm/cuda/CudaComputeOptions.h>
 #include <icrar/leap-accelerate/algorithm/cuda/kernel/EmptyKernel.h>
-#include <icrar/leap-accelerate/algorithm/cuda/kernel/RotateVisibilitiesKernel.h>
+#include <icrar/leap-accelerate/algorithm/cuda/kernel/RotateAvgVisibilitiesKernel.h>
 #include <icrar/leap-accelerate/algorithm/cuda/kernel/PolarizationsToPhaseAnglesKernel.h>
 #include <icrar/leap-accelerate/algorithm/cuda/kernel/ComputePhaseDeltaKernel.h>
 #include <icrar/leap-accelerate/algorithm/cuda/kernel/CopyPhaseDeltaKernel.h>
@@ -373,7 +373,7 @@ namespace cuda
     {
 
         LOG(info) << "Rotating integration " << input.GetIntegrationNumber();
-        RotateVisibilities(input, deviceMetadata);
+        RotateAvgVisibilities(input, deviceMetadata);
         LOG(info) << "Calibrating in cuda";
         auto devicePhaseAnglesI1 = device_vector<double>(metadata.GetI1().rows() + 1);
         auto deviceCal1 = device_vector<double>(metadata.GetA1().cols());

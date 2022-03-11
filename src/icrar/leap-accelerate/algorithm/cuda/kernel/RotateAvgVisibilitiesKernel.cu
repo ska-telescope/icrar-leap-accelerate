@@ -19,7 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "RotateVisibilitiesKernel.h"
+#include "RotateAvgVisibilitiesKernel.h"
 #include <icrar/leap-accelerate/math/cuda/math.cuh>
 #include <icrar/leap-accelerate/math/cpu/math.h>
 #include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
@@ -46,14 +46,14 @@ namespace cuda
      * @param integrationData inout integration data 
      * @param rotAvgVis output rotAvgVis to increment
      */
-    __global__ void g_RotateVisibilities(
+    __global__ void g_RotateAvgVisibilities(
         const icrar::cpu::Constants constants,
         const Eigen::Matrix3d dd,
         const Eigen::TensorMap<const Eigen::Tensor<double, 3>> UVWs,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 4>> integrationData,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> rotAvgVis);
 
-    __host__ void RotateVisibilities(DeviceIntegration& integration, DeviceMetaData& metadata)
+    __host__ void RotateAvgVisibilities(DeviceIntegration& integration, DeviceMetaData& metadata)
     {
         const auto& constants = metadata.GetConstants(); 
         assert(constants.num_pols == integration.GetNumPolarizations());
@@ -87,7 +87,7 @@ namespace cuda
             cpu::ceil_div<int64_t>(integration.GetNumBaselines(), blockSize.y),
             cpu::ceil_div<int64_t>(integration.GetNumTimesteps(), blockSize.z)
         );
-        g_RotateVisibilities<<<gridSize, blockSize>>>(
+        g_RotateAvgVisibilities<<<gridSize, blockSize>>>(
             constants,
             metadata.GetDD(),
             UVWMap,
@@ -96,7 +96,7 @@ namespace cuda
         checkCudaErrors(cudaGetLastError());
     }
 
-    __global__ void g_RotateVisibilities(
+    __global__ void g_RotateAvgVisibilities(
         const icrar::cpu::Constants constants,
         const Eigen::Matrix3d dd,
         const Eigen::TensorMap<const Eigen::Tensor<double, 3>> UVWs,

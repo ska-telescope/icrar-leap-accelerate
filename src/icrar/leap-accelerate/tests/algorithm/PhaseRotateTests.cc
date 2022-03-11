@@ -30,7 +30,7 @@
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
 #include <icrar/leap-accelerate/algorithm/cpu/CpuLeapCalibrator.h>
 #include <icrar/leap-accelerate/algorithm/cuda/CudaLeapCalibrator.h>
-#include <icrar/leap-accelerate/algorithm/cuda/kernel/RotateVisibilitiesKernel.h>
+#include <icrar/leap-accelerate/algorithm/cuda/kernel/RotateAvgVisibilitiesKernel.h>
 
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
@@ -247,7 +247,7 @@ namespace icrar
             ASSERT_MEQD(A1, A1 * Ad1 * A1, TOLERANCE);
         }
 
-        void RotateVisibilitiesTest(const ComputeImplementation impl)
+        void RotateAvgVisibilitiesTest(const ComputeImplementation impl)
         {
             using namespace std::complex_literals;
             
@@ -258,7 +258,7 @@ namespace icrar
             {
                 auto integration = cpu::Integration(0, *ms, 0, 1);
                 auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction));
-                cpu::CpuLeapCalibrator::RotateVisibilities(integration, hostMetadata);
+                cpu::CpuLeapCalibrator::RotateAvgVisibilities(integration, hostMetadata);
 
                 metadataOptionalOutput = hostMetadata;
             }
@@ -269,7 +269,7 @@ namespace icrar
                 auto deviceIntegration = icrar::cuda::DeviceIntegration(integration);
                 auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction));
                 auto deviceMetadata = icrar::cuda::DeviceMetaData(hostMetadata);
-                icrar::cuda::RotateVisibilities(deviceIntegration, deviceMetadata);
+                icrar::cuda::RotateAvgVisibilities(deviceIntegration, deviceMetadata);
                 deviceMetadata.ToHost(hostMetadata);
                 metadataOptionalOutput = hostMetadata;
             }
@@ -472,7 +472,7 @@ namespace icrar
     TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCpu) { PhaseMatrixFunction0Test(ComputeImplementation::cpu); }
     TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCpu) { PhaseMatrixFunctionDataTest(ComputeImplementation::cpu); }
 
-    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::cpu); }
+    TEST_F(PhaseRotateTests, RotateAvgVisibilitiesTestCpu) { RotateAvgVisibilitiesTest(ComputeImplementation::cpu); }
     TEST_F(PhaseRotateTests, ReferenceAntennaTestCpu) { ReferenceAntennaTest(ComputeImplementation::cpu, {0, 1, 2, 3, 4, 5, 126, 127}, Slice(0, 1, 1)); }
 
     TEST_F(PhaseRotateTests, PhaseRotateFirstTimestepTestCpu) { CalibrateTest(ComputeImplementation::cpu, ComputeOptionsDTO{false, false, false}, Slice::First(), &GetFirstTimestepMWACalibration); }
@@ -481,7 +481,7 @@ namespace icrar
     TEST_F(PhaseRotateTests, PhaseRotateEachTimestepTestCpu) { CalibrateTest(ComputeImplementation::cpu, ComputeOptionsDTO{false, false, false}, Slice::Each(), &GetEachTimestepMWACalibration); }
 
 #ifdef CUDA_ENABLED
-    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(ComputeImplementation::cuda); }
+    TEST_F(PhaseRotateTests, RotateAvgVisibilitiesTestCuda) { RotateAvgVisibilitiesTest(ComputeImplementation::cuda); }
     TEST_F(PhaseRotateTests, ReferenceAntennaTestCuda) { ReferenceAntennaTest(ComputeImplementation::cuda, {0, 1, 2, 3, 4, 5, 126, 127}, Slice::First()); }
 
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateCacheTestCuda) { CalibrateTest(ComputeImplementation::cuda, ComputeOptionsDTO{true, false, false}, Slice(0,1), &GetFirstTimestepMWACalibration); }

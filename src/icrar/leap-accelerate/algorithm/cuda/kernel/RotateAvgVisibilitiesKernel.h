@@ -48,7 +48,7 @@ namespace cuda
      * @param integration the input visibilities to integrate
      * @param metadata the metadata container
      */
-    __host__ void RotateVisibilities(
+    __host__ void RotateAvgVisibilities(
         DeviceIntegration& integration,
         DeviceMetaData& metadata);
 } // namespace cuda

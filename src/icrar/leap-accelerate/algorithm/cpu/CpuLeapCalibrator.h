@@ -76,7 +76,7 @@ namespace cpu
          * @param input batches of uvws and visibilities to process
          * @param output_calibrations output calibration from summing a function of uvws and visibilities
          */
-        static void PhaseRotate(
+        static void PhaseRotateAvgCalibrate(
             MetaData& metadata,
             const SphericalDirection& direction,
             std::vector<Integration>& input,
@@ -88,7 +88,7 @@ namespace cpu
          * @param integration The input integration batch of uvws and visibilities
          * @param metadata The metadata object where AverageData is written to
          */
-        static void RotateVisibilities(
+        static void RotateAvgVisibilities(
             Integration& integration,
             MetaData& metadata);
     };

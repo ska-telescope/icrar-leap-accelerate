@@ -19,7 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "RotateVisibilitiesKernel.h"
+#include "RotateAvgVisibilitiesKernel.h"
 #include <icrar/leap-accelerate/math/cpu/math.h>
 #include <icrar/leap-accelerate/exception/exception.h>
 
