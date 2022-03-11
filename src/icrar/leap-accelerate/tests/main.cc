@@ -24,6 +24,9 @@
 
 int main(int argc, char **argv)
 {
+#ifndef NDEBUG
+    icrar::log::Initialize(icrar::log::Verbosity::debug);
+#endif
     icrar::log::Initialize(icrar::log::Verbosity::info);
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

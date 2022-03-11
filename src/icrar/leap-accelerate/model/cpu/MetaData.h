@@ -231,5 +231,7 @@ namespace cpu
         friend class icrar::cuda::DeviceMetaData;
         friend class icrar::cuda::ConstantBuffer;
     };
+
+    std::ostream& operator<<(std::ostream& os, const MetaData& metadata);
 } // namespace cpu
 } // namespace icrar

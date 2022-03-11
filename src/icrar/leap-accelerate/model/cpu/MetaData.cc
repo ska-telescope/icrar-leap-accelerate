@@ -235,6 +235,13 @@ namespace cpu
         LOG(trace) << "dd: " << pretty_matrix(m_dd);
     }
 
+    std::ostream& operator<<(std::ostream& os, const MetaData& metadata)
+    {
+        os << "Ad:" << matrix_hash(metadata.GetAd());
+        os << ", Ad1:" << matrix_hash(metadata.GetAd1());
+        return os;
+    }
+
     bool MetaData::operator==(const MetaData& rhs) const
     {
         return m_constants == rhs.m_constants

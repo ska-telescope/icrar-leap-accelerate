@@ -366,7 +366,7 @@ lint_docs:
 test_debug_minimal:
   extends: [.minimal_test_dependencies, .test]
   needs: ["download_testdata", "build_debug_minimal"]
-  tags: [k8srunner-gpu] # TODO: gitlab-runner 14.4.0 -> 14.6.0 breaks TestMWACpuConfig
+  tags: [k8srunner]
   variables:
     GTEST_FILTER: "-*Cuda*:*cuda*:*Gpu*:*gpu*:*SKA*"
   script:

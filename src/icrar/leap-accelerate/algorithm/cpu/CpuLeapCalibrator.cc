@@ -23,6 +23,7 @@
 #include "CpuLeapCalibrator.h"
 
 #include <icrar/leap-accelerate/common/eigen_stringutils.h>
+#include <icrar/leap-accelerate/common/eigen_cache.h>
 
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
 #include <icrar/leap-accelerate/algorithm/cpu/CpuComputeOptions.h>
@@ -36,7 +37,6 @@
 #include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/timer.h>
-#include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/ms/MeasurementSets/MSAntenna.h>
@@ -102,6 +102,9 @@ namespace cpu
             true,
             cpuComputeOptions.IsFileSystemCacheEnabled());
         LOG(info) << "Metadata loaded in " << metadata_read_timer;
+#ifndef NDEBUG
+        LOG(debug) << "Metadata: " << metadata;
+#endif
 
         int32_t solutions = validatedSolutionInterval.GetSize();
         auto output_calibrations = std::vector<cpu::Calibration>();
@@ -139,6 +142,9 @@ namespace cpu
             {
                 LOG(info) << "Processing direction " << direction;
                 metadata.SetDirection(directions[direction]);
+            #ifndef NDEBUG
+                LOG(debug) << "direction:" << direction << " hash: " << matrix_hash(metadata.GetDD());
+            #endif
                 metadata.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
                 PhaseRotate(
                     metadata,
