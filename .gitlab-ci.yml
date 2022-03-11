@@ -63,7 +63,7 @@ variables:
   - export LIBRARY_PATH=$LIBRARY_PATH:${CUDA_HOME}/lib64/stubs
 
 .common:
-  tags: [engageska, docker]
+  tags: [k8srunner]
 
 .minimal_build_dependencies:
   extends: .common
@@ -125,6 +125,20 @@ variables:
     - apt update
     - *generator_packages
     - *project_packages
+    - *src_dir_ref_replacement
+
+.complete_test_dependencies:
+  extends: .common
+  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.12.0
+  variables:
+    DEBIAN_FRONTEND: "noninteractive"
+    CUDA_ENABLED: "ON"
+  before_script: &cuda_test_dependencies
+    - apt update
+    - *generator_packages
+    - *project_packages
+    - *python_packages
+    - *cuda_variables
     - *src_dir_ref_replacement
 
 .lint_dependencies:
@@ -352,6 +366,7 @@ lint_docs:
 test_debug_minimal:
   extends: [.minimal_test_dependencies, .test]
   needs: ["download_testdata", "build_debug_minimal"]
+  tags: [k8srunner-gpu] # TODO: gitlab-runner 14.4.0 -> 14.6.0 breaks TestMWACpuConfig
   variables:
     GTEST_FILTER: "-*Cuda*:*cuda*:*Gpu*:*gpu*:*SKA*"
   script:
@@ -360,18 +375,19 @@ test_debug_minimal:
     - cd build
     - ctest -T test --no-compress-output --verbose --debug
 
-# Needs cuda enabled runner
 test_debug_all:
-  extends: [.complete_build_dependencies, .test]
+  extends: [.complete_test_dependencies, .test]
   needs: ["download_testdata", "build_debug"]
-  tags: ["cuda", "docker"]
+  tags: ["k8srunner-gpu"]
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
     NVIDIA_VISIBLE_DEVICES: "all"
   script:
-    - cd build
     - nvidia-smi
+    # portable testing
+    - export TEST_DATA_DIR=$PWD/testdata
+    - cd build
     - ctest -T test --no-compress-output --verbose
   timeout: 30m
   allow_failure: true

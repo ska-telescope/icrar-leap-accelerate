@@ -24,6 +24,7 @@
 #include <icrar/leap-accelerate/math/cpu/math.h>
 #include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 
+// Note: older sm architectures do not support atomic add
 
 namespace icrar
 {
