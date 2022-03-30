@@ -25,6 +25,7 @@
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 #include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
+#include <icrar/leap-accelerate/common/eigen_cache.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 
 #include <icrar/leap-accelerate/tests/math/eigen_helper.h>
@@ -176,6 +177,7 @@ namespace icrar
             flagMatrix(80, 80) = 0; //TODO(calgray): degenerate?
 
             ASSERT_MEQD(flagMatrix, Ad * A, TOLERANCE);
+            ASSERT_EQ(14317053349562352543, matrix_hash(Ad));
 
             //A1
             const int a1Rows = 98;
