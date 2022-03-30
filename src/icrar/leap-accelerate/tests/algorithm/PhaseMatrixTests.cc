@@ -26,6 +26,8 @@
 #include <icrar/leap-accelerate/math/math_conversion.h>
 #include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
+
+#include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 #include <gtest/gtest.h>
 
 namespace icrar
