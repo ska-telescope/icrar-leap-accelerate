@@ -136,6 +136,20 @@ namespace icrar
         uint32_t GetNumRows() const;
 
         /**
+         * @brief Gets the indexes of the first antenna in baselines
+         * 
+         * @return Eigen::VectorXi
+         */
+        Eigen::VectorXi GetAntenna1() const;
+
+        /**
+         * @brief Gets the indexes of the second antenna in baselines
+         * 
+         * @return Eigen::VectorXi
+         */
+        Eigen::VectorXi GetAntenna2() const;
+
+        /**
          * @brief Gets the total number of timesteps in the measurement set
          * 
          * @return uint32_t 

@@ -30,6 +30,7 @@ set(sources
   model/IntegrationTests.cc
   
   algorithm/PhaseRotateTests.cc
+  algorithm/PhaseMatrixTests.cc
   
   system/CalibrationTests.cc
   system/ConfigTests.cc
