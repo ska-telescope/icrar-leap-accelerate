@@ -45,7 +45,7 @@ namespace icrar
      */
     void assert_calibration_near(const cpu::Calibration& expected, const cpu::Calibration& actual, double tolerance)
     {
-        for(int b = 0; b < expected.GetBeamCalibrations().size(); b++)
+        for(size_t b = 0; b < expected.GetBeamCalibrations().size(); b++)
         {
             const Eigen::MatrixXd& pc = expected.GetBeamCalibrations()[b].GetPhaseCalibration();
             for(int row = 0; row < pc.rows(); row++)
@@ -122,7 +122,7 @@ namespace icrar
             rawArgs.computeImplementation = "cpu";
             rawArgs.outputFilePath = (boost::dll::program_location().parent_path() / "testdata/DefaultOutput_ACTUAL.json").string();
             std::string expectedPath = (boost::dll::program_location().parent_path() / "testdata/DefaultOutput.json").string();
-            TestConfig(std::move(rawArgs), expectedPath, 1e-15);
+            TestConfig(std::move(rawArgs), expectedPath, 1e-10);
         }
 
         void TestMWACpuConfig()
