@@ -22,6 +22,7 @@
 #pragma once
 
 #include <icrar/leap-accelerate/algorithm/ComputeOptionsDTO.h>
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/common/Slice.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
@@ -38,7 +39,6 @@
 
 namespace icrar
 {
-    class MeasurementSet;
     /**
      * @brief Raw arguments received via the command line interface using boost::program_options.
      * Only raw types std::string, bool, int, uint, float and double are allowed here. 
@@ -103,7 +103,7 @@ namespace icrar
     /**
      * Validated set of command line arguments required to perform leap calibration
      */
-    class ArgumentsValidated
+    class Arguments
     {
         /**
          * Constants
@@ -130,7 +130,7 @@ namespace icrar
         std::unique_ptr<MeasurementSet> m_measurementSet;
 
     public:
-        ArgumentsValidated(ArgumentsDTO&& cliArgs);
+        Arguments(ArgumentsDTO&& cliArgs);
 
         /**
          * @brief Overwrites the stored set of arguments.
@@ -143,6 +143,12 @@ namespace icrar
 
         boost::optional<std::string> GetOutputFilePath() const;
 
+        /**
+         * @brief Using the outputFilePath member, creates an output stream object.
+         * 
+         * @param startEpoch 
+         * @return std::unique_ptr<std::ostream> 
+         */
         std::unique_ptr<std::ostream> CreateOutputStream(double startEpoch = 0.0) const;
 
         /**
@@ -157,7 +163,7 @@ namespace icrar
          * 
          * @return MeasurementSet& 
          */
-        MeasurementSet& GetMeasurementSet();
+        const MeasurementSet& GetMeasurementSet() const;
 
         const std::vector<SphericalDirection>& GetDirections() const;
 

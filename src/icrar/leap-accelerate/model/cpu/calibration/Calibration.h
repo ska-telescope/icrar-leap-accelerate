@@ -64,7 +64,7 @@ namespace cpu
         
         double GetEndEpoch() const;
 
-        bool IsApprox(const Calibration& calibration, double threshold);
+        bool IsApprox(const Calibration& calibration, double tolerence);
 
         const std::vector<BeamCalibration>& GetBeamCalibrations() const;
 

@@ -19,20 +19,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+
+#include <icrar/leap-accelerate/algorithm/Calibrate.h>
 #include <icrar/leap-accelerate/common/config/Arguments.h>
 
-#include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
-#include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
-#include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
-#include <icrar/leap-accelerate/algorithm/cpu/CpuLeapCalibrator.h>
-
-#include <icrar/leap-accelerate/ms/MeasurementSet.h>
-#include <icrar/leap-accelerate/math/math_conversion.h>
-#include <icrar/leap-accelerate/core/stream_out_type.h>
 #include <icrar/leap-accelerate/core/git_revision.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/UsageReporter.h>
 #include <icrar/leap-accelerate/core/version.h>
+
 
 #include <boost/program_options.hpp>
 #include <boost/optional.hpp>
@@ -122,51 +117,12 @@ int main(int argc, char** argv)
         else
         {
             icrar::profiling::UsageReporter _;
-            ArgumentsValidated args = { ArgumentsDTO(std::move(rawArgs)) };
+            Arguments args = {ArgumentsDTO(std::move(rawArgs))};
 
             LOG(info) << version_information(argv[0]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             LOG(info) << arg_string(argc, argv);
 
-            if(IsImmediateMode(args.GetStreamOutType()))
-            {
-                auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
-
-                auto outputCallback = [&](const cpu::Calibration& cal)
-                {
-                    cal.Serialize(*args.CreateOutputStream(cal.GetStartEpoch()));
-                };
-
-                calibrator->Calibrate(
-                    outputCallback,
-                    args.GetMeasurementSet(),
-                    args.GetDirections(),
-                    args.GetSolutionInterval(),
-                    args.GetMinimumBaselineThreshold(),
-                    args.GetReferenceAntenna(),
-                    args.GetComputeOptions());
-            }
-            else
-            {
-                auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
-
-                std::vector<cpu::Calibration> calibrations;
-                auto outputCallback = [&](const cpu::Calibration& cal)
-                {
-                    calibrations.push_back(cal);
-                };
-                
-                calibrator->Calibrate(
-                    outputCallback,
-                    args.GetMeasurementSet(),
-                    args.GetDirections(),
-                    args.GetSolutionInterval(),
-                    args.GetMinimumBaselineThreshold(),
-                    args.GetReferenceAntenna(),
-                    args.GetComputeOptions());
-                
-                auto calibrationCollection = cpu::CalibrationCollection(std::move(calibrations));
-                calibrationCollection.Serialize(*args.CreateOutputStream());
-            }
+            RunCalibration(args);
         }
     }
     catch(const std::exception& e)
@@ -175,4 +131,3 @@ int main(int argc, char** argv)
         return -1;
     }
 }
-

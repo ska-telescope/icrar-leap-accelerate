@@ -24,8 +24,7 @@
 #include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 #include <icrar/leap-accelerate/common/config/Arguments.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
-#include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
-#include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
+#include <icrar/leap-accelerate/algorithm/Calibrate.h>
 #include <icrar/leap-accelerate/model/cpu/calibration/Calibration.h>
 
 #include <icrar/leap-accelerate/core/memory/system_memory.h>
@@ -39,213 +38,206 @@
 #include <sstream>
 #include <streambuf>
 
-using namespace icrar;
-
-/**
- * @brief Contains system tests 
- * 
- */
-class ConfigTests : public testing::Test
+namespace icrar
 {
-    const std::string m_mwaDirections = "[\
-        [-0.4606549305661674,-0.29719233792392513],\
-        [-0.753231018062671,-0.44387635324622354],\
-        [-0.6207547100721282,-0.2539086572881469],\
-        [-0.41958660604621867,-0.03677626900108552],\
-        [-0.41108685258900596,-0.08638012622791202],\
-        [-0.7782459495668798,-0.4887860989684432],\
-        [-0.17001324965728973,-0.28595644149463484],\
-        [-0.7129444556035118,-0.365286407171852],\
-        [-0.1512764129166089,-0.21161026349648748]\
-    ]";
-
-    const std::string m_simulationDirections = "[\
-        [0.0, -0.471238898],\
-        [0.017453293, -0.4537856055]\
-    ]";
-
-public:
-    ConfigTests() = default;
-
-    void TestDefaultConfig(const boost::filesystem::path& outputPath, const double tolerance)
+    /**
+     * @brief Helper utility for asserting calibrations
+     */
+    void assert_calibration_near(const cpu::Calibration& expected, const cpu::Calibration& actual, double tolerance)
     {
-        std::string path = (boost::dll::program_location().parent_path() / outputPath).string();
-        std::ifstream expectedStream(path);
-        ASSERT_TRUE(expectedStream.good()) << path << " does not exist";
-    
-        auto rawArgs = CLIArgumentsDTO::GetDefaultArguments();
-        rawArgs.filePath = get_test_data_dir() + "/mwa/1197638568-split.ms";
-        rawArgs.directions = "[[0,0]]";
-        auto args = ArgumentsValidated(std::move(rawArgs));
-        auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
-        std::stringstream output;
-
-        cpu::Calibration actual(0,0);
-        auto outputCallback = [&](const cpu::Calibration& cal)
+        for(int b = 0; b < expected.GetBeamCalibrations().size(); b++)
         {
-            actual = cal;
-            cal.Serialize(output);
-        };
-        calibrator->Calibrate(
-            outputCallback,
-            args.GetMeasurementSet(),
-            args.GetDirections(),
-            args.GetSolutionInterval(),
-            args.GetMinimumBaselineThreshold(),
-            args.GetReferenceAntenna(),
-            args.GetComputeOptions());
-
-        // Record actuals for post analysis
-        auto actualPath = boost::dll::program_location().parent_path() / outputPath.parent_path()
-        / (outputPath.stem().string() + "_ACTUAL" + outputPath.extension().string());
-        auto actualFile = std::ofstream(actualPath.string());
-        actualFile << output.str();
-
-        //file comparison
-        //auto expected = std::string(std::istreambuf_iterator<char>(expectedStream), std::istreambuf_iterator<char>());
-        //ASSERT_EQ(expected, output.str());
-        
-        auto expected = cpu::Calibration::Parse(expectedStream);
-        ASSERT_TRUE(actual.IsApprox(expected, tolerance)) << actualPath << " does not match " << outputPath
-          << " with absolute tolerance of " << tolerance;
+            const Eigen::MatrixXd& pc = expected.GetBeamCalibrations()[b].GetPhaseCalibration();
+            for(int row = 0; row < pc.rows(); row++)
+            {
+                ASSERT_NEAR(pc(row), actual.GetBeamCalibrations()[b].GetPhaseCalibration()(row), tolerance);
+            }
+        }
     }
 
-    void TestConfig(CLIArgumentsDTO&& rawArgs, const double tolerance)
+    /**
+     * @brief Contains system tests 
+     * 
+     */
+    class ConfigTests : public testing::Test
     {
-        ASSERT_TRUE(rawArgs.outputFilePath.is_initialized()) << "outputFilePath not set";
-        boost::filesystem::path outputPath = rawArgs.outputFilePath.get();
-        std::string path = (boost::dll::program_location().parent_path() / outputPath).string();
-        std::ifstream expectedStream(path);
-        ASSERT_TRUE(expectedStream.good()) << path << " does not exist";
+        const std::string m_mwaDirections = "[\
+            [-0.4606549305661674,-0.29719233792392513],\
+            [-0.753231018062671,-0.44387635324622354],\
+            [-0.6207547100721282,-0.2539086572881469],\
+            [-0.41958660604621867,-0.03677626900108552],\
+            [-0.41108685258900596,-0.08638012622791202],\
+            [-0.7782459495668798,-0.4887860989684432],\
+            [-0.17001324965728973,-0.28595644149463484],\
+            [-0.7129444556035118,-0.365286407171852],\
+            [-0.1512764129166089,-0.21161026349648748]\
+        ]";
 
-        auto args = ArgumentsValidated(std::move(rawArgs));
-        auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
-        std::stringstream output;
-        auto outputCallback = [&](const cpu::Calibration& cal)
+        const std::string m_simulationDirections = "[\
+            [0.0, -0.471238898],\
+            [0.017453293, -0.4537856055]\
+        ]";
+
+    public:
+        ConfigTests() = default;
+
+        /**
+         * @brief Tests config default value substition with the calibration execution and compares results
+         * with expected outputs.
+         * 
+         * @param rawArgs Raw args with partial data
+         * @param expectedFilePath filepath
+         * @param tolerance 
+         */
+        void TestConfig(CLIArgumentsDTO&& rawArgs, const std::string& expectedPath, const double tolerance)
         {
-            cal.Serialize(output, true);
-        };
-        calibrator->Calibrate(
-            outputCallback,
-            args.GetMeasurementSet(),
-            args.GetDirections(),
-            args.GetSolutionInterval(),
-            args.GetMinimumBaselineThreshold(),
-            args.GetReferenceAntenna(),
-            args.GetComputeOptions());
+            std::ifstream expectedStream(expectedPath);
+            ASSERT_TRUE(expectedStream.good()) << expectedPath << " does not exist";
 
-        auto actualPath = boost::dll::program_location().parent_path() / outputPath.parent_path()
-        / (outputPath.stem().string() + "_ACTUAL" + outputPath.extension().string());
-        auto actualFile = std::ofstream(actualPath.string());
-        actualFile << output.str();
-        actualFile.flush();
-        auto actual = cpu::Calibration::Parse(output.str());
+            // Writing to output file is required
+            ASSERT_TRUE(rawArgs.outputFilePath.is_initialized()) << "outputFilePath not set";
+            std::string actualPath = rawArgs.outputFilePath.get();
 
-        auto expected = cpu::Calibration::Parse(expectedStream);
-        ASSERT_TRUE(expected.IsApprox(actual, tolerance)) << actualPath << " does not match " << outputPath;
-    }
+            // Processing
+            auto args = Arguments(std::move(rawArgs));
+            RunCalibration(args);
 
-    void TestMWACpuConfig()
-    {
-        CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
-        rawArgs.filePath = get_test_data_dir() + "/mwa/1197638568-split.ms";
-        rawArgs.outputFilePath = "testdata/MWACpuOutput.json";
-        rawArgs.directions = m_mwaDirections;
-        rawArgs.computeImplementation = "cpu";
-        rawArgs.useFileSystemCache = false;
-        TestConfig(std::move(rawArgs), 1e-15);
-    }
+            // Check actual was written
+            std::ifstream actualStream(actualPath);
+            ASSERT_TRUE(actualStream.good());
 
-    void TestMWACudaConfig()
-    {
-        CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
-        rawArgs.filePath = get_test_data_dir() + "/mwa/1197638568-split.ms";
-        rawArgs.outputFilePath = "testdata/MWACudaOutput.json";
-        rawArgs.directions = m_mwaDirections;
-        rawArgs.computeImplementation = "cuda";
-        rawArgs.useCusolver = true;
-        rawArgs.useFileSystemCache = false;
-        TestConfig(std::move(rawArgs), 1e-10);
-    }
-
-    void TestAA3CpuConfig()
-    {
-        CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
-        rawArgs.filePath = get_test_data_dir() + "/aa3/aa3-SS-300.ms";
-        rawArgs.outputFilePath = "testdata/AA3CpuOutput.json";
-        rawArgs.directions = m_simulationDirections;
-        rawArgs.computeImplementation = "cpu";
-        rawArgs.useFileSystemCache = false;
-        TestConfig(std::move(rawArgs), 1e-15);
-    }
-
-    void TestAA3CudaConfig()
-    {
-        CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
-        rawArgs.filePath = get_test_data_dir() + "/aa3/aa3-SS-300.ms";
-        rawArgs.outputFilePath = "testdata/AA3CudaOutput.json";
-        rawArgs.directions = m_simulationDirections;
-        rawArgs.computeImplementation = "cuda";
-        rawArgs.useCusolver = true;
-        rawArgs.useFileSystemCache = false;
-        TestConfig(std::move(rawArgs), 1e-10);
-    }
-
-    void TestAA4CpuConfig()
-    {
-        size_t availableMemory = GetTotalAvailableSystemVirtualMemory();
-
-        size_t VisSize = 4 * 512*511/2 * 33 * sizeof(std::complex<double>); // polarizations * baselines * channels * sizeof(std::complex<double>)
-        size_t AdSize = 512 * 512*511/2 * sizeof(double); // stations * baselines * sizeof(double);
-        if(availableMemory < (VisSize + AdSize))
-        {
-            GTEST_SKIP() << memory_amount(VisSize + AdSize)
-            << " system memory required but only " << memory_amount(availableMemory) << " available";
+            auto actual = cpu::Calibration::Parse(actualStream);
+            auto expected = cpu::Calibration::Parse(expectedStream);
+            
+            ASSERT_TRUE(expected.IsApprox(actual, tolerance)) << actualPath << " does not match " << expectedPath
+            << " with absolute tolerance of " << tolerance;
+            assert_calibration_near(expected, actual, tolerance);
         }
 
-        CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
-        rawArgs.filePath = get_test_data_dir() + "/aa4/aa4-SS-33-120.ms";
-        rawArgs.outputFilePath = "testdata/AA4CpuOutput.json";
-        rawArgs.directions = m_simulationDirections;
-        rawArgs.computeImplementation = "cpu";
-        rawArgs.useCusolver = true;
-        rawArgs.useFileSystemCache = false;
-        rawArgs.solutionInterval = "[0,1,1]";
-        TestConfig(std::move(rawArgs), 1e-15);
-    }
-
-    void TestAA4CudaConfig()
-    {
-        size_t cudaAvailable = GetAvailableCudaPhysicalMemory();
-
-        size_t VisSize = 4 * 512*511/2 * 33 * sizeof(std::complex<double>); // polarizations * baselines * channels * sizeof(std::complex<double>)
-        size_t AdSize = 512 * 512*511/2 * sizeof(double); // stations * baselines * sizeof(double);
-        size_t AdWorkSize = 1170 * 1024 * 1024;
-        if(cudaAvailable < (VisSize + AdSize + AdWorkSize))
+        void TestDefaultConfig()
         {
-            GTEST_SKIP() << memory_amount(VisSize + AdSize + AdWorkSize)
-            << " device memory required but only " << memory_amount(cudaAvailable) << " available";
+            auto rawArgs = CLIArgumentsDTO::GetDefaultArguments();
+            rawArgs.filePath = get_test_data_dir() + "/mwa/1197638568-split.ms";
+            rawArgs.directions = "[[0,0]]";
+            rawArgs.computeImplementation = "cpu";
+            rawArgs.outputFilePath = (boost::dll::program_location().parent_path() / "testdata/DefaultOutput_ACTUAL.json").string();
+            std::string expectedPath = (boost::dll::program_location().parent_path() / "testdata/DefaultOutput.json").string();
+            TestConfig(std::move(rawArgs), expectedPath, 1e-15);
         }
 
-        CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
-        rawArgs.filePath = get_test_data_dir() + "/aa4/aa4-SS-33-120.ms";
-        rawArgs.outputFilePath = "testdata/AA4CudaOutput.json";
-        rawArgs.directions = m_simulationDirections;
-        rawArgs.computeImplementation = "cuda";
-        rawArgs.useCusolver = true;
-        rawArgs.useFileSystemCache = false;
-        rawArgs.solutionInterval = "[0,1,1]";
-        TestConfig(std::move(rawArgs), 1e-5);
-    }
-};
+        void TestMWACpuConfig()
+        {
+            CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
+            rawArgs.filePath = get_test_data_dir() + "/mwa/1197638568-split.ms";
+            rawArgs.directions = m_mwaDirections;
+            rawArgs.computeImplementation = "cpu";
+            rawArgs.useFileSystemCache = false;
+            rawArgs.outputFilePath = (boost::dll::program_location().parent_path() / "testdata/MWACpuOutput_ACTUAL.json").string();
+            std::string expectedPath = (boost::dll::program_location().parent_path() / "testdata/MWACpuOutput.json").string();
+            TestConfig(std::move(rawArgs), expectedPath, 1e-15);
+        }
 
-TEST_F(ConfigTests, TestDefaultConfig) { TestDefaultConfig("testdata/DefaultOutput.json", 1e-5); }
-TEST_F(ConfigTests, TestMWACpuConfig) { TestMWACpuConfig(); }
-TEST_F(ConfigTests, DISABLED_TestAA3CpuConfig) { TestAA3CpuConfig(); } // Large download
-TEST_F(ConfigTests, DISABLED_TestAA4CpuConfig) { TestAA4CpuConfig(); } // Large download
+        void TestMWACudaConfig()
+        {
+            CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
+            rawArgs.filePath = get_test_data_dir() + "/mwa/1197638568-split.ms";
+            rawArgs.directions = m_mwaDirections;
+            rawArgs.computeImplementation = "cuda";
+            rawArgs.useCusolver = true;
+            rawArgs.useFileSystemCache = false;
+            rawArgs.outputFilePath = (boost::dll::program_location().parent_path() / "testdata/MWACudaOutput_ACTUAL.json").string();
+            std::string expectedPath = (boost::dll::program_location().parent_path() / "testdata/MWACudaOutput.json").string();
+            TestConfig(std::move(rawArgs), expectedPath, 1e-9);
+        }
+
+        void TestAA3CpuConfig()
+        {
+            CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
+            rawArgs.filePath = get_test_data_dir() + "/aa3/aa3-SS-300.ms";
+            rawArgs.directions = m_simulationDirections;
+            rawArgs.computeImplementation = "cpu";
+            rawArgs.useFileSystemCache = false;
+            rawArgs.outputFilePath = (boost::dll::program_location().parent_path() / "testdata/AA3CpuOutput_ACTUAL.json").string();
+            std::string expectedPath = (boost::dll::program_location().parent_path() / "testdata/AA3CpuOutput.json").string();
+            TestConfig(std::move(rawArgs), expectedPath, 1e-15);
+        }
+
+        void TestAA3CudaConfig()
+        {
+            CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
+            rawArgs.filePath = get_test_data_dir() + "/aa3/aa3-SS-300.ms";
+            rawArgs.directions = m_simulationDirections;
+            rawArgs.computeImplementation = "cuda";
+            rawArgs.useCusolver = true;
+            rawArgs.useFileSystemCache = false;
+            rawArgs.outputFilePath = (boost::dll::program_location().parent_path() / "testdata/AA3CudaOutput_ACTUAL.json").string();
+            std::string expectedPath = (boost::dll::program_location().parent_path() / "testdata/AA3CpuOutput.json").string();
+            TestConfig(std::move(rawArgs), expectedPath, 1e-10);
+        }
+
+        void TestAA4CpuConfig()
+        {
+            size_t availableMemory = GetTotalAvailableSystemVirtualMemory();
+
+            size_t VisSize = 4 * 512*511/2 * 33 * sizeof(std::complex<double>); // polarizations * baselines * channels * sizeof(std::complex<double>)
+            size_t AdSize = 512 * 512*511/2 * sizeof(double); // stations * baselines * sizeof(double);
+            if(availableMemory < (VisSize + AdSize))
+            {
+                GTEST_SKIP() << memory_amount(VisSize + AdSize)
+                << " system memory required but only " << memory_amount(availableMemory) << " available";
+            }
+
+            CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
+            rawArgs.filePath = get_test_data_dir() + "/aa4/aa4-SS-33-120.ms";
+            rawArgs.directions = m_simulationDirections;
+            rawArgs.computeImplementation = "cpu";
+            rawArgs.useCusolver = true;
+            rawArgs.useFileSystemCache = false;
+            rawArgs.solutionInterval = "[0,1,1]";
+            rawArgs.outputFilePath = (boost::dll::program_location().parent_path() / "testdata/AA4CpuOutput_ACTUAL.json").string();
+            std::string expectedPath = (boost::dll::program_location().parent_path() / "testdata/AA4CpuOutput.json").string();
+            TestConfig(std::move(rawArgs), expectedPath, 1e-15);
+        }
+
+        void TestAA4CudaConfig()
+        {
+            size_t cudaAvailable = GetAvailableCudaPhysicalMemory();
+
+            size_t VisSize = 4 * 512*511/2 * 33 * sizeof(std::complex<double>); // polarizations * baselines * channels * sizeof(std::complex<double>)
+            size_t AdSize = 512 * 512*511/2 * sizeof(double); // stations * baselines * sizeof(double);
+            size_t AdWorkSize = 1170 * 1024 * 1024;
+            if(cudaAvailable < (VisSize + AdSize + AdWorkSize))
+            {
+                GTEST_SKIP() << memory_amount(VisSize + AdSize + AdWorkSize)
+                << " device memory required but only " << memory_amount(cudaAvailable) << " available";
+            }
+
+            CLIArgumentsDTO rawArgs = CLIArgumentsDTO::GetDefaultArguments();
+            rawArgs.filePath = get_test_data_dir() + "/aa4/aa4-SS-33-120.ms";
+            rawArgs.directions = m_simulationDirections;
+            rawArgs.computeImplementation = "cuda";
+            rawArgs.useCusolver = true;
+            rawArgs.useFileSystemCache = false;
+            rawArgs.solutionInterval = "[0,1,1]";
+            rawArgs.outputFilePath = (boost::dll::program_location().parent_path() / "testdata/AA4CudaOutput_ACTUAL.json").string();
+            std::string expectedPath = (boost::dll::program_location().parent_path() / "testdata/AA4CudaOutput.json").string();
+            TestConfig(std::move(rawArgs), expectedPath, 1e-5);
+        }
+    };
+
+    TEST_F(ConfigTests, TestDefaultConfig) { TestDefaultConfig(); }
+    TEST_F(ConfigTests, TestMWACpuConfig) { TestMWACpuConfig(); }
+
+#if INTEGRATION
+    TEST_F(ConfigTests, TestAA3CpuConfig) { TestAA3CpuConfig(); } // Large download
+    TEST_F(ConfigTests, TestAA4CpuConfig) { TestAA4CpuConfig(); } // Large download
+#endif // INTEGRATION
 
 #if CUDA_ENABLED
-TEST_F(ConfigTests, TestMWACudaConfig) { TestMWACudaConfig(); }
-TEST_F(ConfigTests, DISABLED_TestAA3CudaConfig) { TestAA3CudaConfig(); } // Large download
-TEST_F(ConfigTests, DISABLED_TestAA4CudaConfig) { TestAA4CudaConfig(); } // Large download
+    TEST_F(ConfigTests, TestMWACudaConfig) { TestMWACudaConfig(); }
+#if INTEGRATION
+    TEST_F(ConfigTests, TestAA3CudaConfig) { TestAA3CudaConfig(); } // Large download
+    TEST_F(ConfigTests, TestAA4CudaConfig) { TestAA4CudaConfig(); } // Large download
+#endif // INTEGRATION
 #endif // CUDA_ENABLED
+} // namespace icrar

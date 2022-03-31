@@ -42,7 +42,7 @@ namespace cpu
     
     double Calibration::GetEndEpoch() const { return m_endEpoch; }
 
-    bool Calibration::IsApprox(const Calibration& calibration, double threshold)
+    bool Calibration::IsApprox(const Calibration& calibration, double tolerence)
     {
         bool equal = m_startEpoch == calibration.m_startEpoch
         && m_endEpoch == calibration.m_endEpoch
@@ -51,9 +51,10 @@ namespace cpu
         {
             for(size_t i = 0; i < GetBeamCalibrations().size();  i++)
             {
-                equal &= GetBeamCalibrations()[i].IsApprox(calibration.GetBeamCalibrations()[i], threshold);
+                equal &= GetBeamCalibrations()[i].IsApprox(calibration.GetBeamCalibrations()[i], tolerence);
                 if(!equal)
                 {
+                    std::cerr << "beam calibration at index " << i << " does not match" << std::endl;
                     break;
                 }
             }

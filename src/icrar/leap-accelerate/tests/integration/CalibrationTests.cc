@@ -70,7 +70,7 @@ public:
         rawArgs.minimumBaselineThreshold = 1000.0;
         rawArgs.computeImplementation = impl;
         rawArgs.useFileSystemCache = false;
-        auto args = ArgumentsValidated(std::move(rawArgs));
+        auto args = Arguments(std::move(rawArgs));
 
         auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
         std::vector<cpu::Calibration> calibrations;

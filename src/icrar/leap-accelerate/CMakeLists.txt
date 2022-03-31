@@ -55,6 +55,7 @@ set(sources
     algorithm/cpu/PhaseMatrixFunction.cc
     algorithm/cuda/CudaComputeOptions.cc
     algorithm/cuda/CudaLeapCalibrator.cc
+    algorithm/Calibrate.cc
 )
 set(cuda_headers
     cuda/cuda_info.h
