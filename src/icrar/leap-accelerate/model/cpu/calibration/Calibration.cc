@@ -74,22 +74,28 @@ namespace cpu
     void Calibration::Serialize(std::ostream& os, bool pretty) const
     {
         constexpr uint32_t PRECISION = 15;
-        os.precision(PRECISION);
-        os.setf(std::ios::fixed);
+        os.precision(PRECISION);  // Use 15 decimal precision
+        os.setf(std::ios::fixed); // Use fixed number of decimal places
 
-        rapidjson::StringBuffer s;
+        rapidjson::OStreamWrapper osw(os);
         if(pretty)
         {
-            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
+            rapidjson::PrettyWriter<rapidjson::OStreamWrapper> writer(osw);
             Write(writer);
         }
         else
         {
-            rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+            rapidjson::Writer<rapidjson::OStreamWrapper> writer(osw);
             Write(writer);
         }
+    }
 
-        os << s.GetString() << std::endl;
+    Calibration Calibration::Parse(std::istream& is)
+    {
+        rapidjson::Document doc;
+        rapidjson::IStreamWrapper isw(is);
+        doc.ParseStream(isw);
+        return Parse(doc);
     }
 
     Calibration Calibration::Parse(const std::string& json)

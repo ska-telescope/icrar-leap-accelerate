@@ -67,12 +67,11 @@ class ConfigTests : public testing::Test
 public:
     ConfigTests() = default;
 
-    void TestDefaultConfig(const boost::filesystem::path& outputPath)
+    void TestDefaultConfig(const boost::filesystem::path& outputPath, const double tolerance)
     {
         std::string path = (boost::dll::program_location().parent_path() / outputPath).string();
         std::ifstream expectedStream(path);
-        ASSERT_TRUE(expectedStream.good());
-        auto expected = std::string(std::istreambuf_iterator<char>(expectedStream), std::istreambuf_iterator<char>());
+        ASSERT_TRUE(expectedStream.good()) << path << " does not exist";
     
         auto rawArgs = CLIArgumentsDTO::GetDefaultArguments();
         rawArgs.filePath = get_test_data_dir() + "/mwa/1197638568-split.ms";
@@ -80,8 +79,11 @@ public:
         auto args = ArgumentsValidated(std::move(rawArgs));
         auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
         std::stringstream output;
+
+        cpu::Calibration actual(0,0);
         auto outputCallback = [&](const cpu::Calibration& cal)
         {
+            actual = cal;
             cal.Serialize(output);
         };
         calibrator->Calibrate(
@@ -93,19 +95,28 @@ public:
             args.GetReferenceAntenna(),
             args.GetComputeOptions());
 
+        // Record actuals for post analysis
         auto actualPath = boost::dll::program_location().parent_path() / outputPath.parent_path()
         / (outputPath.stem().string() + "_ACTUAL" + outputPath.extension().string());
         auto actualFile = std::ofstream(actualPath.string());
         actualFile << output.str();
-        ASSERT_EQ(expected, output.str());
+
+        //file comparison
+        //auto expected = std::string(std::istreambuf_iterator<char>(expectedStream), std::istreambuf_iterator<char>());
+        //ASSERT_EQ(expected, output.str());
+        
+        auto expected = cpu::Calibration::Parse(expectedStream);
+        ASSERT_TRUE(actual.IsApprox(expected, tolerance)) << actualPath << " does not match " << outputPath;
     }
 
-    void TestConfig(CLIArgumentsDTO&& rawArgs, double threshold)
+    void TestConfig(CLIArgumentsDTO&& rawArgs, const double tolerance)
     {
         ASSERT_TRUE(rawArgs.outputFilePath.is_initialized()) << "outputFilePath not set";
         boost::filesystem::path outputPath = rawArgs.outputFilePath.get();
         std::string path = (boost::dll::program_location().parent_path() / outputPath).string();
         std::ifstream expectedStream(path);
+        ASSERT_TRUE(expectedStream.good()) << path << " does not exist";
+
         auto args = ArgumentsValidated(std::move(rawArgs));
         auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
         std::stringstream output;
@@ -129,11 +140,8 @@ public:
         actualFile.flush();
         auto actual = cpu::Calibration::Parse(output.str());
 
-        auto expectedStr = std::string(std::istreambuf_iterator<char>(expectedStream), std::istreambuf_iterator<char>());
-        ASSERT_TRUE(expectedStream.good()) << path << " does not exist";
-
-        auto expected = cpu::Calibration::Parse(expectedStr);
-        ASSERT_TRUE(expected.IsApprox(actual, threshold)) << actualPath << " does not match " << path;
+        auto expected = cpu::Calibration::Parse(expectedStream);
+        ASSERT_TRUE(expected.IsApprox(actual, tolerance)) << actualPath << " does not match " << outputPath;
     }
 
     void TestMWACpuConfig()
@@ -230,7 +238,7 @@ public:
     }
 };
 
-TEST_F(ConfigTests, TestDefaultConfig) { TestDefaultConfig("testdata/DefaultOutput.json"); }
+TEST_F(ConfigTests, TestDefaultConfig) { TestDefaultConfig("testdata/DefaultOutput.json", 1e-10); }
 TEST_F(ConfigTests, TestMWACpuConfig) { TestMWACpuConfig(); }
 TEST_F(ConfigTests, DISABLED_TestAA3CpuConfig) { TestAA3CpuConfig(); } // Large download
 TEST_F(ConfigTests, DISABLED_TestAA4CpuConfig) { TestAA4CpuConfig(); } // Large download
