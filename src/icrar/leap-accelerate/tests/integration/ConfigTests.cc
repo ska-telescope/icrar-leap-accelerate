@@ -106,7 +106,8 @@ public:
         //ASSERT_EQ(expected, output.str());
         
         auto expected = cpu::Calibration::Parse(expectedStream);
-        ASSERT_TRUE(actual.IsApprox(expected, tolerance)) << actualPath << " does not match " << outputPath;
+        ASSERT_TRUE(actual.IsApprox(expected, tolerance)) << actualPath << " does not match " << outputPath
+          << " with absolute tolerance of " << tolerance;
     }
 
     void TestConfig(CLIArgumentsDTO&& rawArgs, const double tolerance)
@@ -238,7 +239,7 @@ public:
     }
 };
 
-TEST_F(ConfigTests, TestDefaultConfig) { TestDefaultConfig("testdata/DefaultOutput.json", 1e-10); }
+TEST_F(ConfigTests, TestDefaultConfig) { TestDefaultConfig("testdata/DefaultOutput.json", 1e-5); }
 TEST_F(ConfigTests, TestMWACpuConfig) { TestMWACpuConfig(); }
 TEST_F(ConfigTests, DISABLED_TestAA3CpuConfig) { TestAA3CpuConfig(); } // Large download
 TEST_F(ConfigTests, DISABLED_TestAA4CpuConfig) { TestAA4CpuConfig(); } // Large download

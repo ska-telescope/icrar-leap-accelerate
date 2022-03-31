@@ -177,9 +177,10 @@ namespace icrar
             flagMatrix(80, 80) = 0; //TODO(calgray): degenerate?
 
             ASSERT_MEQD(flagMatrix, Ad * A, TOLERANCE);
-            ASSERT_EQ(14317053349562352543u, matrix_hash(Ad));
 
-            //A1
+            //NOTE: Typically cpu mode produces this exact Ad matrix
+            //ASSERT_EQ(14317053349562352543u, matrix_hash(Ad));
+
             const int a1Rows = 98;
             const int a1Cols = 128;
             ASSERT_EQ(a1Rows, A1.rows());
@@ -188,12 +189,12 @@ namespace icrar
             EXPECT_DOUBLE_EQ(-1.0, A1(0,1));
             EXPECT_DOUBLE_EQ(0.0, A1(0,2));
             //...
-            EXPECT_NEAR(0.00, A1(a1Rows-2,125), TOLERANCE);
-            EXPECT_NEAR(0.00, A1(a1Rows-2,126), TOLERANCE);
+            EXPECT_NEAR( 0.00, A1(a1Rows-2,125), TOLERANCE);
+            EXPECT_NEAR( 0.00, A1(a1Rows-2,126), TOLERANCE);
             EXPECT_NEAR(-1.00, A1(a1Rows-2,127), TOLERANCE);
-            EXPECT_NEAR(0.00, A1(a1Rows-1,125), TOLERANCE);
-            EXPECT_NEAR(0.00, A1(a1Rows-1,126), TOLERANCE);
-            EXPECT_NEAR(0.00, A1(a1Rows-1,127), TOLERANCE);
+            EXPECT_NEAR( 0.00, A1(a1Rows-1,125), TOLERANCE);
+            EXPECT_NEAR( 0.00, A1(a1Rows-1,126), TOLERANCE);
+            EXPECT_NEAR( 0.00, A1(a1Rows-1,127), TOLERANCE);
 
             //I1
             ASSERT_EQ(a1Rows-1, I1.size());
