@@ -177,7 +177,7 @@ namespace icrar
             flagMatrix(80, 80) = 0; //TODO(calgray): degenerate?
 
             ASSERT_MEQD(flagMatrix, Ad * A, TOLERANCE);
-            ASSERT_EQ(14317053349562352543, matrix_hash(Ad));
+            ASSERT_EQ(14317053349562352543u, matrix_hash(Ad));
 
             //A1
             const int a1Rows = 98;
