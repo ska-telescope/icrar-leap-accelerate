@@ -13,26 +13,27 @@ set(sources
   common/SliceTests.cc
   common/RangeTests.cc
   common/SphericalDirectionTests.cc
-  model/cpu/MVuvwTests.cc
   common/EigenStringUtilsTests.cc
-
+  
   math/eigen_helper.cc
   math/MatrixTests.cc
-
+  
   math/MathConversionTests.cc
   math/EigenExtensionsTests.cc
   math/cuda/CudaMatrixTests.cc
   math/cuda/CudaMatrixEigenTests.cc
-
+  
   ms/MeasurementSetTests.cc
+  model/cpu/MVuvwTests.cc
 
   model/MetaDataTests.cc
   model/IntegrationTests.cc
   
   algorithm/PhaseRotateTests.cc
+  algorithm/PhaseMatrixTests.cc
   
-  system/CalibrationTests.cc
-  system/ConfigTests.cc
+  integration/CalibrationTests.cc
+  integration/ConfigTests.cc
 )
 
 add_executable(${TEST_TARGET_NAME}

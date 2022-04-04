@@ -30,7 +30,8 @@
 #ifndef __NVCC__
 #include <rapidjson/document.h>
 #endif // __NVCC__
-#include <rapidjson/stringbuffer.h>
+#include <rapidjson/istreamwrapper.h>
+#include <rapidjson/ostreamwrapper.h>
 
 #include <vector>
 
@@ -63,7 +64,7 @@ namespace cpu
         
         double GetEndEpoch() const;
 
-        bool IsApprox(const Calibration& calibration, double threshold);
+        bool IsApprox(const Calibration& calibration, double tolerence);
 
         const std::vector<BeamCalibration>& GetBeamCalibrations() const;
 
@@ -88,9 +89,9 @@ namespace cpu
             writer.EndObject();
         }
 
-#ifndef __NVCC__
+        static Calibration Parse(std::istream& is);
         static Calibration Parse(const std::string& json);
-
+#ifndef __NVCC__
         static Calibration Parse(const rapidjson::Value& doc);
 #endif // __NVCC__
     };

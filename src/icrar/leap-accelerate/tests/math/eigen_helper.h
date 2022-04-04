@@ -22,6 +22,7 @@
 
 #include <icrar/leap-accelerate/config.h>
 #include <icrar/leap-accelerate/math/complex_extensions.h>
+#include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -42,8 +43,11 @@ void assert_near_matrix3_d(const Eigen::Matrix3d& expected, const Eigen::Matrix3
 //matrix equal complex double
 void assert_near_matrix_cd(const Eigen::MatrixXcd& expected, const Eigen::MatrixXcd& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line);
 
+//vector equal bool
+void assert_near_vector_i(const Eigen::VectorXb& expected, const Eigen::VectorXb& actual, const std::string& ln, const std::string& rn, const std::string& file, int line);
+
 //vector equal int
-void assert_near_vector_i(const Eigen::VectorXi& expected, const Eigen::VectorXi& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line);
+void assert_near_vector_i(const Eigen::VectorXi& expected, const Eigen::VectorXi& actual, int tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line);
 
 //vector equal double
 void assert_near_vector_d(const Eigen::VectorXd& expected, const Eigen::VectorXd& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line);

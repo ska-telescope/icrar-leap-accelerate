@@ -42,7 +42,7 @@ namespace cpu
     
     double Calibration::GetEndEpoch() const { return m_endEpoch; }
 
-    bool Calibration::IsApprox(const Calibration& calibration, double threshold)
+    bool Calibration::IsApprox(const Calibration& calibration, double tolerence)
     {
         bool equal = m_startEpoch == calibration.m_startEpoch
         && m_endEpoch == calibration.m_endEpoch
@@ -51,9 +51,10 @@ namespace cpu
         {
             for(size_t i = 0; i < GetBeamCalibrations().size();  i++)
             {
-                equal &= GetBeamCalibrations()[i].IsApprox(calibration.GetBeamCalibrations()[i], threshold);
+                equal &= GetBeamCalibrations()[i].IsApprox(calibration.GetBeamCalibrations()[i], tolerence);
                 if(!equal)
                 {
+                    std::cerr << "beam calibration at index " << i << " does not match" << std::endl;
                     break;
                 }
             }
@@ -74,22 +75,28 @@ namespace cpu
     void Calibration::Serialize(std::ostream& os, bool pretty) const
     {
         constexpr uint32_t PRECISION = 15;
-        os.precision(PRECISION);
-        os.setf(std::ios::fixed);
+        os.precision(PRECISION);  // Use 15 decimal precision
+        os.setf(std::ios::fixed); // Use fixed number of decimal places
 
-        rapidjson::StringBuffer s;
+        rapidjson::OStreamWrapper osw(os);
         if(pretty)
         {
-            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
+            rapidjson::PrettyWriter<rapidjson::OStreamWrapper> writer(osw);
             Write(writer);
         }
         else
         {
-            rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+            rapidjson::Writer<rapidjson::OStreamWrapper> writer(osw);
             Write(writer);
         }
+    }
 
-        os << s.GetString() << std::endl;
+    Calibration Calibration::Parse(std::istream& is)
+    {
+        rapidjson::Document doc;
+        rapidjson::IStreamWrapper isw(is);
+        doc.ParseStream(isw);
+        return Parse(doc);
     }
 
     Calibration Calibration::Parse(const std::string& json)

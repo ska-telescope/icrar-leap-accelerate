@@ -103,6 +103,20 @@ namespace icrar
         return m_numRows;
     }
 
+    Eigen::VectorXi MeasurementSet::GetAntenna1() const
+    {
+        return ToVector(
+            m_msmc->antenna1().getColumn()(casacore::Slice(0,GetNumBaselines()))
+        );
+    }
+
+    Eigen::VectorXi MeasurementSet::GetAntenna2() const
+    {
+        return ToVector(
+            m_msmc->antenna2().getColumn()(casacore::Slice(0,GetNumBaselines()))
+        );
+    }
+
     uint32_t MeasurementSet::GetTotalAntennas() const
     {
         return boost::numeric_cast<uint32_t>(m_measurementSet->antenna().nrow());
@@ -376,7 +390,7 @@ namespace icrar
 
     std::set<int32_t> MeasurementSet::GetFlaggedAntennas() const
     {
-        auto fg = GetFilteredBaselines();        
+        auto fg = GetFilteredBaselines();
         int32_t totalStations = GetTotalAntennas();
 
         // start with a set of all antennas flagged and unflag the ones 

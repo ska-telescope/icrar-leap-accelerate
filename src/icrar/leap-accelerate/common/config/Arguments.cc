@@ -115,7 +115,7 @@ namespace icrar
         }
     }
 
-    ArgumentsValidated::ArgumentsValidated(ArgumentsDTO&& cliArgs)
+    Arguments::Arguments(ArgumentsDTO&& cliArgs)
     : m_inputType(InputType::file)
     , m_streamOutType()
     , m_computeImplementation(ComputeImplementation::cpu)
@@ -163,7 +163,7 @@ namespace icrar
         }
     }
 
-    void ArgumentsValidated::ApplyArguments(ArgumentsDTO&& args)
+    void Arguments::ApplyArguments(ArgumentsDTO&& args)
     {
         if(args.inputType.is_initialized())
         {
@@ -242,7 +242,7 @@ namespace icrar
     }
 
 
-    void ArgumentsValidated::Validate() const
+    void Arguments::Validate() const
     {
         if(m_directions.size() == 0)
         {
@@ -250,17 +250,17 @@ namespace icrar
         }
     }
 
-    boost::optional<std::string> ArgumentsValidated::GetOutputFilePath() const
+    boost::optional<std::string> Arguments::GetOutputFilePath() const
     {
         return m_outputFilePath;
     }
 
-    StreamOutType ArgumentsValidated::GetStreamOutType() const
+    StreamOutType Arguments::GetStreamOutType() const
     {
         return m_streamOutType;
     }
 
-    std::unique_ptr<std::ostream> ArgumentsValidated::CreateOutputStream(double startEpoch) const
+    std::unique_ptr<std::ostream> Arguments::CreateOutputStream(double startEpoch) const
     {
         if(!m_outputFilePath.is_initialized())
         {
@@ -286,47 +286,47 @@ namespace icrar
         }
     }
 
-    MeasurementSet& ArgumentsValidated::GetMeasurementSet()
+    const MeasurementSet& Arguments::GetMeasurementSet() const
     {
         return *m_measurementSet;
     }
 
-    const std::vector<SphericalDirection>& ArgumentsValidated::GetDirections() const
+    const std::vector<SphericalDirection>& Arguments::GetDirections() const
     {
         return m_directions;
     }
 
-    ComputeImplementation ArgumentsValidated::GetComputeImplementation() const
+    ComputeImplementation Arguments::GetComputeImplementation() const
     {
         return m_computeImplementation;
     }
 
-    Slice ArgumentsValidated::GetSolutionInterval() const
+    Slice Arguments::GetSolutionInterval() const
     {
         return m_solutionInterval;
     }
 
-    boost::optional<unsigned int> ArgumentsValidated::GetReferenceAntenna() const
+    boost::optional<unsigned int> Arguments::GetReferenceAntenna() const
     {
         return m_referenceAntenna;
     }
 
-    double ArgumentsValidated::GetMinimumBaselineThreshold() const
+    double Arguments::GetMinimumBaselineThreshold() const
     {
         return m_minimumBaselineThreshold;
     }
 	
-    ComputeOptionsDTO ArgumentsValidated::GetComputeOptions() const
+    ComputeOptionsDTO Arguments::GetComputeOptions() const
     {
         return m_computeOptions;
     } 
 
-    icrar::log::Verbosity ArgumentsValidated::GetVerbosity() const
+    icrar::log::Verbosity Arguments::GetVerbosity() const
     {
         return m_verbosity;
     }
 
-    ArgumentsDTO ArgumentsValidated::ParseConfig(const std::string& configFilepath)
+    ArgumentsDTO Arguments::ParseConfig(const std::string& configFilepath)
     {
         ArgumentsDTO args;
         ParseConfig(configFilepath, args);
@@ -346,7 +346,7 @@ namespace icrar
         }
     }
 
-    void ArgumentsValidated::ParseConfig(const std::string& configFilepath, ArgumentsDTO& args)
+    void Arguments::ParseConfig(const std::string& configFilepath, ArgumentsDTO& args)
     {
         auto ifs = std::ifstream(configFilepath);
         rapidjson::IStreamWrapper isw(ifs);
