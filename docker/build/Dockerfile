@@ -9,7 +9,7 @@ RUN wget -nv https://developer.download.nvidia.com/compute/cuda/11.2.2/local_ins
     apt-key add /var/cuda-repo-debian10-11-2-local/7fa2af80.pub &&\
     add-apt-repository contrib &&\
     apt-get update &&\
-    apt-get -y install cuda
+    DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install cuda-minimal-build-11-2
 
 RUN DEBIAN_FRONTEND=noninteractive apt -y --no-install-recommends install \
     cuda-minimal-build-11-2 cuda-libraries-dev-11-2 &&\
