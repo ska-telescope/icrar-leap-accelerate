@@ -473,7 +473,7 @@ docker_ci_build_deploy:
     - IMAGE_NAME=icrar-leap-accelerate-build
     - docker build -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG ./docker/build
     - docker tag $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:latest
-    - docker push $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME
+    - docker push $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG
 
 docker_build:
   stage: build
