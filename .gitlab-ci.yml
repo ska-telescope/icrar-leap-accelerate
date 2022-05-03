@@ -464,7 +464,7 @@ include:
     - docker info
     - DOCKER_LABELS=$(bash ./docker/build/docker-build.sh)
     - echo Metadata labels will be
-    - $DOCKER_LABELS
+    - echo $DOCKER_LABELS
 
 # This manual job builds and deploys a development image for building leap accelerate with
 # required packages included.
