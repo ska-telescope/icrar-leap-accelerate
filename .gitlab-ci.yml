@@ -445,6 +445,8 @@ include:
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/post_step.yml'
 
+
+
 #########
 # Docker
 #########
@@ -457,6 +459,9 @@ include:
     # - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
     - echo $CAR_OCI_REGISTRY_PASSWORD | docker login -u $CAR_OCI_REGISTRY_USERNAME --password-stdin $CAR_OCI_REGISTRY_HOST
     - docker info
+    - DOCKER_LABELS=$(sh ./docker/build/docker-build.sh)
+    - echo Metadata labels will be
+    - $DOCKER_LABELS
 
 # This manual job builds and deploys a development image for building leap accelerate with
 # required packages included.
@@ -471,7 +476,7 @@ docker_ci_build_deploy:
     #  * "latest" when building the master branch
     #  * Other branches do not yield a docker image
     - IMAGE_NAME=icrar-leap-accelerate-build
-    - docker build -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG ./docker/build
+    - docker build $DOCKER_LABELS -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG ./docker/build
     - docker tag $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:latest
     - docker push $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG
 
@@ -494,7 +499,7 @@ docker_build:
         DOCKER_TAG=latest
       fi
     - >
-      docker build -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG .
+      docker build $DOCKER_LABELS -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG .
     - docker save $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG > docker_image.tar
   artifacts:
     paths:
