@@ -459,7 +459,7 @@ include:
     # - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
     - echo $CAR_OCI_REGISTRY_PASSWORD | docker login -u $CAR_OCI_REGISTRY_USERNAME --password-stdin $CAR_OCI_REGISTRY_HOST
     - docker info
-    - DOCKER_LABELS=$(sh ./docker/build/docker-build.sh)
+    - DOCKER_LABELS=$(bash ./docker/build/docker-build.sh)
     - echo Metadata labels will be
     - $DOCKER_LABELS
 
