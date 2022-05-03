@@ -12,6 +12,7 @@ label () {
   else
   LABELS="${LABELS} --label $KEY=\"$VALUE\""
   fi
+  echo "--label $KEY=\"$VALUE\""
 }
 
 while IFS='' read -r LINE || [ -n "${LINE}" ]; do
@@ -80,4 +81,5 @@ while IFS='' read -r LINE || [ -n "${LINE}" ]; do
     fi
 done <<< "$(printenv)"
 
-echo $LABELS
+echo docker build $LABELS -t $1 $2
+docker build $LABELS -t $1 $2

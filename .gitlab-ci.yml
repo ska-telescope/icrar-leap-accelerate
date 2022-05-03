@@ -462,9 +462,6 @@ include:
     - apk add bash
     - echo $CAR_OCI_REGISTRY_PASSWORD | docker login -u $CAR_OCI_REGISTRY_USERNAME --password-stdin $CAR_OCI_REGISTRY_HOST
     - docker info
-    - DOCKER_LABELS=$(bash ./docker/build/docker-build.sh)
-    - echo Metadata labels will be
-    - echo $DOCKER_LABELS
 
 # This manual job builds and deploys a development image for building leap accelerate with
 # required packages included.
@@ -480,9 +477,8 @@ docker_ci_build_deploy:
     #  * Other branches do not yield a docker image
     - IMAGE_NAME=icrar-leap-accelerate-build
     - echo Metadata labels will be
-    - echo $DOCKER_LABELS
-    - echo docker build $DOCKER_LABELS  $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG ./docker/build
-    - docker build $DOCKER_LABELS -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG ./docker/build
+    - bash ./docker/build/docker-build.sh $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG ./docker/build
+    # - docker build -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG ./docker/build
     - docker tag $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:latest
     - docker push $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG
 
@@ -500,12 +496,13 @@ docker_build:
     - IMAGE_NAME=icrar-leap-accelerate
     - BRANCH=${CI_COMMIT_TAG:-${CI_COMMIT_BRANCH}}
     - DOCKER_TAG=${BRANCH##v}
+    - bash ./docker/build/docker-build.sh $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG .
     - >
       if [ "$CI_COMMIT_BRANCH" = master ]; then
-        DOCKER_TAG=latest
+        docker tag $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:latest
       fi
     - >
-      docker build $DOCKER_LABELS -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG .
+      # docker build -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG .
     - docker save $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG > docker_image.tar
   artifacts:
     paths:
