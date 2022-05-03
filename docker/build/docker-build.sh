@@ -82,4 +82,5 @@ while IFS='' read -r LINE || [ -n "${LINE}" ]; do
 done <<< "$(printenv)"
 
 echo docker build $LABELS -t $1 $2
-docker build $LABELS -t $1 $2
+#docker build $LABELS -t $1 $2
+docker build -t $1 $2
