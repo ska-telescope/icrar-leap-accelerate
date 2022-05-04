@@ -513,6 +513,7 @@ docker_publish:
   stage: deploy
   extends: .docker_common
   needs: [docker_build]
+  when: manual
   only:
     - tags
     - master
