@@ -79,7 +79,7 @@ variables:
 
 .complete_build_dependencies:
   extends: .common
-  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.12.0
+  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.12.2
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
@@ -102,7 +102,7 @@ variables:
 
 .lint_build_dependencies:
   extends: .common
-  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.12.0
+  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.12.2
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
@@ -129,7 +129,7 @@ variables:
 
 .complete_test_dependencies:
   extends: .common
-  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.12.0
+  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.12.2
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
@@ -445,6 +445,8 @@ include:
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/post_step.yml'
 
+
+
 #########
 # Docker
 #########
@@ -455,6 +457,9 @@ include:
     - k8srunner
   before_script:
     # - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
+    - apk update
+    - apk upgrade
+    - apk add bash
     - echo $CAR_OCI_REGISTRY_PASSWORD | docker login -u $CAR_OCI_REGISTRY_USERNAME --password-stdin $CAR_OCI_REGISTRY_HOST
     - docker info
 
@@ -471,9 +476,11 @@ docker_ci_build_deploy:
     #  * "latest" when building the master branch
     #  * Other branches do not yield a docker image
     - IMAGE_NAME=icrar-leap-accelerate-build
-    - docker build -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG ./docker/build
+    - echo Metadata labels will be
+    - bash ./docker/build/docker-build.sh $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG ./docker/build
+    # - docker build -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG ./docker/build
     - docker tag $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:latest
-    - docker push $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME
+    - docker push $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG
 
 docker_build:
   stage: build
@@ -489,12 +496,13 @@ docker_build:
     - IMAGE_NAME=icrar-leap-accelerate
     - BRANCH=${CI_COMMIT_TAG:-${CI_COMMIT_BRANCH}}
     - DOCKER_TAG=${BRANCH##v}
+    - bash ./docker/build/docker-build.sh $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG .
     - >
       if [ "$CI_COMMIT_BRANCH" = master ]; then
-        DOCKER_TAG=latest
+        docker tag $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:latest
       fi
     - >
-      docker build -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG .
+      # docker build -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG .
     - docker save $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG > docker_image.tar
   artifacts:
     paths:
@@ -505,6 +513,7 @@ docker_publish:
   stage: deploy
   extends: .docker_common
   needs: [docker_build]
+  when: manual
   only:
     - tags
     - master
