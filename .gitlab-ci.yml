@@ -378,7 +378,7 @@ test_debug_minimal:
 test_debug_all:
   extends: [.complete_test_dependencies, .test]
   needs: ["download_testdata", "build_debug"]
-  tags: ["k8srunner-gpu"]
+  tags: ["k8srunner-gpu-v100"]
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"

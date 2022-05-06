@@ -42,7 +42,8 @@ namespace icrar
 namespace cuda
 {
     /**
-     * @brief A cuda device buffer object that represents a memory buffer on a cuda device.
+     * @brief A cuda device buffer object that own a vector memory buffer on a cuda device. Vector size is fixed
+     * at construction.
      * 
      * @tparam T numeric type
      * @note See https://www.quantstart.com/articles/Matrix-Matrix-Multiplication-on-the-GPU-with-Nvidia-CUDA/

@@ -38,8 +38,8 @@ namespace icrar
 namespace cuda
 {
     /**
-     * @brief A cuda device buffer object that represents a memory buffer on a cuda device. Matrix size is fixed
-     * at construction and can only be resized using move semantics.
+     * @brief A cuda device buffer object that own a matrix memory buffer on a cuda device. Matrix size is fixed
+     * at construction.
      * 
      * @tparam T numeric type
      * @note See https://www.quantstart.com/articles/Matrix-Matrix-Multiplication-on-the-GPU-with-Nvidia-CUDA/

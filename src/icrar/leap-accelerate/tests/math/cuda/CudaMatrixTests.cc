@@ -46,7 +46,7 @@ namespace icrar
             // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
             int deviceCount = 0;
             checkCudaErrors(cudaGetDeviceCount(&deviceCount));
-            ASSERT_EQ(1, deviceCount);
+            ASSERT_GE(deviceCount, 1);
 
             checkCudaErrors(cublasCreate(&m_cublasContext));
         }

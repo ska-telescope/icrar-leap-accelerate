@@ -50,6 +50,10 @@
 
 namespace icrar
 {
+    /**
+     * @brief Tests cuda matrix functions that are decorated with eigen interfaces and automatic cpu-gpu
+     * data transfer.
+     */
     class CudaMatrixEigenTests : public testing::Test
     {
         double TOLERANCE = 1e-10;
@@ -62,7 +66,7 @@ namespace icrar
             // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
             int deviceCount = 0;
             checkCudaErrors(cudaGetDeviceCount(&deviceCount));
-            ASSERT_EQ(1, deviceCount);
+            ASSERT_GE(deviceCount, 1);
 
             checkCudaErrors(cublasCreate(&m_cublasContext));
             checkCudaErrors(cusolverDnCreate(&m_cusolverDnContext));

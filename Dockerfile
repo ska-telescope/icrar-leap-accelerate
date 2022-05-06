@@ -5,24 +5,24 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     software-properties-common
 
 RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin &&\
-     mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
+     mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600 &&\
+    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub &&\
+    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
 
-# RUN mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
-RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
-RUN add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
 RUN apt update &&\
     DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install cuda-minimal-build-11-2
 
-#
+
 # Get the LEAP sources and install them in the system
 COPY / /leap-accelerate
 RUN cd /leap-accelerate && git submodule update --init --recursive &&\
     export CUDA_HOME=/usr/local/cuda &&\
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64 &&\
     export PATH=$PATH:$CUDA_HOME/bin &&\
-    mkdir -p build/linux/Debug && cd build/linux/Debug &&\
-    cmake ../../.. -DCMAKE_CXX_FLAGS_DEBUG=-O1 -DCMAKE_BUILD_TYPE=Debug &&\
-    make && make install
+    mkdir -p build/linux/Release && cd build/linux/Release &&\
+    cmake ../../.. -DCMAKE_BUILD_TYPE=Release &&\
+    make &&\
+    make install
 
 # Second stage to cleanup the mess
 FROM ubuntu:20.04
