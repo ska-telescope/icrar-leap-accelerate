@@ -4,9 +4,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     gnupg2 software-properties-common wget git gcc g++ gdb cmake \
     casacore-dev libboost1.74-all-dev doxygen python3-pip clang clang-tidy clang-tools iwyu cppcheck
 
-RUN wget -nv https://developer.download.nvidia.com/compute/cuda/11.2.2/local_installers/cuda-repo-debian10-11-2-local_11.2.2-460.32.03-1_amd64.deb &&\
-    dpkg -i cuda-repo-debian10-11-2-local_11.2.2-460.32.03-1_amd64.deb &&\
-    apt-key add /var/cuda-repo-debian10-11-2-local/7fa2af80.pub &&\
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/debian10/x86_64/3bf863cc.pub &&\
+    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/debian10/x86_64/ /" &&\
     add-apt-repository contrib &&\
     apt-get update &&\
     DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install cuda-minimal-build-11-2
