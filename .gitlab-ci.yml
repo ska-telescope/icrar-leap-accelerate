@@ -436,8 +436,8 @@ pages:
     when: always
     paths:
       - ./build
-    reports:
-      cobertura: build/reports/code-coverage.xml
+    # reports:
+    #   cobertura: build/reports/code-coverage.xml
   allow_failure: true
 
 # https://gitlab.com/ska-telescope/templates-repository/-/blob/master/gitlab-ci/includes/post_step.yml
