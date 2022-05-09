@@ -19,6 +19,8 @@ The latest leap release is published as a debian a docker image available at the
 
 `artefact.skao.int/icrar-leap-accelerate:latest`
 
+NOTE: It may be necessary to use the image tag rather than just latest.
+
 This image can be run locally using the following command:
 
 `docker run -it --rm artefact.skao.int/icrar-leap-accelerate:latest LeapAccelerateCLI --help`
