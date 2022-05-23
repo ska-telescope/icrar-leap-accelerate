@@ -14,15 +14,15 @@ from dlg.droputils import DROPFile
 # @details A BarrierAppDrop that produces multiple config files suitable for the CallLeap BarrierAppDrop
 # @par EAGLE_START
 # @param category PythonApp
-# @param[in] param/filePath File Path//String/readwrite/
+# @param[in] aparam/filePath File Path//String/readwrite/False//False/
 #     \~English Path to the MS
-# @param[in] param/outputFilePath Output File Path//String/readwrite/
+# @param[in] aparam/outputFilePath Output File Path//String/readwrite/False//False/
 #     \~English Path for output file
-# @param[in] param/implementation Implementation/cpu/String/readwrite/
+# @param[in] aparam/implementation Implementation/cpu/Select/readwrite/False/cpu,cuda/False/
 #     \~English The implementation of the LEAP algorithm to use (cpu, cuda)
-# @param[in] param/verbosity verbosity/info/String/readwrite/
+# @param[in] aparam/verbosity verbosity/info/Select/readwrite/False/info,debug/False/
 #     \~English The verbosity of the LEAP logging output (info|debug)
-# @param[in] param/appclass Application Class/leap_nodes.ProduceConfig.ProduceConfig/String/readonly/
+# @param[in] cparam/appclass Application Class/leap_nodes.ProduceConfig.ProduceConfig/String/readonly/False//False/
 #     \~English The path to the class that implements this app
 # @param[in] port/Directions Directions/File/
 #     \~English A CSV file containing directions for calibration
