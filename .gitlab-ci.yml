@@ -414,13 +414,12 @@ pages:
   script:
     - apt update && apt install -y curl gcovr moreutils python3-pip jq
     - pip3 install yq
-    - mkdir -p .public/reports/code-coverage
     - mkdir -p build/reports/code-coverage
-    - cd .public
-    - gcovr -r ../ --exclude-directories external -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o index.html | sponge gcovr-html.log
-    - gcovr -r ../ --exclude-directories external -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o ../build/reports/code-coverage.xml | sponge gcovr-xml.log
+    - cd build
+    - gcovr -r ../ --exclude-directories external -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o reports/code-coverage/index.html | sponge gcovr-html.log
+    - gcovr -r ../ --exclude-directories external -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o reports/code-coverage.xml | sponge gcovr-xml.log
     - cd ..
-    - mv .public public
+    - cp -r build/reports/code-coverage public
 
   after_script:
     # Combine Linting XML
