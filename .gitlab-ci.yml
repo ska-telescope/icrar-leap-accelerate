@@ -407,40 +407,40 @@ test_debug_all:
     - tags
     - schedules
 
-pages:
-  extends: .minimal_test_dependencies
-  stage: deploy
-  needs: ["test_debug_minimal", "lint_clang_tidy", "lint_cppcheck", "lint_iwyu"]
-  script:
-    - apt update && apt install -y curl gcovr moreutils python3-pip jq
-    - pip3 install yq
-    - mkdir -p build/reports/code-coverage
-    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o build/reports/code-coverage/index.html | sponge gcovr-html.log
-    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml | sponge gcovr-xml.log
-  after_script:
-    # Combine Linting XML
-    - cp build/unit-tests.xml build/reports/unit-tests.xml
-    - cp build/cppcheck-junit.xml build/reports/cppcheck-junit.xml
-    - cp build/clang-tidy-junit.xml build/reports/clang-tidy-junit.xml
-    - cp build/iwyu-junit.xml build/reports/iwyu-junit.xml
-    - 'xq -s "{testsuites: { testsuite: [ .[0].testsuite, .[1].testsuite, .[2].testsuite ] } }"
-      build/reports/clang-tidy-junit.xml
-      build/reports/cppcheck-junit.xml
-      build/reports/iwyu-junit.xml
-      --xml-output | sponge build/reports/linting.xml'
-    # recalculate linting totals
-    - 'xq ".testsuites |= {\"@tests\": .testsuite | map(.\"@tests\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
-    - 'xq ".testsuites |= {\"@errors\": .testsuite | map(.\"@errors\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
-    - 'xq ".testsuites |= {\"@failures\": .testsuite | map(.\"@failures\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
-  artifacts:
-    when: always
-    paths:
-      - ./build
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: build/reports/code-coverage.xml
-  allow_failure: true
+# pages:
+#   extends: .minimal_test_dependencies
+#   stage: deploy
+#   needs: ["test_debug_minimal", "lint_clang_tidy", "lint_cppcheck", "lint_iwyu"]
+#   script:
+#     - apt update && apt install -y curl gcovr moreutils python3-pip jq
+#     - pip3 install yq
+#     - mkdir -p build/reports/code-coverage
+#     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o build/reports/code-coverage/index.html | sponge gcovr-html.log
+#     - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml | sponge gcovr-xml.log
+#   after_script:
+#     # Combine Linting XML
+#     - cp build/unit-tests.xml build/reports/unit-tests.xml
+#     - cp build/cppcheck-junit.xml build/reports/cppcheck-junit.xml
+#     - cp build/clang-tidy-junit.xml build/reports/clang-tidy-junit.xml
+#     - cp build/iwyu-junit.xml build/reports/iwyu-junit.xml
+#     - 'xq -s "{testsuites: { testsuite: [ .[0].testsuite, .[1].testsuite, .[2].testsuite ] } }"
+#       build/reports/clang-tidy-junit.xml
+#       build/reports/cppcheck-junit.xml
+#       build/reports/iwyu-junit.xml
+#       --xml-output | sponge build/reports/linting.xml'
+#     # recalculate linting totals
+#     - 'xq ".testsuites |= {\"@tests\": .testsuite | map(.\"@tests\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
+#     - 'xq ".testsuites |= {\"@errors\": .testsuite | map(.\"@errors\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
+#     - 'xq ".testsuites |= {\"@failures\": .testsuite | map(.\"@failures\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
+#   artifacts:
+#     when: always
+#     paths:
+#       - build
+#     reports:
+#       coverage_report:
+#         coverage_format: cobertura
+#         path: build/reports/code-coverage.xml
+#   allow_failure: true
 
 
 # # https://gitlab.com/ska-telescope/templates-repository/-/blob/master/gitlab-ci/includes/finalizer.gitlab-ci.yml
