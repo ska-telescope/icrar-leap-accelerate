@@ -407,7 +407,7 @@ test_debug_all:
     - tags
     - schedules
 
-pages:
+pagesalt:
   extends: .minimal_test_dependencies
   stage: deploy
   needs: ["test_debug_minimal", "lint_clang_tidy", "lint_cppcheck", "lint_iwyu"]
@@ -443,10 +443,10 @@ pages:
   allow_failure: true
 
 
-# https://gitlab.com/ska-telescope/templates-repository/-/blob/master/gitlab-ci/includes/finaliser.gitlab-ci.yml
-include:
-  - project: 'ska-telescope/templates-repository'
-    file: 'gitlab-ci/includes/finaliser.gitlab-ci.yml'
+# # https://gitlab.com/ska-telescope/templates-repository/-/blob/master/gitlab-ci/includes/finaliser.gitlab-ci.yml
+# include:
+#   - project: 'ska-telescope/templates-repository'
+#     file: 'gitlab-ci/includes/finaliser.gitlab-ci.yml'
 
 
 #########
