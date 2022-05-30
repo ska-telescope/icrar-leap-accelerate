@@ -63,7 +63,7 @@ variables:
   - export LIBRARY_PATH=$LIBRARY_PATH:${CUDA_HOME}/lib64/stubs
 
 .common:
-  tags: [k8srunner]
+  tags: [k8srunner, docker]
 
 .minimal_build_dependencies:
   extends: .common
@@ -435,6 +435,7 @@ pagesalt:
   artifacts:
     when: always
     paths:
+      - public
       - build
     reports:
       coverage_report:
@@ -443,10 +444,10 @@ pagesalt:
   allow_failure: true
 
 
-# # https://gitlab.com/ska-telescope/templates-repository/-/blob/master/gitlab-ci/includes/finaliser.gitlab-ci.yml
-# include:
-#   - project: 'ska-telescope/templates-repository'
-#     file: 'gitlab-ci/includes/finaliser.gitlab-ci.yml'
+# https://gitlab.com/ska-telescope/templates-repository/-/blob/master/gitlab-ci/includes/finaliser.gitlab-ci.yml
+include:
+  - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/finaliser.gitlab-ci.yml'
 
 
 #########
