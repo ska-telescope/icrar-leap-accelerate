@@ -443,10 +443,10 @@ pages:
   allow_failure: true
 
 
-# https://gitlab.com/ska-telescope/templates-repository/-/blob/master/gitlab-ci/includes/finalizer.gitlab-ci.yml
+# https://gitlab.com/ska-telescope/templates-repository/-/blob/master/gitlab-ci/includes/finaliser.gitlab-ci.yml
 include:
   - project: 'ska-telescope/templates-repository'
-    file: 'gitlab-ci/includes/finalizer.gitlab-ci.yml'
+    file: 'gitlab-ci/includes/finaliser.gitlab-ci.yml'
 
 
 #########
