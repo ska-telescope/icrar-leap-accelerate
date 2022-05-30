@@ -407,16 +407,21 @@ test_debug_all:
     - tags
     - schedules
 
-pagesalt:
+pages:
   extends: .minimal_test_dependencies
   stage: deploy
   needs: ["test_debug_minimal", "lint_clang_tidy", "lint_cppcheck", "lint_iwyu"]
   script:
     - apt update && apt install -y curl gcovr moreutils python3-pip jq
     - pip3 install yq
+    - mkdir -p .public/reports/code-coverage
     - mkdir -p build/reports/code-coverage
-    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o build/reports/code-coverage/index.html | sponge gcovr-html.log
-    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml | sponge gcovr-xml.log
+    - cd .public
+    - gcovr -r ../ --exclude-directories external -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o index.html | sponge gcovr-html.log
+    - gcovr -r ../ --exclude-directories external -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o ../build/reports/code-coverage.xml | sponge gcovr-xml.log
+    - cd ..
+    - mv .public public
+
   after_script:
     # Combine Linting XML
     - cp build/unit-tests.xml build/reports/unit-tests.xml
@@ -432,6 +437,7 @@ pagesalt:
     - 'xq ".testsuites |= {\"@tests\": .testsuite | map(.\"@tests\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
     - 'xq ".testsuites |= {\"@errors\": .testsuite | map(.\"@errors\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
     - 'xq ".testsuites |= {\"@failures\": .testsuite | map(.\"@failures\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
+
   artifacts:
     when: always
     paths:
