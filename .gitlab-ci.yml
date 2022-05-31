@@ -493,9 +493,9 @@ docker_ci_build_deploy:
 docker_build:
   stage: build
   extends: .docker_common
-  # only:
-  #  - tags
-  #  - master
+  only:
+   - tags
+   - master
   script:
     # The docker image tag is:
     #  * The git tag (without the initial "v") if building a git tag
@@ -510,8 +510,7 @@ docker_build:
       if [ "$CI_COMMIT_BRANCH" = master ]; then
         docker tag $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:latest
       fi
-    # docker build -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG .
-    #- docker save $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG > docker_image.tar
+    - docker save $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG > docker_image.tar
   artifacts:
     paths:
       - docker_image.tar
