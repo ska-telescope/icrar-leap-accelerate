@@ -81,8 +81,9 @@ while IFS='' read -r LINE || [ -n "${LINE}" ]; do
     fi
 done <<< "$(printenv)"
 
-echo docker build $LABELS -t $1 $2
-docker build $LABELS -t $1 $2
+echo docker build -t $1 $2
+docker build -t $1 $2
+
 # docker build\
 #  --label CI_COMMIT_AUTHOR=$CI_COMMIT_AUTHOR\
 #  --label CI_COMMIT_REF_NAM=$CI_COMMIT_REF_NAM\
