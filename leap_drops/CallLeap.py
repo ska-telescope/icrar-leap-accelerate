@@ -14,10 +14,10 @@ from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
 # @details A BarrierAppDrop that reads a config file, generates a command line for the LeapAccelerateCLI application, and then executes the application
 # @par EAGLE_START
 # @param category PythonApp
-# @param[in] param/measurementSetFilename Measurement Set Filename/""/String/readwrite/
+# @param[in] aparam/measurementSetFilename Measurement Set Filename/""/String/readwrite/False//False/
 #     \~English The file from which the input measurement set should be loaded\n
 #     \~Chinese
-# @param[in] param/appclass Application Class/leap_nodes.CallLeap.CallLeap/String/readonly/
+# @param[in] cparam/appclass Application Class/leap_nodes.CallLeap.CallLeap/String/readonly/False//False/
 #     \~English The path to the class that implements this app\n
 #     \~Chinese
 # @param[in] port/Config Config/File/
