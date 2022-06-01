@@ -19,10 +19,9 @@ RUN cd /leap-accelerate && git submodule update --init --recursive &&\
     export CUDA_HOME=/usr/local/cuda &&\
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64 &&\
     export PATH=$PATH:$CUDA_HOME/bin &&\
-    mkdir -p build/linux/Release && cd build/linux/Release &&\
-    cmake ../../.. -DCMAKE_BUILD_TYPE=Release &&\
-    make &&\
-    make install
+    cmake -B build/linux/Release -DCMAKE_BUILD_TYPE=Release &&\
+    cmake --build build/linux/Release -j2 &&\
+    cmake --install build/linux/Release
 
 # Second stage to cleanup the mess
 FROM ubuntu:20.04
