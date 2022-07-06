@@ -169,7 +169,7 @@ namespace icrar
             ComputeImplementation impl,
             const ComputeOptionsDTO computeOptions,
             const Slice solutionInterval,
-            std::function<cpu::CalibrationCollection()> getExpected)
+            const std::function<cpu::CalibrationCollection()>& getExpected)
         {
             auto metadata = icrar::cpu::MetaData(*ms);
             std::vector<icrar::SphericalDirection> directions =
@@ -265,7 +265,7 @@ namespace icrar
          * 
          * @param impl 
          */
-        void ReferenceAntennaTest(const ComputeImplementation impl, std::vector<int> referenceAntennas, const Slice solutionInterval)
+        void ReferenceAntennaTest(const ComputeImplementation impl, const std::vector<int>& referenceAntennas, const Slice solutionInterval)
         {
             auto metadata = icrar::cpu::MetaData(*ms);
             std::vector<icrar::SphericalDirection> directions =
@@ -278,12 +278,11 @@ namespace icrar
             std::unique_ptr<ILeapCalibrator> calibrator = LeapCalibratorFactory::Create(impl);
             auto flaggedAntennas = ms->GetFlaggedAntennas();
 
-            for(auto it = referenceAntennas.begin(); it != referenceAntennas.end(); ++it)
+            for(int32_t referenceAntenna : referenceAntennas)
             {
-                int32_t referenceAntenna = *it;
                 if(flaggedAntennas.find(referenceAntenna) != flaggedAntennas.end())
                 {
-                    //TODO: calibrate should throw for flagged antennas as reference
+                    //TODO(calgray) calibrate should throw for flagged antennas as reference
                     continue;
                 }
 

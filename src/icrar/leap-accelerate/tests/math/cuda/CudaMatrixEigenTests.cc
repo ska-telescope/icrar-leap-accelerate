@@ -57,8 +57,8 @@ namespace icrar
     class CudaMatrixEigenTests : public testing::Test
     {
         double TOLERANCE = 1e-10;
-        cublasHandle_t m_cublasContext;
-        cusolverDnHandle_t m_cusolverDnContext;
+        cublasHandle_t m_cublasContext = {};
+        cusolverDnHandle_t m_cusolverDnContext = {};
 
     public:
         void SetUp() override

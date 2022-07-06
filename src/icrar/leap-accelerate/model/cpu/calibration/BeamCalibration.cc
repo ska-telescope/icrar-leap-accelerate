@@ -95,7 +95,7 @@ namespace cpu
         Eigen::VectorXd calibrationVector(calibrationJson.Size());
         std::transform(calibrationJson.Begin(), calibrationJson.End(), calibrationVector.begin(),
         [](const rapidjson::Value& v){ return v.GetDouble(); });
-        return BeamCalibration(sphericalDirection, calibrationVector); 
+        return { sphericalDirection, calibrationVector };
     }
 } // namespace cpu
 } // namespace icrar

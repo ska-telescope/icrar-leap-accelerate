@@ -70,7 +70,7 @@ namespace cpu
         I.setConstant(-1);
 
         int k = 0; // row index
-        int32_t refAntId = boost::numeric_cast<int32_t>(refAnt);
+        auto refAntId = boost::numeric_cast<int32_t>(refAnt);
         for(int n = 0; n < a1.size(); n++)
         { 
             if(a1(n) != a2(n))

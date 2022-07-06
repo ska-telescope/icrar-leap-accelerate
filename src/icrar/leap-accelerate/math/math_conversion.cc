@@ -50,7 +50,7 @@ namespace icrar
 
     casacore::MVuvw ToCasaUVW(const icrar::MVuvw& value)
     {
-        return casacore::MVuvw(value(0), value(1), value(2));
+        return { value(0), value(1), value(2) };
     }
 
     std::vector<casacore::MVuvw> ToCasaUVWVector(const std::vector<icrar::MVuvw>& value)
@@ -83,7 +83,7 @@ namespace icrar
 
     casacore::MVDirection ToCasaDirection(const SphericalDirection& value)
     {
-        return casacore::MVDirection(value(0), value(1));
+        return { value(0), value(1) };
     }
 
     std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<SphericalDirection>& value)

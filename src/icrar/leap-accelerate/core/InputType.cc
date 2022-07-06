@@ -26,7 +26,7 @@ namespace icrar
 {
     InputType ParseInputType(const std::string& value)
     {
-        InputType e;
+        InputType e = {};
         if(!TryParseInputType(value, e))
         {
             throw invalid_argument_exception(value, "value", __FILE__, __LINE__);
