@@ -106,8 +106,8 @@ else()
   message(WARNING "git not found!")
 endif()
 
-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/eigen-3.3.90/CMakeLists.txt")
-  message(FATAL_ERROR "Submodule eigen-3.3.90 was not downloaded! Please update submodules and try again.")
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/eigen-3.4.90/CMakeLists.txt")
+  message(FATAL_ERROR "Submodule eigen-3.4.90 was not downloaded! Please update submodules and try again.")
 endif()
 if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/gtest-1.11.0/CMakeLists.txt")
   message(FATAL_ERROR "Submodule gtest-1.11.0 was not downloaded! Please update submodules and try again.")
@@ -153,8 +153,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
   #set(CMAKE_CUDA_COMPILE_SEPERABLE_COMPILATION "")
   #message("CMAKE_CUDA_COMPILE_WHOLE_COMPILATION: ${CMAKE_CUDA_COMPILE_WHOLE_COMPILATION}")
   set(CMAKE_CUDA_COMPILE_WHOLE_COMPILATION "<CMAKE_CUDA_COMPILER> --no-cuda-version-check -nocudalib <DEFINES> <INCLUDES> <FLAGS> -x cu -c <SOURCE> -o <OBJECT>")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${PROJECT_SOURCE_DIR}/external/eigen-3.3.90")
-  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -I${PROJECT_SOURCE_DIR}/external/eigen-3.3.90")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${PROJECT_SOURCE_DIR}/external/eigen-3.4.90")
+  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -I${PROJECT_SOURCE_DIR}/external/eigen-3.4.90")
 
   # Clang IWYU Configuration
   # Clang will ignore explicit includes of its preconfigured include directory
@@ -193,8 +193,8 @@ if (BUILD_TESTING)
 endif()
 
 # Local Libraries
-#add_subdirectory(external/eigen-3.3.90) # builds eigen3 tests
-set(EIGEN3_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/eigen-3.3.90)
+#add_subdirectory(external/eigen-3.4.90) # builds eigen3 tests
+set(EIGEN3_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/eigen-3.4.90)
 find_package(Eigen3 REQUIRED)
 
 # Use local rapidjson if available

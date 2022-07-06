@@ -197,7 +197,7 @@ public:
         0, 0,
         0, 0;
 
-        auto bdc = Eigen::BDCSVD<Eigen::MatrixXd>(m1, Eigen::ComputeFullU | Eigen::ComputeFullV);
+        auto bdc = Eigen::BDCSVD<Eigen::MatrixXd, Eigen::ComputeFullU | Eigen::ComputeFullV>(m1);
 
         const auto& u = bdc.matrixU();
         const auto& v = bdc.matrixV();

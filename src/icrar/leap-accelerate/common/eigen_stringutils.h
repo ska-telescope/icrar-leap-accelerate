@@ -90,7 +90,7 @@ namespace icrar
         {
             for(int64_t r = 0; r < value.rows(); ++r)
             {
-                pretty_row(value(r, Eigen::all), ss);
+                pretty_row(value(r, Eigen::placeholders::all), ss);
                 if(r != value.rows() - 1) { ss << "\n"; }
             }
         }
@@ -98,7 +98,7 @@ namespace icrar
         {
             for(int64_t r = 0; r < 3; ++r)
             {
-                pretty_row(value(r, Eigen::all), ss);
+                pretty_row(value(r, Eigen::placeholders::all), ss);
                 if(r != 2) { ss << "\n"; }
             }
             
@@ -113,7 +113,7 @@ namespace icrar
             
             for(int64_t r = value.rows() - 3; r < value.rows(); ++r)
             {
-                pretty_row(value(r, Eigen::all), ss);
+                pretty_row(value(r, Eigen::placeholders::all), ss);
                 if(r != value.rows() - 1) { ss << "\n"; }
             }
         }

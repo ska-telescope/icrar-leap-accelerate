@@ -50,9 +50,15 @@ namespace cpu
     Matrix_T SVDPseudoInverse(const Matrix_T& a, double epsilon = std::numeric_limits<typename Matrix_T::Scalar>::epsilon())
     {
         // See https://eigen.tuxfamily.org/bz/show_bug.cgi?id=257
-        Eigen::BDCSVD<Matrix_T> svd(a, Eigen::ComputeThinU | Eigen::ComputeThinV);
+        Eigen::BDCSVD<Matrix_T, Eigen::ComputeThinU | Eigen::ComputeThinV> svd(a);
         double tolerance = static_cast<double>(std::max(a.cols(), a.rows())) * epsilon * svd.singularValues().array().abs()(0);
-        return svd.matrixV() * (svd.singularValues().array().abs() > tolerance).select(svd.singularValues().array().inverse(), 0).matrix().asDiagonal() * svd.matrixU().adjoint();
+        return svd.matrixV()
+        * (svd.singularValues().array().abs() > tolerance)
+            .select(svd.singularValues().array().inverse(), 0)
+            .matrix()
+            .asDiagonal()
+        * svd.matrixU()
+            .adjoint();
     }
 
     /**
