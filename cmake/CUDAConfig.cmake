@@ -18,13 +18,7 @@ function(configure_nvcc_cuda_compiler TARGET_NAME)
 
   if(CMAKE_CUDA_ARCHITECTURES STREQUAL "")
     # Statically compile all compatible compute shaders
-    set(CUDA_LEVEL_60 1)
-    set(CUDA_LEVEL_61 1)
-    set(CUDA_LEVEL_70 1)
-    set(CUDA_LEVEL_72 1)
-    set(CUDA_LEVEL_75 1)
-    set(CUDA_LEVEL_80 1)
-    set(CUDA_LEVEL_86 1)
+    set(CMAKE_CUDA_ARCHITECTURES "60;61;70;72;75;80;86")
   else()
     # Read specified shader models to compile. This speeds up compile time for development
     list(FIND CMAKE_CUDA_ARCHITECTURES "60" CUDA_LEVEL_60)
