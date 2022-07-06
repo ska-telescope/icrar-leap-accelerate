@@ -124,7 +124,6 @@ if(CUDA_ENABLED)
     configure_clang_cuda_compiler(${TARGET_NAME})
   else()
     configure_nvcc_cuda_compiler(${TARGET_NAME})
-    configure_cuda_warnings(${TARGET_NAME})
   endif()
 
   #Set Cuda Stream Setting

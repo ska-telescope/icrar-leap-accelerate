@@ -180,7 +180,7 @@ namespace icrar
 
         void TestChannelWavelengths()
         {
-            auto meta = icrar::cpu::MetaData(*ms, SphericalDirection());
+            auto meta = icrar::cpu::MetaData(*ms, SphericalDirection::Zero());
 
             ASSERT_EQ(48, meta.GetConstants().channels);
             EXPECT_DOUBLE_EQ(2.1537588131757608, meta.GetConstants().GetChannelWavelength(0));
@@ -188,7 +188,7 @@ namespace icrar
 
         void TestReferenceAntenna()
         {
-            auto meta = icrar::cpu::MetaData(*ms, SphericalDirection(), boost::none);
+            auto meta = icrar::cpu::MetaData(*ms, SphericalDirection::Zero(), boost::none);
             auto k = boost::numeric_cast<uint32_t>(meta.GetA1().rows() - 1);
             auto n = boost::numeric_cast<uint32_t>(meta.GetA1().cols() - 1);
             ASSERT_EQ(0, meta.GetA1()(k, 0));

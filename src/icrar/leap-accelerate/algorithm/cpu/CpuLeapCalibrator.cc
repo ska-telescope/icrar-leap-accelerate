@@ -201,7 +201,11 @@ namespace cpu
         {
             for(size_t baseline = 0; baseline < integration.GetNumBaselines(); baseline++)
             {
+                // TODO(calgray) Eigen::Tensor::chip creates array-bounds warnings on gcc-12 
+                #pragma GCC diagnostic push
+                #pragma GCC diagnostic ignored "-Warray-bounds"
                 Eigen::VectorXd uvw = ToVector(Eigen::Tensor<double, 1>(integration.GetUVW().chip(timestep, 2).chip(baseline, 1)));
+                #pragma GCC diagnostic pop
                 auto rotatedUVW = metadata.GetDD() * uvw;
                 double shiftFactor = -two_pi<double>() * (rotatedUVW.z() - uvw.z());
 
