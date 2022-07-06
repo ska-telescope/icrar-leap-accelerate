@@ -75,11 +75,11 @@ namespace cuda
     }
 
     DirectionBuffer::DirectionBuffer(
-        const SphericalDirection& direction,
-        const Eigen::Matrix3d& dd,
+        SphericalDirection direction,
+        Eigen::Matrix3d dd,
         const Eigen::MatrixXcd& avgData)
-    : m_direction(direction)
-    , m_dd(dd)
+    : m_direction(std::move(direction))
+    , m_dd(std::move(dd))
     , m_avgData(avgData)
     {}
 

@@ -106,6 +106,7 @@ namespace cuda
      */
     class DirectionBuffer
     {
+        // TODO(calgray) use device types
         SphericalDirection m_direction;
         Eigen::Matrix3d m_dd;
 
@@ -120,8 +121,8 @@ namespace cuda
          * @param avgData 
          */
         DirectionBuffer(
-            const SphericalDirection& direction,
-            const Eigen::Matrix3d& dd,
+            SphericalDirection direction,
+            Eigen::Matrix3d dd,
             const Eigen::MatrixXcd& avgData);
 
         /**
