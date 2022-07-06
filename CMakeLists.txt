@@ -10,7 +10,7 @@ message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(CUDA_ENABLED "Build with cuda support" OFF)
-set(CMAKE_CUDA_ARCHITECTURES "" CACHE STRING "Cuda Compute and Streaming Multiprocessor level")
+set(CMAKE_CUDA_ARCHITECTURES "60;61;70;72;75;80;86" CACHE STRING "Cuda Compute and Streaming Multiprocessor level")
 option(CMAKE_RUN_CLANG_TIDY "Run clang-tidy with the compiler." OFF)
 option(WERROR "Warnings as Errors" OFF)
 option(WCONVERSION "Conversion warnings" OFF)
