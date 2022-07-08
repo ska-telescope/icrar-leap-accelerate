@@ -21,7 +21,7 @@
 
 #if CUDA_ENABLED
 
-#include "DeviceMetaData.h"
+#include "DeviceLeapData.h"
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 
@@ -50,7 +50,7 @@ namespace cuda
         , m_Ad1(std::move(Ad1))
         { }
 
-    void ConstantBuffer::ToHost(icrar::cpu::MetaData& host) const
+    void ConstantBuffer::ToHost(icrar::cpu::LeapData& host) const
     {
         host.m_constants = m_constants;
 
@@ -62,7 +62,7 @@ namespace cuda
         m_Ad1.ToHost(host.m_Ad1);
     }
 
-    void ConstantBuffer::ToHostAsync(icrar::cpu::MetaData& host) const
+    void ConstantBuffer::ToHostAsync(icrar::cpu::LeapData& host) const
     {
         host.m_constants = m_constants;
 
@@ -99,60 +99,60 @@ namespace cuda
         m_dd = dd;
     }
 
-    DeviceMetaData::DeviceMetaData(const cpu::MetaData& metadata)
+    DeviceLeapData::DeviceLeapData(const cpu::LeapData& leapData)
     : m_constantBuffer(std::make_shared<ConstantBuffer>(
-        metadata.GetConstants(),
-        device_matrix<double>(metadata.GetA()),
-        device_vector<int>(metadata.GetI()),
-        device_matrix<double>(metadata.GetAd()),
-        device_matrix<double>(metadata.GetA1()),
-        device_vector<int>(metadata.GetI1()),
-        device_matrix<double>(metadata.GetAd1())))
+        leapData.GetConstants(),
+        device_matrix<double>(leapData.GetA()),
+        device_vector<int>(leapData.GetI()),
+        device_matrix<double>(leapData.GetAd()),
+        device_matrix<double>(leapData.GetA1()),
+        device_vector<int>(leapData.GetI1()),
+        device_matrix<double>(leapData.GetAd1())))
     , m_directionBuffer(std::make_shared<DirectionBuffer>(
-        metadata.GetDirection(),
-        metadata.GetDD(),
-        metadata.GetAvgData()))
+        leapData.GetDirection(),
+        leapData.GetDD(),
+        leapData.GetAvgData()))
     {}
 
-    DeviceMetaData::DeviceMetaData(
+    DeviceLeapData::DeviceLeapData(
         std::shared_ptr<ConstantBuffer> constantBuffer,
         std::shared_ptr<DirectionBuffer> directionBuffer)
     : m_constantBuffer(std::move(constantBuffer))
     , m_directionBuffer(std::move(directionBuffer))
     {}
 
-    const icrar::cpu::Constants& DeviceMetaData::GetConstants() const
+    const icrar::cpu::Constants& DeviceLeapData::GetConstants() const
     {
         return m_constantBuffer->GetConstants();
     }
 
-    void DeviceMetaData::SetAvgData(int v)
+    void DeviceLeapData::SetAvgData(int v)
     {
         cudaMemset(m_directionBuffer->GetAvgData().Get(), v, m_directionBuffer->GetAvgData().GetSize());
     }
 
-    void DeviceMetaData::ToHost(cpu::MetaData& metadata) const
+    void DeviceLeapData::ToHost(cpu::LeapData& leapData) const
     {
-        m_constantBuffer->ToHost(metadata);
-        metadata.m_direction = m_directionBuffer->GetDirection();
-        metadata.m_dd = m_directionBuffer->GetDD();
-        m_directionBuffer->GetAvgData().ToHost(metadata.m_avgData);
+        m_constantBuffer->ToHost(leapData);
+        leapData.m_direction = m_directionBuffer->GetDirection();
+        leapData.m_dd = m_directionBuffer->GetDD();
+        m_directionBuffer->GetAvgData().ToHost(leapData.m_avgData);
     }
 
-    cpu::MetaData DeviceMetaData::ToHost() const
+    cpu::LeapData DeviceLeapData::ToHost() const
     {
-        cpu::MetaData result = cpu::MetaData();
+        cpu::LeapData result = cpu::LeapData();
         ToHost(result);
         return result;
     }
 
-    void DeviceMetaData::ToHostAsync(cpu::MetaData& metadata) const
+    void DeviceLeapData::ToHostAsync(cpu::LeapData& leapData) const
     {
-        m_constantBuffer->ToHostAsync(metadata);
+        m_constantBuffer->ToHostAsync(leapData);
 
-        metadata.m_direction = m_directionBuffer->GetDirection();
-        metadata.m_dd = m_directionBuffer->GetDD();
-        m_directionBuffer->GetAvgData().ToHostVectorAsync(metadata.m_avgData);
+        leapData.m_direction = m_directionBuffer->GetDirection();
+        leapData.m_dd = m_directionBuffer->GetDD();
+        m_directionBuffer->GetAvgData().ToHostVectorAsync(leapData.m_avgData);
     }
 } // namespace cuda
 } // namespace icrar

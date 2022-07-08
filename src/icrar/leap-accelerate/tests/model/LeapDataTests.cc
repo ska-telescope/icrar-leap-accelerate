@@ -20,9 +20,9 @@
  */
 
 
-#include <icrar/leap-accelerate/model/cpu/MetaData.h>
-#include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
-#include <icrar/leap-accelerate/model/cuda/HostMetaData.h>
+#include <icrar/leap-accelerate/model/cpu/LeapData.h>
+#include <icrar/leap-accelerate/model/cuda/DeviceLeapData.h>
+#include <icrar/leap-accelerate/model/cuda/HostLeapData.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 
@@ -41,7 +41,11 @@
 
 namespace icrar
 {
-    class MetaDataTests : public ::testing::Test
+    /**
+     * @brief Tests
+     * 
+     */
+    class LeapDataTests : public ::testing::Test
     {
         const double PRECISION = 0.0001;
         std::unique_ptr<icrar::MeasurementSet> ms;
@@ -70,7 +74,7 @@ namespace icrar
 
         void TestRawReadFromFile()
         {
-            auto meta = icrar::cpu::MetaData(*ms);
+            auto meta = icrar::cpu::LeapData(*ms);
             ASSERT_EQ(102, ms->GetNumStations());
             ASSERT_EQ(5253, ms->GetNumBaselines());
             ASSERT_EQ(48, meta.GetConstants().channels);
@@ -108,7 +112,7 @@ namespace icrar
         {
             std::string filename = get_test_data_dir() + "/mwa/1197638568-split.ms";
             auto rawms = std::make_unique<icrar::MeasurementSet>(filename);
-            auto meta = icrar::cpu::MetaData(*rawms);
+            auto meta = icrar::cpu::LeapData(*rawms);
 
             ASSERT_EQ(102, rawms->GetNumStations());
             ASSERT_EQ(5253, rawms->GetNumBaselines());
@@ -145,7 +149,7 @@ namespace icrar
 
         void TestDD()
         {
-            auto meta = icrar::cpu::MetaData(*ms);
+            auto meta = icrar::cpu::LeapData(*ms);
             auto direction = SphericalDirection(-0.4606549305661674,-0.29719233792392513);
             
             EXPECT_EQ(-0.4606549305661674, direction(0));
@@ -180,7 +184,7 @@ namespace icrar
 
         void TestChannelWavelengths()
         {
-            auto meta = icrar::cpu::MetaData(*ms, SphericalDirection::Zero());
+            auto meta = icrar::cpu::LeapData(*ms, SphericalDirection::Zero());
 
             ASSERT_EQ(48, meta.GetConstants().channels);
             EXPECT_DOUBLE_EQ(2.1537588131757608, meta.GetConstants().GetChannelWavelength(0));
@@ -188,24 +192,24 @@ namespace icrar
 
         void TestReferenceAntenna()
         {
-            auto meta = icrar::cpu::MetaData(*ms, SphericalDirection::Zero(), boost::none);
+            auto meta = icrar::cpu::LeapData(*ms, SphericalDirection::Zero(), boost::none);
             auto k = boost::numeric_cast<uint32_t>(meta.GetA1().rows() - 1);
             auto n = boost::numeric_cast<uint32_t>(meta.GetA1().cols() - 1);
             ASSERT_EQ(0, meta.GetA1()(k, 0));
             ASSERT_EQ(1, meta.GetA1()(k, n));
 
-            meta = icrar::cpu::MetaData(*ms, SphericalDirection(), n);
+            meta = icrar::cpu::LeapData(*ms, SphericalDirection(), n);
             k = boost::numeric_cast<uint32_t>(meta.GetA1().rows() - 1);
             n = boost::numeric_cast<uint32_t>(meta.GetA1().cols() - 1);
             ASSERT_EQ(0, meta.GetA1()(k, 0));
             ASSERT_EQ(1, meta.GetA1()(k, n));
 
-            meta = icrar::cpu::MetaData(*ms, SphericalDirection(), 0);
+            meta = icrar::cpu::LeapData(*ms, SphericalDirection(), 0);
             k = boost::numeric_cast<uint32_t>(meta.GetA1().rows() - 1);
             ASSERT_EQ(1, meta.GetA1()(k, 0));
             ASSERT_EQ(0, meta.GetA1()(k, 1));
 
-            meta = icrar::cpu::MetaData(*ms, SphericalDirection(), 1);
+            meta = icrar::cpu::LeapData(*ms, SphericalDirection(), 1);
             k = boost::numeric_cast<uint32_t>(meta.GetA1().rows() - 1);
             ASSERT_EQ(0, meta.GetA1()(k, 0));
             ASSERT_EQ(1, meta.GetA1()(k, 1));
@@ -214,12 +218,12 @@ namespace icrar
 #ifdef CUDA_ENABLED
         void TestCudaBufferCopy()
         {
-            auto meta = icrar::cpu::MetaData(*ms);
+            auto meta = icrar::cpu::LeapData(*ms);
             auto direction = SphericalDirection(); direction << 0.0, 0.0;
             auto uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
             meta.SetDirection(direction);
 
-            auto expectedhostMetadata = icrar::cuda::HostMetaData(*ms, boost::none, 0.0, true, false);
+            auto expectedhostMetadata = icrar::cuda::HostLeapData(*ms, boost::none, 0.0, true, false);
 
             auto constantBuffer = std::make_shared<icrar::cuda::ConstantBuffer>(
                 expectedhostMetadata.GetConstants(),
@@ -237,10 +241,10 @@ namespace icrar
                 expectedhostMetadata.GetAvgData()
             );
 
-            auto deviceMetadata = icrar::cuda::DeviceMetaData(constantBuffer, directionBuffer);
+            auto deviceLeapData = icrar::cuda::DeviceLeapData(constantBuffer, directionBuffer);
 
             // copy from device back to host
-            icrar::cpu::MetaData hostMetadata = deviceMetadata.ToHost();
+            icrar::cpu::LeapData hostMetadata = deviceLeapData.ToHost();
             
             ASSERT_MDEQ(expectedhostMetadata, hostMetadata, THRESHOLD);
             DebugCudaErrors();
@@ -248,14 +252,14 @@ namespace icrar
 #endif
     };
 
-    TEST_F(MetaDataTests, TestMeasurementSet) { TestMeasurementSet(); }
-    TEST_F(MetaDataTests, TestRawReadFromFile) { TestRawReadFromFile(); }
-    TEST_F(MetaDataTests, TestReadFromFileOverrideStations) { TestReadFromFileOverrideStations(); }
-    TEST_F(MetaDataTests, TestChannelWavelengths) { TestChannelWavelengths(); }
-    TEST_F(MetaDataTests, TestDD) { TestDD(); }
-    TEST_F(MetaDataTests, TestReferenceAntenna) { TestReferenceAntenna(); }
+    TEST_F(LeapDataTests, TestMeasurementSet) { TestMeasurementSet(); }
+    TEST_F(LeapDataTests, TestRawReadFromFile) { TestRawReadFromFile(); }
+    TEST_F(LeapDataTests, TestReadFromFileOverrideStations) { TestReadFromFileOverrideStations(); }
+    TEST_F(LeapDataTests, TestChannelWavelengths) { TestChannelWavelengths(); }
+    TEST_F(LeapDataTests, TestDD) { TestDD(); }
+    TEST_F(LeapDataTests, TestReferenceAntenna) { TestReferenceAntenna(); }
 
 #ifdef CUDA_ENABLED
-    TEST_F(MetaDataTests, DISABLED_TestCudaBufferCopy) { TestCudaBufferCopy(); }
+    TEST_F(LeapDataTests, DISABLED_TestCudaBufferCopy) { TestCudaBufferCopy(); }
 #endif
 } // namespace icrar

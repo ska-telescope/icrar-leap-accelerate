@@ -19,7 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <icrar/leap-accelerate/model/cpu/MetaData.h>
+#include <icrar/leap-accelerate/model/cpu/LeapData.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
@@ -40,7 +40,7 @@ namespace icrar
 {
 namespace cpu
 {
-    MetaData::MetaData(const icrar::MeasurementSet& ms, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool computeInverse, bool useCache)
+    LeapData::LeapData(const icrar::MeasurementSet& ms, boost::optional<unsigned int> refAnt, double minimumBaselineThreshold, bool computeInverse, bool useCache)
     : m_constants({})
     , m_minimumBaselineThreshold(minimumBaselineThreshold)
     , m_useCache(useCache)
@@ -113,19 +113,19 @@ namespace cpu
         }
     }
 
-    MetaData::MetaData(
+    LeapData::LeapData(
         const icrar::MeasurementSet& ms,
         const SphericalDirection& direction,
         boost::optional<unsigned int> refAnt,
         double minimumBaselineThreshold,
         bool computeInverse,
         bool useCache)
-    : MetaData(ms, refAnt, minimumBaselineThreshold, computeInverse, useCache)
+    : LeapData(ms, refAnt, minimumBaselineThreshold, computeInverse, useCache)
     {
         SetDirection(direction);
     }
 
-    void MetaData::ComputeInverse()
+    void LeapData::ComputeInverse()
     {
         auto invertA1 = [](const Eigen::MatrixXd& a)
         {
@@ -160,7 +160,7 @@ namespace cpu
         ValidateInverse();
     }
 
-    void MetaData::ValidateInverse() const
+    void LeapData::ValidateInverse() const
     {
         constexpr double TOLERANCE = 1e-10;
         if(!((m_Ad * m_A).eval()).isDiagonal(TOLERANCE))
@@ -173,20 +173,20 @@ namespace cpu
         }
     }
 
-    const Constants& MetaData::GetConstants() const
+    const Constants& LeapData::GetConstants() const
     {
         return m_constants;
     }
 
-    const Eigen::MatrixXd& MetaData::GetA() const { return m_A; }
-    const Eigen::VectorXi& MetaData::GetI() const { return m_I; }
-    const Eigen::MatrixXd& MetaData::GetAd() const { return m_Ad; }
+    const Eigen::MatrixXd& LeapData::GetA() const { return m_A; }
+    const Eigen::VectorXi& LeapData::GetI() const { return m_I; }
+    const Eigen::MatrixXd& LeapData::GetAd() const { return m_Ad; }
 
-    const Eigen::MatrixXd& MetaData::GetA1() const { return m_A1; }
-    const Eigen::VectorXi& MetaData::GetI1() const { return m_I1; }
-    const Eigen::MatrixXd& MetaData::GetAd1() const { return m_Ad1; }
+    const Eigen::MatrixXd& LeapData::GetA1() const { return m_A1; }
+    const Eigen::VectorXi& LeapData::GetI1() const { return m_I1; }
+    const Eigen::MatrixXd& LeapData::GetAd1() const { return m_Ad1; }
 
-    Eigen::Matrix3d MetaData::GenerateDDMatrix(const SphericalDirection& direction) const
+    Eigen::Matrix3d LeapData::GenerateDDMatrix(const SphericalDirection& direction) const
     {
         constexpr double pi = boost::math::constants::pi<double>();
         double ang1 = pi / 2.0 - m_constants.phase_centre_dec_rad;
@@ -225,7 +225,7 @@ namespace cpu
         return dd3 * dd2 * dd1;
     }
 
-    void MetaData::SetDirection(const SphericalDirection& direction)
+    void LeapData::SetDirection(const SphericalDirection& direction)
     {
         m_direction = direction;
         m_constants.dlm_ra = direction(0) - m_constants.phase_centre_ra_rad; //TODO(cgray): dlm_ra is not a constant
@@ -235,7 +235,7 @@ namespace cpu
         LOG(trace) << "dd: " << pretty_matrix(m_dd);
     }
 
-    bool MetaData::operator==(const MetaData& rhs) const
+    bool LeapData::operator==(const LeapData& rhs) const
     {
         return m_constants == rhs.m_constants
         && m_UVW == rhs.m_UVW

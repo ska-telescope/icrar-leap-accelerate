@@ -26,7 +26,7 @@
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
 
 #include <icrar/leap-accelerate/common/constants.h>
-#include <icrar/leap-accelerate/model/cpu/MetaData.h>
+#include <icrar/leap-accelerate/model/cpu/LeapData.h>
 
 #include <icrar/leap-accelerate/cuda/device_vector.h>
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
@@ -96,12 +96,12 @@ namespace cuda
         const device_vector<int>& GetI1() const { return m_I1; }
         const device_matrix<double>& GetAd1() const { return m_Ad1; }
 
-        void ToHost(icrar::cpu::MetaData& host) const;
-        void ToHostAsync(icrar::cpu::MetaData& host) const;
+        void ToHost(icrar::cpu::LeapData& host) const;
+        void ToHostAsync(icrar::cpu::LeapData& host) const;
     };
 
     /**
-     * @brief MetaData Variables allocated per direction
+     * @brief LeapData Variables allocated per direction
      * 
      */
     class DirectionBuffer
@@ -145,34 +145,34 @@ namespace cuda
     };
 
     /**
-     * Represents the complete collection of MetaData that
+     * Represents the complete collection of LeapData that
      * resides on the GPU for leap-calibration
      */
-    class DeviceMetaData
+    class DeviceLeapData
     {
         std::shared_ptr<ConstantBuffer> m_constantBuffer; // Constant buffer, never null
         std::shared_ptr<DirectionBuffer> m_directionBuffer;
 
     public:
-        DeviceMetaData(DeviceMetaData&& other) noexcept = default;
-        DeviceMetaData& operator=(DeviceMetaData&& other) noexcept = default;
+        DeviceLeapData(DeviceLeapData&& other) noexcept = default;
+        DeviceLeapData& operator=(DeviceLeapData&& other) noexcept = default;
 
         /**
-         * @brief Construct a new Device MetaData object from the equivalent object on CPU memory. This copies to
+         * @brief Construct a new Device LeapData object from the equivalent object on CPU memory. This copies to
          * all device buffers
          * 
-         * @param metadata 
+         * @param leapData 
          */
-        explicit DeviceMetaData(const icrar::cpu::MetaData& metadata);
+        explicit DeviceLeapData(const icrar::cpu::LeapData& leapData);
         
         /**
-         * @brief Construct a new Device MetaData object from the equivalent object on CPU memory. This copies to
+         * @brief Construct a new Device LeapData object from the equivalent object on CPU memory. This copies to
          * all device buffers
          * 
          * @param constantBuffer 
          * @param directionBuffer 
          */
-        DeviceMetaData(
+        DeviceLeapData(
             std::shared_ptr<ConstantBuffer> constantBuffer,
             std::shared_ptr<DirectionBuffer> directionBuffer);
 
@@ -187,10 +187,10 @@ namespace cuda
 
         void SetAvgData(int v);
 
-        void ToHost(icrar::cpu::MetaData& host) const;
-        icrar::cpu::MetaData ToHost() const;
+        void ToHost(icrar::cpu::LeapData& host) const;
+        icrar::cpu::LeapData ToHost() const;
         
-        void ToHostAsync(icrar::cpu::MetaData& host) const;
+        void ToHostAsync(icrar::cpu::LeapData& host) const;
     };
 }
 }

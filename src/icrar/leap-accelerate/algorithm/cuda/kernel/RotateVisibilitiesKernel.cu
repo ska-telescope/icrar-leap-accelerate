@@ -53,9 +53,9 @@ namespace cuda
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 4>> integrationData,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> rotAvgVis);
 
-    __host__ void RotateVisibilities(DeviceIntegration& integration, DeviceMetaData& metadata)
+    __host__ void RotateVisibilities(DeviceIntegration& integration, DeviceLeapData& leapData)
     {
-        const auto& constants = metadata.GetConstants(); 
+        const auto& constants = leapData.GetConstants(); 
         assert(constants.num_pols == integration.GetNumPolarizations());
         assert(constants.channels == integration.GetNumChannels());
         assert(constants.nbaselines == integration.GetNumBaselines());
@@ -69,9 +69,9 @@ namespace cuda
         );
 
         auto rotAvgVisMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>>(
-            reinterpret_cast<cuDoubleComplex*>(metadata.GetAvgData().Get()),
-            static_cast<int>(metadata.GetAvgData().GetRows()), // inferring (const int) causes error
-            static_cast<int>(metadata.GetAvgData().GetCols()) // inferring (const int) causes error
+            reinterpret_cast<cuDoubleComplex*>(leapData.GetAvgData().Get()),
+            static_cast<int>(leapData.GetAvgData().GetRows()), // inferring (const int) causes error
+            static_cast<int>(leapData.GetAvgData().GetCols()) // inferring (const int) causes error
         );
 
         const auto UVWMap = Eigen::TensorMap<const Eigen::Tensor<double, 3>>(
@@ -89,7 +89,7 @@ namespace cuda
         );
         g_RotateVisibilities<<<gridSize, blockSize>>>(
             constants,
-            metadata.GetDD(),
+            leapData.GetDD(),
             UVWMap,
             integrationDataMap,
             rotAvgVisMap);

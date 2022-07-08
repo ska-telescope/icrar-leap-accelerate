@@ -45,10 +45,10 @@ set(sources
     math/cpu/eigen_extensions.cc
 
     model/cpu/Integration.cc
-    model/cpu/MetaData.cc
+    model/cpu/LeapData.cc
     model/cpu/calibration/Calibration.cc
     model/cpu/calibration/BeamCalibration.cc
-    model/cuda/DeviceMetaData.cc
+    model/cuda/DeviceLeapData.cc
 
     algorithm/LeapCalibratorFactory.cc
     algorithm/cpu/CpuLeapCalibrator.cc
