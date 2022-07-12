@@ -306,8 +306,6 @@ namespace icrar
         uint32_t intervalTimesteps,
         Slice polarizationSlice) const
     {
-        // See https://github.com/OxfordSKA/OSKAR/blob/f018c03bb34c16dcf8fb985b46b3e9dc1cf0812c/oskar/ms/src/oskar_ms_read.cpp
-        
         int32_t nPolarizations = GetNumPols();
         Range<int32_t> polarizationRange = polarizationSlice.Evaluate(nPolarizations);
         return ReadVis(startTimestep, intervalTimesteps, polarizationRange, "DATA");

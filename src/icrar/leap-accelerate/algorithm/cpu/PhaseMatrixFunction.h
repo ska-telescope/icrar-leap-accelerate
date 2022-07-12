@@ -32,16 +32,17 @@ namespace icrar
 namespace cpu
 {
     /**
-     * @brief Form Phase Matrix
-     * Given the antenna lists from MS and (optionally) RefAnt & Map:
+     * @brief Generate Phase Matrix
+     * Given the antenna lists from an MS and (optionally) reference antenna and antenna flags:
      * If non-negative RefAnt is provided it only forms the matrix for baselines with that antenna.
      * If True Map is provided it returns the index map for the matrix (only useful if RefAnt set).
      *
      * This function generates and returns the linear matrix for the phase calibration (only)
      * @param a1 indexes of 1st antenna of each baselines
      * @param a2 indexes of 2nd antenna of each baselines
-     * @param refAnt the reference antenna (0, 1), -1 
+     * @param refAnt the reference antenna index
      * @param fg a flag map of flagged stations to ignore when true
+     * @param allBaselines whether to generate phase matrix for all baselines or just ones with reference antenna 
      * @return std::pair<Matrixd, Matrixi>
      * for refAnt = none: first matrix is of size [baselines,stations] and seconds of size[baselines,1]
      * for 0 <= refAnt < stations: first matrix is of size [stations,stations] and seconds of size[stations,1]

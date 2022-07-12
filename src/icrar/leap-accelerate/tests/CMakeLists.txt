@@ -61,7 +61,6 @@ if(CUDA_ENABLED)
     configure_clang_cuda_compiler(${TEST_TARGET_NAME})
   else()
     configure_nvcc_cuda_compiler(${TEST_TARGET_NAME})
-    configure_cuda_warnings(${TEST_TARGET_NAME})
   endif()
 endif()
 

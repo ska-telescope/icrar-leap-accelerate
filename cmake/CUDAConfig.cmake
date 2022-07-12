@@ -16,26 +16,14 @@ function(configure_nvcc_cuda_compiler TARGET_NAME)
   #set_target_properties(${TARGET_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
   #set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-  if(CMAKE_CUDA_ARCHITECTURES STREQUAL "")
-    # Statically compile all compatible compute shaders
-    set(CUDA_LEVEL_60 1)
-    set(CUDA_LEVEL_61 1)
-    set(CUDA_LEVEL_70 1)
-    set(CUDA_LEVEL_72 1)
-    set(CUDA_LEVEL_75 1)
-    set(CUDA_LEVEL_80 1)
-    set(CUDA_LEVEL_86 1)
-  else()
-    # Read specified shader models to compile. This speeds up compile time for development
-    list(FIND CMAKE_CUDA_ARCHITECTURES "60" CUDA_LEVEL_60)
-    list(FIND CMAKE_CUDA_ARCHITECTURES "61" CUDA_LEVEL_61)
-    list(FIND CMAKE_CUDA_ARCHITECTURES "70" CUDA_LEVEL_70)
-    list(FIND CMAKE_CUDA_ARCHITECTURES "72" CUDA_LEVEL_72)
-    list(FIND CMAKE_CUDA_ARCHITECTURES "75" CUDA_LEVEL_75)
-    list(FIND CMAKE_CUDA_ARCHITECTURES "80" CUDA_LEVEL_80)
-    list(FIND CMAKE_CUDA_ARCHITECTURES "86" CUDA_LEVEL_86)
-  endif()
-
+  # Read specified shader models to compile. This speeds up compile time for development
+  list(FIND CMAKE_CUDA_ARCHITECTURES "60" CUDA_LEVEL_60)
+  list(FIND CMAKE_CUDA_ARCHITECTURES "61" CUDA_LEVEL_61)
+  list(FIND CMAKE_CUDA_ARCHITECTURES "70" CUDA_LEVEL_70)
+  list(FIND CMAKE_CUDA_ARCHITECTURES "72" CUDA_LEVEL_72)
+  list(FIND CMAKE_CUDA_ARCHITECTURES "75" CUDA_LEVEL_75)
+  list(FIND CMAKE_CUDA_ARCHITECTURES "80" CUDA_LEVEL_80)
+  list(FIND CMAKE_CUDA_ARCHITECTURES "86" CUDA_LEVEL_86)
   if(CUDA_LEVEL_60 GREATER_EQUAL 0 AND CUDAToolkit_VERSION VERSION_GREATER_EQUAL "8")
     target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode=arch=compute_60,code=sm_60>)
     list(APPEND CUDA_GEN_ARCH "compute_60")
@@ -83,22 +71,4 @@ function(configure_clang_cuda_compiler TARGET_NAME)
   target_compile_features(${TARGET_NAME} PUBLIC cxx_std_14)
   set_target_properties(${TARGET_NAME} PROPERTIES CUDA_STANDARD 14)
   target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--cuda-gpu-arch=sm_80>)
-endfunction()
-
-# Configure Cuda Warning Options
-function(configure_cuda_warnings TARGET_NAME)
-  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --display_error_number>)
-  if(CUDAToolkit_VERSION VERSION_GREATER_EQUAL "9.0")
-    # 2829 annotation on a defaulted function is ignored
-    target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=2829">)
-  endif()
-  if(CUDAToolkit_VERSION VERSION_GREATER_EQUAL "10.0")
-    # 3057 annotation is ignored on a function that is explicitly defaulted
-    # 2929 annotation is ignored on a function that is explicitly defaulted
-    target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=3057,2929">)
-  endif()
-  if(CUDAToolkit_VERSION VERSION_GREATER_EQUAL "11.1")
-    # 20012 annotation is ignored on a function that is explicitly defaulted
-    target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=20012">)
-  endif()
 endfunction()

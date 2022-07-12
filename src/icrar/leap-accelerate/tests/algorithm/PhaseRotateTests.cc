@@ -165,7 +165,11 @@ namespace icrar
             ASSERT_EQCD(-778.460481562931 + -50.3643060622548i, metadataOutput.GetAvgData()(1), TOLERANCE);
         }
 
-        void CalibrateTest(ComputeImplementation impl, const ComputeOptionsDTO computeOptions, const Slice solutionInterval, std::function<cpu::CalibrationCollection()> getExpected)
+        void CalibrateTest(
+            ComputeImplementation impl,
+            const ComputeOptionsDTO computeOptions,
+            const Slice solutionInterval,
+            std::function<cpu::CalibrationCollection()> getExpected)
         {
             auto metadata = icrar::cpu::MetaData(*ms);
             std::vector<icrar::SphericalDirection> directions =
@@ -185,7 +189,8 @@ namespace icrar
                 calibrationsVector.push_back(cal);
             };
             
-            if(computeOptions.isFileSystemCacheEnabled.is_initialized() && computeOptions.isFileSystemCacheEnabled.get())
+            if(computeOptions.isFileSystemCacheEnabled.is_initialized()
+            && computeOptions.isFileSystemCacheEnabled.get())
             {
                 // Write cache
                 LeapCalibratorFactory::Create(impl)->Calibrate(

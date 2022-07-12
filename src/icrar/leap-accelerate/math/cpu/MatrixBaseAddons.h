@@ -128,12 +128,12 @@ Matrix<OtherIndex, Dynamic, 1> wrap_indices(const Matrix<OtherIndex, Dynamic, 1>
 template<typename OtherIndex>
 inline auto wrapped_row_select(const Matrix<OtherIndex, Dynamic, 1>& rowIndices) const
 {
-    return this->operator()(wrap_indices(rowIndices), Eigen::all);
+    return this->operator()(wrap_indices(rowIndices), Eigen::placeholders::all);
 }
 template<typename OtherIndex>
 inline auto wrapped_row_select(const Matrix<OtherIndex, Dynamic, 1>& rowIndices)
 {
-    return this->operator()(wrap_indices(rowIndices), Eigen::all);
+    return this->operator()(wrap_indices(rowIndices), Eigen::placeholders::all);
 }
 
 /**
