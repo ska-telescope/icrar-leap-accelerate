@@ -157,5 +157,4 @@ namespace icrar
 
     TEST_F(IntegrationTests, DISABLED_TestMeasurementSet) { TestMeasurementSet(); }
     TEST_F(IntegrationTests, TestReadFromFile) { TestReadFromFile(); }
-    TEST_F(IntegrationTests, DISABLED_TestCudaBufferCopy) { TestCudaBufferCopy(); }
 } // namespace icrar
