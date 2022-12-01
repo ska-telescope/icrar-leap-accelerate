@@ -4,9 +4,27 @@
 [submodule "eigen-3.3.90"]
 	path = external/eigen-3.3.90
 	url = https://gitlab.com/libeigen/eigen.git
+[submodule "eigen-3.4.90"]
+	path = external/eigen-3.4.90
+	url = https://gitlab.com/libeigen/eigen.git
 [submodule "rapidjson-1.1.0"]
 	path = external/rapidjson-1.1.0
 	url = https://github.com/Tencent/rapidjson.git
+[submodule "gtest-1.8.1"]
+	path = external/gtest-1.8.1
+	url = https://github.com/google/googletest.git
 [submodule "gtest-1.11.0"]
 	path = external/gtest-1.11.0
 	url = https://github.com/google/googletest.git
+[submodule "sycl-blas"]
+	path = external/sycl-blas
+	url = https://github.com/codeplaysoftware/sycl-blas.git
+[submodule "sycl-ml"]
+	path = external/sycl-ml
+	url = https://github.com/codeplaysoftware/sycl-ml.git
+[submodule "xtensor-0.23.10"]
+	path = external/xtensor-0.23.10
+	url = https://github.com/xtensor-stack/xtensor.git
+[submodule "xtl-0.7.2"]
+	path = external/xtl-0.7.2
+	url = https://github.com/xtensor-stack/xtl.git

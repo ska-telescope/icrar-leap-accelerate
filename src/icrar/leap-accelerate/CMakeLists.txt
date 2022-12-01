@@ -123,12 +123,12 @@ if(HIPSYCL_ENABLED)
   add_sycl_to_target(TARGET ${TARGET_NAME} SOURCES ${sources})
 endif()
 
-set_target_properties(${TARGET_NAME}
-  PROPERTIES
-  ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-  LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
+# set_target_properties(${TARGET_NAME}
+#   PROPERTIES
+#   ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+#   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+#   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+# )
 
 if(USE_PCH)
   target_precompile_headers(${TARGET_NAME}
@@ -232,17 +232,6 @@ install(
   DESTINATION
     include/icrar/${SOLUTION_NAME_LOWER}
 )
-
-# TODO: Developer Use
-# Move python dll
-add_custom_target(${TARGET_NAME}.DynLib ALL
-  COMMAND ${CMAKE_COMMAND}
-  -Dsrc_dir=${PROJECT_BINARY_DIR}/lib
-  -Ddst_dir=${PROJECT_SOURCE_DIR}/python/leap-accelerate-python
-  -P ${PROJECT_SOURCE_DIR}/cmake/update_directory.cmake
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
-add_dependencies(${TARGET_NAME}.DynLib ${TARGET_NAME})
 
 unset(CASA_ENABLED CACHE)
 unset(GSL_ENABLED CACHE)

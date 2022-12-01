@@ -20,6 +20,12 @@ log/
 *.so
 *.hash
 *.cache
+*.egg-info/
+dist/
+build/
+__pycache__/
+setup.py
+
 
 # Eclipse IDE files
 .project
