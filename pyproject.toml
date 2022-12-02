@@ -11,7 +11,7 @@ license = "GPLv2"
 name = "leap"
 readme = "README.md"
 build = "build.py"
-version = "0.12.0"
+version = "0.13.0"
 packages = [
     { include = "leap" }
 ]

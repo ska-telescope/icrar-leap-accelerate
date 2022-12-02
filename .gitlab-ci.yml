@@ -79,7 +79,7 @@ variables:
 
 .complete_build_dependencies:
   extends: .common
-  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.12.3
+  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.13.0
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
@@ -102,7 +102,7 @@ variables:
 
 .lint_build_dependencies:
   extends: .common
-  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.12.3
+  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.13.0
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
@@ -129,7 +129,7 @@ variables:
 
 .complete_test_dependencies:
   extends: .common
-  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.12.3
+  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.13.0
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
