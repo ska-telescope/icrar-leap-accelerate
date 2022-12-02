@@ -24,8 +24,9 @@
 
 #include "PyLeapCalibrator.h"
 #include "PyMeasurementSet.h"
-
 #include "async.h"
+
+#include <icrar/leap-accelerate/core/log/logging.h>
 
 #include <Eigen/Core>
 #include <unsupported/Eigen/CXX11/Tensor>

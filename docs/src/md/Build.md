@@ -1,6 +1,6 @@
 # Compiling from Source
 
-leap-accelerate compilation is compatible with g++ and clang++ on debian or ubuntu. Support for compiling on other operating systems is currently experimental.
+leap-accelerate compilation is compatible with g++ and clang++ on debian or ubuntu. Support for macOS is currently experimental.
 
 ## Binaries
 
@@ -75,7 +75,7 @@ NOTE: pulling exernal submodules is now automated by CMake. When downloading the
 
 With tracing to file:
 
-`cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCUDA_ENABLED=TRUE -DTRACE=ON -DCMAKE_BUILD_TYPE=Debug`
+`cmake -B build/Debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCUDA_ENABLED=TRUE -DTRACE=ON`
 
 With gcovr analysis:
 

@@ -48,7 +48,9 @@ set(sources
     model/cpu/calibration/Calibration.cc
     model/cpu/calibration/BeamCalibration.cc
     model/cuda/DeviceLeapData.cc
+    model/cuda/DeviceIntegration.cc
 
+    algorithm/Calibrate.cc
     algorithm/LeapCalibratorFactory.cc
     algorithm/cpu/CpuLeapCalibrator.cc
     algorithm/cpu/PhaseMatrixFunction.cc

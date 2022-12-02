@@ -24,6 +24,7 @@
 
 #include "PyLeapCalibrator.h"
 #include "PyMeasurementSet.h"
+#include <icrar/leap-accelerate/core/log/logging.h>
 
 #include <future>
 
@@ -64,7 +65,7 @@ namespace python
         auto output = std::vector<SphericalDirection>();
         for(int64_t row = 0; row < directions.rows(); ++row)
         {
-            output.push_back(directions(row, Eigen::all));
+            output.push_back(directions(row, Eigen::placeholders::all));
         }
         return output;
     }
