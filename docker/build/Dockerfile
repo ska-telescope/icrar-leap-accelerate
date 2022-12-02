@@ -11,7 +11,7 @@ RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86
 
 
 RUN DEBIAN_FRONTEND=noninteractive apt -y --no-install-recommends install \
-    cuda-minimal-build-11-2 cuda-libraries-dev-11-7 &&\
+    cuda-minimal-build-11-7 cuda-libraries-dev-11-7 &&\
     ln -s /usr/local/cuda-11.7 /usr/local/cuda &&\
     ln -s /usr/local/cuda/targets/x86_64-linux/lib /usr/local/cuda/lib &&\
     ln -s /usr/local/cuda/targets/x86_64-linux/include /usr/local/cuda/include
