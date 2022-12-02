@@ -4,20 +4,19 @@
  * Copyright by UWA(in the framework of the ICRAR)
  * All rights reserved
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111 - 1307  USA
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #ifdef CUDA_ENABLED
@@ -51,11 +50,15 @@
 
 namespace icrar
 {
+    /**
+     * @brief Tests cuda matrix functions that are decorated with eigen interfaces and automatic cpu-gpu
+     * data transfer.
+     */
     class CudaMatrixEigenTests : public testing::Test
     {
         double TOLERANCE = 1e-10;
-        cublasHandle_t m_cublasContext;
-        cusolverDnHandle_t m_cusolverDnContext;
+        cublasHandle_t m_cublasContext = {};
+        cusolverDnHandle_t m_cusolverDnContext = {};
 
     public:
         void SetUp() override
@@ -63,7 +66,7 @@ namespace icrar
             // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
             int deviceCount = 0;
             checkCudaErrors(cudaGetDeviceCount(&deviceCount));
-            ASSERT_EQ(1, deviceCount);
+            ASSERT_GE(deviceCount, 1);
 
             checkCudaErrors(cublasCreate(&m_cublasContext));
             checkCudaErrors(cusolverDnCreate(&m_cusolverDnContext));
@@ -252,7 +255,7 @@ namespace icrar
             casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
             Eigen::MatrixXd A;
             Eigen::MatrixXi I;
-            std::tie(A, I) = cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), ms.GetFilteredBaselines(0.0), true, 0);
+            std::tie(A, I) = cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), ms.GetFilteredBaselines(0.0), 0, true);
 
             Eigen::MatrixXd Ad = icrar::cuda::pseudo_inverse(m_cusolverDnContext, m_cublasContext, A, cuda::JobType::S);
 

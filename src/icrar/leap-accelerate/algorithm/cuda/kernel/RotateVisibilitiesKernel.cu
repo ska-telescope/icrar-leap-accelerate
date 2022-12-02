@@ -4,20 +4,19 @@
  * Copyright by UWA(in the framework of the ICRAR)
  * All rights reserved
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111 - 1307  USA
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #include "RotateVisibilitiesKernel.h"
@@ -25,6 +24,7 @@
 #include <icrar/leap-accelerate/math/cpu/math.h>
 #include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 
+// Note: older sm architectures do not support atomic add
 
 namespace icrar
 {
@@ -47,9 +47,9 @@ namespace cuda
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 4>> integrationData,
         Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>> rotAvgVis);
 
-    __host__ void RotateVisibilities(DeviceIntegration& integration, DeviceMetaData& metadata)
+    __host__ void RotateVisibilities(DeviceIntegration& integration, DeviceLeapData& leapData)
     {
-        const auto& constants = metadata.GetConstants(); 
+        const auto& constants = leapData.GetConstants(); 
         assert(constants.num_pols == integration.GetNumPolarizations());
         assert(constants.channels == integration.GetNumChannels());
         assert(constants.nbaselines == integration.GetNumBaselines());
@@ -63,9 +63,9 @@ namespace cuda
         );
 
         auto rotAvgVisMap = Eigen::TensorMap<Eigen::Tensor<cuDoubleComplex, 2>>(
-            reinterpret_cast<cuDoubleComplex*>(metadata.GetAvgData().Get()),
-            static_cast<int>(metadata.GetAvgData().GetRows()), // inferring (const int) causes error
-            static_cast<int>(metadata.GetAvgData().GetCols()) // inferring (const int) causes error
+            reinterpret_cast<cuDoubleComplex*>(leapData.GetAvgData().Get()),
+            static_cast<int>(leapData.GetAvgData().GetRows()), // inferring (const int) causes error
+            static_cast<int>(leapData.GetAvgData().GetCols()) // inferring (const int) causes error
         );
 
         const auto UVWMap = Eigen::TensorMap<const Eigen::Tensor<double, 3>>(
@@ -83,7 +83,7 @@ namespace cuda
         );
         g_RotateVisibilities<<<gridSize, blockSize>>>(
             constants,
-            metadata.GetDD(),
+            leapData.GetDD(),
             UVWMap,
             integrationDataMap,
             rotAvgVisMap);

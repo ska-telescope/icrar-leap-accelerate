@@ -63,7 +63,7 @@ variables:
   - export LIBRARY_PATH=$LIBRARY_PATH:${CUDA_HOME}/lib64/stubs
 
 .common:
-  tags: [engageska, docker]
+  tags: [k8srunner, docker]
 
 .minimal_build_dependencies:
   extends: .common
@@ -79,7 +79,7 @@ variables:
 
 .complete_build_dependencies:
   extends: .common
-  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.12.0
+  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.12.3
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
@@ -102,7 +102,7 @@ variables:
 
 .lint_build_dependencies:
   extends: .common
-  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.12.0
+  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.12.3
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
@@ -127,6 +127,20 @@ variables:
     - *project_packages
     - *src_dir_ref_replacement
 
+.complete_test_dependencies:
+  extends: .common
+  image: $CAR_OCI_REGISTRY_HOST/icrar-leap-accelerate-build:0.12.3
+  variables:
+    DEBIAN_FRONTEND: "noninteractive"
+    CUDA_ENABLED: "ON"
+  before_script: &cuda_test_dependencies
+    - apt update
+    - *generator_packages
+    - *project_packages
+    - *python_packages
+    - *cuda_variables
+    - *src_dir_ref_replacement
+
 .lint_dependencies:
   extends: .complete_build_dependencies
   before_script:
@@ -139,8 +153,8 @@ variables:
 
 stages:
   - build
-  - linting
   - test
+  - lint
   - deploy
 
 ########
@@ -249,77 +263,6 @@ build_daliuge_palette:
    - git push
 
 #######
-# Lint
-#######
-
-.lint_clang_tidy:
-  stage: linting
-  script:
-    - cd build
-
-    # This filters out external source file dependencies such as gtest
-    - jq '[ . - map(select(.file | contains("/external/"))) | .[] ]' compile_commands.json | sponge compile_commands.json
-
-    - pip3 install pyyaml
-    - python3 -u /usr/bin/run-clang-tidy-11.py -quiet 2>&1 | tee clang-tidy.log || FAILED=true
-    - cd ..
-    - cat build/clang-tidy.log | python3 .clang-tidy-to-junit.py $PWD/ clang-tidy > build/clang-tidy-junit.xml
-    - if [ $FAILED ]; then exit 1; fi
-  allow_failure: true
-  artifacts:
-    when: always
-    paths:
-      - build
-    reports:
-      junit: build/clang-tidy-junit.xml
-
-lint_clang_tidy:
-  extends: [.lint_dependencies, .lint_clang_tidy]
-  needs: ["build_export_compile_commands"]
-
-.lint_iwyu:
-  stage: linting
-  script:
-    - iwyu_tool -j 2 -p ./build -- -Xiwyu --transitive_includes_only 2>&1 | tee build/iwyu.log
-    - cat build/iwyu.log | python3 .clang-tidy-to-junit.py $PWD/ iwyu > build/iwyu-junit.xml
-  allow_failure: true
-  artifacts:
-    when: always
-    paths:
-      - build
-    reports:
-      junit: build/iwyu-junit.xml
-
-lint_iwyu:
-  extends: [.lint_dependencies, .lint_iwyu]
-  needs: ["build_export_compile_commands"]
-
-.lint_cppcheck:
-  stage: linting
-  script:
-    - pip3 install cppcheck-junit
-    - cd build
-    - 'cppcheck
-      --xml-version=2
-      --enable=all
-      --project=compile_commands.json
-      --platform=unix64
-      -q --std=c++14
-      --library=googletest 2>&1 | tee cppcheck.xml'
-    - cppcheck_junit cppcheck.xml cppcheck-junit.xml
-  allow_failure: true
-  artifacts:
-    when: always
-    paths:
-      - build
-    reports:
-      junit: build/cppcheck-junit.xml
-
-lint_cppcheck:
-  extends: [.lint_dependencies, .lint_cppcheck]
-  needs: ["build_export_compile_commands"]
-
-#######
 # Test
 #######
 
@@ -338,20 +281,18 @@ lint_cppcheck:
 test_debug_minimal:
   extends: [.minimal_test_dependencies, .test]
   needs: ["download_testdata", "build_debug_minimal"]
+  tags: [k8srunner]
   variables:
     GTEST_FILTER: "-*Cuda*:*cuda*:*Gpu*:*gpu*:*SKA*"
   script:
     # portable testing
     - export TEST_DATA_DIR=$PWD/testdata
-    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/build/lib
-    - cd build
-    - ctest -T test --no-compress-output --verbose --debug
+    - ctest -T test --test-dir build --no-compress-output --verbose --debug
 
-# Needs cuda enabled runner
 test_debug_all:
-  extends: [.complete_build_dependencies, .test]
+  extends: [.complete_test_dependencies, .test]
   needs: ["download_testdata", "build_debug"]
-  tags: ["cuda", "docker"]
+  tags: ["k8srunner-gpu-v100"]
   variables:
     DEBIAN_FRONTEND: "noninteractive"
     CUDA_ENABLED: "ON"
@@ -360,9 +301,7 @@ test_debug_all:
     - nvidia-smi
     # portable testing
     - export TEST_DATA_DIR=$PWD/testdata
-    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/build/lib
-    - cd build
-    - ctest -T test --no-compress-output --verbose
+    - ctest -T test --test-dir build --no-compress-output --verbose
   timeout: 30m
   allow_failure: true
 
@@ -388,10 +327,13 @@ pages:
   script:
     - apt update && apt install -y curl gcovr moreutils python3-pip jq
     - pip3 install yq
-    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/build/lib
     - mkdir -p build/reports/code-coverage
-    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o build/reports/code-coverage/index.html | sponge gcovr-html.log
-    - gcovr -r ../ -e '.*/external/.*' -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o build/reports/code-coverage.xml | sponge gcovr-xml.log
+    - cd build
+    - gcovr -r ../ --exclude-directories external -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --html --html-details -o reports/code-coverage/index.html | sponge gcovr-html.log
+    - gcovr -r ../ --exclude-directories external -e '.*/CompilerIdCXX/.*' -e '.*/tests/.*' --xml -o reports/code-coverage.xml | sponge gcovr-xml.log
+    - cd ..
+    - cp -r build/reports/code-coverage public
+
   after_script:
     # Combine Linting XML
     - cp build/unit-tests.xml build/reports/unit-tests.xml
@@ -407,18 +349,108 @@ pages:
     - 'xq ".testsuites |= {\"@tests\": .testsuite | map(.\"@tests\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
     - 'xq ".testsuites |= {\"@errors\": .testsuite | map(.\"@errors\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
     - 'xq ".testsuites |= {\"@failures\": .testsuite | map(.\"@failures\" | tonumber) | add }+ ." build/reports/linting.xml --xml-output | sponge build/reports/linting.xml'
+
   artifacts:
     when: always
     paths:
-      - ./build
+      - public
+      - build
     reports:
-      cobertura: build/reports/code-coverage.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: build/reports/code-coverage.xml
   allow_failure: true
 
-# https://gitlab.com/ska-telescope/templates-repository/-/blob/master/gitlab-ci/includes/post_step.yml
+
+# https://gitlab.com/ska-telescope/templates-repository/-/blob/master/gitlab-ci/includes/finaliser.gitlab-ci.yml
 include:
   - project: 'ska-telescope/templates-repository'
-    file: 'gitlab-ci/includes/post_step.yml'
+    file: 'gitlab-ci/includes/finaliser.gitlab-ci.yml'
+
+#######
+# Lint
+#######
+
+.lint_clang_tidy:
+  stage: lint
+  script:
+    - cd build
+
+    # This filters out external source file dependencies such as gtest
+    - jq '[ . - map(select(.file | contains("/external/"))) | .[] ]' compile_commands.json | sponge compile_commands.json
+
+    - pip3 install pyyaml
+    - python3 -u /usr/bin/run-clang-tidy-11.py -quiet 2>&1 | tee clang-tidy.log || FAILED=true
+    - cd ..
+    - cat build/clang-tidy.log | python3 .clang-tidy-to-junit.py $PWD/ clang-tidy > build/clang-tidy-junit.xml
+    - if [ $FAILED ]; then exit 1; fi
+  allow_failure: true
+  artifacts:
+    when: always
+    paths:
+      - build
+    reports:
+      junit: build/clang-tidy-junit.xml
+
+lint_clang_tidy:
+  extends: [.lint_dependencies, .lint_clang_tidy]
+  needs: ["build_export_compile_commands"]
+
+.lint_iwyu:
+  stage: lint
+  script:
+    - iwyu_tool -j 2 -p ./build -- -Xiwyu --transitive_includes_only 2>&1 | tee build/iwyu.log
+    - cat build/iwyu.log | python3 .clang-tidy-to-junit.py $PWD/ iwyu > build/iwyu-junit.xml
+  allow_failure: true
+  artifacts:
+    when: always
+    paths:
+      - build
+    reports:
+      junit: build/iwyu-junit.xml
+
+lint_iwyu:
+  extends: [.lint_dependencies, .lint_iwyu]
+  needs: ["build_export_compile_commands"]
+
+.lint_cppcheck:
+  stage: lint
+  script:
+    - pip3 install cppcheck-junit
+    - cd build
+    - 'cppcheck
+      --xml-version=2
+      --enable=all
+      --project=compile_commands.json
+      --platform=unix64
+      -q --std=c++14
+      --library=googletest 2>&1 | tee cppcheck.xml'
+    - cppcheck_junit cppcheck.xml cppcheck-junit.xml
+  allow_failure: true
+  artifacts:
+    when: always
+    paths:
+      - build
+    reports:
+      junit: build/cppcheck-junit.xml
+
+lint_cppcheck:
+  extends: [.lint_dependencies, .lint_cppcheck]
+  needs: ["build_export_compile_commands"]
+
+lint_docs:
+  extends: .docs_dependencies
+  stage: lint
+  dependencies: []
+  script:
+    - mkdir -p build
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DWERROR=TRUE
+    - make sphinx -j2
+  artifacts:
+    paths:
+      - build
+  allow_failure: true
 
 #########
 # Docker
@@ -427,9 +459,12 @@ include:
 .docker_common:
   image: docker:stable
   tags:
-    - docker-executor
+    - k8srunner
   before_script:
     # - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
+    - apk update
+    - apk upgrade
+    - apk add bash
     - echo $CAR_OCI_REGISTRY_PASSWORD | docker login -u $CAR_OCI_REGISTRY_USERNAME --password-stdin $CAR_OCI_REGISTRY_HOST
     - docker info
 
@@ -446,9 +481,11 @@ docker_ci_build_deploy:
     #  * "latest" when building the master branch
     #  * Other branches do not yield a docker image
     - IMAGE_NAME=icrar-leap-accelerate-build
-    - docker build -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG ./docker/build
+    - echo Metadata labels will be
+    - bash ./docker/build/docker-build.sh $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG ./docker/build
+    # - docker build -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG ./docker/build
     - docker tag $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:latest
-    - docker push $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME
+    - docker push $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG
 
 docker_build:
   stage: build
@@ -463,13 +500,13 @@ docker_build:
     #  * Other branches do not yield a docker image
     - IMAGE_NAME=icrar-leap-accelerate
     - BRANCH=${CI_COMMIT_TAG:-${CI_COMMIT_BRANCH}}
-    - DOCKER_TAG=${BRANCH##v}
+    # - DOCKER_TAG=${BRANCH##v}
+    - DOCKER_TAG=$(cat version.txt)
+    - bash ./docker/build/docker-build.sh $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG .
     - >
       if [ "$CI_COMMIT_BRANCH" = master ]; then
-        DOCKER_TAG=latest
+        docker tag $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:latest
       fi
-    - >
-      docker build -t $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG .
     - docker save $CAR_OCI_REGISTRY_HOST/$IMAGE_NAME:$DOCKER_TAG > docker_image.tar
   artifacts:
     paths:
@@ -480,6 +517,7 @@ docker_publish:
   stage: deploy
   extends: .docker_common
   needs: [docker_build]
+  when: manual
   only:
     - tags
     - master

@@ -4,20 +4,19 @@
  * Copyright by UWA(in the framework of the ICRAR)
  * All rights reserved
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111 - 1307  USA
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #include <gtest/gtest.h>
@@ -86,7 +85,7 @@ namespace icrar
             Eigen::VectorXi v(5);
             v << 0, 1, 2, 3, 4;
             auto vr = v(v.numpy(-1,0,-1));
-            ASSERT_MEQI(v(Eigen::seq(Eigen::last, 0, -1)), vr, 0);
+            ASSERT_MEQI(v(Eigen::seq(Eigen::placeholders::last, 0, -1)), vr, 0);
             ASSERT_MEQI(v.reverse(), vr, 0);
 
             Eigen::MatrixXi m(2,3);
@@ -94,7 +93,7 @@ namespace icrar
             0, 1, 2,
             3, 4, 5;
             auto mr = m(m.numpy_rows(-1,0,-1), m.numpy_cols(-1,0,-1));
-            ASSERT_MEQI(m(Eigen::seq(Eigen::last, 0, -1), Eigen::seq(Eigen::last, 0, -1)), mr, 0);
+            ASSERT_MEQI(m(Eigen::seq(Eigen::placeholders::last, 0, -1), Eigen::seq(Eigen::placeholders::last, 0, -1)), mr, 0);
             ASSERT_MEQI(m.reverse(), mr, 0);
         }
     };

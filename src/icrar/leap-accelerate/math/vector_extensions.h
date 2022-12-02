@@ -4,20 +4,19 @@
  * Copyright by UWA(in the framework of the ICRAR)
  * All rights reserved
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111 - 1307  USA
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #pragma once
@@ -49,7 +48,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
         { 
             os << ", ";
         }
-    } 
+    }
     os << "}\n"; 
     return os;
 }
@@ -139,23 +138,27 @@ namespace icrar
     }
 
     /**
-     * @brief Performs a std::transform into a newly allocated std::vector
+     * @brief Performs a std::transform on a collection into a
+     * newly allocated std::vector
      * 
-     * @tparam T The input vector template type
-     * @tparam Op function of signature R(const T&)
-     * @param vector vector to transform
-     * @param lambda transformation of signature R(const T&)
-     * @return mapped vector
+     * @tparam Func function of signature return_type(const value_type&)
+     * @tparam Seq iterable collection of type value_type
+     * @param func transformation function
+     * @param seq iterable collection to transform
+     * @return std::vector<value_type>
      */
-    template<typename T, typename Op>
-    auto vector_map(const std::vector<T>& vector, Op lambda)
+    template <typename Func, typename Seq>
+    auto vector_map(Func func, const Seq& seq)
     {
-        using R = std::result_of_t<Op(const T&)>;
-        static_assert(std::is_assignable<std::function<R(const T&)>, Op>::value, "lambda argument must be a function of signature R(const T&)");
+        using value_type = typename Seq::value_type;
+        using return_type = std::result_of_t<Func(const value_type&)>;
+        static_assert(
+            std::is_assignable<std::function<return_type(const value_type&)>, Func>::value,
+            "func argument must have a functor of signature return_type(const value_type&)");
 
-        auto result = std::vector<R>();
-        result.reserve(vector.size());
-        std::transform(vector.cbegin(), vector.cend(), std::back_inserter(result), lambda);
+        std::vector<return_type> result;
+        result.reserve(seq.size());
+        std::transform(seq.cbegin(), seq.cend(), std::back_inserter(result), func);
         return result;
     }
 } // namespace icrar

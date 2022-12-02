@@ -4,20 +4,19 @@
  * Copyright by UWA(in the framework of the ICRAR)
  * All rights reserved
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111 - 1307  USA
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #ifdef CUDA_ENABLED
@@ -35,8 +34,8 @@
 #include <icrar/leap-accelerate/algorithm/cuda/kernel/CopyPhaseDeltaKernel.h>
 
 #include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
-#include <icrar/leap-accelerate/model/cuda/HostMetaData.h>
-#include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
+#include <icrar/leap-accelerate/model/cuda/HostLeapData.h>
+#include <icrar/leap-accelerate/model/cuda/DeviceLeapData.h>
 #include <icrar/leap-accelerate/model/cuda/HostIntegration.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
 
@@ -150,7 +149,7 @@ namespace cuda
         std::vector<double> epochs = ms.GetEpochs();
         
         profiling::timer metadata_read_timer;
-        auto metadata = icrar::cuda::HostMetaData(
+        auto leapData = icrar::cuda::HostLeapData(
             ms,
             referenceAntenna,
             minimumBaselineThreshold,
@@ -158,28 +157,28 @@ namespace cuda
             false);
 
         device_matrix<double> deviceA, deviceAd;
-        CalculateAd(metadata, deviceA, deviceAd,
+        CalculateAd(leapData, deviceA, deviceAd,
             cudaComputeOptions.isFileSystemCacheEnabled,
             cudaComputeOptions.useCusolver);
 
         device_matrix<double> deviceA1, deviceAd1;
-        CalculateAd1(metadata, deviceA1, deviceAd1);
+        CalculateAd1(leapData, deviceA1, deviceAd1);
 
         auto constantBuffer = std::make_shared<ConstantBuffer>(
-            metadata.GetConstants(),
+            leapData.GetConstants(),
             std::move(deviceA),
-            device_vector<int>(metadata.GetI()),
+            device_vector<int>(leapData.GetI()),
             std::move(deviceAd),
             std::move(deviceA1),
-            device_vector<int>(metadata.GetI1()),
+            device_vector<int>(leapData.GetI1()),
             std::move(deviceAd1)
         );
 
         auto directionBuffer = std::make_shared<DirectionBuffer>(
-                metadata.GetAvgData().rows(),
-                metadata.GetAvgData().cols());
-        auto deviceMetadata = DeviceMetaData(constantBuffer, directionBuffer);
-        LOG(info) << "Metadata loaded in " << metadata_read_timer;
+                leapData.GetAvgData().rows(),
+                leapData.GetAvgData().cols());
+        auto deviceLeapData = DeviceLeapData(constantBuffer, directionBuffer);
+        LOG(info) << "leapData loaded in " << metadata_read_timer;
 
         auto solutions = boost::numeric_cast<uint32_t>(validatedSolutionInterval.GetSize());
         constexpr uint32_t integrationNumber = 0;
@@ -222,10 +221,10 @@ namespace cuda
             for(size_t i = 0; i < directions.size(); ++i)
             {
                 LOG(info) << "Processing direction " << i;
-                LOG(info) << "Setting Metadata Direction";
+                LOG(info) << "Setting leapData Direction";
                 
                 directionBuffer->SetDirection(directions[i]);
-                directionBuffer->SetDD(metadata.GenerateDDMatrix(directions[i]));
+                directionBuffer->SetDD(leapData.GenerateDDMatrix(directions[i]));
                 directionBuffer->GetAvgData().SetZeroAsync();
                 checkCudaErrors(cudaGetLastError());
 
@@ -242,8 +241,8 @@ namespace cuda
                 LOG(info) << "PhaseRotate";
                 checkCudaErrors(cudaGetLastError());
                 PhaseRotate(
-                    metadata,
-                    deviceMetadata,
+                    leapData,
+                    deviceLeapData,
                     directions[i],
                     input_vis,
                     output_calibrations[solution].GetBeamCalibrations());
@@ -261,13 +260,13 @@ namespace cuda
     }
 
     void CudaLeapCalibrator::CalculateAd(
-        HostMetaData& metadata,
+        HostLeapData& leapData,
         device_matrix<double>& deviceA,
         device_matrix<double>& deviceAd,
         bool isFileSystemCacheEnabled,
         bool useCusolver)
     {
-        const Eigen::MatrixXd& hostA = metadata.GetA();
+        const Eigen::MatrixXd& hostA = leapData.GetA();
 
         if(hostA.rows() <= hostA.cols())
         {
@@ -289,24 +288,24 @@ namespace cuda
             {
                 // Load cache into hostAd then deviceAd,
                 // or load hostA into deviceA, compute deviceAd then load into hostAd
-                metadata.SetAd(ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
+                leapData.SetAd(ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
                     hostA,
                     "Ad.cache",
                     invertA));
 
-                deviceAd = device_matrix<double>(metadata.GetAd());
+                deviceAd = device_matrix<double>(leapData.GetAd());
                 deviceA = device_matrix<double>(hostA);
-                if(IsDegenerate(metadata.GetAd() * hostA, 1e-5))
+                if(IsDegenerate(leapData.GetAd() * hostA, 1e-5))
                 {
                     LOG(warning) <<  "Ad is degenerate";
                 }
             }
             else
             {
-                metadata.SetAd(invertA(hostA));
+                leapData.SetAd(invertA(hostA));
                 deviceA = device_matrix<double>(hostA);
 
-                if(!((metadata.GetAd() * hostA).eval()).isDiagonal(1e-10))
+                if(!((leapData.GetAd() * hostA).eval()).isDiagonal(1e-10))
                 {
                     throw icrar::exception("Ad*A is non-diagonal", __FILE__, __LINE__);
                 }
@@ -324,7 +323,7 @@ namespace cuda
 
             if(isFileSystemCacheEnabled)
             {
-                metadata.SetAd(
+                leapData.SetAd(
                     ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
                         hostA,
                         "Ad.cache",
@@ -332,12 +331,12 @@ namespace cuda
             }
             else
             {
-                metadata.SetAd(invertA(hostA));
+                leapData.SetAd(invertA(hostA));
             }
 
-            deviceAd = device_matrix<double>(metadata.GetAd());
+            deviceAd = device_matrix<double>(leapData.GetAd());
             deviceA = device_matrix<double>(hostA);
-            if(IsDegenerate(metadata.GetAd() * hostA, 1e-5))
+            if(IsDegenerate(leapData.GetAd() * hostA, 1e-5))
             {
                 LOG(warning) << "Ad is degenerate";
             }
@@ -345,18 +344,18 @@ namespace cuda
     }
 
     void CudaLeapCalibrator::CalculateAd1(
-        HostMetaData& metadata,
+        HostLeapData& leapData,
         device_matrix<double>& deviceA1,
         device_matrix<double>& deviceAd1)
     {
-        const Eigen::MatrixXd& hostA1 = metadata.GetA1();
-        const Eigen::MatrixXd& hostAd1 = metadata.GetAd1();
+        const Eigen::MatrixXd& hostA1 = leapData.GetA1();
+        const Eigen::MatrixXd& hostAd1 = leapData.GetAd1();
 
         // This matrix is not always m > n, compute on cpu until cuda supports this
         LOG(info) << "Inverting PhaseMatrix A1 with cpu (" << hostA1.rows() << ":" << hostA1.cols() << ")";
         deviceA1 = device_matrix<double>(hostA1);
         
-        metadata.SetAd1(cpu::pseudo_inverse(hostA1));
+        leapData.SetAd1(cpu::pseudo_inverse(hostA1));
 
         deviceAd1 = device_matrix<double>(hostAd1);
         if(IsDegenerate(hostAd1 * hostA1, 1e-5))
@@ -366,27 +365,27 @@ namespace cuda
     }
 
     void CudaLeapCalibrator::PhaseRotate(
-        const HostMetaData& metadata,
-        DeviceMetaData& deviceMetadata,
+        const HostLeapData& leapData,
+        DeviceLeapData& deviceLeapData,
         const SphericalDirection& direction,
         cuda::DeviceIntegration& input,
         std::vector<cpu::BeamCalibration>& output_calibrations)
     {
 
         LOG(info) << "Rotating integration " << input.GetIntegrationNumber();
-        RotateVisibilities(input, deviceMetadata);
+        RotateVisibilities(input, deviceLeapData);
         LOG(info) << "Calibrating in cuda";
-        auto devicePhaseAnglesI1 = device_vector<double>(metadata.GetI1().rows() + 1);
-        auto deviceCal1 = device_vector<double>(metadata.GetA1().cols());
-        auto devicedeltaPhase = device_matrix<double>(metadata.GetI().size(), metadata.GetAvgData().cols());
-        auto deviceDeltaPhaseColumn = device_vector<double>(metadata.GetI().size() + 1);
-        auto cal1 = Eigen::VectorXd(metadata.GetA1().cols());
+        auto devicePhaseAnglesI1 = device_vector<double>(leapData.GetI1().rows() + 1);
+        auto deviceCal1 = device_vector<double>(leapData.GetA1().cols());
+        auto devicedeltaPhase = device_matrix<double>(leapData.GetI().size(), leapData.GetAvgData().cols());
+        auto deviceDeltaPhaseColumn = device_vector<double>(leapData.GetI().size() + 1);
+        auto cal1 = Eigen::VectorXd(leapData.GetA1().cols());
 
-        AvgDataToPhaseAngles(deviceMetadata.GetConstantBuffer().GetI1(), deviceMetadata.GetAvgData(), devicePhaseAnglesI1);
-        cuda::multiply(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd1(), devicePhaseAnglesI1, deviceCal1);
-        CalcDeltaPhase(deviceMetadata.GetConstantBuffer().GetA(), deviceCal1, deviceMetadata.GetAvgData(), devicedeltaPhase);
+        AvgDataToPhaseAngles(deviceLeapData.GetConstantBuffer().GetI1(), deviceLeapData.GetAvgData(), devicePhaseAnglesI1);
+        cuda::multiply(m_cublasContext, deviceLeapData.GetConstantBuffer().GetAd1(), devicePhaseAnglesI1, deviceCal1);
+        CalcDeltaPhase(deviceLeapData.GetConstantBuffer().GetA(), deviceCal1, deviceLeapData.GetAvgData(), devicedeltaPhase);
         GenerateDeltaPhaseColumn(devicedeltaPhase, deviceDeltaPhaseColumn);
-        cuda::multiply_add<double>(m_cublasContext, deviceMetadata.GetConstantBuffer().GetAd(), deviceDeltaPhaseColumn, deviceCal1);
+        cuda::multiply_add<double>(m_cublasContext, deviceLeapData.GetConstantBuffer().GetAd(), deviceDeltaPhaseColumn, deviceCal1);
         deviceCal1.ToHost(cal1);
         output_calibrations.emplace_back(direction, cal1);
     }

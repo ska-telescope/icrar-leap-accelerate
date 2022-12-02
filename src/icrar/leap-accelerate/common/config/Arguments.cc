@@ -4,20 +4,19 @@
  * Copyright by UWA(in the framework of the ICRAR)
  * All rights reserved
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111 - 1307  USA
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #include "Arguments.h"
@@ -116,7 +115,7 @@ namespace icrar
         }
     }
 
-    ArgumentsValidated::ArgumentsValidated(ArgumentsDTO&& cliArgs)
+    Arguments::Arguments(ArgumentsDTO&& cliArgs)
     : m_inputType(InputType::file)
     , m_streamOutType()
     , m_computeImplementation(ComputeImplementation::cpu)
@@ -164,7 +163,7 @@ namespace icrar
         }
     }
 
-    void ArgumentsValidated::ApplyArguments(ArgumentsDTO&& args)
+    void Arguments::ApplyArguments(ArgumentsDTO&& args)
     {
         if(args.inputType.is_initialized())
         {
@@ -243,7 +242,7 @@ namespace icrar
     }
 
 
-    void ArgumentsValidated::Validate() const
+    void Arguments::Validate() const
     {
         if(m_directions.size() == 0)
         {
@@ -251,17 +250,17 @@ namespace icrar
         }
     }
 
-    boost::optional<std::string> ArgumentsValidated::GetOutputFilePath() const
+    boost::optional<std::string> Arguments::GetOutputFilePath() const
     {
         return m_outputFilePath;
     }
 
-    StreamOutType ArgumentsValidated::GetStreamOutType() const
+    StreamOutType Arguments::GetStreamOutType() const
     {
         return m_streamOutType;
     }
 
-    std::unique_ptr<std::ostream> ArgumentsValidated::CreateOutputStream(double startEpoch) const
+    std::unique_ptr<std::ostream> Arguments::CreateOutputStream(double startEpoch) const
     {
         if(!m_outputFilePath.is_initialized())
         {
@@ -287,47 +286,47 @@ namespace icrar
         }
     }
 
-    MeasurementSet& ArgumentsValidated::GetMeasurementSet()
+    const MeasurementSet& Arguments::GetMeasurementSet() const
     {
         return *m_measurementSet;
     }
 
-    const std::vector<SphericalDirection>& ArgumentsValidated::GetDirections() const
+    const std::vector<SphericalDirection>& Arguments::GetDirections() const
     {
         return m_directions;
     }
 
-    ComputeImplementation ArgumentsValidated::GetComputeImplementation() const
+    ComputeImplementation Arguments::GetComputeImplementation() const
     {
         return m_computeImplementation;
     }
 
-    Slice ArgumentsValidated::GetSolutionInterval() const
+    Slice Arguments::GetSolutionInterval() const
     {
         return m_solutionInterval;
     }
 
-    boost::optional<unsigned int> ArgumentsValidated::GetReferenceAntenna() const
+    boost::optional<unsigned int> Arguments::GetReferenceAntenna() const
     {
         return m_referenceAntenna;
     }
 
-    double ArgumentsValidated::GetMinimumBaselineThreshold() const
+    double Arguments::GetMinimumBaselineThreshold() const
     {
         return m_minimumBaselineThreshold;
     }
 	
-    ComputeOptionsDTO ArgumentsValidated::GetComputeOptions() const
+    ComputeOptionsDTO Arguments::GetComputeOptions() const
     {
         return m_computeOptions;
     } 
 
-    icrar::log::Verbosity ArgumentsValidated::GetVerbosity() const
+    icrar::log::Verbosity Arguments::GetVerbosity() const
     {
         return m_verbosity;
     }
 
-    ArgumentsDTO ArgumentsValidated::ParseConfig(const std::string& configFilepath)
+    ArgumentsDTO Arguments::ParseConfig(const std::string& configFilepath)
     {
         ArgumentsDTO args;
         ParseConfig(configFilepath, args);
@@ -347,7 +346,7 @@ namespace icrar
         }
     }
 
-    void ArgumentsValidated::ParseConfig(const std::string& configFilepath, ArgumentsDTO& args)
+    void Arguments::ParseConfig(const std::string& configFilepath, ArgumentsDTO& args)
     {
         auto ifs = std::ifstream(configFilepath);
         rapidjson::IStreamWrapper isw(ifs);
@@ -389,7 +388,7 @@ namespace icrar
                 }
                 else if(key == "streamOutType")
                 {
-                    StreamOutType e;
+                    StreamOutType e = {};
                     if(TryParseStreamOutType(it->value.GetString(), e))
                     {
                         args.streamOutType.reset(e);
@@ -445,7 +444,7 @@ namespace icrar
                 }
                 else if(key == "computeImplementation")
                 {
-                    ComputeImplementation e;
+                    ComputeImplementation e = {};
                     if(TryParseComputeImplementation(it->value.GetString(), e))
                     {
                         args.computeImplementation.reset(e);
@@ -494,7 +493,7 @@ namespace icrar
                     }
                     if(it->value.IsString())
                     {
-                        log::Verbosity e;
+                        log::Verbosity e = {};
                         if(TryParseVerbosity(it->value.GetString(), e))
                         {
                             args.verbosity.reset(e);

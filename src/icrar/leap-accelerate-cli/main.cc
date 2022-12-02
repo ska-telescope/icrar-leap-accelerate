@@ -4,36 +4,30 @@
  * Copyright by UWA(in the framework of the ICRAR)
  * All rights reserved
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111 - 1307  USA
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+
+#include <icrar/leap-accelerate/algorithm/Calibrate.h>
 #include <icrar/leap-accelerate/common/config/Arguments.h>
 
-#include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
-#include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
-#include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
-#include <icrar/leap-accelerate/algorithm/cpu/CpuLeapCalibrator.h>
-
-#include <icrar/leap-accelerate/ms/MeasurementSet.h>
-#include <icrar/leap-accelerate/math/math_conversion.h>
-#include <icrar/leap-accelerate/core/stream_out_type.h>
 #include <icrar/leap-accelerate/core/git_revision.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/UsageReporter.h>
 #include <icrar/leap-accelerate/core/version.h>
+
 
 #include <boost/program_options.hpp>
 #include <boost/optional.hpp>
@@ -122,51 +116,12 @@ int main(int argc, char** argv)
         else
         {
             icrar::profiling::UsageReporter _;
-            ArgumentsValidated args = { ArgumentsDTO(std::move(rawArgs)) };
+            Arguments args = {ArgumentsDTO(std::move(rawArgs))};
 
             LOG(info) << version_information(argv[0]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             LOG(info) << arg_string(argc, argv);
 
-            if(IsImmediateMode(args.GetStreamOutType()))
-            {
-                auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
-
-                auto outputCallback = [&](const cpu::Calibration& cal)
-                {
-                    cal.Serialize(*args.CreateOutputStream(cal.GetStartEpoch()));
-                };
-
-                calibrator->Calibrate(
-                    outputCallback,
-                    args.GetMeasurementSet(),
-                    args.GetDirections(),
-                    args.GetSolutionInterval(),
-                    args.GetMinimumBaselineThreshold(),
-                    args.GetReferenceAntenna(),
-                    args.GetComputeOptions());
-            }
-            else
-            {
-                auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
-
-                std::vector<cpu::Calibration> calibrations;
-                auto outputCallback = [&](const cpu::Calibration& cal)
-                {
-                    calibrations.push_back(cal);
-                };
-                
-                calibrator->Calibrate(
-                    outputCallback,
-                    args.GetMeasurementSet(),
-                    args.GetDirections(),
-                    args.GetSolutionInterval(),
-                    args.GetMinimumBaselineThreshold(),
-                    args.GetReferenceAntenna(),
-                    args.GetComputeOptions());
-                
-                auto calibrationCollection = cpu::CalibrationCollection(std::move(calibrations));
-                calibrationCollection.Serialize(*args.CreateOutputStream());
-            }
+            RunCalibration(args);
         }
     }
     catch(const std::exception& e)
@@ -175,4 +130,3 @@ int main(int argc, char** argv)
         return -1;
     }
 }
-

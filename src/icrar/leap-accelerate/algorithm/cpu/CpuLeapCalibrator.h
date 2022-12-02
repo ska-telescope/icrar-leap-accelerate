@@ -4,20 +4,19 @@
  * Copyright by UWA(in the framework of the ICRAR)
  * All rights reserved
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111 - 1307  USA
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #pragma once
@@ -46,7 +45,7 @@ namespace icrar
 {
 namespace cpu
 {
-    class MetaData;
+    class LeapData;
 
     /**
      * @brief Leap Calibration implementation using 
@@ -72,13 +71,13 @@ namespace cpu
         /**
          * @brief Performs rotation, summing and calibration for @p direction
          * 
-         * @param metadata metadata object containing data required for calibration
+         * @param leapData leapData object containing data required for calibration
          * @param direction the direction to calibrate for 
          * @param input batches of uvws and visibilities to process
          * @param output_calibrations output calibration from summing a function of uvws and visibilities
          */
         static void PhaseRotate(
-            MetaData& metadata,
+            LeapData& leapData,
             const SphericalDirection& direction,
             std::vector<Integration>& input,
             std::vector<BeamCalibration>& output_calibrations);
@@ -87,11 +86,11 @@ namespace cpu
          * @brief Performs rotation and averaging over each baseline, channel and polarization.
          * 
          * @param integration The input integration batch of uvws and visibilities
-         * @param metadata The metadata object where AverageData is written to
+         * @param leapData The leapData object where AverageData is written to
          */
         static void RotateVisibilities(
             Integration& integration,
-            MetaData& metadata);
+            LeapData& leapData);
     };
 } // namespace cpu
 } // namespace icrar

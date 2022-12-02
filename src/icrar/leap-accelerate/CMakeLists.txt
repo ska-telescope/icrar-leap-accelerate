@@ -11,10 +11,7 @@ configure_file("core/git_revision.cc.in" "${git_revision_cc}" @ONLY)
 
 set(TARGET_NAME LeapAccelerate)
 
-set(public_headers
-    model/visibility.h
-    model/band_data.h
-)
+set(public_headers "")
 set(private_headers
     math/math_conversion.h
     math/vector_extensions.h
@@ -47,11 +44,10 @@ set(sources
     math/cpu/eigen_extensions.cc
 
     model/cpu/Integration.cc
-    model/cpu/MetaData.cc
+    model/cpu/LeapData.cc
     model/cpu/calibration/Calibration.cc
     model/cpu/calibration/BeamCalibration.cc
-    model/cuda/DeviceMetaData.cc
-    model/cuda/DeviceIntegration.cc
+    model/cuda/DeviceLeapData.cc
 
     algorithm/LeapCalibratorFactory.cc
     algorithm/cpu/CpuLeapCalibrator.cc
@@ -154,19 +150,20 @@ if(CUDA_ENABLED)
     configure_clang_cuda_compiler(${TARGET_NAME})
   else()
     configure_nvcc_cuda_compiler(${TARGET_NAME})
-    configure_cuda_warnings(${TARGET_NAME})
   endif()
 
   #Set Cuda Stream Setting
   #set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -lineinfo --default-stream per-thread)
   #message("CUDA_NVCC_FLAGS = ${CUDA_NVCC_FLAGS}")
-  target_include_directories(${TARGET_NAME} SYSTEM PUBLIC ${CUDA_INCLUDE_DIRS})
-  target_link_libraries(${TARGET_NAME} PUBLIC cuda)  # libcuda.so may only be located in lib64/stubs
-  target_link_libraries(${TARGET_NAME} PUBLIC ${CUDA_LIBRARIES})
-  target_link_libraries(${TARGET_NAME} PUBLIC ${CUDA_CUBLAS_LIBRARIES})
-  if(CUDA_VERSION_MAJOR VERSION_GREATER_EQUAL "10.0")
-    target_link_libraries(${TARGET_NAME} PUBLIC ${CUDA_cusolver_LIBRARY})
-    #target_link_libraries(${TARGET_NAME} PUBLIC cublasLt)
+  #target_link_libraries(${TARGET_NAME} PUBLIC cuda)  
+
+  target_link_libraries(${TARGET_NAME} PUBLIC CUDA::cudart)
+  target_link_libraries(${TARGET_NAME} PUBLIC CUDA::cuda_driver) # libcuda.so may only be located in lib64/stubs
+  target_link_libraries(${TARGET_NAME} PUBLIC CUDA::cublas)
+
+  if(CUDAToolkit_VERSION VERSION_GREATER_EQUAL "10.0")
+    target_link_libraries(${TARGET_NAME} PUBLIC CUDA::cusolver)
+    target_link_libraries(${TARGET_NAME} PUBLIC CUDA::cublasLt)
   endif()
 endif()
 

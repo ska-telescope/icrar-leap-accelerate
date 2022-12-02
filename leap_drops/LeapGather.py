@@ -10,7 +10,7 @@ from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
 # @details A BarrierAppDrop that gathers output from multiple instances of the LeapAccelerateCLI application, sorts it, and outputs it
 # @par EAGLE_START
 # @param category PythonApp
-# @param[in] param/appclass Application Class/leap_nodes.LeapGather.LeapGather/String/readonly/
+# @param[in] aparam/appclass Application Class/leap_nodes.LeapGather.LeapGather/String/readonly/False//False/
 #     \~English The path to the class that implements this app\n
 # @param[in] port/Result Result/File/
 #     \~English The JSON output from an instance of LeapAccelerateCLI

@@ -4,20 +4,19 @@
  * Copyright by UWA(in the framework of the ICRAR)
  * All rights reserved
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111 - 1307  USA
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 
@@ -28,8 +27,8 @@
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
 #include <icrar/leap-accelerate/algorithm/cpu/CpuComputeOptions.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
-#include <icrar/leap-accelerate/model/cpu/MetaData.h>
-#include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
+#include <icrar/leap-accelerate/model/cpu/LeapData.h>
+#include <icrar/leap-accelerate/model/cuda/DeviceLeapData.h>
 #include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
@@ -94,15 +93,15 @@ namespace cpu
         Rangei validatedSolutionInterval = solutionInterval.Evaluate(boost::numeric_cast<int32_t>(ms.GetNumTimesteps()));
         std::vector<double> epochs = ms.GetEpochs();
 
-        profiling::timer metadata_read_timer;
-        LOG(info) << "Loading MetaData";
-        auto metadata = icrar::cpu::MetaData(
+        profiling::timer leapdata_read_timer;
+        LOG(info) << "Loading LeapData";
+        auto leapData = icrar::cpu::LeapData(
             ms,
             referenceAntenna,
             minimumBaselineThreshold,
             true,
             cpuComputeOptions.IsFileSystemCacheEnabled());
-        LOG(info) << "Metadata loaded in " << metadata_read_timer;
+        LOG(info) << "leap data loaded in " << leapdata_read_timer;
 
         int32_t solutions = validatedSolutionInterval.GetSize();
         auto output_calibrations = std::vector<cpu::Calibration>();
@@ -139,10 +138,10 @@ namespace cpu
             for(size_t direction = 0; direction < directions.size(); ++direction)
             {
                 LOG(info) << "Processing direction " << direction;
-                metadata.SetDirection(directions[direction]);
-                metadata.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
+                leapData.SetDirection(directions[direction]);
+                leapData.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
                 PhaseRotate(
-                    metadata,
+                    leapData,
                     directions[direction],
                     input_queues[direction],
                     output_calibrations[solution].GetBeamCalibrations());
@@ -159,7 +158,7 @@ namespace cpu
     }
 
     void CpuLeapCalibrator::PhaseRotate(
-        cpu::MetaData& metadata,
+        cpu::LeapData& leapData,
         const SphericalDirection& direction,
         std::vector<cpu::Integration>& input,
         std::vector<cpu::BeamCalibration>& output_calibrations)
@@ -167,33 +166,33 @@ namespace cpu
         for(auto& integration : input)
         {
             LOG(info) << "Rotating Integration " << integration.GetIntegrationNumber();
-            RotateVisibilities(integration, metadata);
+            RotateVisibilities(integration, leapData);
         }
 
         LOG(info) << "Calculating Calibration";
-        auto avgDataI1 = metadata.GetAvgData().wrapped_row_select(metadata.GetI1());
+        auto avgDataI1 = leapData.GetAvgData().wrapped_row_select(leapData.GetI1());
         Eigen::VectorXd phaseAnglesI1 = avgDataI1.arg();
 
         // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
         phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
         phaseAnglesI1(phaseAnglesI1.rows() - 1) = 0;
 
-        Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAnglesI1;
-        Eigen::VectorXd ACal1 = metadata.GetA() * cal1;
+        Eigen::VectorXd cal1 = leapData.GetAd1() * phaseAnglesI1;
+        Eigen::VectorXd ACal1 = leapData.GetA() * cal1;
 
-        Eigen::VectorXd deltaPhase = Eigen::VectorXd::Zero(metadata.GetI().size());
-        for(int n = 0; n < metadata.GetI().size(); ++n)
+        Eigen::VectorXd deltaPhase = Eigen::VectorXd::Zero(leapData.GetI().size());
+        for(int n = 0; n < leapData.GetI().size(); ++n)
         {
-            deltaPhase(n) = std::arg(std::exp(std::complex<double>(0, -two_pi<double>() * ACal1(n))) * metadata.GetAvgData()(n));
+            deltaPhase(n) = std::arg(std::exp(std::complex<double>(0, -two_pi<double>() * ACal1(n))) * leapData.GetAvgData()(n));
         }
 
         Eigen::VectorXd deltaPhaseColumn = deltaPhase;
         deltaPhaseColumn.conservativeResize(deltaPhaseColumn.size() + 1);
         deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0;
-        output_calibrations.emplace_back(direction, (metadata.GetAd() * deltaPhaseColumn) + cal1);
+        output_calibrations.emplace_back(direction, (leapData.GetAd() * deltaPhaseColumn) + cal1);
     }
 
-    void CpuLeapCalibrator::RotateVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)
+    void CpuLeapCalibrator::RotateVisibilities(cpu::Integration& integration, cpu::LeapData& leapData)
     {
         using namespace std::literals::complex_literals;
         Eigen::Tensor<std::complex<double>, 4>& visibilities = integration.GetVis();
@@ -202,14 +201,18 @@ namespace cpu
         {
             for(size_t baseline = 0; baseline < integration.GetNumBaselines(); baseline++)
             {
+                // TODO(calgray) Eigen::Tensor::chip creates array-bounds warnings on gcc-12 
+                #pragma GCC diagnostic push
+                #pragma GCC diagnostic ignored "-Warray-bounds"
                 Eigen::VectorXd uvw = ToVector(Eigen::Tensor<double, 1>(integration.GetUVW().chip(timestep, 2).chip(baseline, 1)));
-                auto rotatedUVW = metadata.GetDD() * uvw;
+                #pragma GCC diagnostic pop
+                auto rotatedUVW = leapData.GetDD() * uvw;
                 double shiftFactor = -two_pi<double>() * (rotatedUVW.z() - uvw.z());
 
                 // Loop over channels
                 for(uint32_t channel = 0; channel < integration.GetNumChannels(); channel++)
                 {
-                    double shiftRad = shiftFactor / metadata.GetConstants().GetChannelWavelength(channel);
+                    double shiftRad = shiftFactor / leapData.GetConstants().GetChannelWavelength(channel);
                     for(uint32_t polarization = 0; polarization < integration.GetNumPolarizations(); ++polarization)
                     {
                         visibilities(polarization, channel, baseline, timestep) *= std::exp(std::complex<double>(0.0, shiftRad));
@@ -225,8 +228,8 @@ namespace cpu
                     if(!hasNaN)
                     {
                         // Averaging with XX and YY polarizations
-                        metadata.GetAvgData()(baseline) += visibilities(0, channel, baseline, timestep);
-                        metadata.GetAvgData()(baseline) += visibilities(visibilities.dimension(0) - 1, channel, baseline, timestep);
+                        leapData.GetAvgData()(baseline) += visibilities(0, channel, baseline, timestep);
+                        leapData.GetAvgData()(baseline) += visibilities(visibilities.dimension(0) - 1, channel, baseline, timestep);
                     }
                 }
             }

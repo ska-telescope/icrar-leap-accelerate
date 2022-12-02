@@ -1,8 +1,8 @@
 # LEAP Accelerate
 
-![License](https://img.shields.io/badge/license-GPL_2-blue)
+![License](https://img.shields.io/badge/license-GPLv2+-blue)
 
-LEAP-Accelerate is a calibration tool implementing Low-frequency Excision of the Atmosphere in Parallel ([LEAP](https://arxiv.org/abs/1807.04685)) for low-frequency radio antenna arrays. Leap utilizes GPGPU acceleration for parallel computation across baselines, channels and polarizations and is freely available on [GitLab](https://gitlab.com/ska-telescope/icrar-leap-accelerate) under GPLv2 [License](LICENSE).
+LEAP-Accelerate is a calibration tool implementing Low-frequency Excision of the Atmosphere in Parallel ([LEAP](https://arxiv.org/abs/1807.04685)) for low-frequency radio antenna arrays. Leap utilizes GPGPU acceleration for parallel computation across baselines, channels and polarizations and is freely available on [GitLab](https://gitlab.com/ska-telescope/icrar-leap-accelerate) under GPLv2+ [License](LICENSE).
 
 LEAP-Accelerate includes:
 
@@ -18,6 +18,8 @@ See the [online documentation](https://developer.skatelescope.org/projects/icrar
 The latest leap release is published as a debian a docker image available at the following location:
 
 `artefact.skao.int/icrar-leap-accelerate:latest`
+
+NOTE: It may be necessary to use the image tag rather than just latest.
 
 This image can be run locally using the following command:
 

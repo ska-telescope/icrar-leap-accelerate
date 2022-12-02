@@ -4,20 +4,19 @@
  * Copyright by UWA(in the framework of the ICRAR)
  * All rights reserved
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111 - 1307  USA
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #include "PhaseRotateTestCaseData.h"
@@ -35,14 +34,11 @@
 
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
-#include <icrar/leap-accelerate/model/cpu/MetaData.h>
-#include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
+#include <icrar/leap-accelerate/model/cpu/LeapData.h>
+#include <icrar/leap-accelerate/model/cuda/DeviceLeapData.h>
 
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
-
-#include <icrar/leap-accelerate/math/math_conversion.h>
-#include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
@@ -86,179 +82,17 @@ namespace icrar
 
         }
 
-        void PhaseMatrixFunction0Test(const ComputeImplementation impl)
-        {
-            int refAnt = 0;
-
-            try
-            {
-                if(impl == ComputeImplementation::cpu)
-                {
-                    auto a1 = Eigen::VectorXi();
-                    auto a2 = Eigen::VectorXi();
-                    auto fg = Eigen::VectorXb();
-                    icrar::cpu::PhaseMatrixFunction(a1, a2, fg, refAnt, false);
-                }
-                else
-                {
-                    throw icrar::invalid_argument_exception("invalid PhaseMatrixFunction implementation", "impl", __FILE__, __LINE__);
-                }
-            }
-            catch(invalid_argument_exception& e)
-            {
-                SUCCEED();
-            }
-            catch(...)
-            {
-                FAIL() << "Expected icrar::invalid_argument_exception";
-            }
-        }
-
-        void PhaseMatrixFunctionDataTest(const ComputeImplementation impl)
-        {
-            auto msmc = ms->GetMSMainColumns();
-
-            //select the first epoch only
-            casacore::Vector<double> time = msmc->time().getColumn();
-            double epoch = time[0];
-            int epochRows = 0;
-            for(size_t i = 0; i < time.size(); i++)
-            {
-                if(time[i] == epoch) epochRows++;
-            }
-
-            const int aSize = epochRows;
-            auto epochIndices = casacore::Slice(0, aSize);
-            casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
-            casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
-
-            // Selects only the flags of the first channel and polarization
-            auto flagSlice = casacore::Slicer(
-                casacore::IPosition(2, 0, 0),
-                casacore::IPosition(2, 1, 1),
-                casacore::IPosition(2, 1, 1));
-            casacore::Vector<bool> flags = msmc->flag().getColumnRange(epochIndices, flagSlice);
-
-            //Start calculations
-
-            //output
-            Eigen::MatrixXd A;
-            Eigen::VectorXi I;
-            Eigen::MatrixXd Ad;
-            Eigen::MatrixXd A1;
-            Eigen::VectorXi I1;
-            Eigen::MatrixXd Ad1;
-
-            if(impl == ComputeImplementation::cpu)
-            {
-                auto ea1 = ToVector(a1);
-                auto ea2 = ToVector(a2);
-                auto efg = ToVector(flags);
-                std::tie(A, I) = cpu::PhaseMatrixFunction(ea1, ea2, efg, 0, true);
-                Ad = icrar::cpu::pseudo_inverse(A);
-
-                std::tie(A1, I1) = cpu::PhaseMatrixFunction(ea1, ea2, efg, 0, false);
-                Ad1 = icrar::cpu::pseudo_inverse(A1);
-            }
-            else
-            {
-                throw icrar::invalid_argument_exception("invalid PhaseMatrixFunction implementation", "impl", __FILE__, __LINE__);
-            }
-
-            // A
-            const int aRows = 4754;
-            const int aCols = 128;
-            ASSERT_EQ(aRows, A.rows());
-            ASSERT_EQ(aCols, A.cols());
-            EXPECT_EQ(1.00, A(0,0));
-            EXPECT_EQ(-1.00, A(0,1));
-            EXPECT_EQ(0.00, A(0,2));
-            //...
-            EXPECT_NEAR(0.00, A(aRows-2, 125), TOLERANCE);
-            EXPECT_NEAR(1.00, A(aRows-2, 126), TOLERANCE);
-            EXPECT_NEAR(-1.00, A(aRows-2, 127), TOLERANCE);
-            EXPECT_NEAR(0.00, A(aRows-1, 125), TOLERANCE);
-            EXPECT_NEAR(0.00, A(aRows-1, 126), TOLERANCE);
-            EXPECT_NEAR(0.00, A(aRows-1, 127), TOLERANCE);
-
-            // I
-            const int nBaselines = 4753;
-            ASSERT_EQ(nBaselines, I.size());
-            EXPECT_EQ(1.00, I(0));
-            EXPECT_EQ(3.00, I(1));
-            EXPECT_EQ(4.00, I(2));
-            //...
-            EXPECT_EQ(5248, I(nBaselines-3));
-            EXPECT_EQ(5249, I(nBaselines-2));
-            EXPECT_EQ(5251, I(nBaselines-1));
-
-            // Ad
-            ASSERT_EQ(aCols, Ad.rows());
-            ASSERT_EQ(aRows, Ad.cols());
-            // EXPECT_NEAR(2.62531368e-15, Ad(0,0), TOLERANCE); // TODO(calgray): emergent
-            // EXPECT_NEAR(2.04033520e-15, Ad(0,1), TOLERANCE); // TODO(calgray): emergent
-            // EXPECT_NEAR(3.25648083e-16, Ad(0,2), TOLERANCE); // TODO(calgray): emergent
-            // //...
-            // EXPECT_NEAR(-1.02040816e-02, Ad(127,95), TOLERANCE); // TODO(calgray): emergent
-            // EXPECT_NEAR(-0.020408163265312793, Ad(127,96), TOLERANCE); // TODO(calgray): emergent
-            // EXPECT_NEAR(-8.9737257304377696e-16, Ad(127,97), TOLERANCE); // TODO(calgray): emergent
-
-            ASSERT_EQ(Ad.cols(), I.size() + 1);
-            ASSERT_MEQD(A, A * Ad * A, TOLERANCE);
-
-            //A1
-            const int a1Rows = 98;
-            const int a1Cols = 128;
-            ASSERT_EQ(a1Rows, A1.rows());
-            ASSERT_EQ(a1Cols, A1.cols());
-            EXPECT_DOUBLE_EQ(1.0, A1(0,0));
-            EXPECT_DOUBLE_EQ(-1.0, A1(0,1));
-            EXPECT_DOUBLE_EQ(0.0, A1(0,2));
-            //...
-            EXPECT_NEAR(0.00, A1(a1Rows-2,125), TOLERANCE);
-            EXPECT_NEAR(0.00, A1(a1Rows-2,126), TOLERANCE);
-            EXPECT_NEAR(-1.00, A1(a1Rows-2,127), TOLERANCE);
-            EXPECT_NEAR(0.00, A1(a1Rows-1,125), TOLERANCE);
-            EXPECT_NEAR(0.00, A1(a1Rows-1,126), TOLERANCE);
-            EXPECT_NEAR(0.00, A1(a1Rows-1,127), TOLERANCE);
-
-            //I1
-            ASSERT_EQ(a1Rows-1, I1.size());
-            EXPECT_DOUBLE_EQ(1.00, I1(0));
-            EXPECT_DOUBLE_EQ(3.00, I1(1));
-            EXPECT_DOUBLE_EQ(4.00, I1(2));
-            //...
-            EXPECT_DOUBLE_EQ(99.00, I1(a1Rows-4));
-            EXPECT_DOUBLE_EQ(100.00, I1(a1Rows-3));
-            EXPECT_DOUBLE_EQ(101.00, I1(a1Rows-2));
-
-            //Ad1
-            ASSERT_EQ(a1Rows, Ad1.cols());
-            ASSERT_EQ(a1Cols, Ad1.rows());
-
-            // EXPECT_DOUBLE_EQ(-9.8130778667735933e-18, Ad1(0,0)); // TODO: emergent
-            // EXPECT_DOUBLE_EQ(6.3742385976163974e-17, Ad1(0,1)); // TODO: emergent
-            // EXPECT_DOUBLE_EQ(3.68124219034074e-19, Ad1(0,2)); // TODO: emergent
-            // //...
-            // EXPECT_DOUBLE_EQ(5.4194040934156436e-17, Ad1(127,95)); // TODO: emergent
-            // EXPECT_DOUBLE_EQ(-1.0, Ad1(127,96)); // TODO: emergent
-            // EXPECT_DOUBLE_EQ(1.0, Ad1(127,97)); // TODO: emergent
-            
-            ASSERT_EQ(Ad1.cols(), I1.size() + 1);
-            ASSERT_MEQD(A1, A1 * Ad1 * A1, TOLERANCE);
-        }
-
         void RotateVisibilitiesTest(const ComputeImplementation impl)
         {
             using namespace std::complex_literals;
             
             auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
 
-            boost::optional<icrar::cpu::MetaData> metadataOptionalOutput;
+            boost::optional<icrar::cpu::LeapData> metadataOptionalOutput;
             if(impl == ComputeImplementation::cpu)
             {
                 auto integration = cpu::Integration(0, *ms, 0, 1);
-                auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction));
+                auto hostMetadata = icrar::cpu::LeapData(*ms, ToDirection(direction));
                 cpu::CpuLeapCalibrator::RotateVisibilities(integration, hostMetadata);
 
                 metadataOptionalOutput = hostMetadata;
@@ -268,16 +102,16 @@ namespace icrar
             {
                 auto integration = icrar::cpu::Integration(0, *ms, 0, 1);
                 auto deviceIntegration = icrar::cuda::DeviceIntegration(integration);
-                auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction));
-                auto deviceMetadata = icrar::cuda::DeviceMetaData(hostMetadata);
-                icrar::cuda::RotateVisibilities(deviceIntegration, deviceMetadata);
-                deviceMetadata.ToHost(hostMetadata);
+                auto hostMetadata = icrar::cpu::LeapData(*ms, ToDirection(direction));
+                auto deviceLeapData = icrar::cuda::DeviceLeapData(hostMetadata);
+                icrar::cuda::RotateVisibilities(deviceIntegration, deviceLeapData);
+                deviceLeapData.ToHost(hostMetadata);
                 metadataOptionalOutput = hostMetadata;
             }
 #endif // CUDA_ENABLED
 
             ASSERT_TRUE(metadataOptionalOutput.is_initialized());
-            icrar::cpu::MetaData& metadataOutput = metadataOptionalOutput.get();
+            icrar::cpu::LeapData& metadataOutput = metadataOptionalOutput.get();
 
             // =======================
             // Build expected results
@@ -331,9 +165,13 @@ namespace icrar
             ASSERT_EQCD(-778.460481562931 + -50.3643060622548i, metadataOutput.GetAvgData()(1), TOLERANCE);
         }
 
-        void CalibrateTest(ComputeImplementation impl, const ComputeOptionsDTO computeOptions, const Slice solutionInterval, std::function<cpu::CalibrationCollection()> getExpected)
+        void CalibrateTest(
+            ComputeImplementation impl,
+            const ComputeOptionsDTO computeOptions,
+            const Slice solutionInterval,
+            const std::function<cpu::CalibrationCollection()>& getExpected)
         {
-            auto metadata = icrar::cpu::MetaData(*ms);
+            auto leapData = icrar::cpu::LeapData(*ms);
             std::vector<icrar::SphericalDirection> directions =
             {
                 { -0.4606549305661674,-0.29719233792392513 },
@@ -351,7 +189,8 @@ namespace icrar
                 calibrationsVector.push_back(cal);
             };
             
-            if(computeOptions.isFileSystemCacheEnabled.is_initialized() && computeOptions.isFileSystemCacheEnabled.get())
+            if(computeOptions.isFileSystemCacheEnabled.is_initialized()
+            && computeOptions.isFileSystemCacheEnabled.get())
             {
                 // Write cache
                 LeapCalibratorFactory::Create(impl)->Calibrate(
@@ -426,9 +265,9 @@ namespace icrar
          * 
          * @param impl 
          */
-        void ReferenceAntennaTest(const ComputeImplementation impl, std::vector<int> referenceAntennas, const Slice solutionInterval)
+        void ReferenceAntennaTest(const ComputeImplementation impl, const std::vector<int>& referenceAntennas, const Slice solutionInterval)
         {
-            auto metadata = icrar::cpu::MetaData(*ms);
+            auto leapData = icrar::cpu::LeapData(*ms);
             std::vector<icrar::SphericalDirection> directions =
             {
                 { -0.4606549305661674,-0.29719233792392513 },
@@ -439,12 +278,11 @@ namespace icrar
             std::unique_ptr<ILeapCalibrator> calibrator = LeapCalibratorFactory::Create(impl);
             auto flaggedAntennas = ms->GetFlaggedAntennas();
 
-            for(auto it = referenceAntennas.begin(); it != referenceAntennas.end(); ++it)
+            for(int32_t referenceAntenna : referenceAntennas)
             {
-                int32_t referenceAntenna = *it;
                 if(flaggedAntennas.find(referenceAntenna) != flaggedAntennas.end())
                 {
-                    //TODO: calibrate should throw for flagged antennas
+                    //TODO(calgray) calibrate should throw for flagged antennas as reference
                     continue;
                 }
 
@@ -469,9 +307,6 @@ namespace icrar
             }
         }
     };
-
-    TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCpu) { PhaseMatrixFunction0Test(ComputeImplementation::cpu); }
-    TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCpu) { PhaseMatrixFunctionDataTest(ComputeImplementation::cpu); }
 
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::cpu); }
     TEST_F(PhaseRotateTests, ReferenceAntennaTestCpu) { ReferenceAntennaTest(ComputeImplementation::cpu, {0, 1, 2, 3, 4, 5, 126, 127}, Slice(0, 1, 1)); }

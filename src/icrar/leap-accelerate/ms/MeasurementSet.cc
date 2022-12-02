@@ -1,24 +1,23 @@
 /**
-*    ICRAR - International Centre for Radio Astronomy Research
-*    (c) UWA - The University of Western Australia
-*    Copyright by UWA (in the framework of the ICRAR)
-*    All rights reserved
-*
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-*    Lesser General Public License for more details.
-*
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-*    MA 02111-1307  USA
-*/
+ * ICRAR - International Centre for Radio Astronomy Research
+ * (c) UWA - The University of Western Australia
+ * Copyright by UWA(in the framework of the ICRAR)
+ * All rights reserved
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
 
 #include "MeasurementSet.h"
 #include <icrar/leap-accelerate/core/log/logging.h>
@@ -34,6 +33,7 @@ namespace icrar
     , m_msmc(std::make_unique<casacore::MSMainColumns>(*m_measurementSet))
     , m_msc(std::make_unique<casacore::MSColumns>(*m_measurementSet))
     , m_filepath(filepath)
+    , m_readAutocorrelations()
     {
         std::tie(m_antennas, m_readAutocorrelations) = CalculateUniqueAntennas();
         if(m_antennas.size() != m_measurementSet->antenna().nrow())
@@ -102,6 +102,20 @@ namespace icrar
     uint32_t MeasurementSet::GetNumRows() const
     {
         return m_numRows;
+    }
+
+    Eigen::VectorXi MeasurementSet::GetAntenna1() const
+    {
+        return ToVector(
+            m_msmc->antenna1().getColumn()(casacore::Slice(0,GetNumBaselines()))
+        );
+    }
+
+    Eigen::VectorXi MeasurementSet::GetAntenna2() const
+    {
+        return ToVector(
+            m_msmc->antenna2().getColumn()(casacore::Slice(0,GetNumBaselines()))
+        );
     }
 
     uint32_t MeasurementSet::GetTotalAntennas() const
@@ -293,7 +307,6 @@ namespace icrar
         uint32_t intervalTimesteps,
         Slice polarizationSlice) const
     {
-        // See https://github.com/OxfordSKA/OSKAR/blob/f018c03bb34c16dcf8fb985b46b3e9dc1cf0812c/oskar/ms/src/oskar_ms_read.cpp
         int32_t nPolarizations = GetNumPols();
         Range<int32_t> polarizationRange = polarizationSlice.Evaluate(nPolarizations);
         return ReadVis(startTimestep, intervalTimesteps, polarizationRange, "DATA");
@@ -314,8 +327,8 @@ namespace icrar
         const unsigned int rows = intervalTimesteps * num_baselines;
         
         auto pols_slice = polarizationRange.ToSeq();
-        const unsigned int pol_length = boost::numeric_cast<unsigned int>(pols_slice.sizeObject());
-        const unsigned int pol_stride = boost::numeric_cast<unsigned int>(pols_slice.incrObject());
+        const auto pol_length = boost::numeric_cast<unsigned int>(pols_slice.sizeObject());
+        const auto pol_stride = boost::numeric_cast<unsigned int>(pols_slice.incrObject());
 
         if(!m_measurementSet->tableDesc().isColumn(columnName))
         {
@@ -376,7 +389,7 @@ namespace icrar
 
     std::set<int32_t> MeasurementSet::GetFlaggedAntennas() const
     {
-        auto fg = GetFilteredBaselines();        
+        auto fg = GetFilteredBaselines();
         int32_t totalStations = GetTotalAntennas();
 
         // start with a set of all antennas flagged and unflag the ones 

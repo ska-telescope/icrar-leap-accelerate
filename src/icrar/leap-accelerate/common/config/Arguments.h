@@ -4,25 +4,25 @@
  * Copyright by UWA(in the framework of the ICRAR)
  * All rights reserved
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111 - 1307  USA
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #pragma once
 
 #include <icrar/leap-accelerate/algorithm/ComputeOptionsDTO.h>
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/common/SphericalDirection.h>
 #include <icrar/leap-accelerate/common/Slice.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
@@ -39,7 +39,6 @@
 
 namespace icrar
 {
-    class MeasurementSet;
     /**
      * @brief Raw arguments received via the command line interface using boost::program_options.
      * Only raw types std::string, bool, int, uint, float and double are allowed here. 
@@ -104,7 +103,7 @@ namespace icrar
     /**
      * Validated set of command line arguments required to perform leap calibration
      */
-    class ArgumentsValidated
+    class Arguments
     {
         /**
          * Constants
@@ -131,7 +130,7 @@ namespace icrar
         std::unique_ptr<MeasurementSet> m_measurementSet;
 
     public:
-        ArgumentsValidated(ArgumentsDTO&& cliArgs);
+        Arguments(ArgumentsDTO&& cliArgs);
 
         /**
          * @brief Overwrites the stored set of arguments.
@@ -144,6 +143,12 @@ namespace icrar
 
         boost::optional<std::string> GetOutputFilePath() const;
 
+        /**
+         * @brief Using the outputFilePath member, creates an output stream object.
+         * 
+         * @param startEpoch 
+         * @return std::unique_ptr<std::ostream> 
+         */
         std::unique_ptr<std::ostream> CreateOutputStream(double startEpoch = 0.0) const;
 
         /**
@@ -158,7 +163,7 @@ namespace icrar
          * 
          * @return MeasurementSet& 
          */
-        MeasurementSet& GetMeasurementSet();
+        const MeasurementSet& GetMeasurementSet() const;
 
         const std::vector<SphericalDirection>& GetDirections() const;
 

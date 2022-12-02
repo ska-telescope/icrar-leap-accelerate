@@ -21,7 +21,7 @@ git submodule add --name gtest-1.11.0 https://github.com/google/googletest.git e
 ```
 
 ```sh
-git submodule add --name eigen-3.3.90 https://gitlab.com/libeigen/eigen.git external/eigen-3.3.90
+git submodule add --name eigen-3.4.90 https://gitlab.com/libeigen/eigen.git external/eigen-3.4.90
 ```
 
 ```sh

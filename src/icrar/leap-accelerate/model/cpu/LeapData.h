@@ -4,20 +4,19 @@
  * Copyright by UWA(in the framework of the ICRAR)
  * All rights reserved
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111 - 1307  USA
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #pragma once
@@ -63,7 +62,7 @@ namespace icrar
     class MeasurementSet;
     namespace cuda
     {
-        class DeviceMetaData;
+        class DeviceLeapData;
         class ConstantBuffer;
     } // namespace cuda
 } // namespace icrar
@@ -107,9 +106,9 @@ namespace cpu
      * @brief container of phaserotation constants and variables for calibrating a single beam.
      * Can be mutated to calibrate for multiple directions.
      */
-    class MetaData
+    class LeapData
     {
-        MetaData() = default;
+        LeapData() = default;
 
     protected:
         Constants m_constants;
@@ -131,7 +130,7 @@ namespace cpu
     
     public:
         /**
-         * @brief Construct a new MetaData object. SetDirection() must be called after construction
+         * @brief Construct a new LeapData object. SetDirection() must be called after construction
          * 
          * @param ms measurement set to read observations from
          * @param refAnt the reference antenna index, default is the last index
@@ -139,7 +138,7 @@ namespace cpu
          * @param computeInverse whether to compute inverse using cpu inversion
          * @param useCache whether to load Ad matrix from cache
          */
-        MetaData(
+        LeapData(
             const icrar::MeasurementSet& ms,
             boost::optional<unsigned int> refAnt = boost::none,
             double minimumBaselineThreshold = 0.0,
@@ -147,7 +146,7 @@ namespace cpu
             bool useCache = true);
 
         /**
-         * @brief Construct a new MetaData object.
+         * @brief Construct a new LeapData object.
          * 
          * @param ms measurement set to read observations from
          * @param direction the direction of the beam to calibrate for
@@ -155,7 +154,7 @@ namespace cpu
          * @param minimumBaselineThreshold baseline lengths less that the minimum in meters are flagged
          * @param useCache whether to load Ad matrix from cache
          */
-        MetaData(
+        LeapData(
             const icrar::MeasurementSet& ms,
             const SphericalDirection& direction,
             boost::optional<unsigned int> refAnt = boost::none,
@@ -226,10 +225,10 @@ namespace cpu
         const Eigen::VectorXcd& GetAvgData() const { return m_avgData; }
         Eigen::VectorXcd& GetAvgData() { return m_avgData; }
 
-        bool operator==(const MetaData& rhs) const;
-        bool operator!=(const MetaData& rhs) const { return !(*this == rhs); }
+        bool operator==(const LeapData& rhs) const;
+        bool operator!=(const LeapData& rhs) const { return !(*this == rhs); }
 
-        friend class icrar::cuda::DeviceMetaData;
+        friend class icrar::cuda::DeviceLeapData;
         friend class icrar::cuda::ConstantBuffer;
     };
 } // namespace cpu

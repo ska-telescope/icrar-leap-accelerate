@@ -2,6 +2,8 @@
 
 leap-accelerate compilation is compatible with g++ and clang++ on debian or ubuntu. Support for compiling on other operating systems is currently experimental.
 
+## Binaries
+
 ### Dependencies
 
 #### Recommended Versions Compatibility
@@ -65,40 +67,40 @@ From the repository root folder run:
 
 NOTE: pulling exernal submodules is now automated by CMake. When downloading the source files via tools other than git the folder `external/` will need to be copied manually.
 
-##### Linux GCC
+#### GCC
 
-`export CUDA_HOME=/usr/local/cuda`
+###### Build Debug
 
-`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64`
-
-`export PATH=$PATH:$CUDA_HOME/bin`
-
-###### Debug
-
-`mkdir -p build/Debug && cd build/Debug`
-
-`cmake ../../ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCUDA_ENABLED=TRUE`
+`cmake -B build/Debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCUDA_ENABLED=TRUE`
 
 With tracing to file:
 
-`cmake ../../ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCUDA_ENABLED=TRUE -DTRACE=ON`
+`cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCUDA_ENABLED=TRUE -DTRACE=ON -DCMAKE_BUILD_TYPE=Debug`
 
 With gcovr analysis:
 
-`cmake ../.. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"`
+`cmake -B build/Debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_CXX_FLAGS="-coverage" -DCMAKE_EXE_LINKER_FLAGS="-coverage"`
 
-###### Release
+###### Build Release
 
-`mkdir -p build/Release && cd build/Release`
+`cmake -B build/Release -DCMAKE_BUILD_TYPE=Release -DCUDA_ENABLED=TRUE`
 
-`cmake ../../ -DCMAKE_BUILD_TYPE=Release -DCUDA_ENABLED=TRUE`
+###### CUDA Hints
+
+If cmake fails to detect CUDA try adding the following hint variables:
+
+```bash
+export CUDA_HOME=/usr/local/cuda
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
+export PATH=$PATH:$CUDA_HOME/bin
+```
 
 ## Testing
 
-Testing provided via googletest. To test using the google test runner, test binaries can be executed directly using the following commands:
+Testing provided via googletest. To test using the google test runner, test binaries can be executed directly using the following commands from the output folder:
 
-`./src/icrar/leap-accelerate/tests/LeapAccelerate.Tests`
-`./src/icrar/leap-accelerate-cli/tests/LeapAccelerateCLI.Tests`
+`./bin/tests/LeapAccelerate.Tests`
+`./bin/tests/LeapAccelerateCLI.Tests`
 
 To test using CTest use the following command in build/linux:
 
@@ -116,7 +118,7 @@ Generated documentation is available locally at the following file location:
 
 Once deployed to a branch the docs will be available here:
 
-https://icrar-leap-accelerate.readthedocs.io/
+https://developer.skao.int/projects/icrar-leap-accelerate/en/latest/
 
 ## Test Coverage (Debug Only)
 
