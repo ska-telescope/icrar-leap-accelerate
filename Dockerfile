@@ -1,16 +1,16 @@
 # This is Dockerfile installs everything from scratch into a Ubuntu 20.04 based container
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata \
-    gnupg2 git wget gcc g++ gdb doxygen cmake casacore-dev libboost1.71-all-dev \
+    gnupg2 git wget gcc g++ gdb doxygen cmake casacore-dev libboost1.74-all-dev \
     software-properties-common
 
-RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin &&\
-     mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600 &&\
-    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub &&\
-    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
+RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin &&\
+     mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600 &&\
+    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/3bf863cc.pub &&\
+    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /"
 
 RUN apt update &&\
-    DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install cuda-minimal-build-11-2
+    DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install cuda-minimal-build-11-7
 
 
 # Get the LEAP sources and install them in the system
@@ -24,7 +24,7 @@ RUN cd /leap-accelerate && git submodule update --init --recursive &&\
     cmake --install build/linux/Release
 
 # Second stage to cleanup the mess
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 COPY --from=0 /usr/lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu
 COPY --from=0 /usr/local /usr/local
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends liblapack3

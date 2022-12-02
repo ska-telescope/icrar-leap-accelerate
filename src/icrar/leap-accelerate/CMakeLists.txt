@@ -85,19 +85,6 @@ if(CUDA_ENABLED)
   list(APPEND sources ${cuda_sources})
 endif()
 
-#python_add_library(
-#PYTHON_ADD_MODULE(
-
-# if(PYTHON_ENABLED)
-#   pybind11_add_module(
-#     ${TARGET_NAME} SHARED
-#     ${sources}
-#     ${private_headers}
-#     ${public_headers}
-#   )
-# else()
-# endif()
-
 add_library(
     ${TARGET_NAME} SHARED
     ${sources}
@@ -120,13 +107,6 @@ find_package(Threads REQUIRED)
 if(HIPSYCL_ENABLED)
   add_sycl_to_target(TARGET ${TARGET_NAME} SOURCES ${sources})
 endif()
-
-# set_target_properties(${TARGET_NAME}
-#   PROPERTIES
-#   ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-#   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-#   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-# )
 
 if(USE_PCH)
   target_precompile_headers(${TARGET_NAME}
