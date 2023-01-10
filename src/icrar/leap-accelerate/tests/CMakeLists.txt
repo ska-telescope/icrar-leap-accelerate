@@ -26,7 +26,7 @@ set(sources
   ms/MeasurementSetTests.cc
   model/cpu/MVuvwTests.cc
 
-  model/MetaDataTests.cc
+  model/LeapDataTests.cc
   model/IntegrationTests.cc
   
   algorithm/PhaseRotateTests.cc

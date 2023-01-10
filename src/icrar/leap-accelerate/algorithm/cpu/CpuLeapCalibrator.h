@@ -45,7 +45,7 @@ namespace icrar
 {
 namespace cpu
 {
-    class MetaData;
+    class LeapData;
 
     /**
      * @brief Leap Calibration implementation using 
@@ -71,13 +71,13 @@ namespace cpu
         /**
          * @brief Performs rotation, summing and calibration for @p direction
          * 
-         * @param metadata metadata object containing data required for calibration
+         * @param leapData leapData object containing data required for calibration
          * @param direction the direction to calibrate for 
          * @param input batches of uvws and visibilities to process
          * @param output_calibrations output calibration from summing a function of uvws and visibilities
          */
         static void PhaseRotate(
-            MetaData& metadata,
+            LeapData& leapData,
             const SphericalDirection& direction,
             std::vector<Integration>& input,
             std::vector<BeamCalibration>& output_calibrations);
@@ -86,11 +86,11 @@ namespace cpu
          * @brief Performs rotation and averaging over each baseline, channel and polarization.
          * 
          * @param integration The input integration batch of uvws and visibilities
-         * @param metadata The metadata object where AverageData is written to
+         * @param leapData The leapData object where AverageData is written to
          */
         static void RotateVisibilities(
             Integration& integration,
-            MetaData& metadata);
+            LeapData& leapData);
     };
 } // namespace cpu
 } // namespace icrar

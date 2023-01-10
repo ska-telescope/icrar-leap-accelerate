@@ -61,7 +61,7 @@ namespace cpu
             m_integrationNumber == rhs.m_integrationNumber
             && m_visibilities.dimensions() == rhs.m_visibilities.dimensions()
             && m_UVW.dimensions() == rhs.m_UVW.dimensions()
-            && datav.isApprox(rhsdatav); //TODO: compare UVWs
+            && datav.isApprox(rhsdatav); //TODO(calgray) compare UVWs
     }
 } // namespace cpu
 } // namespace icrar

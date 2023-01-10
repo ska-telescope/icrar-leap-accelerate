@@ -388,7 +388,7 @@ namespace icrar
                 }
                 else if(key == "streamOutType")
                 {
-                    StreamOutType e;
+                    StreamOutType e = {};
                     if(TryParseStreamOutType(it->value.GetString(), e))
                     {
                         args.streamOutType = e;
@@ -444,7 +444,7 @@ namespace icrar
                 }
                 else if(key == "computeImplementation")
                 {
-                    ComputeImplementation e;
+                    ComputeImplementation e = {};
                     if(TryParseComputeImplementation(it->value.GetString(), e))
                     {
                         args.computeImplementation = e;
@@ -493,7 +493,7 @@ namespace icrar
                     }
                     if(it->value.IsString())
                     {
-                        log::Verbosity e;
+                        log::Verbosity e = {};
                         if(TryParseVerbosity(it->value.GetString(), e))
                         {
                             args.verbosity = e;

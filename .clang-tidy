@@ -1,4 +1,6 @@
 # TODO(calgray):
+# -clang-diagnostic-sign-conversion combersome to cast collection sizes to signed ints
+# -cppcoreguidelines-narrowing-conversions combersome to cast collection sizes to signed ints
 # -cppcoreguidelines-avoid-magic-numbers does not ignore test constants
 # -cppcoreguidelines-avoid-non-const-global-variables gtest 1.8.1 does not suppress this
 # -cppcoreguidelines-owning-memory is a GTEST limitation
@@ -31,6 +33,8 @@ WarningsAsErrors:
     modernize-*,
     misc-*,
     google-*,
+    -clang-diagnostic-sign-conversion,
+    -cppcoreguidelines-narrowing-conversions,
     -cppcoreguidelines-avoid-magic-numbers,
     -cppcoreguidelines-avoid-non-const-global-variables,
     -cppcoreguidelines-owning-memory,

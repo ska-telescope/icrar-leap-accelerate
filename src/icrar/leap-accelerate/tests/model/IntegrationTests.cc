@@ -36,6 +36,10 @@
 
 namespace icrar
 {
+    /**
+     * @brief Tests for Leap Integration classes
+     * 
+     */
     class IntegrationTests : public ::testing::Test
     {
         std::unique_ptr<icrar::MeasurementSet> ms;
@@ -47,10 +51,7 @@ namespace icrar
             ms = std::make_unique<icrar::MeasurementSet>(filename);
         }
 
-        void TearDown() override
-        {
-
-        }
+        void TearDown() override { }
 
         void TestMeasurementSet()
         {
@@ -67,8 +68,8 @@ namespace icrar
             using namespace std::literals::complex_literals;
             double THRESHOLD = 0.0001;
 
+            //RAW VIS
             {
-                //RAW VIS
                 auto vis = ms->ReadVis();
                 ASSERT_EQ(4, vis.dimension(0)); // polarizations
                 ASSERT_EQ(48, vis.dimension(1)); // channels
@@ -94,8 +95,8 @@ namespace icrar
                 EXPECT_DOUBLE_EQ(-126.13023305330449, uvw(0,2,0));
                 EXPECT_DOUBLE_EQ( 169.06485173845823, uvw(1,2,0));
             }
+            // Full Vis Integration
             {
-                // Full Vis Integration
                 auto integration = cpu::Integration(0, *ms, 0, 1, Slice(0,4,1));
                 ASSERT_EQ(4, integration.GetVis().dimension(0)); // polarizations
                 ASSERT_EQ(48, integration.GetVis().dimension(1)); // channels
@@ -127,8 +128,8 @@ namespace icrar
                 ASSERT_DOUBLE_EQ(0.0               , integration.GetUVW()(0,0,0));
                 ASSERT_DOUBLE_EQ(-213.16346997196314, integration.GetUVW()(0,1,0));
             }
+            // XX + YY Vis Integration
             {
-                // XX + YY Vis Integration
                 //Slice(0, std::max(1u, nPolarizations-1), nPolarizations-1);
                 auto integration = cpu::Integration(0, *ms, 0, 1, Slice(0,4,3));
                 ASSERT_EQ(2, integration.GetVis().dimension(0));
@@ -151,38 +152,9 @@ namespace icrar
                 ASSERT_DOUBLE_EQ(0.0               , integration.GetUVW()(0,0,0));
                 ASSERT_DOUBLE_EQ(-213.16346997196314, integration.GetUVW()(0,1,0));
             }
-
-        }
-
-        void TestCudaBufferCopy()
-        {
-            // auto meta = icrar::casalib::MetaData(*ms);
-            // auto direction = casacore::MVDirection(0.0, 0.0);
-            // auto uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
-            // meta.SetDirection(direction);
-            // meta.avg_data = casacore::Matrix<std::complex<double>>(uvw.size(), meta.num_pols);
-            // meta.avg_data.get() = 0;
-
-            // auto expectedMetadataHost = icrar::cpu::MetaData(meta, ToDirection(direction), ToUVWVector(uvw));
-            // auto metadataDevice = icrar::cuda::DeviceMetaData(expectedMetadataHost);
-
-            // // copy from device back to host
-            // icrar::cpu::MetaData metaDataHost = metadataDevice.ToHost();
-
-            // std::cout << uvw[0] << std::endl;
-            // std::cout << expectedMetadataHost.oldUVW[0] << std::endl;
-            // std::cout << metaDataHost.oldUVW[0] << std::endl;
-
-            
-            // std::cout << expectedMetadataHost.UVW[0] << std::endl;
-            // std::cout << metaDataHost.UVW[0] << std::endl;
-
-
-            // ASSERT_MDEQ(expectedMetadataHost, metaDataHost, THRESHOLD);
         }
     };
 
     TEST_F(IntegrationTests, DISABLED_TestMeasurementSet) { TestMeasurementSet(); }
     TEST_F(IntegrationTests, TestReadFromFile) { TestReadFromFile(); }
-    TEST_F(IntegrationTests, DISABLED_TestCudaBufferCopy) { TestCudaBufferCopy(); }
 } // namespace icrar

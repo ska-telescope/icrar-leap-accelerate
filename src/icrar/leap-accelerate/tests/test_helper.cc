@@ -24,12 +24,12 @@
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 
-void assert_near_metadata(const icrar::cpu::MetaData& expected, const icrar::cpu::MetaData& actual, const std::string& ln, const std::string& rn, const std::string& file, int line)
+void assert_near_metadata(const icrar::cpu::LeapData& expected, const icrar::cpu::LeapData& actual, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {
     if(expected != actual)
     {
         std::cerr << ln << " != " << rn << "\n";
-        std::cerr << "MetaData not exactly equal at " << file << ":" << line << std::endl;
+        std::cerr << "LeapData not exactly equal at " << file << ":" << line << std::endl;
     }
 
     const double THRESHOLD = 0.001;

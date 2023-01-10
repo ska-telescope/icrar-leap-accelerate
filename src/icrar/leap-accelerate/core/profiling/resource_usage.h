@@ -29,7 +29,7 @@ namespace icrar
 namespace profiling
 {
 
-using usec_t = std::uint64_t;
+using usec_t = decltype(timeval::tv_sec);
 
 /// A collection of resource-related statistics
 struct ResourceUsage

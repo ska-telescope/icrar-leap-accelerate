@@ -62,7 +62,7 @@ namespace icrar
     class MeasurementSet;
     namespace cuda
     {
-        class DeviceMetaData;
+        class DeviceLeapData;
         class ConstantBuffer;
     } // namespace cuda
 } // namespace icrar
@@ -106,9 +106,9 @@ namespace cpu
      * @brief container of phaserotation constants and variables for calibrating a single beam.
      * Can be mutated to calibrate for multiple directions.
      */
-    class MetaData
+    class LeapData
     {
-        MetaData() = default;
+        LeapData() = default;
 
     protected:
         Constants m_constants;
@@ -130,7 +130,7 @@ namespace cpu
     
     public:
         /**
-         * @brief Construct a new MetaData object. SetDirection() must be called after construction
+         * @brief Construct a new LeapData object. SetDirection() must be called after construction
          * 
          * @param ms measurement set to read observations from
          * @param refAnt the reference antenna index, default is the last index
@@ -138,7 +138,7 @@ namespace cpu
          * @param computeInverse whether to compute inverse using cpu inversion
          * @param useCache whether to load Ad matrix from cache
          */
-        MetaData(
+        LeapData(
             const icrar::MeasurementSet& ms,
             boost::optional<unsigned int> refAnt = boost::none,
             double minimumBaselineThreshold = 0.0,
@@ -146,7 +146,7 @@ namespace cpu
             bool useCache = true);
 
         /**
-         * @brief Construct a new MetaData object.
+         * @brief Construct a new LeapData object.
          * 
          * @param ms measurement set to read observations from
          * @param direction the direction of the beam to calibrate for
@@ -154,7 +154,7 @@ namespace cpu
          * @param minimumBaselineThreshold baseline lengths less that the minimum in meters are flagged
          * @param useCache whether to load Ad matrix from cache
          */
-        MetaData(
+        LeapData(
             const icrar::MeasurementSet& ms,
             const SphericalDirection& direction,
             boost::optional<unsigned int> refAnt = boost::none,
@@ -225,10 +225,10 @@ namespace cpu
         const Eigen::VectorXcd& GetAvgData() const { return m_avgData; }
         Eigen::VectorXcd& GetAvgData() { return m_avgData; }
 
-        bool operator==(const MetaData& rhs) const;
-        bool operator!=(const MetaData& rhs) const { return !(*this == rhs); }
+        bool operator==(const LeapData& rhs) const;
+        bool operator!=(const LeapData& rhs) const { return !(*this == rhs); }
 
-        friend class icrar::cuda::DeviceMetaData;
+        friend class icrar::cuda::DeviceLeapData;
         friend class icrar::cuda::ConstantBuffer;
     };
 } // namespace cpu

@@ -22,8 +22,8 @@
 #pragma once
 #ifdef CUDA_ENABLED
 
-#include <icrar/leap-accelerate/model/cpu/MetaData.h>
-#include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
+#include <icrar/leap-accelerate/model/cpu/LeapData.h>
+#include <icrar/leap-accelerate/model/cuda/DeviceLeapData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
 
 #include <icrar/leap-accelerate/cuda/device_vector.h>
@@ -43,14 +43,14 @@ namespace icrar
 namespace cuda
 {
     /**
-     * @brief Calculates avgData in metadata
+     * @brief Calculates avgData in leapData
      * 
      * @param integration the input visibilities to integrate
-     * @param metadata the metadata container
+     * @param leapData the leapData container
      */
     __host__ void RotateVisibilities(
         DeviceIntegration& integration,
-        DeviceMetaData& metadata);
+        DeviceLeapData& leapData);
 } // namespace cuda
 } // namespace icrar
 #endif // CUDA_ENABLED

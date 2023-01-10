@@ -36,7 +36,7 @@ namespace profiling
 
     static usec_t to_usecs(const struct timeval &t)
     {
-        constexpr int SECONDS_TO_MICROSECONDS = 1000000;
+        constexpr uint SECONDS_TO_MICROSECONDS = 1000000u;
         return t.tv_sec * SECONDS_TO_MICROSECONDS + t.tv_usec;
     }
 

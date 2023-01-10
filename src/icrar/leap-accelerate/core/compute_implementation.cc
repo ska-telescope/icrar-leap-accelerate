@@ -41,7 +41,7 @@ namespace icrar
 
     ComputeImplementation ParseComputeImplementation(const std::string& value)
     {
-        ComputeImplementation e;
+        ComputeImplementation e = {};
         if(!TryParseComputeImplementation(value, e))
         {
             throw invalid_argument_exception(value, "value", __FILE__, __LINE__);

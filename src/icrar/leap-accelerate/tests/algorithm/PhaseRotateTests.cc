@@ -34,8 +34,8 @@
 
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
-#include <icrar/leap-accelerate/model/cpu/MetaData.h>
-#include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
+#include <icrar/leap-accelerate/model/cpu/LeapData.h>
+#include <icrar/leap-accelerate/model/cuda/DeviceLeapData.h>
 
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
@@ -88,11 +88,11 @@ namespace icrar
             
             auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
 
-            boost::optional<icrar::cpu::MetaData> metadataOptionalOutput;
+            boost::optional<icrar::cpu::LeapData> metadataOptionalOutput;
             if(impl == ComputeImplementation::cpu)
             {
                 auto integration = cpu::Integration(0, *ms, 0, 1);
-                auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction));
+                auto hostMetadata = icrar::cpu::LeapData(*ms, ToDirection(direction));
                 cpu::CpuLeapCalibrator::RotateVisibilities(integration, hostMetadata);
 
                 metadataOptionalOutput = hostMetadata;
@@ -102,16 +102,16 @@ namespace icrar
             {
                 auto integration = icrar::cpu::Integration(0, *ms, 0, 1);
                 auto deviceIntegration = icrar::cuda::DeviceIntegration(integration);
-                auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction));
-                auto deviceMetadata = icrar::cuda::DeviceMetaData(hostMetadata);
-                icrar::cuda::RotateVisibilities(deviceIntegration, deviceMetadata);
-                deviceMetadata.ToHost(hostMetadata);
+                auto hostMetadata = icrar::cpu::LeapData(*ms, ToDirection(direction));
+                auto deviceLeapData = icrar::cuda::DeviceLeapData(hostMetadata);
+                icrar::cuda::RotateVisibilities(deviceIntegration, deviceLeapData);
+                deviceLeapData.ToHost(hostMetadata);
                 metadataOptionalOutput = hostMetadata;
             }
 #endif // CUDA_ENABLED
 
             ASSERT_TRUE(metadataOptionalOutput.is_initialized());
-            icrar::cpu::MetaData& metadataOutput = metadataOptionalOutput.get();
+            icrar::cpu::LeapData& metadataOutput = metadataOptionalOutput.get();
 
             // =======================
             // Build expected results
@@ -169,9 +169,9 @@ namespace icrar
             ComputeImplementation impl,
             const ComputeOptionsDTO computeOptions,
             const Slice solutionInterval,
-            std::function<cpu::CalibrationCollection()> getExpected)
+            const std::function<cpu::CalibrationCollection()>& getExpected)
         {
-            auto metadata = icrar::cpu::MetaData(*ms);
+            auto leapData = icrar::cpu::LeapData(*ms);
             std::vector<icrar::SphericalDirection> directions =
             {
                 { -0.4606549305661674,-0.29719233792392513 },
@@ -265,9 +265,9 @@ namespace icrar
          * 
          * @param impl 
          */
-        void ReferenceAntennaTest(const ComputeImplementation impl, std::vector<int> referenceAntennas, const Slice solutionInterval)
+        void ReferenceAntennaTest(const ComputeImplementation impl, const std::vector<int>& referenceAntennas, const Slice solutionInterval)
         {
-            auto metadata = icrar::cpu::MetaData(*ms);
+            auto leapData = icrar::cpu::LeapData(*ms);
             std::vector<icrar::SphericalDirection> directions =
             {
                 { -0.4606549305661674,-0.29719233792392513 },
@@ -278,12 +278,11 @@ namespace icrar
             std::unique_ptr<ILeapCalibrator> calibrator = LeapCalibratorFactory::Create(impl);
             auto flaggedAntennas = ms->GetFlaggedAntennas();
 
-            for(auto it = referenceAntennas.begin(); it != referenceAntennas.end(); ++it)
+            for(int32_t referenceAntenna : referenceAntennas)
             {
-                int32_t referenceAntenna = *it;
                 if(flaggedAntennas.find(referenceAntenna) != flaggedAntennas.end())
                 {
-                    //TODO: calibrate should throw for flagged antennas as reference
+                    //TODO(calgray) calibrate should throw for flagged antennas as reference
                     continue;
                 }
 

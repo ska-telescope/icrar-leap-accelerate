@@ -23,7 +23,7 @@
 
 #ifdef CUDA_ENABLED
 
-#include <icrar/leap-accelerate/model/cpu/MetaData.h>
+#include <icrar/leap-accelerate/model/cpu/LeapData.h>
 #include <cuda_runtime.h>
 
 namespace icrar
@@ -34,16 +34,16 @@ namespace cuda
      * @brief A cuda decorator for cpu::Integration. This class stores data on the host withs pinned memory
      * calls to allow for asyncronous read and write with cuda.
      */
-    class HostMetaData : public cpu::MetaData
+    class HostLeapData : public cpu::LeapData
     {
     public:
-        HostMetaData(
+        HostLeapData(
             const icrar::MeasurementSet& ms,
             boost::optional<unsigned int> refAnt,
             double minimumBaselineThreshold,
             bool computeInverse,
             bool useCache)
-        : MetaData(ms, refAnt, minimumBaselineThreshold, computeInverse, useCache)
+        : LeapData(ms, refAnt, minimumBaselineThreshold, computeInverse, useCache)
         {
             cudaHostRegister(m_A.data(), m_A.size() * sizeof(decltype(*m_A.data())), cudaHostRegisterPortable);
             cudaHostRegister(m_I.data(), m_I.size() * sizeof(decltype(*m_I.data())), cudaHostRegisterPortable);
@@ -59,7 +59,7 @@ namespace cuda
             }
         }
 
-        ~HostMetaData()
+        ~HostLeapData()
         {
             cudaHostUnregister(m_A.data());
             cudaHostUnregister(m_I.data());

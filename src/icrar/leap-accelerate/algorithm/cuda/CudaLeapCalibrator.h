@@ -56,8 +56,8 @@ namespace icrar
     }
     namespace cuda
     {
-        class DeviceMetaData;
-        class HostMetaData;
+        class DeviceLeapData;
+        class HostLeapData;
         class DeviceIntegration;
     }
 }
@@ -104,7 +104,7 @@ namespace cuda
          * @param useCuda whether to use cuda solvers
          */
         void CalculateAd(
-            HostMetaData& metadata,
+            HostLeapData& leapData,
             device_matrix<double>& deviceA,
             device_matrix<double>& deviceAd,
             bool isFileSystemCacheEnabled,
@@ -119,7 +119,7 @@ namespace cuda
          * @param deviceAd1 output device memory of Ad1
          */
         void CalculateAd1(
-            HostMetaData& metadata,
+            HostLeapData& leapData,
             device_matrix<double>& deviceA1,
             device_matrix<double>& deviceAd1);
 
@@ -127,8 +127,8 @@ namespace cuda
          * Performs only visibilities rotation on the GPU
          */
         void PhaseRotate(
-            const HostMetaData& hostMetadata,
-            DeviceMetaData& deviceMetadata,
+            const HostLeapData& hostMetadata,
+            DeviceLeapData& deviceLeapData,
             const SphericalDirection& direction,
             cuda::DeviceIntegration& input,
             std::vector<cpu::BeamCalibration>& output_calibrations);

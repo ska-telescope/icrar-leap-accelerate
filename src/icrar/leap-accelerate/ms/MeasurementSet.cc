@@ -33,6 +33,7 @@ namespace icrar
     , m_msmc(std::make_unique<casacore::MSMainColumns>(*m_measurementSet))
     , m_msc(std::make_unique<casacore::MSColumns>(*m_measurementSet))
     , m_filepath(filepath)
+    , m_readAutocorrelations()
     {
         std::tie(m_antennas, m_readAutocorrelations) = CalculateUniqueAntennas();
         if(m_antennas.size() != m_measurementSet->antenna().nrow())
@@ -326,8 +327,8 @@ namespace icrar
         const unsigned int rows = intervalTimesteps * num_baselines;
         
         auto pols_slice = polarizationRange.ToSeq();
-        const unsigned int pol_length = boost::numeric_cast<unsigned int>(pols_slice.sizeObject());
-        const unsigned int pol_stride = boost::numeric_cast<unsigned int>(pols_slice.incrObject());
+        const auto pol_length = boost::numeric_cast<unsigned int>(pols_slice.sizeObject());
+        const auto pol_stride = boost::numeric_cast<unsigned int>(pols_slice.incrObject());
 
         if(!m_measurementSet->tableDesc().isColumn(columnName))
         {

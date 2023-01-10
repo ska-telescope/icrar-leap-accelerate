@@ -139,7 +139,7 @@ namespace cpu
         {
             beamCalibrations.push_back(BeamCalibration::Parse(*it));
         }
-        return Calibration(startEpoch, endEpoch, std::move(beamCalibrations));
+        return { startEpoch, endEpoch, std::move(beamCalibrations) };
     }
 } // namespace cpu
 } // namespace icrar
